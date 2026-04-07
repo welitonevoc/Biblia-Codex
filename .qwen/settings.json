@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(netstat *)",
+      "Bash(findstr *)",
+      "Bash(timeout *)",
+      "Bash(npm install)",
+      "Bash(node *)",
+      "Bash(npm *)",
+      "WebSearch",
+      "Bash(git config *)",
+      "Bash(taskkill *)",
+      "Bash(dir *)",
+      "Bash(select-object *)",
+      "Bash(tasklist)",
+      "Bash(npx *)",
+      "Bash(pnpm install)",
+      "Bash(.\\gradlew *)",
+      "Bash(gradlew.bat *)",
+      "Read(C:\\Users\\Josem\\.gemini\\antigravity\\brain\\e91c96f9-b0ad-4ed5-8964-0a096a60efab/**)",
+      "Bash(type *)",
+      "Bash(pnpm add *)",
+      "Read(C:\\Users\\Josem\\.gemini\\antigravity\\brain\\e91c96f9-b0ad-4ed5-8964-0a60efab/**)",
+      "Bash(gradlew *)",
+      "Bash(git fetch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(pnpm *)",
+      "Bash(git revert *)",
+      "Bash(curl *)",
+      "Bash(powershell *)",
+      "Bash(del *)",
+      "Bash(rmdir *)"
+    ]
+  },
+  "$version": 3
+}

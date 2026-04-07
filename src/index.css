@@ -1,0 +1,1068 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Libre Baskerville", serif;
+  --font-display: "Cormorant Garamond", serif;
+
+  --color-bible-bg: var(--bg-bible);
+  --color-bible-text: var(--text-bible);
+  --color-bible-accent: var(--accent-bible);
+}
+
+:root {
+  --bg-bible: #f6f1e7;
+  --bg-bible-alt: #efe6d9;
+  --surface-bible: #fffaf2;
+  --surface-bible-strong: #f3eadb;
+  --text-bible: #1f1a15;
+  --text-bible-muted: #5b5248;
+  --text-bible-subtle: #8a7d70;
+  --accent-bible: #8a6b43;
+  --accent-bible-strong: #6d5030;
+  --accent-bible-contrast: #fff8ef;
+  --accent-bible-rgb: 138, 107, 67;
+  --border-bible: #d9ccb9;
+  --border-bible-strong: #c7b69c;
+  --hero-start: #c89b6d;
+  --hero-mid: #efe3cc;
+  --hero-end: #f9f5ed;
+  --glow-bible: #d8bc92;
+  --success-bible: #1f8f63;
+  --warning-bible: #c4862f;
+  --danger-bible: #b3504e;
+
+  --font-bible-family: "Libre Baskerville", serif;
+  --font-bible-size: 18px;
+  --font-bible-line-height: 1.6;
+  --font-bible-letter-spacing: 0em;
+  --horizontal-margin: 32px;
+  --shadow-premium: 0 32px 80px -38px rgba(var(--accent-bible-rgb), 0.42);
+  --shadow-soft: 0 24px 48px -30px rgba(17, 20, 24, 0.28);
+  --radius-premium: 32px;
+
+  /* Safe area insets for foldables/notches */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+/* Dynamic viewport units for foldable support */
+html,
+body {
+  height: 100%;
+  height: 100dvh;
+  height: 100svh;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  background-color: var(--bg-bible);
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, var(--hero-start) 0%, transparent 28%),
+    radial-gradient(circle at top right, var(--hero-mid) 0%, transparent 22%),
+    linear-gradient(180deg, var(--hero-end) 0%, var(--bg-bible-alt) 24%, var(--bg-bible) 100%);
+  color: var(--text-bible);
+  transition: background 0.35s ease, color 0.35s ease;
+  /* Safe area padding for notches */
+  padding-top: var(--sat);
+  padding-right: var(--sar);
+  padding-bottom: var(--sab);
+  padding-left: var(--sal);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  height: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(var(--accent-bible-rgb), 0.18);
+  color: var(--text-bible);
+}
+
+/* Responsive viewport for foldable devices */
+@supports (height: 100dvh) {
+
+  html,
+  body {
+    height: 100dvh;
+  }
+}
+
+/* Foldable screen segments */
+@media (horizontal-viewport-segments: 2) {
+  body {
+    gap: env(viewport-segment-gap 0 0);
+  }
+}
+
+@media (vertical-viewport-segments: 2) {
+  body {
+    gap: env(viewport-segment-gap 0 0);
+  }
+}
+
+/* Responsive breakpoints for different screen sizes */
+@media screen and (max-width: 360px) {
+  :root {
+    --font-bible-size: 16px;
+  }
+}
+
+@media screen and (min-width: 361px) and (max-width: 480px) {
+  :root {
+    --font-bible-size: 17px;
+  }
+}
+
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  :root {
+    --font-bible-size: 18px;
+  }
+}
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  :root {
+    --font-bible-size: 19px;
+  }
+}
+
+@media screen and (min-width: 1025px) {
+  :root {
+    --font-bible-size: 20px;
+  }
+}
+
+/* Foldable inner screen (Z Fold unfolded) */
+@media (screen-spanning: single-fold-vertical) {
+  :root {
+    --fold-gap: env(viewport-segment-gap 0 0);
+    --fold-width: env(viewport-segment-width 0 0);
+  }
+}
+
+/* Samsung Z Fold specific optimizations */
+@media screen and (min-aspect-ratio: 21/9) {
+
+  /* Ultra-wide cover screen */
+  body {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-aspect-ratio: 4/5) {
+
+  /* Inner screen (nearly square) */
+  body {
+    font-size: 16px;
+  }
+}
+
+/* Touch optimization for mobile */
+@media (hover: none) and (pointer: coarse) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+.bible-text {
+  font-family: var(--font-bible-family);
+  font-size: var(--font-bible-size);
+  line-height: var(--font-bible-line-height);
+  letter-spacing: var(--font-bible-letter-spacing);
+  padding-left: var(--horizontal-margin);
+  padding-right: var(--horizontal-margin);
+}
+
+.ui-text {
+  font-family: var(--font-sans);
+}
+
+.app-shell {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 18%),
+    linear-gradient(180deg, rgba(var(--accent-bible-rgb), 0.03), transparent 100%);
+}
+
+.app-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(var(--accent-bible-rgb), 0.14), transparent 28%),
+    radial-gradient(circle at 85% 12%, rgba(var(--accent-bible-rgb), 0.08), transparent 22%);
+  opacity: 0.95;
+}
+
+.app-frame {
+  position: relative;
+  z-index: 1;
+}
+
+.premium-page {
+  padding: 24px 20px 96px;
+}
+
+.premium-page__content {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.premium-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 40px;
+  padding: 28px;
+  border: 1px solid rgba(var(--accent-bible-rgb), 0.14);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0.14)),
+    linear-gradient(180deg, rgba(var(--accent-bible-rgb), 0.1), rgba(var(--accent-bible-rgb), 0.02));
+  box-shadow: var(--shadow-premium);
+  backdrop-filter: blur(18px);
+}
+
+.premium-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -55% auto;
+  width: 280px;
+  height: 280px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(var(--accent-bible-rgb), 0.18), transparent 65%);
+  pointer-events: none;
+}
+
+.premium-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--accent-bible-rgb), 0.14);
+  background: rgba(var(--accent-bible-rgb), 0.08);
+  color: var(--accent-bible-strong);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.premium-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5vw, 4.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--text-bible);
+}
+
+.premium-subtitle {
+  max-width: 62ch;
+  color: var(--text-bible-muted);
+  font-size: clamp(0.98rem, 1.9vw, 1.08rem);
+  line-height: 1.7;
+}
+
+.premium-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.premium-card,
+.glass-panel {
+  border-radius: var(--radius-premium);
+  border: 1px solid rgba(var(--accent-bible-rgb), 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0.18)),
+    var(--surface-bible);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(16px);
+}
+
+.premium-card-strong {
+  border-radius: 36px;
+  border: 1px solid rgba(var(--accent-bible-rgb), 0.18);
+  background:
+    linear-gradient(160deg, rgba(var(--accent-bible-rgb), 0.16), rgba(var(--accent-bible-rgb), 0.04)),
+    var(--surface-bible-strong);
+  box-shadow: var(--shadow-premium);
+}
+
+.premium-card-soft {
+  border-radius: 28px;
+  border: 1px solid rgba(var(--accent-bible-rgb), 0.09);
+  background: rgba(var(--accent-bible-rgb), 0.06);
+}
+
+.premium-section-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--text-bible-subtle);
+}
+
+.premium-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: rgba(var(--accent-bible-rgb), 0.08);
+  color: var(--text-bible-muted);
+  transition: 180ms ease;
+}
+
+.premium-chip:hover {
+  border-color: rgba(var(--accent-bible-rgb), 0.16);
+  background: rgba(var(--accent-bible-rgb), 0.12);
+}
+
+.premium-chip-active {
+  background: var(--accent-bible);
+  color: var(--accent-bible-contrast);
+  box-shadow: 0 18px 36px -24px rgba(var(--accent-bible-rgb), 0.75);
+}
+
+.premium-button,
+.premium-button-secondary,
+.premium-button-ghost,
+.premium-icon-button {
+  min-height: 48px;
+  border-radius: 20px;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.premium-button:active,
+.premium-button-secondary:active,
+.premium-button-ghost:active,
+.premium-icon-button:active {
+  transform: scale(0.98);
+}
+
+.premium-button {
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--accent-bible), var(--accent-bible-strong));
+  color: var(--accent-bible-contrast);
+  box-shadow: 0 22px 42px -28px rgba(var(--accent-bible-rgb), 0.8);
+}
+
+.premium-button-secondary {
+  border: 1px solid rgba(var(--accent-bible-rgb), 0.16);
+  background: rgba(var(--accent-bible-rgb), 0.08);
+  color: var(--accent-bible-strong);
+}
+
+.premium-button-ghost {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-bible-muted);
+}
+
+.premium-button-ghost:hover,
+.premium-icon-button:hover {
+  background: rgba(var(--accent-bible-rgb), 0.08);
+}
+
+.premium-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  min-width: 48px;
+  border: 1px solid rgba(var(--accent-bible-rgb), 0.1);
+  background: rgba(var(--accent-bible-rgb), 0.06);
+  color: var(--accent-bible-strong);
+}
+
+.premium-input {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 22px;
+  border: 1px solid rgba(var(--accent-bible-rgb), 0.12);
+  background: rgba(255, 255, 255, 0.55);
+  padding: 0 18px;
+  color: var(--text-bible);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.premium-input::placeholder {
+  color: var(--text-bible-subtle);
+}
+
+.premium-input:focus {
+  outline: none;
+  border-color: rgba(var(--accent-bible-rgb), 0.3);
+  box-shadow: 0 0 0 4px rgba(var(--accent-bible-rgb), 0.12);
+}
+
+.premium-toolbar {
+  border-radius: 999px;
+  border: 1px solid rgba(var(--accent-bible-rgb), 0.16);
+  background: rgba(var(--bg-bible-rgb, 255, 255, 255), 0.78);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-premium);
+}
+
+.forest .premium-card,
+.forest .glass-panel,
+.navy .premium-card,
+.navy .glass-panel,
+.graphite .premium-card,
+.graphite .glass-panel,
+.night .premium-card,
+.night .glass-panel,
+.eclipse .premium-card,
+.eclipse .glass-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
+    var(--surface-bible);
+}
+
+.forest .premium-card-soft,
+.navy .premium-card-soft,
+.graphite .premium-card-soft,
+.night .premium-card-soft,
+.eclipse .premium-card-soft,
+.forest .premium-icon-button,
+.navy .premium-icon-button,
+.graphite .premium-icon-button,
+.night .premium-icon-button,
+.eclipse .premium-icon-button,
+.forest .premium-chip,
+.navy .premium-chip,
+.graphite .premium-chip,
+.night .premium-chip,
+.eclipse .premium-chip,
+.forest .premium-button-secondary,
+.navy .premium-button-secondary,
+.graphite .premium-button-secondary,
+.night .premium-button-secondary,
+.eclipse .premium-button-secondary {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.forest .premium-input,
+.navy .premium-input,
+.graphite .premium-input,
+.night .premium-input,
+.eclipse .premium-input {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-bible);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.text-gold {
+  color: var(--accent-bible);
+}
+
+.bg-gold {
+  background-color: var(--accent-bible);
+}
+
+.border-gold {
+  border-color: rgba(var(--accent-bible-rgb), 0.25);
+}
+
+/* Enhanced Scrollbar for Premium feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-bible-rgb), 0.22);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--accent-bible-rgb), 0.4);
+}
+
+/* MySword Color Classes */
+.mysword-color-red {
+  color: #ff0000;
+}
+
+.mysword-color-orange {
+  color: #ffa500;
+}
+
+.mysword-color-brown {
+  color: #a52a2a;
+}
+
+.mysword-color-green-yellow {
+  color: #adff2f;
+}
+
+.mysword-color-green {
+  color: #008000;
+}
+
+.mysword-color-teal {
+  color: #008080;
+}
+
+.mysword-color-blue {
+  color: #0000ff;
+}
+
+.mysword-color-violet {
+  color: #ee82ee;
+}
+
+.mysword-color-purple {
+  color: #800080;
+}
+
+.mysword-color-pink {
+  color: #ffc0cb;
+}
+
+.mysword-color-gray {
+  color: #808080;
+}
+
+.dictionary-sheet-content {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.dictionary-sheet-content p,
+.dictionary-sheet-content div,
+.dictionary-sheet-content span,
+.dictionary-sheet-content li,
+.dictionary-sheet-content strong,
+.dictionary-sheet-content em {
+  color: inherit;
+}
+
+.dictionary-sheet-content a {
+  color: #ebc08d;
+  text-decoration: underline;
+}
+
+.dictionary-sheet-content .mysword-color-red {
+  color: #ff8a80;
+}
+
+.dictionary-sheet-content .mysword-color-orange {
+  color: #ffb74d;
+}
+
+.dictionary-sheet-content .mysword-color-brown {
+  color: #d7b899;
+}
+
+.dictionary-sheet-content .mysword-color-green-yellow {
+  color: #d4ff72;
+}
+
+.dictionary-sheet-content .mysword-color-green {
+  color: #7bd389;
+}
+
+.dictionary-sheet-content .mysword-color-teal {
+  color: #6fd3d8;
+}
+
+.dictionary-sheet-content .mysword-color-blue {
+  color: #7db7ff;
+}
+
+.dictionary-sheet-content .mysword-color-violet {
+  color: #caa8ff;
+}
+
+.dictionary-sheet-content .mysword-color-purple {
+  color: #d29cff;
+}
+
+.dictionary-sheet-content .mysword-color-pink {
+  color: #ffb3d1;
+}
+
+.dictionary-sheet-content .mysword-color-gray {
+  color: #c4c4c4;
+}
+
+/* MySword Specific Tags Styling */
+.words-of-jesus {
+  color: #d32f2f;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.forest .words-of-jesus,
+.navy .words-of-jesus,
+.graphite .words-of-jesus,
+.night .words-of-jesus,
+.eclipse .words-of-jesus {
+  color: #ff5252;
+}
+
+.ot-quote {
+  font-style: italic;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+.bible-title {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-bible);
+  font-size: 0.85em;
+  line-height: 1.45;
+  opacity: 0.72;
+}
+
+.bible-title-1 {
+  font-size: 0.95em;
+  margin-bottom: 0.4rem;
+}
+
+.bible-title-2 {
+  font-family: var(--font-bible-family);
+  font-size: 0.82em;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.bible-title-3 {
+  font-family: var(--font-bible-family);
+  font-size: 0.76em;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-top: 0;
+  margin-bottom: 0.9rem;
+  opacity: 0.64;
+}
+
+.strongs-link {
+  color: var(--accent-bible);
+  opacity: 0.5;
+  font-size: 0.75em;
+  vertical-align: super;
+  text-decoration: none;
+  margin-left: 2px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.strongs-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+  color: #4a90e2;
+}
+
+.strongs-text {
+  color: var(--accent-bible);
+  opacity: 0.4;
+  font-size: 0.7em;
+  vertical-align: super;
+  margin-left: 2px;
+  font-weight: medium;
+}
+
+.morph-link {
+  color: #4a90e2;
+  font-size: 0.7em;
+  vertical-align: super;
+  text-decoration: none;
+  margin-left: 2px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.morph-link:hover {
+  opacity: 1;
+}
+
+.translator-note {
+  color: var(--accent-bible);
+  font-size: 0.8em;
+  vertical-align: super;
+  text-decoration: none;
+  cursor: help;
+  opacity: 0.5;
+}
+
+.cross-ref {
+  color: var(--accent-bible);
+  font-size: 0.75em;
+  vertical-align: super;
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.cross-ref:hover {
+  opacity: 1;
+}
+
+/* Interlinear Styling - Premium Card Layout */
+.interlinear-block {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 4px;
+  vertical-align: bottom;
+  padding: 4px;
+  border: 1px solid var(--accent-bible);
+  border-radius: 8px;
+  background: rgba(var(--accent-bible-rgb), 0.05);
+  transition: all 0.2s ease;
+}
+
+.interlinear-eng {
+  font-size: 0.6em;
+  font-weight: 700;
+  opacity: 0.7;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  color: var(--accent-bible);
+}
+
+.interlinear-trans {
+  font-size: 0.7em;
+  font-style: italic;
+  opacity: 0.6;
+  margin-bottom: 2px;
+}
+
+.interlinear-translit {
+  font-size: 0.7em;
+  font-weight: 500;
+  opacity: 0.8;
+  color: var(--accent-bible);
+}
+
+.interlinear-heb,
+.interlinear-grk {
+  font-family: serif;
+  font-size: 1.1em;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-bible);
+}
+
+/* Indentation */
+.indent-1 {
+  padding-left: 1.5rem;
+  display: block;
+}
+
+.indent-2 {
+  padding-left: 3rem;
+  display: block;
+}
+
+.indent-3 {
+  padding-left: 4.5rem;
+  display: block;
+}
+
+.first-line-indent-1 {
+  text-indent: 1.5rem;
+}
+
+/* Premium UI Utilities */
+.bg-premium-dark {
+  background: linear-gradient(180deg, #1C1C1E 0%, #0D0D0F 100%);
+}
+
+.glass-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.16)),
+    var(--surface-bible);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(var(--accent-bible-rgb), 0.12);
+}
+
+.text-gold {
+  color: var(--accent-bible);
+}
+
+.bg-gold {
+  background-color: var(--accent-bible);
+}
+
+.border-gold {
+  border-color: rgba(var(--accent-bible-rgb), 0.25);
+}
+
+/* Custom Scrollbar for Premium Feel */
+.premium-scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.premium-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.premium-scroll::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-bible-rgb), 0.2);
+  border-radius: 10px;
+}
+
+.premium-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--accent-bible-rgb), 0.34);
+}
+
+/* Devotional Body Styles - Premium */
+.devo-body {
+  font-family: var(--font-bible-family);
+  font-size: var(--font-bible-size);
+  line-height: 1.85;
+  color: var(--text-bible);
+}
+
+.devo-body p {
+  margin-bottom: 1.5em;
+  text-align: justify;
+  hyphens: auto;
+  letter-spacing: var(--font-bible-letter-spacing);
+}
+
+.devo-body p:last-child {
+  margin-bottom: 0;
+}
+
+.devo-body p:first-of-type {
+  font-size: 1.05em;
+  color: var(--text-bible);
+}
+
+.devo-body h1,
+.devo-body h2,
+.devo-body h3,
+.devo-body h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--accent-bible);
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+  line-height: 1.3;
+}
+
+.devo-body h1 {
+  font-size: 1.5em;
+}
+
+.devo-body h2 {
+  font-size: 1.35em;
+}
+
+.devo-body h3 {
+  font-size: 1.15em;
+}
+
+.devo-body h4 {
+  font-size: 1em;
+}
+
+.devo-body em,
+.devo-body i {
+  font-style: italic;
+  color: var(--text-bible);
+}
+
+.devo-body strong,
+.devo-body b {
+  font-weight: 700;
+  color: var(--text-bible);
+}
+
+.devo-body a {
+  color: var(--accent-bible);
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 0, 0, 0.15);
+  text-underline-offset: 3px;
+  transition: all 0.2s;
+}
+
+.devo-body a:hover {
+  opacity: 0.7;
+  text-decoration-color: transparent;
+}
+
+.forest .devo-body a,
+.navy .devo-body a,
+.graphite .devo-body a,
+.night .devo-body a,
+.eclipse .devo-body a {
+  text-decoration-color: rgba(255, 255, 255, 0.15);
+}
+
+.devo-body .bible-link {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.devo-inline-link {
+  color: var(--accent-bible);
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--accent-bible-rgb), 0.24);
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease, opacity 0.2s ease;
+}
+
+.devo-inline-link:hover {
+  color: var(--accent-bible-strong);
+  text-decoration-color: transparent;
+}
+
+.devo-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 16px;
+  margin: 1.5em 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.devo-body .versiculo,
+.devo-body .Versiculo {
+  font-style: italic;
+  opacity: 0.9;
+  margin: 1.5em 0;
+  padding: 1.5em;
+  padding-left: 1.5em;
+  border-left: 3px solid var(--accent-bible);
+  background: rgba(var(--accent-bible-rgb, 90, 90, 64), 0.03);
+  border-radius: 0 12px 12px 0;
+}
+
+.devo-body .texto-capitular {
+  text-align: justify;
+}
+
+.devo-body .capitular {
+  float: left;
+  font-family: var(--font-display);
+  font-size: 3.5em;
+  line-height: 0.8;
+  padding-right: 10px;
+  padding-top: 6px;
+  color: var(--accent-bible);
+  font-weight: 700;
+}
+
+.devo-body hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.08), transparent);
+  margin: 2em 0;
+}
+
+.devo-body ul,
+.devo-body ol {
+  padding-left: 1.5em;
+  margin-bottom: 1.5em;
+}
+
+.devo-body li {
+  margin-bottom: 0.5em;
+  padding-left: 0.5em;
+}
+
+.devo-body blockquote {
+  border-left: 4px solid var(--accent-bible);
+  padding-left: 1.5em;
+  margin: 1.5em 0;
+  font-style: italic;
+  opacity: 0.85;
+  background: rgba(var(--accent-bible-rgb, 90, 90, 64), 0.03);
+  padding: 1.5em;
+  border-radius: 0 12px 12px 0;
+}
+
+/* Prose Typography for Devotionals */
+.prose-bible {
+  font-size: var(--font-bible-size);
+  line-height: 1.85;
+}
+
+.prose-bible>*:first-child {
+  margin-top: 0;
+}
+
+.prose-bible>*:last-child {
+  margin-bottom: 0;
+}
+
+/* Theme Specific Tweaks */
+.forest .devo-body hr,
+.navy .devo-body hr,
+.graphite .devo-body hr,
+.night .devo-body hr,
+.eclipse .devo-body hr {
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.06), transparent);
+}
+
+.forest .devo-body .versiculo,
+.forest .devo-body .Versiculo,
+.navy .devo-body .versiculo,
+.navy .devo-body .Versiculo,
+.graphite .devo-body .versiculo,
+.graphite .devo-body .Versiculo,
+.night .devo-body .versiculo,
+.night .devo-body .Versiculo,
+.eclipse .devo-body .versiculo,
+.eclipse .devo-body .Versiculo {
+  border-left-color: var(--accent-bible);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.forest .devo-body blockquote,
+.navy .devo-body blockquote,
+.graphite .devo-body blockquote,
+.night .devo-body blockquote,
+.eclipse .devo-body blockquote {
+  border-left-color: var(--accent-bible);
+  background: rgba(255, 255, 255, 0.02);
+}

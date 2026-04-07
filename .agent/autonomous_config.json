@@ -1,0 +1,202 @@
+{
+  "version": "1.0.0",
+  "enabled": true,
+  "autonomy_level": "N5",
+  
+  "triggers": {
+    "git": {
+      "pre-commit": {
+        "enabled": true,
+        "skills": ["lint-and-validate", "code-review-checklist"],
+        "block_on_failure": true
+      },
+      "pre-push": {
+        "enabled": false,
+        "skills": ["vulnerability-scanner", "testing-patterns"],
+        "block_on_failure": true
+      },
+      "post-merge": {
+        "enabled": false,
+        "skills": ["documentation-templates"],
+        "block_on_failure": false
+      }
+    },
+    
+    "file": {
+      "*.kt": {
+        "on_save": {
+          "skills": ["android-kotlin-specialist"],
+          "auto_fix": true
+        },
+        "on_commit": {
+          "skills": ["android-kotlin-specialist", "lint-and-validate"],
+          "auto_fix": false
+        }
+      },
+      "*.swift": {
+        "on_save": {
+          "skills": ["ios-specialist"],
+          "auto_fix": true
+        },
+        "on_commit": {
+          "skills": ["ios-specialist", "lint-and-validate"],
+          "auto_fix": false
+        }
+      },
+      "*.tsx": {
+        "on_save": {
+          "skills": ["frontend-specialist", "react-best-practices"],
+          "auto_fix": true
+        },
+        "on_commit": {
+          "skills": ["frontend-specialist", "lint-and-validate"],
+          "auto_fix": false
+        }
+      },
+      "*.ts": {
+        "on_save": {
+          "skills": ["frontend-specialist", "typescript-expert"],
+          "auto_fix": true
+        },
+        "on_commit": {
+          "skills": ["frontend-specialist", "lint-and-validate"],
+          "auto_fix": false
+        }
+      },
+      "*.jsx": {
+        "on_save": {
+          "skills": ["frontend-specialist", "react-best-practices"],
+          "auto_fix": true
+        },
+        "on_commit": {
+          "skills": ["frontend-specialist", "lint-and-validate"],
+          "auto_fix": false
+        }
+      },
+      "*.sqlite3": {
+        "on_commit": {
+          "skills": ["mysword-bible-engine", "mysword-format-parser"],
+          "validate_schema": true
+        }
+      },
+      "*.gbf": {
+        "on_commit": {
+          "skills": ["mysword-format-parser"],
+          "auto_convert": true
+        }
+      },
+      "*.md": {
+        "on_commit": {
+          "skills": ["documentation-templates"],
+          "validate_links": true
+        }
+      }
+    },
+    
+    "time": {
+      "daily": {
+        "enabled": false,
+        "time": "09:00",
+        "timezone": "America/Sao_Paulo",
+        "skills": ["session_manager.py status"],
+        "report": true
+      },
+      "weekly": {
+        "enabled": false,
+        "day": "monday",
+        "time": "08:00",
+        "skills": ["verify_all.py"],
+        "report": true
+      }
+    },
+    
+    "manual": {
+      "force_run": {
+        "command": "autonomous --force",
+        "skills": ["verify_all.py"],
+        "override_blocks": true
+      }
+    }
+  },
+  
+  "rules": {
+    "priority": {
+      "security": 1,
+      "test": 2,
+      "lint": 3,
+      "docs": 4
+    },
+    
+    "conditions": {
+      "only_on_branch": ["main", "develop"],
+      "skip_if_ci": true,
+      "max_execution_time": 300,
+      "ignore_patterns": [
+        "node_modules/**",
+        "build/**",
+        ".gradle/**",
+        "**/*.min.js",
+        "**/*.generated.*"
+      ]
+    },
+    
+    "notifications": {
+      "on_success": false,
+      "on_failure": true,
+      "channels": ["console", "file"]
+    }
+  },
+  
+  "scripts": {
+    "lint": "python .agent/skills/lint-and-validate/scripts/lint_runner.py",
+    "security": "python .agent/skills/vulnerability-scanner/scripts/security_scan.py",
+    "test": "python .agent/skills/webapp-testing/scripts/playwright_runner.py",
+    "status": "python .agent/scripts/session_manager.py status",
+    "verify": "python .agent/scripts/verify_all.py",
+    "checklist": "python .agent/scripts/checklist.py"
+  },
+  
+  "agents": {
+    "orchestrator": {
+      "enabled": true,
+      "auto_invoke": true,
+      "min_agents": 3,
+      "decision_making": true
+    },
+    "specialists": [
+      "android-kotlin-specialist",
+      "android-bible-architecture",
+      "kmp-specialist",
+      "flutter-specialist",
+      "react-native-specialist",
+      "expo-specialist",
+      "ios-specialist",
+      "swiftui-specialist",
+      "mobile-developer",
+      "flutterflow-specialist",
+      "frontend-specialist",
+      "nextjs-specialist",
+      "react-specialist",
+      "tailwind-specialist",
+      "typescript-expert",
+      "backend-specialist",
+      "nodejs-specialist",
+      "fastapi-specialist",
+      "deno-specialist",
+      "bun-specialist",
+      "test-engineer",
+      "security-auditor",
+      "ai-integration-specialist",
+      "vercel-ai-sdk-specialist",
+      "openai-integration-specialist"
+    ]
+  },
+  
+  "reporting": {
+    "enabled": true,
+    "directory": ".agent/reports",
+    "format": "markdown",
+    "include_timestamp": true,
+    "max_reports": 10
+  }
+}

@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bloco de Notas</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root[data-theme="dark"] {
+  --bg:         #17151A;
+  --surface:    #1F1D24;
+  --surface2:   #272530;
+  --surface3:   #302E3A;
+  --border:     #373450;
+  --border2:    #454260;
+  --text:       #E2DEEE;
+  --text2:      #9895B0;
+  --text3:      #5F5C78;
+  --accent:     #BCA0F5;
+  --accent-dim: rgba(188,160,245,0.12);
+  --accent-btn: #7C5FC8;
+  --editor-bg:  #1C1A22;
+  --paper:      #1C1A22;
+  --scroll:     #353250;
+  --danger:     #E06C75;
+  --success:    #6FC49A;
+  --warn:       #E5C07B;
+  --info:       #61AFEF;
+  --shadow:     0 4px 24px rgba(0,0,0,.45);
+}
+:root[data-theme="light"] {
+  --bg:         #F5F3F0;
+  --surface:    #FFFFFF;
+  --surface2:   #F0EDE8;
+  --surface3:   #E8E4DE;
+  --border:     #D8D3CC;
+  --border2:    #C8C3BB;
+  --text:       #2A2520;
+  --text2:      #7A7268;
+  --text3:      #B0A898;
+  --accent:     #7C5FC8;
+  --accent-dim: rgba(124,95,200,0.10);
+  --accent-btn: #7C5FC8;
+  --editor-bg:  #FFFFFF;
+  --paper:      #FFFFFF;
+  --scroll:     #CCC8C0;
+  --danger:     #D04040;
+  --success:    #2E8B57;
+  --warn:       #C07820;
+  --info:       #2060C0;
+  --shadow:     0 4px 24px rgba(0,0,0,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+}
+
+/* ── HEADER ── */
+.app-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:0 16px;
+  height:44px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.app-logo{font-size:15px;font-weight:600;color:var(--accent);letter-spacing:-.02em}
+.note-title-input{
+  flex:1;
+  background:none;
+  border:none;
+  outline:none;
+  font-family:'Outfit',sans-serif;
+  font-size:14px;
+  font-weight:500;
+  color:var(--text);
+  min-width:0;
+}
+.note-title-input::placeholder{color:var(--text3)}
+.header-actions{display:flex;align-items:center;gap:6px;margin-left:auto}
+.hbtn{
+  display:flex;align-items:center;justify-content:center;
+  gap:5px;
+  height:30px;padding:0 10px;
+  border-radius:6px;border:1px solid var(--border);
+  background:none;cursor:pointer;
+  font-family:'Outfit',sans-serif;font-size:12px;font-weight:500;
+  color:var(--text2);
+  transition:all .15s;white-space:nowrap;
+}
+.hbtn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.hbtn.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+.hbtn svg{width:14px;height:14px;flex-shrink:0}
+#wc{font-size:11px;color:var(--text3);padding:0 4px}
+
+/* ── TOOLBAR ── */
+.toolbar{
+  display:flex;
+  align-items:center;
+  gap:2px;
+  padding:5px 12px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  flex-wrap:wrap;
+  row-gap:4px;
+}
+.toolbar::-webkit-scrollbar{display:none}
+.tb-sep{width:1px;height:22px;background:var(--border);margin:0 4px;flex-shrink:0}
+.tb-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:30px;height:28px;
+  border-radius:5px;border:none;
+  background:none;cursor:pointer;
+  color:var(--text2);
+  transition:all .12s;
+  flex-shrink:0;
+  position:relative;
+}
+.tb-btn:hover{background:var(--surface2);color:var(--text)}
+.tb-btn.active{background:var(--accent-dim);color:var(--accent)}
+.tb-btn svg{width:15px;height:15px;pointer-events:none}
+.tb-btn[data-tip]:hover::after{
+  content:attr(data-tip);
+  position:fixed;
+  bottom:auto;
+  top:auto;
+  transform:translateY(100%);
+  background:var(--surface3);
+  color:var(--text);
+  font-size:11px;
+  padding:4px 8px;
+  border-radius:5px;
+  border:1px solid var(--border);
+  white-space:nowrap;
+  z-index:9999;
+  pointer-events:none;
+  margin-top:4px;
+}
+.tb-select{
+  height:28px;
+  padding:0 6px;
+  border-radius:5px;
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);
+  font-family:'Outfit',sans-serif;
+  font-size:12px;
+  font-weight:500;
+  cursor:pointer;
+  outline:none;
+  flex-shrink:0;
+  transition:border-color .12s;
+}
+.tb-select:hover{border-color:var(--border2)}
+.tb-select:focus{border-color:var(--accent)}
+#fontSizeInput{
+  width:48px;
+  height:28px;
+  padding:0 6px;
+  border-radius:5px;
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);
+  font-family:'Outfit',sans-serif;
+  font-size:12px;
+  font-weight:500;
+  outline:none;
+  text-align:center;
+  transition:border-color .12s;
+}
+#fontSizeInput:focus{border-color:var(--accent)}
+.color-wrap{position:relative;flex-shrink:0}
+.color-btn{
+  width:30px;height:28px;
+  border-radius:5px;border:1px solid var(--border);
+  background:var(--surface2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  gap:2px;flex-direction:column;
+  transition:border-color .12s;
+}
+.color-btn:hover{border-color:var(--border2)}
+.color-btn svg{width:13px;height:13px;pointer-events:none}
+.color-swatch{
+  width:16px;height:3px;border-radius:2px;
+  transition:background .2s;
+}
+input[type=color]{
+  position:absolute;opacity:0;width:1px;height:1px;
+}
+
+/* ── EDITOR AREA ── */
+.editor-wrap{
+  flex:1;
+  overflow-y:auto;
+  padding:40px 20px;
+  background:var(--bg);
+  scrollbar-width:thin;
+  scrollbar-color:var(--scroll) transparent;
+}
+.editor-wrap::-webkit-scrollbar{width:6px}
+.editor-wrap::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:3px}
+.editor{
+  max-width:760px;
+  margin:0 auto;
+  min-height:calc(100vh - 200px);
+  background:var(--paper);
+  border-radius:10px;
+  padding:48px 56px;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  outline:none;
+  font-size:16px;
+  line-height:1.8;
+  color:var(--text);
+  caret-color:var(--accent);
+}
+@media(max-width:700px){
+  .editor{padding:28px 20px}
+  .editor-wrap{padding:16px 8px}
+}
+
+/* ── EDITOR TYPOGRAPHY ── */
+.editor h1{font-size:2em;font-weight:600;line-height:1.25;margin:1em 0 .4em;color:var(--text)}
+.editor h2{font-size:1.5em;font-weight:600;line-height:1.3;margin:.9em 0 .35em;color:var(--text)}
+.editor h3{font-size:1.2em;font-weight:600;line-height:1.35;margin:.8em 0 .3em;color:var(--text)}
+.editor p{margin:.2em 0}
+.editor b,.editor strong{font-weight:600}
+.editor i,.editor em{font-style:italic}
+.editor u{text-decoration:underline;text-underline-offset:3px}
+.editor s,.editor strike{text-decoration:line-through}
+.editor sup{font-size:.72em;vertical-align:super;line-height:0}
+.editor sub{font-size:.72em;vertical-align:sub;line-height:0}
+.editor code{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.85em;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:1px 5px;
+  color:var(--accent);
+}
+.editor pre{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.85em;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-left:3px solid var(--accent);
+  border-radius:6px;
+  padding:14px 18px;
+  margin:12px 0;
+  overflow-x:auto;
+  line-height:1.6;
+  color:var(--text);
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.editor blockquote{
+  border-left:3px solid var(--accent);
+  margin:12px 0;
+  padding:10px 18px;
+  background:var(--accent-dim);
+  border-radius:0 6px 6px 0;
+  color:var(--text2);
+  font-style:italic;
+}
+.editor ul,.editor ol{padding-left:24px;margin:6px 0}
+.editor li{margin:2px 0}
+.editor hr{
+  border:none;
+  border-top:1px solid var(--border);
+  margin:20px 0;
+}
+.editor a{color:var(--info);text-decoration:underline;text-underline-offset:3px}
+.editor mark{
+  background:#E5C07B33;
+  border-radius:3px;
+  padding:0 3px;
+  color:var(--warn);
+}
+.editor table{
+  border-collapse:collapse;
+  width:100%;
+  margin:12px 0;
+  font-size:.9em;
+}
+.editor th{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  padding:8px 12px;
+  text-align:left;
+  font-weight:600;
+}
+.editor td{
+  border:1px solid var(--border);
+  padding:7px 12px;
+}
+/* callouts */
+.editor .callout{
+  display:flex;gap:10px;
+  padding:12px 16px;
+  border-radius:8px;
+  margin:12px 0;
+  font-size:.93em;
+  align-items:flex-start;
+}
+.editor .callout-note{background:rgba(97,175,239,.1);border:1px solid rgba(97,175,239,.3)}
+.editor .callout-warn{background:rgba(229,192,123,.1);border:1px solid rgba(229,192,123,.3)}
+.editor .callout-danger{background:rgba(224,108,117,.1);border:1px solid rgba(224,108,117,.3)}
+.editor .callout-ok{background:rgba(111,196,154,.1);border:1px solid rgba(111,196,154,.3)}
+.editor .callout-icon{font-size:1em;flex-shrink:0;margin-top:1px}
+/* checklist */
+.editor ul.checklist{list-style:none;padding-left:4px}
+.editor ul.checklist li{display:flex;align-items:flex-start;gap:8px;margin:4px 0;cursor:pointer}
+.editor ul.checklist li input[type=checkbox]{
+  margin-top:4px;flex-shrink:0;accent-color:var(--accent);
+  width:15px;height:15px;cursor:pointer;
+}
+.editor ul.checklist li.done span{
+  text-decoration:line-through;color:var(--text3);
+}
+/* placeholder */
+.editor:empty::before{
+  content:attr(data-placeholder);
+  color:var(--text3);
+  pointer-events:none;
+  position:absolute;
+}
+.editor-wrap{position:relative}
+
+/* ── STATUS BAR ── */
+.statusbar{
+  height:26px;
+  display:flex;align-items:center;
+  padding:0 16px;gap:16px;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+  font-size:11px;
+  color:var(--text3);
+}
+.statusbar span{display:flex;align-items:center;gap:4px}
+
+/* ── MODAL ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.55);
+  z-index:1000;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:24px;
+  width:360px;
+  box-shadow:var(--shadow);
+}
+.modal h3{font-size:15px;font-weight:600;margin-bottom:14px;color:var(--text)}
+.modal input,.modal select{
+  width:100%;
+  height:36px;padding:0 10px;
+  border-radius:6px;border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);
+  font-family:'Outfit',sans-serif;font-size:13px;
+  outline:none;margin-bottom:10px;
+}
+.modal input:focus,.modal select:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.btn-primary{
+  height:32px;padding:0 16px;
+  border-radius:6px;border:none;
+  background:var(--accent-btn);color:#fff;
+  font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;transition:opacity .15s;
+}
+.btn-primary:hover{opacity:.85}
+.btn-ghost{
+  height:32px;padding:0 12px;
+  border-radius:6px;border:1px solid var(--border);
+  background:none;color:var(--text2);
+  font-family:'Outfit',sans-serif;font-size:13px;
+  cursor:pointer;transition:all .15s;
+}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+
+/* highlight shades */
+.hl-yellow{background:#E5C07B33;border-radius:3px;padding:0 2px}
+.hl-green {background:#6FC49A33;border-radius:3px;padding:0 2px}
+.hl-blue  {background:#61AFEF33;border-radius:3px;padding:0 2px}
+.hl-pink  {background:#E06C7533;border-radius:3px;padding:0 2px}
+.hl-purple{background:#BCA0F533;border-radius:3px;padding:0 2px}
+
+/* ── HIGHLIGHT COLOR PALETTE ── */
+.hl-palette{
+  display:none;position:absolute;top:34px;left:0;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:8px;
+  display:none;flex-wrap:wrap;gap:5px;width:130px;
+  box-shadow:var(--shadow);z-index:200;
+}
+.hl-palette.open{display:flex}
+.hl-dot{
+  width:22px;height:22px;border-radius:5px;cursor:pointer;
+  transition:transform .12s;border:2px solid transparent;
+}
+.hl-dot:hover{transform:scale(1.18)}
+.hl-dot.none{background:var(--surface2);border:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <span class="app-logo">✦ Notas</span>
+  <span style="color:var(--border);margin:0 4px">|</span>
+  <input class="note-title-input" id="noteTitle" type="text" placeholder="Sem título..." spellcheck="false">
+  <div class="header-actions">
+    <span id="wc">0 pal.</span>
+    <button class="hbtn" id="themeBtn" data-tip="Alternar tema" onclick="toggleTheme()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+    </button>
+    <button class="hbtn" onclick="exportTxt()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Exportar
+    </button>
+    <button class="hbtn active" id="saveInfo">Salvo</button>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar" id="toolbar">
+
+  <!-- Desfazer / Refazer -->
+  <button class="tb-btn" data-tip="Desfazer (Ctrl+Z)" onclick="cmd('undo')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
+  </button>
+  <button class="tb-btn" data-tip="Refazer (Ctrl+Y)" onclick="cmd('redo')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 014-4h12"/></svg>
+  </button>
+
+  <div class="tb-sep"></div>
+
+  <!-- Fonte -->
+  <select class="tb-select" id="fontFamily" onchange="setFont(this.value)" data-tip="Fonte">
+    <option value="'Lora',serif">Lora (Serif)</option>
+    <option value="'Crimson Pro',serif">Crimson Pro</option>
+    <option value="'Playfair Display',serif">Playfair Display</option>
+    <option value="'DM Sans',sans-serif">DM Sans</option>
+    <option value="'Outfit',sans-serif">Outfit</option>
+    <option value="'JetBrains Mono',monospace">Monospace</option>
+  </select>
+
+  <!-- Tamanho -->
+  <input type="number" id="fontSizeInput" value="16" min="8" max="96" data-tip="Tamanho (px)" onchange="setFontSize(this.value)" onkeydown="if(event.key==='Enter')setFontSize(this.value)">
+
+  <div class="tb-sep"></div>
+
+  <!-- Bloco -->
+  <select class="tb-select" id="blockFormat" onchange="setBlock(this.value)">
+    <option value="p">Parágrafo</option>
+    <option value="h1">Título H1</option>
+    <option value="h2">Título H2</option>
+    <option value="h3">Título H3</option>
+    <option value="pre">Código bloco</option>
+    <option value="blockquote">Citação</option>
+  </select>
+
+  <div class="tb-sep"></div>
+
+  <!-- Inline -->
+  <button class="tb-btn" id="btn-bold" data-tip="Negrito (Ctrl+B)" onclick="cmd('bold')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 4h8a4 4 0 010 8H6z"/><path d="M6 12h9a4 4 0 010 8H6z"/></svg>
+  </button>
+  <button class="tb-btn" id="btn-italic" data-tip="Itálico (Ctrl+I)" onclick="cmd('italic')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>
+  </button>
+  <button class="tb-btn" id="btn-underline" data-tip="Sublinhado (Ctrl+U)" onclick="cmd('underline')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3v7a6 6 0 0012 0V3"/><line x1="4" y1="21" x2="20" y2="21"/></svg>
+  </button>
+  <button class="tb-btn" id="btn-strikeThrough" data-tip="Tachado" onclick="cmd('strikeThrough')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><path d="M16 6C16 6 14.5 4 12 4C9.5 4 7 5.5 7 8C7 10 8.5 11.2 12 12"/><path d="M8 18C8 18 9.5 20 12 20C14.5 20 17 18.5 17 16C17 14 15.5 12.8 12 12"/></svg>
+  </button>
+  <button class="tb-btn" id="btn-superscript" data-tip="Sobrescrito (x²)" onclick="cmd('superscript')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19l7-7"/><path d="M4 12l7 7"/><path d="M20 12h-4c0-1.5.44-2 1.5-2.5S20 8.33 20 7.25C20 6.12 19.1 5 17.5 5c-1.7 0-2.5 1-2.5 2"/></svg>
+  </button>
+  <button class="tb-btn" id="btn-subscript" data-tip="Subscrito (x₂)" onclick="cmd('subscript')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5l7 7"/><path d="M4 12l7-7"/><path d="M20 19h-4c0-1.5.44-2 1.5-2.5S20 15.33 20 14.25C20 13.12 19.1 12 17.5 12c-1.7 0-2.5 1-2.5 2"/></svg>
+  </button>
+
+  <div class="tb-sep"></div>
+
+  <!-- Cores -->
+  <div class="color-wrap" title="Cor do texto">
+    <div class="color-btn" onclick="document.getElementById('fgColor').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4l10.5-10.5a2.12 2.12 0 000-3L16 4a2.12 2.12 0 00-3 0L2.5 14.5V19"/><path d="M13.5 6.5L17.5 10.5"/></svg>
+      <div class="color-swatch" id="fgSwatch" style="background:#BCA0F5"></div>
+    </div>
+    <input type="color" id="fgColor" value="#BCA0F5" onchange="setFgColor(this.value)">
+  </div>
+
+  <div class="color-wrap" title="Destaque" id="hlWrap">
+    <div class="color-btn" onclick="toggleHlPalette()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <div class="color-swatch" id="hlSwatch" style="background:#E5C07B55"></div>
+    </div>
+    <div class="hl-palette" id="hlPalette">
+      <div class="hl-dot none" title="Remover destaque" onclick="applyHl('')">✕</div>
+      <div class="hl-dot" style="background:#E5C07B55;border-color:#E5C07B" onclick="applyHl('hl-yellow')" title="Amarelo"></div>
+      <div class="hl-dot" style="background:#6FC49A55;border-color:#6FC49A" onclick="applyHl('hl-green')" title="Verde"></div>
+      <div class="hl-dot" style="background:#61AFEF55;border-color:#61AFEF" onclick="applyHl('hl-blue')" title="Azul"></div>
+      <div class="hl-dot" style="background:#E06C7555;border-color:#E06C75" onclick="applyHl('hl-pink')" title="Rosa"></div>
+      <div class="hl-dot" style="background:#BCA0F555;border-color:#BCA0F5" onclick="applyHl('hl-purple')" title="Roxo"></div>
+    </div>
+  </div>
+
+  <div class="tb-sep"></div>
+
+  <!-- Alinhamento -->
+  <button class="tb-btn" id="btn-justifyLeft" data-tip="Alinhar à esquerda" onclick="cmd('justifyLeft')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+  </button>
+  <button class="tb-btn" id="btn-justifyCenter" data-tip="Centralizar" onclick="cmd('justifyCenter')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+  </button>
+  <button class="tb-btn" id="btn-justifyRight" data-tip="Alinhar à direita" onclick="cmd('justifyRight')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="7" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="7" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+  </button>
+  <button class="tb-btn" id="btn-justifyFull" data-tip="Justificar" onclick="cmd('justifyFull')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+  </button>
+
+  <div class="tb-sep"></div>
+
+  <!-- Listas -->
+  <button class="tb-btn" id="btn-insertUnorderedList" data-tip="Lista com marcadores" onclick="cmd('insertUnorderedList')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor"/><circle cx="4" cy="12" r="1.5" fill="currentColor"/><circle cx="4" cy="18" r="1.5" fill="currentColor"/></svg>
+  </button>
+  <button class="tb-btn" id="btn-insertOrderedList" data-tip="Lista numerada" onclick="cmd('insertOrderedList')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button class="tb-btn" data-tip="Lista de tarefas (checklist)" onclick="insertChecklist()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+  </button>
+
+  <div class="tb-sep"></div>
+
+  <!-- Inserções -->
+  <button class="tb-btn" data-tip="Código inline (`)" onclick="insertCode()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+  </button>
+  <button class="tb-btn" data-tip="Linha horizontal (---)" onclick="cmd('insertHorizontalRule')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><line x1="3" y1="6" x2="3" y2="6" stroke-width="3" stroke-linecap="round"/><line x1="21" y1="6" x2="21" y2="6" stroke-width="3" stroke-linecap="round"/><line x1="3" y1="18" x2="3" y2="18" stroke-width="3" stroke-linecap="round"/><line x1="21" y1="18" x2="21" y2="18" stroke-width="3" stroke-linecap="round"/></svg>
+  </button>
+  <button class="tb-btn" data-tip="Tabela" onclick="openTableModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/><line x1="15" y1="9" x2="15" y2="21"/></svg>
+  </button>
+  <button class="tb-btn" data-tip="Link (Ctrl+K)" onclick="openLinkModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+  </button>
+
+  <div class="tb-sep"></div>
+
+  <!-- Callouts -->
+  <button class="tb-btn" data-tip="Callout — Nota" onclick="insertCallout('note','ℹ️','callout-note')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--info)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  </button>
+  <button class="tb-btn" data-tip="Callout — Aviso" onclick="insertCallout('warn','⚠️','callout-warn')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--warn)"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  </button>
+  <button class="tb-btn" data-tip="Callout — Sucesso" onclick="insertCallout('ok','✅','callout-ok')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--success)"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+  </button>
+
+  <div class="tb-sep"></div>
+
+  <!-- Spoiler -->
+  <button class="tb-btn" data-tip="Spoiler / Texto oculto (||texto||)" onclick="insertSpoiler()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20C6.477 20 2 15.523 2 12c0-1.657.506-3.194 1.368-4.474"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c5.523 0 10 4.477 10 8 0 .83-.156 1.628-.44 2.368"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+  </button>
+  <button class="tb-btn" data-tip="Rodapé / Nota" onclick="insertFootnote()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="20" x2="21" y2="20"/><path d="M12 4v12"/><path d="M8 8l4-4 4 4"/></svg>
+  </button>
+  <button class="tb-btn" data-tip="Indentação: aumentar" onclick="cmd('indent')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="8" x2="21" y2="8"/><line x1="3" y1="16" x2="21" y2="16"/><polyline points="9 12 13 9 9 6"/><line x1="3" y1="9" x2="3" y2="15"/></svg>
+  </button>
+  <button class="tb-btn" data-tip="Indentação: diminuir" onclick="cmd('outdent')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="8" x2="21" y2="8"/><line x1="3" y1="16" x2="21" y2="16"/><polyline points="15 12 11 9 15 6"/><line x1="21" y1="9" x2="21" y2="15"/></svg>
+  </button>
+  <button class="tb-btn" data-tip="Limpar formatação" onclick="cmd('removeFormat')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3H7L3 9l9 13 9-13z"/><line x1="12" y1="22" x2="12" y2="13"/><line x1="3.59" y1="9" x2="20.4" y2="9"/></svg>
+  </button>
+
+</div>
+
+<!-- EDITOR -->
+<div class="editor-wrap">
+  <div class="editor" id="editor" contenteditable="true" spellcheck="true" data-placeholder="Comece a digitar sua nota..."></div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <span id="sb-words">0 palavras</span>
+  <span id="sb-chars">0 caracteres</span>
+  <span id="sb-lines">0 linhas</span>
+  <span style="margin-left:auto" id="sb-saved">✦ Salvo automaticamente</span>
+</div>
+
+<!-- MODAL LINK -->
+<div class="modal-overlay" id="linkModal">
+  <div class="modal">
+    <h3>Inserir link</h3>
+    <input type="text" id="linkText" placeholder="Texto do link">
+    <input type="url" id="linkUrl" placeholder="https://...">
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('linkModal')">Cancelar</button>
+      <button class="btn-primary" onclick="insertLink()">Inserir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TABELA -->
+<div class="modal-overlay" id="tableModal">
+  <div class="modal">
+    <h3>Inserir tabela</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div>
+        <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">Colunas</label>
+        <input type="number" id="tableCols" value="3" min="1" max="10" style="margin:0">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px">Linhas</label>
+        <input type="number" id="tableRows" value="3" min="1" max="20" style="margin:0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('tableModal')">Cancelar</button>
+      <button class="btn-primary" onclick="insertTable()">Inserir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const editor = document.getElementById('editor');
+let savedRange = null;
+let fnCount = 0;
+let autoSaveTimer;
+
+// ── INIT ──────────────────────────────────────────────
+(function init(){
+  const saved = localStorage.getItem('nota_conteudo');
+  const title = localStorage.getItem('nota_titulo');
+  if(saved) editor.innerHTML = saved;
+  if(title) document.getElementById('noteTitle').value = title;
+  const theme = localStorage.getItem('nota_tema') || 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  applyEditorFont('\'Lora\',serif');
+  updateCounts();
+})();
+
+// ── EXECCOMMAND ───────────────────────────────────────
+function cmd(command){
+  editor.focus();
+  document.execCommand(command, false, null);
+  updateActiveStates();
+}
+
+// ── FONT & SIZE ───────────────────────────────────────
+function setFont(val){
+  editor.focus();
+  const sel = window.getSelection();
+  if(!sel || sel.isCollapsed){
+    editor.style.fontFamily = val;
+    return;
+  }
+  document.execCommand('fontName', false, val);
+  // execCommand fontName replaces with <font>, let's style spans
+  const fonts = editor.querySelectorAll('font[face]');
+  fonts.forEach(f => {
+    const sp = document.createElement('span');
+    sp.style.fontFamily = f.getAttribute('face');
+    sp.innerHTML = f.innerHTML;
+    f.replaceWith(sp);
+  });
+}
+
+function applyEditorFont(val){
+  editor.style.fontFamily = val;
+}
+
+function setFontSize(val){
+  const size = Math.min(96, Math.max(8, parseInt(val)||16));
+  document.getElementById('fontSizeInput').value = size;
+  editor.focus();
+  const sel = window.getSelection();
+  if(!sel || sel.isCollapsed){
+    editor.style.fontSize = size+'px';
+    return;
+  }
+  if(!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  const span = document.createElement('span');
+  span.style.fontSize = size+'px';
+  try{ range.surroundContents(span); }catch(e){ /* partial selection */ }
+}
+
+// ── TEXT COLOR ─────────────────────────────────────────
+function setFgColor(val){
+  document.getElementById('fgSwatch').style.background = val;
+  editor.focus();
+  document.execCommand('foreColor', false, val);
+}
+
+// ── HIGHLIGHT ─────────────────────────────────────────
+function toggleHlPalette(){
+  const p = document.getElementById('hlPalette');
+  p.classList.toggle('open');
+  // close on outside click
+  setTimeout(()=>document.addEventListener('click', closeHlOnce, {once:true}), 0);
+}
+function closeHlOnce(e){
+  const wrap = document.getElementById('hlWrap');
+  if(!wrap.contains(e.target)) document.getElementById('hlPalette').classList.remove('open');
+}
+function applyHl(cls){
+  document.getElementById('hlPalette').classList.remove('open');
+  const sel = window.getSelection();
+  if(!sel || sel.isCollapsed) return;
+  if(!sel.rangeCount) return;
+  if(!cls){ document.execCommand('removeFormat', false, null); return; }
+  const range = sel.getRangeAt(0);
+  const span = document.createElement('span');
+  span.className = cls;
+  try{ range.surroundContents(span); }catch(e){}
+  const swatchColors = {
+    'hl-yellow':'#E5C07B55','hl-green':'#6FC49A55',
+    'hl-blue':'#61AFEF55','hl-pink':'#E06C7555','hl-purple':'#BCA0F555'
+  };
+  document.getElementById('hlSwatch').style.background = swatchColors[cls]||'transparent';
+}
+
+// ── BLOCK FORMAT ──────────────────────────────────────
+function setBlock(val){
+  editor.focus();
+  document.execCommand('formatBlock', false, val);
+}
+
+// ── CHECKLIST ─────────────────────────────────────────
+function insertChecklist(){
+  editor.focus();
+  const sel = window.getSelection();
+  const range = sel && sel.rangeCount ? sel.getRangeAt(0) : null;
+  const ul = document.createElement('ul');
+  ul.className = 'checklist';
+  const li = document.createElement('li');
+  const cb = document.createElement('input');
+  cb.type='checkbox';
+  const sp = document.createElement('span');
+  sp.textContent = 'Item da lista';
+  li.appendChild(cb);
+  li.appendChild(sp);
+  ul.appendChild(li);
+  cb.addEventListener('change', function(){
+    this.parentElement.classList.toggle('done', this.checked);
+  });
+  if(range){
+    range.deleteContents();
+    range.insertNode(ul);
+  } else {
+    editor.appendChild(ul);
+  }
+  sp.focus();
+}
+
+// ── CODE INLINE ───────────────────────────────────────
+function insertCode(){
+  editor.focus();
+  const sel = window.getSelection();
+  if(!sel||!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  const selected = range.toString();
+  const code = document.createElement('code');
+  code.textContent = selected || 'código';
+  range.deleteContents();
+  range.insertNode(code);
+}
+
+// ── CALLOUT ───────────────────────────────────────────
+function insertCallout(type, icon, cls){
+  editor.focus();
+  const div = document.createElement('div');
+  div.className = 'callout '+cls;
+  div.contentEditable='false';
+  const ispan = document.createElement('span');
+  ispan.className='callout-icon';
+  ispan.textContent=icon;
+  const content = document.createElement('div');
+  content.contentEditable='true';
+  content.style.flex='1';
+  content.textContent='Digite aqui...';
+  div.appendChild(ispan);
+  div.appendChild(content);
+  const sel=window.getSelection();
+  if(sel&&sel.rangeCount){
+    const r=sel.getRangeAt(0);
+    r.deleteContents();
+    r.insertNode(div);
+  } else { editor.appendChild(div); }
+  content.focus();
+}
+
+// ── SPOILER ───────────────────────────────────────────
+function insertSpoiler(){
+  editor.focus();
+  const sel=window.getSelection();
+  if(!sel||!sel.rangeCount) return;
+  const range=sel.getRangeAt(0);
+  const selected=range.toString();
+  const span=document.createElement('span');
+  span.style.cssText='background:var(--text);color:var(--text);border-radius:3px;cursor:pointer;user-select:none;padding:0 3px;transition:all .2s';
+  span.title='Clique para revelar';
+  span.textContent=selected||'texto oculto';
+  span.onclick=function(){
+    const revealed = this.dataset.revealed==='1';
+    if(revealed){
+      this.style.background='var(--text)';
+      this.style.color='var(--text)';
+      this.dataset.revealed='0';
+    } else {
+      this.style.background='var(--surface2)';
+      this.style.color='var(--text)';
+      this.dataset.revealed='1';
+    }
+  };
+  range.deleteContents();
+  range.insertNode(span);
+}
+
+// ── FOOTNOTE ──────────────────────────────────────────
+function insertFootnote(){
+  editor.focus();
+  fnCount++;
+  const sel=window.getSelection();
+  if(!sel||!sel.rangeCount) return;
+  const range=sel.getRangeAt(0);
+  const sup=document.createElement('sup');
+  sup.style.color='var(--accent)';
+  sup.style.cursor='pointer';
+  sup.title='Nota de rodapé '+fnCount;
+  sup.textContent='['+fnCount+']';
+  range.collapse(false);
+  range.insertNode(sup);
+  // add footnote at end
+  const p=document.createElement('p');
+  p.style.fontSize='.8em';
+  p.style.color='var(--text2)';
+  p.style.borderTop='1px solid var(--border)';
+  p.style.paddingTop='6px';
+  p.style.marginTop='16px';
+  p.contentEditable='true';
+  p.textContent='['+fnCount+'] ';
+  editor.appendChild(p);
+}
+
+// ── LINK MODAL ────────────────────────────────────────
+let _savedRange=null;
+function openLinkModal(){
+  const sel=window.getSelection();
+  if(sel&&sel.rangeCount) _savedRange=sel.getRangeAt(0).cloneRange();
+  const selected = sel?sel.toString():'';
+  document.getElementById('linkText').value=selected;
+  document.getElementById('linkUrl').value='https://';
+  document.getElementById('linkModal').classList.add('open');
+  setTimeout(()=>document.getElementById('linkUrl').focus(),100);
+}
+function insertLink(){
+  const text=document.getElementById('linkText').value;
+  const url=document.getElementById('linkUrl').value;
+  if(!url||url==='https://'){closeModal('linkModal');return;}
+  editor.focus();
+  if(_savedRange){
+    const sel=window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(_savedRange);
+  }
+  if(text){
+    const a=document.createElement('a');
+    a.href=url;a.textContent=text;a.target='_blank';
+    if(_savedRange){_savedRange.deleteContents();_savedRange.insertNode(a);}
+    else{ const r=window.getSelection().getRangeAt(0);r.deleteContents();r.insertNode(a);}
+  } else {
+    document.execCommand('createLink',false,url);
+    const links=editor.querySelectorAll('a:not([target])');
+    links.forEach(l=>l.target='_blank');
+  }
+  closeModal('linkModal');
+}
+
+// ── TABLE MODAL ───────────────────────────────────────
+function openTableModal(){
+  const sel=window.getSelection();
+  if(sel&&sel.rangeCount) _savedRange=sel.getRangeAt(0).cloneRange();
+  document.getElementById('tableModal').classList.add('open');
+}
+function insertTable(){
+  const cols=parseInt(document.getElementById('tableCols').value)||3;
+  const rows=parseInt(document.getElementById('tableRows').value)||3;
+  editor.focus();
+  let html='<table><thead><tr>';
+  for(let c=0;c<cols;c++) html+='<th>Coluna '+(c+1)+'</th>';
+  html+='</tr></thead><tbody>';
+  for(let r=0;r<rows;r++){
+    html+='<tr>';
+    for(let c=0;c<cols;c++) html+='<td>&nbsp;</td>';
+    html+='</tr>';
+  }
+  html+='</tbody></table><p><br></p>';
+  if(_savedRange){
+    const sel=window.getSelection();sel.removeAllRanges();sel.addRange(_savedRange);
+  }
+  document.execCommand('insertHTML',false,html);
+  closeModal('tableModal');
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  editor.focus();
+}
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m) m.classList.remove('open')});
+});
+
+// ── THEME ─────────────────────────────────────────────
+function toggleTheme(){
+  const curr=document.documentElement.getAttribute('data-theme');
+  const next=curr==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('nota_tema',next);
+}
+
+// ── COUNTS ────────────────────────────────────────────
+function updateCounts(){
+  const txt=editor.innerText||'';
+  const words=txt.trim().split(/\s+/).filter(w=>w.length>0).length;
+  const chars=txt.replace(/\n/g,'').length;
+  const lines=txt.split('\n').length;
+  document.getElementById('wc').textContent=words+' pal.';
+  document.getElementById('sb-words').textContent=words+' palavras';
+  document.getElementById('sb-chars').textContent=chars+' caracteres';
+  document.getElementById('sb-lines').textContent=lines+' linhas';
+}
+
+// ── AUTO-SAVE ─────────────────────────────────────────
+function scheduleSave(){
+  document.getElementById('sb-saved').textContent='● Não salvo';
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer=setTimeout(doSave,1200);
+}
+function doSave(){
+  localStorage.setItem('nota_conteudo',editor.innerHTML);
+  localStorage.setItem('nota_titulo',document.getElementById('noteTitle').value);
+  document.getElementById('sb-saved').textContent='✦ Salvo automaticamente';
+  document.getElementById('saveInfo').textContent='Salvo';
+}
+editor.addEventListener('input',()=>{updateCounts();scheduleSave();});
+document.getElementById('noteTitle').addEventListener('input',scheduleSave);
+
+// ── EXPORT ────────────────────────────────────────────
+function exportTxt(){
+  const title=document.getElementById('noteTitle').value||'nota';
+  const content=editor.innerHTML;
+  const blob=new Blob([content],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=title.replace(/\s+/g,'_')+'.html';
+  a.click();
+}
+
+// ── ACTIVE STATES (toolbar) ───────────────────────────
+function updateActiveStates(){
+  const cmds=['bold','italic','underline','strikeThrough','superscript','subscript',
+    'justifyLeft','justifyCenter','justifyRight','justifyFull',
+    'insertUnorderedList','insertOrderedList'];
+  cmds.forEach(c=>{
+    const btn=document.getElementById('btn-'+c);
+    if(btn) btn.classList.toggle('active',document.queryCommandState(c));
+  });
+  // block format
+  const block=document.queryCommandValue('formatBlock').toLowerCase();
+  const bmap={'h1':'h1','h2':'h2','h3':'h3','pre':'pre','blockquote':'blockquote','p':'p','div':'p'};
+  document.getElementById('blockFormat').value=bmap[block]||'p';
+}
+editor.addEventListener('keyup',updateActiveStates);
+editor.addEventListener('mouseup',updateActiveStates);
+editor.addEventListener('selectionchange',updateActiveStates);
+
+// ── KEYBOARD SHORTCUTS ────────────────────────────────
+editor.addEventListener('keydown',function(e){
+  // Ctrl+K → link
+  if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openLinkModal();}
+  // Ctrl+B/I/U handled by browser
+  // Tab → indent
+  if(e.key==='Tab'){
+    e.preventDefault();
+    if(e.shiftKey) cmd('outdent'); else cmd('indent');
+  }
+  // Enter in checklist item → new checklist item
+  if(e.key==='Enter'){
+    const sel=window.getSelection();
+    if(sel&&sel.rangeCount){
+      const li=sel.anchorNode.closest&&sel.anchorNode.closest('ul.checklist li');
+      if(li){
+        e.preventDefault();
+        const ul=li.parentElement;
+        const newLi=document.createElement('li');
+        const cb=document.createElement('input');
+        cb.type='checkbox';
+        const sp=document.createElement('span');
+        sp.textContent='';
+        sp.contentEditable='true';
+        newLi.appendChild(cb);
+        newLi.appendChild(sp);
+        cb.addEventListener('change',function(){
+          this.parentElement.classList.toggle('done',this.checked);
+        });
+        ul.insertBefore(newLi,li.nextSibling);
+        const r=document.createRange();
+        const s=window.getSelection();
+        r.setStart(sp,0);r.collapse(true);
+        s.removeAllRanges();s.addRange(r);
+        return;
+      }
+    }
+  }
+});
+
+// ── MARKDOWN SHORTCUTS (type and auto-convert) ─────────
+editor.addEventListener('keydown',function(e){
+  if(e.key===' '){
+    const sel=window.getSelection();
+    if(!sel||!sel.rangeCount) return;
+    const range=sel.getRangeAt(0);
+    const node=range.startContainer;
+    if(node.nodeType!==3) return;
+    const text=node.textContent.substring(0,range.startOffset);
+    const map={
+      '#':'h1','##':'h2','###':'h3',
+      '>':'blockquote','---':null,'```':null,
+      '-':null,'1.':null
+    };
+    if(text==='#'||text==='##'||text==='###'){
+      e.preventDefault();
+      node.textContent=node.textContent.substring(text.length);
+      document.execCommand('formatBlock',false,{'#':'h1','##':'h2','###':'h3'}[text]);
+    } else if(text==='>'){
+      e.preventDefault();
+      node.textContent=node.textContent.substring(1);
+      document.execCommand('formatBlock',false,'blockquote');
+    } else if(text==='-'){
+      e.preventDefault();
+      node.textContent=node.textContent.substring(1);
+      document.execCommand('insertUnorderedList');
+    } else if(text==='1.'){
+      e.preventDefault();
+      node.textContent=node.textContent.substring(2);
+      document.execCommand('insertOrderedList');
+    }
+  }
+  // --- → hr
+  if(e.key==='Enter'){
+    const sel=window.getSelection();
+    if(!sel||!sel.rangeCount) return;
+    const range=sel.getRangeAt(0);
+    const node=range.startContainer;
+    if(node.nodeType!==3) return;
+    if(node.textContent.trim()==='---'){
+      e.preventDefault();
+      node.textContent='';
+      document.execCommand('insertHorizontalRule');
+    }
+  }
+  // **text** → bold on closing **
+  if(e.key==='*'){
+    // handled by execCommand
+  }
+});
+
+// ── PASTE: strip external styles ────────────────────
+editor.addEventListener('paste',function(e){
+  e.preventDefault();
+  const text=e.clipboardData.getData('text/plain');
+  document.execCommand('insertText',false,text);
+});
+
+// ── FOCUS INIT ────────────────────────────────────────
+editor.addEventListener('focus',function(){
+  if(!editor.innerHTML||editor.innerHTML==='<br>'){
+    document.execCommand('formatBlock',false,'p');
+  }
+});
+
+// ── SELECCIÓN RESTORE ─────────────────────────────────
+document.addEventListener('selectionchange',function(){
+  const sel=window.getSelection();
+  if(sel&&sel.rangeCount&&editor.contains(sel.anchorNode)){
+    updateActiveStates();
+  }
+});
+
+// Init font size observer
+const obs=new MutationObserver(()=>{});
+obs.observe(editor,{childList:true,subtree:true});
+
+// Set initial font
+document.getElementById('fontFamily').value="'Lora',serif";
+</script>
+</body>
+</html>

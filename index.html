@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fdfcf8" media="(prefers-color-scheme: light)" />
+    <title>Bíblia Kerygma</title>
+    <style>
+      /* Foldable & multi-screen support */
+      @supports (span: span 1) {
+        html { height: 100%; }
+      }
+      /* Safe area insets for notches/foldables */
+      :root {
+        --sat: env(safe-area-inset-top, 0px);
+        --sar: env(safe-area-inset-right, 0px);
+        --sab: env(safe-area-inset-bottom, 0px);
+        --sal: env(safe-area-inset-left, 0px);
+        /* Dynamic viewport for foldables */
+        --dvh: 1dvh;
+        --svh: 1svh;
+        --lvh: 1lvh;
+      }
+      html, body {
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
+      }
+      body {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      }
+      /* Foldable gap handling */
+      @media (horizontal-viewport-segments: 2) {
+        body { gap: env(viewport-segment-gap 0 0); }
+      }
+      @media (vertical-viewport-segments: 2) {
+        body { gap: env(viewport-segment-gap 0 0); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
