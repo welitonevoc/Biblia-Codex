@@ -1,54 +1,28 @@
 #!/usr/bin/env sh
 
 MSG_FILE="$1"
-SOURCE="$2"
 
-# Primeira linha real (ignora comentarios do template do git)
-FIRST_LINE="$(grep -v '^[[:space:]]*#' "$MSG_FILE" | sed -n '1p' | tr -d '\r')"
-
-# Mantem commits especiais
-case "$FIRST_LINE" in
-  fixup!*|squash!*)
-    exit 0
-    ;;
-esac
-
-lower() {
-  printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
+first_non_comment_line() {
+  grep -v '^[[:space:]]*#' "$1" | sed -n '1p' | tr -d '\r'
 }
+
+lower() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
 
 is_portuguese() {
   line="$(lower "$1")"
-
-  # Acentos ou palavras comuns em PT-BR
-  if printf '%s' "$line" | grep -Eq "[????????????]"; then
-    return 0
-  fi
-
-  if printf '%s' "$line" | grep -Eq "\b(de|da|do|das|dos|para|com|sem|em|no|na|nos|nas|que|como|ajusta|corrige|adiciona|remove|melhora|atualiza|suporte|erro|falha|versao|tela|modulo|importacao|leitura|banco|arquivo|configuracao)\b"; then
-    return 0
-  fi
-
+  if printf '%s' "$line" | grep -Eq "[????????????]"; then return 0; fi
+  if printf '%s' "$line" | grep -Eq "\b(de|da|do|das|dos|para|com|sem|em|no|na|nos|nas|que|como|ajusta|corrige|adiciona|remove|melhora|atualiza|suporte|erro|falha|versao|tela|modulo|importacao|leitura|banco|arquivo|configuracao)\b"; then return 0; fi
   return 1
 }
 
 get_type() {
   raw="$(lower "$1")"
-  type="$(printf '%s' "$raw" | sed -nE 's/^([a-z]+)(\([^)]+\))?(!)?:.*/\1/p')"
-
-  case "$type" in
-    feat|fix|chore|docs|refactor|test|build|ci|perf|style|revert)
-      printf '%s' "$type"
-      ;;
-    *)
-      printf '%s' "chore"
-      ;;
-  esac
+  t="$(printf '%s' "$raw" | sed -nE 's/^([a-z]+)(\([^)]+\))?(!)?:.*/\1/p')"
+  case "$t" in feat|fix|chore|docs|refactor|test|build|ci|perf|style|revert) printf '%s' "$t";; *) printf '%s' "chore";; esac
 }
 
 build_subject() {
-  t="$1"
-  case "$t" in
+  case "$1" in
     feat) printf '%s' "feat: adiciona melhorias no projeto" ;;
     fix) printf '%s' "fix: corrige problemas no projeto" ;;
     docs) printf '%s' "docs: atualiza documentacao do projeto" ;;
@@ -63,15 +37,16 @@ build_subject() {
   esac
 }
 
-# Se ja estiver em portugues, nao altera
-if [ -n "$(printf '%s' "$FIRST_LINE" | tr -d '[:space:]')" ] && is_portuguese "$FIRST_LINE"; then
+line="$(first_non_comment_line "$MSG_FILE")"
+
+case "$line" in fixup!*|squash!*) exit 0;; esac
+
+if [ -n "$(printf '%s' "$line" | tr -d '[:space:]')" ] && is_portuguese "$line"; then
   exit 0
 fi
 
-TYPE="$(get_type "$FIRST_LINE")"
-SUBJECT="$(build_subject "$TYPE")"
-
-# Sobrescreve com assunto em PT-BR para garantir 100%
-printf '%s\n' "$SUBJECT" > "$MSG_FILE"
+type="$(get_type "$line")"
+subject="$(build_subject "$type")"
+printf '%s\n' "$subject" > "$MSG_FILE"
 
 exit 0

@@ -23,6 +23,6 @@ val appModule = module {
 
 fun provideDatabase(context: Context): AppDatabase {
     return Room.databaseBuilder(context, AppDatabase::class.java, "biblia-db")
-        .fallbackToDestructiveMigration()
+        .fallbackToDestructiveMigration(dropAllTables = true)
         .build()
 }
