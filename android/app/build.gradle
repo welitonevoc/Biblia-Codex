@@ -66,10 +66,11 @@ dependencies {
     
     implementation project(':capacitor-cordova-android-plugins')
 
-    // Room atualizado para versão estável
-    implementation "androidx.room:room-runtime:2.6.1"
-    implementation "androidx.room:room-ktx:2.6.1"
-    kapt "androidx.room:room-compiler:2.6.1"
+    // Room atualizado para versão compatível com Kotlin 2.1 (Metadata 2.1.0)
+    def room_version = "2.7.0-alpha12"
+    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
 
     // Koin v4 em versão com metadata Kotlin mais compatível com R8 do AGP atual
     implementation "io.insert-koin:koin-android:4.1.0"
