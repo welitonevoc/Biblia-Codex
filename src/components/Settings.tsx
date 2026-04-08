@@ -10,10 +10,14 @@ import {
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { createAiModule } from '../services/dictionaryService';
+import { Capacitor } from '@capacitor/core';
+import { ensureStoragePermission } from '../services/permissionsService';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+const SUPPORTED_EXTENSIONS = ['.mybible', '.sqlite3', '.sqlite', '.mybl', '.mybls', '.twm', '.conf', '.dat', '.epub'];
 
 interface SettingsProps {
   isOpen: boolean;
@@ -112,6 +116,7 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const isAndroidNative = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
 
   const installedCount = availableVersions.length + availableDictionaries.length;
   const accentColors = ['#5a5a40', '#8c6d46', '#3f6b5b', '#7a3e3e', '#3b5f8a', '#6b4d7a'];
@@ -123,15 +128,31 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     .replace(/\.(dct|dict|cmt|comment|xref|ref|xrefs|bok|book|devot)$/i, '')
     .trim();
 
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     setIsImporting(true);
     setImportStatus('idle');
+
+    const normalizedName = file.name.toLowerCase();
+    const supportedFile = SUPPORTED_EXTENSIONS.some((ext) => normalizedName.endsWith(ext));
+
+    if (!supportedFile) {
+      setImportStatus('error');
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    if (isAndroidNative) {
+      const hasPermission = await ensureStoragePermission();
+      if (!hasPermission) {
+        setImportStatus('error');
+        setIsImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+    }
 
     try {
       const { importModule } = await import('../services/moduleService');
@@ -424,8 +445,9 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   <span className="ui-text text-xs font-black text-bible-accent">{installedCount}</span>
                 </div>
 
+                <div className="relative">
                 <button
-                  onClick={handleImportClick}
+                  type="button"
                   disabled={isImporting}
                   className={cn(
                     'w-full py-4 rounded-[24px] flex items-center justify-center space-x-3 transition-all active:scale-95 font-black ui-text text-[10px] tracking-widest uppercase',
@@ -440,9 +462,14 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   type="file"
                   ref={fileInputRef}
                   onChange={handleFileChange}
-                  className="hidden"
-                  accept=".mybible,.sqlite3,.sqlite,.mybl,.mybls,.twm,.conf,.dat,.epub"
+                  disabled={isImporting}
+                  className={cn(
+                    'absolute inset-0 h-full w-full cursor-pointer opacity-0',
+                    isImporting && 'pointer-events-none'
+                  )}
+                  accept={isAndroidNative ? '*/*' : '.mybible,.sqlite3,.sqlite,.mybl,.mybls,.twm,.conf,.dat,.epub'}
                 />
+                </div>
 
                 {importStatus === 'success' && (
                   <div className="flex items-center space-x-2 p-3 rounded-2xl bg-green-500/10 text-green-600">

@@ -17,7 +17,7 @@ import { useAppContext } from '../AppContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { ensureStoragePermission, openAppSettings, getPermissionErrorMessage } from '../services/permissionsService';
+import { ensureStoragePermission, openAppSettings } from '../services/permissionsService';
 import { Capacitor } from '@capacitor/core';
 
 function cn(...inputs: ClassValue[]) {
@@ -28,7 +28,7 @@ const CATEGORY_NAMES: Record<string, string> = {
   bible: 'Bíblias',
   commentary: 'Comentários',
   dictionary: 'Dicionários',
-  xrefs: 'Referências Cruzadas',
+  cross_reference: 'Referências Cruzadas',
   book: 'Livros',
   map: 'Mapas',
   devotional: 'Devocionais',
@@ -39,7 +39,7 @@ const CATEGORY_ICONS: Record<string, any> = {
   bible: BookOpen,
   commentary: MessageSquare,
   dictionary: Library,
-  xrefs: Layers,
+  cross_reference: Layers,
   book: Book,
   map: Map,
   devotional: History,
@@ -50,14 +50,17 @@ const CATEGORY_COLORS: Record<string, string> = {
   bible: '#3498DB',
   commentary: '#2ECC71',
   dictionary: '#9B59B6',
-  xrefs: '#E67E22',
+  cross_reference: '#E67E22',
   book: '#F06292',
   map: '#E74C3C',
   devotional: '#3F51B5',
   plan: '#FFC107',
 };
 
+const SUPPORTED_EXTENSIONS = ['.mybible', '.sqlite3', '.sqlite', '.mybl', '.mybls', '.twm', '.conf', '.dat', '.epub'];
+
 export const ModuleManagement: React.FC = () => {
+  const isAndroidNative = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
   const [activeTab, setActiveTab] = useState<'installed' | 'import'>('installed');
   const [modules, setModules] = useState<ModuleInfo[]>([]);
   const [selectedModule, setSelectedModule] = useState<ModuleInfo | null>(null);
@@ -73,7 +76,7 @@ export const ModuleManagement: React.FC = () => {
     setLoading(true);
     try {
       // Verifica permissões primeiro
-      if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+      if (isAndroidNative) {
         const hasPermission = await ensureStoragePermission();
         setPermissionGranted(hasPermission);
         if (!hasPermission) {
@@ -95,7 +98,7 @@ export const ModuleManagement: React.FC = () => {
   }, []);
 
   const handleRequestPermission = async () => {
-    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+    if (isAndroidNative) {
       const hasPermission = await ensureStoragePermission();
       setPermissionGranted(hasPermission);
       if (!hasPermission) {
@@ -131,8 +134,18 @@ export const ModuleManagement: React.FC = () => {
     setImporting(true);
     setError(null);
 
+    const normalizedName = file.name.toLowerCase();
+    const supportedFile = SUPPORTED_EXTENSIONS.some((ext) => normalizedName.endsWith(ext));
+
+    if (!supportedFile) {
+      setError('Formato não suportado. Use: .mybible, .sqlite3, .mybl, .twm, .conf, .dat ou .epub.');
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     // Verifica/solicita permissão antes de importar
-    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+    if (isAndroidNative) {
       const hasPermission = await ensureStoragePermission();
       if (!hasPermission) {
         setError('Permissão de armazenamento negada. Por favor, conceda nas configurações do app.');
@@ -194,9 +207,9 @@ export const ModuleManagement: React.FC = () => {
   const categories = (Object.keys(CATEGORY_NAMES) as ModuleCategory[]).filter(cat => groupedModules[cat]);
 
   return (
-    <div className="flex h-[600px] flex-col text-bible-text">
-      <div className="flex items-center justify-between mb-6 px-2">
-        <div className="flex space-x-6">
+    <div className="flex min-h-[420px] h-[min(72dvh,680px)] flex-col text-bible-text">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-1 sm:mb-6 sm:px-2">
+        <div className="flex space-x-4 overflow-x-auto sm:space-x-6">
           {['installed', 'import'].map((tab) => (
             <button
               key={tab}
@@ -219,7 +232,7 @@ export const ModuleManagement: React.FC = () => {
               placeholder="Buscar..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="premium-input w-40 rounded-full py-1.5 pl-9 pr-4 text-xs focus:w-64"
+              className="premium-input w-32 rounded-full py-1.5 pl-9 pr-4 text-xs transition-[width] sm:w-40 focus:w-40 sm:focus:w-64"
             />
           </div>
         )}
@@ -300,7 +313,7 @@ export const ModuleManagement: React.FC = () => {
             exit={{ opacity: 0, x: -10 }}
             className="flex-1 space-y-8"
           >
-            <div className="premium-card rounded-[2rem] p-8 space-y-6 relative overflow-hidden">
+            <div className="premium-card relative overflow-hidden rounded-[2rem] p-5 space-y-6 sm:p-8">
               <div className="absolute top-0 right-0 p-8 opacity-5">
                 <Upload className="w-32 h-32" />
               </div>
@@ -331,24 +344,30 @@ export const ModuleManagement: React.FC = () => {
               </div>
 
               <div className="pt-8">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={importing}
-                  className={cn(
-                    "w-full py-5 rounded-2xl flex items-center justify-center space-x-3 transition-all font-black ui-text text-xs tracking-[0.2em] uppercase",
-                    importing ? "bg-white/10 text-white/30" : "bg-gold text-black shadow-xl shadow-gold/20 hover:scale-[1.02] active:scale-[0.98]"
-                  )}
-                >
-                  {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-5 h-5" />}
-                  <span>{importing ? 'Importando...' : 'Selecionar Arquivos'}</span>
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImport}
-                  className="hidden"
-                  accept=".mybible,.sqlite3,.sqlite,.mybl,.mybls,.twm,.conf,.dat,.epub"
-                />
+                <div className="relative">
+                  <button
+                    type="button"
+                    disabled={importing}
+                    className={cn(
+                      "w-full py-5 rounded-2xl flex items-center justify-center space-x-3 transition-all font-black ui-text text-xs tracking-[0.2em] uppercase",
+                      importing ? "bg-white/10 text-white/30" : "bg-gold text-black shadow-xl shadow-gold/20 hover:scale-[1.02] active:scale-[0.98]"
+                    )}
+                  >
+                    {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-5 h-5" />}
+                    <span>{importing ? 'Importando...' : 'Selecionar Arquivo'}</span>
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImport}
+                    disabled={importing}
+                    className={cn(
+                      "absolute inset-0 h-full w-full cursor-pointer opacity-0",
+                      importing && "pointer-events-none"
+                    )}
+                    accept={isAndroidNative ? '*/*' : '.mybible,.sqlite3,.sqlite,.mybl,.mybls,.twm,.conf,.dat,.epub'}
+                  />
+                </div>
               </div>
 
               {error && (
@@ -375,7 +394,7 @@ export const ModuleManagement: React.FC = () => {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="premium-card w-full max-w-md rounded-3xl p-8"
+              className="premium-card w-full max-w-md rounded-3xl p-6 sm:p-8"
             >
               <div className="flex items-center space-x-4 mb-6">
                 <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">
@@ -437,7 +456,7 @@ export const ModuleManagement: React.FC = () => {
           >
             <motion.div
               initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
-              className="premium-card w-full max-w-md rounded-3xl p-8"
+              className="premium-card w-full max-w-md rounded-3xl p-6 sm:p-8"
               onClick={e => e.stopPropagation()}
             >
               <h2 className="mb-6 text-xl font-bold text-bible-text">{selectedModule.name}</h2>
