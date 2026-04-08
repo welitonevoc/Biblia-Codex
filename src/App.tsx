@@ -7,6 +7,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AppProvider, useAppContext } from './AppContext';
 import { TopBar } from './components/TopBar';
 import { Reader } from './components/Reader';
+import { ReaderWithAudio } from './components/ReaderWithAudio';
+import { AudioTrack } from './services/audioService';
+import { getAudioTracksForChapter, hasAudioForChapter } from './data/audioData';
 import { HamburgerMenu } from './components/HamburgerMenu';
 import { Navigation } from './components/Navigation';
 import { Settings } from './components/Settings';
@@ -46,6 +49,8 @@ function AppContent() {
   const [selectedVersesForStudy, setSelectedVersesForStudy] = useState<{ verse: number, text: string }[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(!localStorage.getItem('codex-onboarded'));
   const [showPermissionRequest, setShowPermissionRequest] = useState(false);
+  const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
+  const [hasAudioSupport, setHasAudioSupport] = useState(false);
 
   // Verificar permissões após onboarding
   useEffect(() => {
@@ -84,6 +89,11 @@ function AppContent() {
     setCurrentChapter(chapter);
     setTargetVerse(verse);
     setActiveTab('bible');
+    
+    // Carregar áudios para o capítulo selecionado
+    const tracks = getAudioTracksForChapter(book.id, chapter);
+    setAudioTracks(tracks);
+    setHasAudioSupport(tracks.length > 0);
   };
 
   const handleStudyOpen = (verses: { verse: number, text: string }[]) => {
@@ -140,7 +150,7 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full w-full"
               >
-                <Reader
+                <ReaderWithAudio
                   book={currentBook}
                   chapter={currentChapter}
                   targetVerse={targetVerse}
@@ -151,6 +161,8 @@ function AppContent() {
                     const book = BIBLE_BOOKS.find(b => b.id === bookId);
                     if (book) handleSelect(book, chapter, verse);
                   }}
+                  audioTracks={audioTracks}
+                  hasAudioSupport={hasAudioSupport}
                 />
               </motion.div>
             )}
