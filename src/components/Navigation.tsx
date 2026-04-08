@@ -67,7 +67,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             initial={settings.navigation.navAnimation ? { scale: 0.96, opacity: 0, y: 18 } : {}}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={settings.navigation.navAnimation ? { scale: 0.96, opacity: 0, y: 18 } : {}}
-            className="premium-card flex h-[90dvh] w-full max-w-5xl flex-col overflow-hidden rounded-[26px] sm:h-[82vh] sm:rounded-[40px]"
+            className="premium-card flex h-[min(90dvh,800px)] w-full max-w-5xl flex-col overflow-hidden rounded-[26px] sm:h-[82vh] sm:rounded-[40px]"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="border-b border-bible-accent/10 p-4 sm:p-5 md:p-6">
@@ -133,7 +133,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
             <div className="premium-scroll flex-1 overflow-y-auto p-4 sm:p-5 md:p-6">
               {step === 'book' ? (
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-5">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
                   {(selectedTestament === 'OT' ? otBooks : ntBooks).map((book) => (
                     <button
                       key={book.id}
@@ -154,7 +154,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 md:grid-cols-8 xl:grid-cols-10">
+                <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10">
                   {Array.from({ length: selectedBook.chapters }, (_, index) => index + 1).map((chapter) => (
                     <button
                       key={chapter}

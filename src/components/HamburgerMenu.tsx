@@ -71,9 +71,9 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 26, stiffness: 240 }}
-            className="fixed inset-y-0 left-0 z-[210] w-[86vw] max-w-[380px] p-3"
+            className="fixed inset-y-0 left-0 z-[210] w-[min(86vw,380px)] p-2 sm:p-3"
           >
-            <div className="premium-card flex h-full flex-col rounded-[34px] p-3">
+            <div className="premium-card flex h-full flex-col rounded-[28px] sm:rounded-[34px] p-2 sm:p-3">
               <div className="premium-card-soft rounded-[28px] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -81,8 +81,8 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                       <BookOpen className="h-6 w-6" />
                     </div>
                     <div>
-                      <div className="premium-section-title opacity-80">Bíblia Kerygma</div>
-                      <div className="font-display text-2xl font-semibold tracking-tight">Leitura viva</div>
+                      <div className="premium-section-title opacity-80 text-[10px] sm:text-[12px]">Bíblia Kerygma</div>
+                      <div className="font-display text-xl sm:text-2xl font-semibold tracking-tight">Leitura viva</div>
                     </div>
                   </div>
                   <button onClick={onClose} className="premium-icon-button rounded-2xl">
@@ -101,8 +101,8 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                         </div>
                       )}
                       <div className="min-w-0">
-                        <div className="ui-text truncate text-sm font-bold">{user.displayName || 'Usuário'}</div>
-                        <div className="ui-text truncate text-[11px] text-bible-text/45">{user.email}</div>
+                        <div className="ui-text truncate text-sm sm:text-base font-bold">{user.displayName || 'Usuário'}</div>
+                        <div className="ui-text truncate text-[11px] sm:text-[12px] text-bible-text/45">{user.email}</div>
                       </div>
                     </div>
                   ) : (
@@ -140,8 +140,8 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                             <item.icon className="h-5 w-5" />
                           </div>
                           <div className="min-w-0">
-                            <div className="ui-text truncate text-sm font-bold">{item.name}</div>
-                            <div className="ui-text text-[10px] uppercase tracking-[0.18em] text-bible-text/35">
+                            <div className="ui-text truncate text-sm sm:text-base font-bold">{item.name}</div>
+                            <div className="ui-text text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-bible-text/35">
                               {section.name}
                             </div>
                           </div>

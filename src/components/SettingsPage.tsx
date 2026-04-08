@@ -113,8 +113,8 @@ export const SettingsPage: React.FC = () => {
           </div>
         </section>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <section className="premium-card space-y-6 rounded-[36px] p-6 md:p-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[1.15fr_0.85fr]">
+          <section className="premium-card space-y-6 rounded-[36px] p-5 sm:p-6 md:p-8">
             <SectionHeader icon={Palette} title="Aparência" />
 
             <div className="premium-card-soft flex items-center justify-between rounded-[24px] p-2 sm:rounded-[28px]">
@@ -162,9 +162,9 @@ export const SettingsPage: React.FC = () => {
             />
           </section>
 
-          <section className="premium-card space-y-6 rounded-[36px] p-6 md:p-8">
+          <section className="premium-card space-y-6 rounded-[36px] p-5 sm:p-6 md:p-8">
             <SectionHeader icon={Sun} title="12 Temas Premium" />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-3">
               {THEME_OPTIONS.map((theme) => {
                 const active = config.mode === theme.id;
 
@@ -199,9 +199,9 @@ export const SettingsPage: React.FC = () => {
           </section>
         </div>
 
-        <section className="premium-card space-y-6 rounded-[36px] p-6 md:p-8">
+        <section className="premium-card space-y-6 rounded-[36px] p-5 sm:p-6 md:p-8">
           <SectionHeader icon={Layout} title="Exibição do Texto" />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Toggle label="Modo Parágrafo" active={settings.textDisplay.paragraphMode} onClick={() => toggleSetting('textDisplay', 'paragraphMode')} description="Agrupa versículos em blocos contínuos para uma leitura mais fluida." />
             <Toggle label="Números de Versículo" active={settings.textDisplay.verseNumbers} onClick={() => toggleSetting('textDisplay', 'verseNumbers')} description="Mantém a referência rápida durante a leitura." />
             <Toggle label="Palavras de Jesus em Vermelho" active={settings.textDisplay.wordsOfJesusRed} onClick={() => toggleSetting('textDisplay', 'wordsOfJesusRed')} description="Realça falas de Cristo com contraste visual." />
@@ -211,9 +211,9 @@ export const SettingsPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="premium-card space-y-6 rounded-[36px] p-6 md:p-8">
+        <section className="premium-card space-y-6 rounded-[36px] p-5 sm:p-6 md:p-8">
           <SectionHeader icon={GraduationCap} title="Ferramentas de Estudo" />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Toggle label="Tags Strong" active={settings.studyTools.strongsTags} onClick={() => toggleSetting('studyTools', 'strongsTags')} />
             <Toggle label="Links de Strong" active={settings.studyTools.strongsLinks} onClick={() => toggleSetting('studyTools', 'strongsLinks')} />
             <Toggle label="Modo Interlinear" active={settings.studyTools.interlinearMode} onClick={() => toggleSetting('studyTools', 'interlinearMode')} />
@@ -223,8 +223,8 @@ export const SettingsPage: React.FC = () => {
           </div>
         </section>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <section className="premium-card space-y-6 rounded-[36px] p-6 md:p-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <section className="premium-card space-y-6 rounded-[36px] p-5 sm:p-6 md:p-8">
             <SectionHeader icon={Eye} title="Recursos Visuais" />
             <div className="grid grid-cols-1 gap-4">
               <Toggle label="Destaques e Realces" active={settings.visualResources.highlights} onClick={() => toggleSetting('visualResources', 'highlights')} />
@@ -234,7 +234,7 @@ export const SettingsPage: React.FC = () => {
             </div>
           </section>
 
-          <section className="premium-card space-y-6 rounded-[36px] p-6 md:p-8">
+          <section className="premium-card space-y-6 rounded-[36px] p-5 sm:p-6 md:p-8">
             <SectionHeader icon={Navigation2} title="Navegação" />
             <div className="grid grid-cols-1 gap-4">
               <Toggle label="Animação Fluida" active={settings.navigation.navAnimation} onClick={() => toggleSetting('navigation', 'navAnimation')} />

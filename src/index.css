@@ -34,10 +34,10 @@
   --danger-bible: #b3504e;
 
   --font-bible-family: "Libre Baskerville", serif;
-  --font-bible-size: 18px;
-  --font-bible-line-height: 1.6;
-  --font-bible-letter-spacing: 0em;
-  --horizontal-margin: 32px;
+  --font-bible-size: clamp(16px, 4vw, 20px);
+  --font-bible-line-height: 1.65;
+  --font-bible-letter-spacing: 0.01em;
+  --horizontal-margin: clamp(16px, 5vw, 48px);
   --shadow-premium: 0 32px 80px -38px rgba(var(--accent-bible-rgb), 0.42);
   --shadow-soft: 0 24px 48px -30px rgba(17, 20, 24, 0.28);
   --radius-premium: 32px;
@@ -116,33 +116,24 @@ select {
 }
 
 /* Responsive breakpoints for different screen sizes */
-@media screen and (max-width: 360px) {
-  :root {
-    --font-bible-size: 16px;
-  }
-}
-
-@media screen and (min-width: 361px) and (max-width: 480px) {
+@media screen and (max-width: 480px) {
   :root {
     --font-bible-size: 17px;
+    --horizontal-margin: 20px;
   }
 }
 
-@media screen and (min-width: 481px) and (max-width: 768px) {
-  :root {
-    --font-bible-size: 18px;
-  }
-}
-
-@media screen and (min-width: 769px) and (max-width: 1024px) {
+@media screen and (min-width: 481px) and (max-width: 1024px) {
   :root {
     --font-bible-size: 19px;
+    --horizontal-margin: 32px;
   }
 }
 
 @media screen and (min-width: 1025px) {
   :root {
-    --font-bible-size: 20px;
+    --font-bible-size: 21px;
+    --horizontal-margin: 48px;
   }
 }
 
