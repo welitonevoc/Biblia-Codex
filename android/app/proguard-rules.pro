@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Fix R8 error: "Should never be called" for Firebase Analytics KTX Testing
+# Ignora warnings das classes de teste do Firebase Analytics que são incluídas acidentalmente
+-dontwarn com.google.firebase.analytics.ktxtesting.**
+-dontwarn com.google.firebase.analytics.ktx.ktxtesting.**
+-ignorewarnings
