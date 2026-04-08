@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+
+MSG_FILE="$1"
+SUBJECT="$(sed -n '1p' "$MSG_FILE" | tr -d '\r')"
+
+# Permite commits automaticos comuns
+case "$SUBJECT" in
+  Merge*|Revert*|fixup!*|squash!*)
+    exit 0
+    ;;
+esac
+
+# Remove prefixo convencional: tipo(escopo)!: 
+CLEAN_SUBJECT="$(printf '%s' "$SUBJECT" | sed -E 's/^[a-z]+(\([^)]+\))?(!)?:\s*//I')"
+LOWER="$(printf '%s' "$CLEAN_SUBJECT" | tr '[:upper:]' '[:lower:]')"
+
+# Mensagem minima
+if [ "$(printf '%s' "$LOWER" | wc -m | tr -d ' ')" -lt 4 ]; then
+  echo "Erro: mensagem de commit muito curta." >&2
+  echo "Use portugues no assunto, ex.: 'fix(android): corrige falha na importacao de modulo'" >&2
+  exit 1
+fi
+
+# Heuristica simples para portugues
+if printf '%s' "$LOWER" | grep -Eq "[????????????]"; then
+  exit 0
+fi
+
+if printf '%s' "$LOWER" | grep -Eq "\b(de|da|do|das|dos|para|com|sem|em|no|na|nos|nas|que|como|ajuste|ajusta|corrige|corrigir|adiciona|remove|melhora|atualiza|suporte|erro|falha|versao|tela|modulo|importacao|leitura|banco|arquivo|configuracao)\b"; then
+  exit 0
+fi
+
+echo "Erro: mensagem de commit deve estar em portugues (PT-BR)." >&2
+echo "Exemplo: 'feat(layout): melhora ajuste de tela em celulares menores'" >&2
+exit 1

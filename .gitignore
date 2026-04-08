@@ -26,3 +26,4 @@ scripts/*.ps1
 
 # Telemetry
 .npm/
+.gitmessage-ptbr.txt
