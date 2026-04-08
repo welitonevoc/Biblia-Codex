@@ -15,4 +15,10 @@ val appModule = module {
     }
     
     single { get<AppDatabase>().aiStudyCacheDao() }
-    single { get<AppDatabase>().d
+    single { get<AppDatabase>().dictionaryEntryDao() }
+    
+    // TODO: Mover API Key para local.properties ou BuildConfig
+    single { GeminiAISearchService(apiKey = "YOUR_API_KEY") }
+    
+    single { DictionaryService(get(), get(), get()) }
+}
