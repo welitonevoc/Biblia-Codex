@@ -187,8 +187,7 @@ export const importModule = async (content: string, fileName: string): Promise<M
   await Filesystem.writeFile({
     directory: Directory.Documents,
     path: destPath,
-    data: content,
-    encoding: 'base64' as any
+    data: content
   });
 
   return {
