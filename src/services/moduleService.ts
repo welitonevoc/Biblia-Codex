@@ -157,7 +157,7 @@ export const listInstalledModules = async (): Promise<ModuleInfo[]> => {
           seen.add(uniqueKey);
         }
       } catch (e) {
-        // SubdiretÃ³rio nÃ£o existe, ignora
+        // Subdiretório não existe, ignora
       }
     }
 
@@ -261,15 +261,26 @@ export const importModule = async (content: string, fileName: string): Promise<M
 
   let usedDirectory: Directory.Documents | Directory.Data = Directory.Documents;
   let writeError: unknown = null;
+  const errors: Array<{ directory: string; error: unknown }> = [];
 
-  for (const directory of [Directory.Documents, Directory.Data] as const) {
+  // Tentar gravar em ambos os diretórios, com preferência por Directory.Data (armazenamento interno do app)
+  for (const directory of [Directory.Data, Directory.Documents] as const) {
     try {
-      await Filesystem.mkdir({
-        directory,
-        path: destDir,
-        recursive: true,
-      });
+      // Criar diretório de destino com permissões apropriadas
+      try {
+        await Filesystem.mkdir({
+          directory,
+          path: destDir,
+          recursive: true,
+        });
+      } catch (mkdirError: any) {
+        // Se o diretório já existe, continuar
+        if (!mkdirError.message?.includes('exists') && !mkdirError.message?.includes('EEXIST')) {
+          throw mkdirError;
+        }
+      }
 
+      // Gravar arquivo com tratamento de erro específico
       await Filesystem.writeFile({
         directory,
         path: destPath,
@@ -277,17 +288,35 @@ export const importModule = async (content: string, fileName: string): Promise<M
         recursive: true,
       });
 
-      usedDirectory = directory;
-      writeError = null;
-      break;
+      // Verificar se o arquivo foi gravado com sucesso
+      try {
+        const stats = await Filesystem.stat({
+          directory,
+          path: destPath,
+        });
+        
+        if (stats.size && stats.size > 0) {
+          usedDirectory = directory;
+          writeError = null;
+          console.log(`Módulo importado com sucesso em ${directory}: ${destPath}`);
+          break;
+        }
+      } catch (statError) {
+        console.warn(`Falha ao verificar arquivo após gravação em ${directory}:`, statError);
+        throw new Error('Arquivo não foi gravado corretamente');
+      }
     } catch (error) {
+      const dirName = directory === Directory.Data ? 'Directory.Data (interno)' : 'Directory.Documents (externo)';
+      errors.push({ directory: dirName, error });
       writeError = error;
+      console.warn(`Falha ao gravar módulo em ${dirName}:`, error);
     }
   }
 
   if (writeError) {
-    console.error('Falha ao gravar módulo em Documents/Data:', writeError);
-    throw new Error('Não foi possível salvar o arquivo do módulo no armazenamento do app.');
+    const errorDetails = errors.map(e => `${e.directory}: ${e.error}`).join('; ');
+    console.error('Falha ao gravar módulo em todos os diretórios:', errorDetails);
+    throw new Error(`Não foi possível salvar o arquivo do módulo no armazenamento do app. Detalhes: ${errorDetails}`);
   }
 
   return {

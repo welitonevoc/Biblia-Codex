@@ -5,17 +5,17 @@
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     
-    <!-- Android 13+ (API 33+) - Media permissions (Keep for broad compatibility if needed) -->
+    <!-- Android 13+ (API 33+) - Media permissions for reading files -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-
-    <!-- Android 6-12 (API 23-32) - Legacy storage -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     
-    <!-- Android 11+ (API 30+) - Manage All Files (Optional, but helps with database files) -->
-    <!-- <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" /> -->
+    <!-- Android 13+ (API 33+) - Permission to read all files (needed for module imports) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    
+    <!-- Android 11+ (API 30+) - Manage All Files for comprehensive storage access -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
 
     <!-- Foldable device support -->
     <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
@@ -31,7 +31,8 @@
         android:theme="@style/AppTheme"
         android:resizeableActivity="true"
         android:largeHeap="true"
-        android:requestLegacyExternalStorage="true">
+        android:requestLegacyExternalStorage="true"
+        android:usesCleartextTraffic="false">
 
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|screenLayout|uiMode|navigation|density"
@@ -58,6 +59,7 @@
 
         </activity>
 
+        <!-- FileProvider for sharing module files safely -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

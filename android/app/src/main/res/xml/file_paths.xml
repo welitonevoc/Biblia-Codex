@@ -1,12 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-path name="my_images" path="." />
-    <cache-path name="my_cache_images" path="." />
+    <!-- Cache paths for temporary files -->
+    <cache-path name="cache" path="." />
+    
+    <!-- External storage paths (for Android < 11) -->
+    <external-path name="external_root" path="." />
+    
+    <!-- External files directory (scoped storage safe) -->
+    <external-files-path name="external_files" path="." />
     
     <!-- Documents directory for module files -->
     <external-files-path name="documents" path="Documents" />
-    <external-path name="external_files" path="." />
     
-    <!-- Codex modules directory -->
+    <!-- Codex modules directory - Main storage for imported modules -->
+    <external-files-path name="codex_modules_root" path="Codex" />
     <external-files-path name="codex_modules" path="Codex/modules" />
+    <external-files-path name="codex_modules_installed" path="Codex/modules/installed" />
+    
+    <!-- Specific module format directories -->
+    <external-files-path name="codex_mybible" path="Codex/modules/installed/mybible" />
+    <external-files-path name="codex_mysword" path="Codex/modules/installed/mysword" />
+    <external-files-path name="codex_sword" path="Codex/modules/installed/sword" />
+    <external-files-path name="codex_epub" path="Codex/modules/installed/epub" />
+    
+    <!-- Internal app storage paths (for Android 13+) -->
+    <files-path name="app_files" path="." />
+    <files-path name="app_codex" path="Codex" />
+    <files-path name="app_codex_modules" path="Codex/modules" />
+    <files-path name="app_codex_modules_installed" path="Codex/modules/installed" />
+    <files-path name="app_codex_mybible" path="Codex/modules/installed/mybible" />
+    <files-path name="app_codex_mysword" path="Codex/modules/installed/mysword" />
+    <files-path name="app_codex_sword" path="Codex/modules/installed/sword" />
+    <files-path name="app_codex_epub" path="Codex/modules/installed/epub" />
 </paths>

@@ -2,8 +2,10 @@
  * Serviço de Permissões para Android 13+ (API 33+)
  * Gerencia permissões de armazenamento de forma compatível
  *
- * NOTA: Para Android 13+, o ideal é usar o File Picker nativo
- * pois as permissões de storage externo estão restritas
+ * Estratégia:
+ * - Android 13+: Usar armazenamento interno do app (Directory.Data) por padrão
+ * - Android 6-12: Usar armazenamento externo (Directory.Documents) com permissões legadas
+ * - Fallback: Tentar ambos os diretórios durante importação
  */
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
@@ -13,6 +15,7 @@ export interface PermissionStatus {
   canAccessStorage: boolean;
   androidVersion?: number;
   apiLevel?: number;
+  preferredDirectory?: 'internal' | 'external';
 }
 
 /**
@@ -70,21 +73,22 @@ export const checkStoragePermission = async (): Promise<PermissionStatus> => {
       canAccessStorage: true,
       androidVersion: 0,
       apiLevel: 0,
+      preferredDirectory: 'internal',
     };
   }
 
   const androidVersion = await getAndroidVersion();
   const apiLevel = await getApiLevel();
 
-  // No Android 13+, o acesso via seletor de arquivos (input type="file")
-  // não exige permissão de armazenamento global READ_EXTERNAL_STORAGE.
-  // O sistema concede acesso temporário ao arquivo selecionado.
+  // Android 13+ usa armazenamento interno do app (Directory.Data) por padrão
+  // Não requer permissões de mídia para arquivos de dados
   if (androidVersion >= 13 || apiLevel >= 33) {
     return {
       storage: 'granted',
       canAccessStorage: true,
       androidVersion,
       apiLevel,
+      preferredDirectory: 'internal',
     };
   }
 
@@ -100,6 +104,7 @@ export const checkStoragePermission = async (): Promise<PermissionStatus> => {
         canAccessStorage: true,
         androidVersion,
         apiLevel,
+        preferredDirectory: 'external',
       };
     } catch (e) {
       return {
@@ -107,6 +112,7 @@ export const checkStoragePermission = async (): Promise<PermissionStatus> => {
         canAccessStorage: false,
         androidVersion,
         apiLevel,
+        preferredDirectory: 'external',
       };
     }
   } catch (error) {
@@ -115,6 +121,7 @@ export const checkStoragePermission = async (): Promise<PermissionStatus> => {
       canAccessStorage: false,
       androidVersion,
       apiLevel,
+      preferredDirectory: 'external',
     };
   }
 };
@@ -129,19 +136,21 @@ export const requestStoragePermission = async (): Promise<PermissionStatus> => {
       canAccessStorage: true,
       androidVersion: 0,
       apiLevel: 0,
+      preferredDirectory: 'internal',
     };
   }
 
   const androidVersion = await getAndroidVersion();
   const apiLevel = await getApiLevel();
 
-  // No Android 13+, não solicitamos permissão de mídia para arquivos de dados
+  // Android 13+: Usar armazenamento interno, sem necessidade de permissões especiais
   if (androidVersion >= 13 || apiLevel >= 33) {
     return {
       storage: 'granted',
       canAccessStorage: true,
       androidVersion,
       apiLevel,
+      preferredDirectory: 'internal',
     };
   }
 
@@ -157,6 +166,7 @@ export const requestStoragePermission = async (): Promise<PermissionStatus> => {
       canAccessStorage: true,
       androidVersion,
       apiLevel,
+      preferredDirectory: 'external',
     };
   } catch (e: any) {
     if (e.message?.includes('exists') || e.message?.includes('EEXIST')) {
@@ -165,6 +175,7 @@ export const requestStoragePermission = async (): Promise<PermissionStatus> => {
         canAccessStorage: true,
         androidVersion,
         apiLevel,
+        preferredDirectory: 'external',
       };
     }
     return {
@@ -172,6 +183,7 @@ export const requestStoragePermission = async (): Promise<PermissionStatus> => {
       canAccessStorage: false,
       androidVersion,
       apiLevel,
+      preferredDirectory: 'external',
     };
   }
 };
@@ -203,7 +215,7 @@ export const openAppSettings = async (): Promise<void> => {
 
 export const getPermissionErrorMessage = (status: PermissionStatus): string => {
   if (!status.canAccessStorage) {
-    return 'Permissão de armazenamento necessária para importar módulos.';
+    return 'Permissão de armazenamento necessária para importar módulos. Verifique as configurações do app.';
   }
   return '';
 };
@@ -235,24 +247,53 @@ export const testStorageAccess = async (): Promise<boolean> => {
     const testPath = 'Codex/.test_permission';
     const testContent = 'test';
 
-    await Filesystem.writeFile({
-      directory: Directory.Documents,
-      path: testPath,
-      data: testContent,
-    });
+    // Tentar em ambos os diretórios
+    for (const directory of [Directory.Data, Directory.Documents] as const) {
+      try {
+        await Filesystem.writeFile({
+          directory,
+          path: testPath,
+          data: testContent,
+        });
 
-    const result = await Filesystem.readFile({
-      directory: Directory.Documents,
-      path: testPath,
-    });
+        const result = await Filesystem.readFile({
+          directory,
+          path: testPath,
+        });
 
-    await Filesystem.deleteFile({
-      directory: Directory.Documents,
-      path: testPath,
-    });
+        await Filesystem.deleteFile({
+          directory,
+          path: testPath,
+        });
 
-    return typeof result.data === 'string' && result.data === testContent;
+        if (typeof result.data === 'string' && result.data === testContent) {
+          console.log(`Teste de acesso ao armazenamento bem-sucedido em ${directory}`);
+          return true;
+        }
+      } catch (e) {
+        console.warn(`Teste de acesso falhou em ${directory}:`, e);
+        // Continuar para o próximo diretório
+      }
+    }
+
+    return false;
   } catch (error) {
+    console.error('Erro ao testar acesso ao armazenamento:', error);
     return false;
   }
+};
+
+/**
+ * Obtém o diretório preferido baseado na versão do Android
+ */
+export const getPreferredDirectory = async (): Promise<Directory.Data | Directory.Documents> => {
+  const androidVersion = await getAndroidVersion();
+  
+  // Android 13+: Usar armazenamento interno
+  if (androidVersion >= 13) {
+    return Directory.Data;
+  }
+  
+  // Android 12 e anteriores: Usar armazenamento externo
+  return Directory.Documents;
 };
