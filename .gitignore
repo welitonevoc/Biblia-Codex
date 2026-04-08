@@ -8,6 +8,8 @@ coverage/
 
 # Android
 android/.gradle/
+android/.gradle-local/
+android/.kotlin/
 android/capturer/
 android/build/
 android/**/build/
