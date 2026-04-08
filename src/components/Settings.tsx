@@ -116,6 +116,7 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [importError, setImportError] = useState<string>('');
   const isAndroidNative = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
 
   const installedCount = availableVersions.length + availableDictionaries.length;
@@ -133,12 +134,14 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     if (!file) return;
     setIsImporting(true);
     setImportStatus('idle');
+    setImportError('');
 
     const normalizedName = file.name.toLowerCase();
     const supportedFile = SUPPORTED_EXTENSIONS.some((ext) => normalizedName.endsWith(ext));
 
     if (!supportedFile) {
       setImportStatus('error');
+      setImportError('Formato não suportado para importação.');
       setIsImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
@@ -148,6 +151,7 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
       const hasPermission = await ensureStoragePermission();
       if (!hasPermission) {
         setImportStatus('error');
+        setImportError('Permissão de armazenamento negada.');
         setIsImporting(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
         return;
@@ -173,6 +177,7 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     } catch (error) {
       console.error('Import error:', error);
       setImportStatus('error');
+      setImportError(error instanceof Error ? error.message : 'Falha ao importar o módulo.');
     } finally {
       setIsImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -481,7 +486,7 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                 {importStatus === 'error' && (
                   <div className="flex items-center space-x-2 p-3 rounded-2xl bg-red-500/10 text-red-600">
                     <AlertCircle className="w-4 h-4" />
-                    <span className="ui-text text-xs font-bold">Falha ao importar o módulo.</span>
+                    <span className="ui-text text-xs font-bold">{importError || 'Falha ao importar o módulo.'}</span>
                   </div>
                 )}
               </SettingsCard>

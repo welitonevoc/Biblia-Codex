@@ -176,7 +176,7 @@ export const ModuleManagement: React.FC = () => {
       alert('Módulo importado com sucesso!'); // Feedback visual
     } catch (err) {
       console.error('Erro ao importar módulo:', err);
-      setError('Falha ao importar módulo. Verifique o formato.');
+      setError(err instanceof Error ? err.message : 'Falha ao importar módulo. Verifique o formato.');
     } finally {
       setImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

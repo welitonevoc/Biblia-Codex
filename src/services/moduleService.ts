@@ -22,6 +22,7 @@ export interface ModuleInfo {
 
 const BASE_DIR = 'Kerygma/modules/installed';
 const SUB_DIRS = ['mybible', 'mysword', 'sword', 'epub'];
+const SQLITE_HEADER = 'SQLite format 3\u0000';
 
 /**
  * Detecta a categoria baseada no nome do arquivo
@@ -47,6 +48,21 @@ const detectFormat = (fileName: string): ModuleFormat => {
   if (ext === 'conf' || ext === 'dat') return 'sword';
   if (ext === 'epub') return 'epub';
   return 'other';
+};
+
+const decodeBase64Prefix = (base64: string, bytes: number): string => {
+  const clean = base64.replace(/\s/g, '');
+  const charsNeeded = Math.ceil(bytes / 3) * 4;
+  const prefix = clean.slice(0, charsNeeded);
+  return atob(prefix).slice(0, bytes);
+};
+
+const isSqliteBase64 = (base64: string): boolean => {
+  try {
+    return decodeBase64Prefix(base64, SQLITE_HEADER.length) === SQLITE_HEADER;
+  } catch {
+    return false;
+  }
 };
 
 export const listInstalledModules = async (): Promise<ModuleInfo[]> => {
@@ -145,6 +161,18 @@ export const deleteModule = async (modulePath: string): Promise<void> => {
 
 export const importModule = async (content: string, fileName: string): Promise<ModuleInfo> => {
   const format = detectFormat(fileName);
+  const lowerName = fileName.toLowerCase();
+  const expectsSqlite =
+    format === 'mybible' ||
+    format === 'mysword' ||
+    lowerName.endsWith('.mybible') ||
+    lowerName.endsWith('.sqlite3') ||
+    lowerName.endsWith('.sqlite');
+
+  if (expectsSqlite && !isSqliteBase64(content)) {
+    throw new Error('Arquivo incompatível: este módulo não está em SQLite válido. Use .bbl.mybible ou .SQLite3.');
+  }
+
   const destDir = `${BASE_DIR}/${format === 'other' ? 'mybible' : format}`;
   const destPath = `${destDir}/${fileName}`;
 
