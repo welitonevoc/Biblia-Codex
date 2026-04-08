@@ -21,7 +21,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -52,8 +52,8 @@ dependencies {
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
     
-    // Firebase BoM
-    implementation platform('com.google.firebase:firebase-bom:33.9.0')
+    // Firebase BoM atualizado
+    implementation platform('com.google.firebase:firebase-bom:34.11.0')
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-crashlytics'
 
@@ -63,19 +63,19 @@ dependencies {
     
     implementation project(':capacitor-cordova-android-plugins')
 
-    // Room
-    implementation "androidx.room:room-runtime:2.6.1"
-    implementation "androidx.room:room-ktx:2.6.1"
-    kapt "androidx.room:room-compiler:2.6.1"
+    // Room atualizado
+    implementation "androidx.room:room-runtime:2.8.4"
+    implementation "androidx.room:room-ktx:2.8.4"
+    kapt "androidx.room:room-compiler:2.8.4"
 
-    // Koin
-    implementation "io.insert-koin:koin-android:3.5.6"
+    // Koin atualizado para v4
+    implementation "io.insert-koin:koin-android:4.2.0"
 
     // Gemini
     implementation "com.google.ai.client.generativeai:generativeai:0.9.0"
 
-    // Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+    // Coroutines atualizado
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
 }
 
 apply from: 'capacitor.build.gradle'
