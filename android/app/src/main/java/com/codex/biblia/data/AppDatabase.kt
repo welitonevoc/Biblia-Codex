@@ -1,4 +1,4 @@
-package com.kerygma.biblia.data
+package com.codex.biblia.data
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

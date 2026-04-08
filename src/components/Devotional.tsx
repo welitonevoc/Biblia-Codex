@@ -68,9 +68,9 @@ const REFLECTION_PROMPTS = [
   'Como este texto se conecta com o evangelho?',
 ];
 
-const DEVOTIONAL_COMPLETED_KEY = 'kerygma-devocional-completed';
-const DEVOTIONAL_FAVORITES_KEY = 'kerygma-devocional-favorites';
-const DEVOTIONAL_REFLECTIONS_KEY = 'kerygma-devocional-reflections';
+const DEVOTIONAL_COMPLETED_KEY = 'codex-devocional-completed';
+const DEVOTIONAL_FAVORITES_KEY = 'codex-devocional-favorites';
+const DEVOTIONAL_REFLECTIONS_KEY = 'codex-devocional-reflections';
 const DEVOTIONAL_DAY_SEPARATOR = '::';
 
 type ReferenceInfo = {

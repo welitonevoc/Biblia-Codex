@@ -337,7 +337,7 @@ export const ModuleManagement: React.FC = () => {
                   <div className="space-y-1">
                     <span className="ui-text text-[9px] font-black uppercase tracking-widest text-gold">Estrutura Local</span>
                     <ul className="ui-text text-[11px] opacity-40 space-y-1">
-                      <li>• Kerygma/modules/installed/</li>
+                      <li>• Codex/modules/installed/</li>
                     </ul>
                   </div>
                 </div>

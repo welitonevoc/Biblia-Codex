@@ -20,7 +20,7 @@ export interface ModuleInfo {
   size?: number;
 }
 
-const BASE_DIR = 'Kerygma/modules/installed';
+const BASE_DIR = 'Codex/modules/installed';
 const SUB_DIRS = ['mybible', 'mysword', 'sword', 'epub'];
 const SQLITE_HEADER = 'SQLite format 3\u0000';
 const DOC_PREFIX = 'documents://';

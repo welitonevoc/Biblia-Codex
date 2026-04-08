@@ -81,7 +81,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                       <BookOpen className="h-6 w-6" />
                     </div>
                     <div>
-                      <div className="premium-section-title opacity-80 text-[10px] sm:text-[12px]">Bíblia Kerygma</div>
+                      <div className="premium-section-title opacity-80 text-[10px] sm:text-[12px]">Bíblia Codex</div>
                       <div className="font-display text-xl sm:text-2xl font-semibold tracking-tight">Leitura viva</div>
                     </div>
                   </div>

@@ -3,10 +3,10 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
-    namespace "com.kerygma.biblia"
+    namespace "com.codex.biblia"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.kerygma.biblia"
+        applicationId "com.codex.biblia"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

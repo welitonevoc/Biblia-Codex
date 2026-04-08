@@ -45,7 +45,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
         const data = await BibleService.getCommentary(book.id, verse.chapter, verse.verse, settings.ai.model);
         setContent(data);
       } else if (type === 'dictionary') {
-        const data = await BibleService.getDictionary('Kerygma');
+        const data = await BibleService.getDictionary('Codex');
         setContent(data);
       } else if (type === 'xrefs') {
         const data = await BibleService.getCrossReferences(book.id, verse.chapter, verse.verse, settings.ai.model);

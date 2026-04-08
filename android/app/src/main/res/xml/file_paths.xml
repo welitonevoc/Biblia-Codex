@@ -7,6 +7,6 @@
     <external-files-path name="documents" path="Documents" />
     <external-path name="external_files" path="." />
     
-    <!-- Kerygma modules directory -->
-    <external-files-path name="kerygma_modules" path="Kerygma/modules" />
+    <!-- Codex modules directory -->
+    <external-files-path name="codex_modules" path="Codex/modules" />
 </paths>

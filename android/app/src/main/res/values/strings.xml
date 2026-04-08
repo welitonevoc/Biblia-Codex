@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Bíblia Kerygma</string>
-    <string name="title_activity_main">Bíblia Kerygma</string>
-    <string name="package_name">com.kerygma.biblia</string>
-    <string name="custom_url_scheme">com.kerygma.biblia</string>
+    <string name="app_name">Bíblia Codex</string>
+    <string name="title_activity_main">Bíblia Codex</string>
+    <string name="package_name">com.codex.biblia</string>
+    <string name="custom_url_scheme">com.codex.biblia</string>
 </resources>

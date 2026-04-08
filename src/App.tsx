@@ -44,14 +44,14 @@ function AppContent() {
   const [isStudyOpen, setIsStudyOpen] = useState(false);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [selectedVersesForStudy, setSelectedVersesForStudy] = useState<{ verse: number, text: string }[]>([]);
-  const [showOnboarding, setShowOnboarding] = useState(!localStorage.getItem('kerygma-onboarded'));
+  const [showOnboarding, setShowOnboarding] = useState(!localStorage.getItem('codex-onboarded'));
   const [showPermissionRequest, setShowPermissionRequest] = useState(false);
 
   // Verificar permissões após onboarding
   useEffect(() => {
     const checkPermissions = async () => {
       // Só verifica se não é primeira vez (já completou onboarding)
-      const hasOnboarded = localStorage.getItem('kerygma-onboarded');
+      const hasOnboarded = localStorage.getItem('codex-onboarded');
       const hasRequestedPermission = localStorage.getItem('permissionRequested');
 
       if (hasOnboarded && !hasRequestedPermission &&
@@ -323,7 +323,7 @@ function AppContent() {
         {showOnboarding && (
           <Onboarding
             onComplete={() => {
-              localStorage.setItem('kerygma-onboarded', 'true');
+              localStorage.setItem('codex-onboarded', 'true');
               setShowOnboarding(false);
             }}
           />

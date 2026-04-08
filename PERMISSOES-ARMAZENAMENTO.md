@@ -2,7 +2,7 @@
 
 ## 📋 Problema
 
-Ao instalar o APK da Bíblia Kerygma em dispositivos com **Android 13 ou superior**, os usuários não conseguiam importar módulos MySword/MyBible devido à falta de permissão de armazenamento.
+Ao instalar o APK da Bíblia Codex em dispositivos com **Android 13 ou superior**, os usuários não conseguiam importar módulos MySword/MyBible devido à falta de permissão de armazenamento.
 
 ### Causa Raiz
 
@@ -92,8 +92,8 @@ const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     <!-- Documents directory for module files -->
     <external-files-path name="documents" path="Documents" />
     
-    <!-- Kerygma modules directory -->
-    <external-files-path name="kerygma_modules" path="Kerygma/modules" />
+    <!-- Codex modules directory -->
+    <external-files-path name="codex_modules" path="Codex/modules" />
 </paths>
 ```
 
@@ -178,20 +178,20 @@ const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
 ```bash
 # Verificar permissões do app
-adb shell dumpsys package com.kerygma.biblia | grep permission
+adb shell dumpsys package com.codex.biblia | grep permission
 
 # Conceder permissão manualmente (Android 13+)
-adb shell pm grant com.kerygma.biblia android.permission.READ_MEDIA_IMAGES
-adb shell pm grant com.kerygma.biblia android.permission.READ_MEDIA_VIDEO
-adb shell pm grant com.kerygma.biblia android.permission.READ_MEDIA_AUDIO
+adb shell pm grant com.codex.biblia android.permission.READ_MEDIA_IMAGES
+adb shell pm grant com.codex.biblia android.permission.READ_MEDIA_VIDEO
+adb shell pm grant com.codex.biblia android.permission.READ_MEDIA_AUDIO
 
 # Conceder permissão manualmente (Android 6-12)
-adb shell pm grant com.kerygma.biblia android.permission.READ_EXTERNAL_STORAGE
-adb shell pm grant com.kerygma.biblia android.permission.WRITE_EXTERNAL_STORAGE
+adb shell pm grant com.codex.biblia android.permission.READ_EXTERNAL_STORAGE
+adb shell pm grant com.codex.biblia android.permission.WRITE_EXTERNAL_STORAGE
 
 # Verificar status das permissões
-adb shell appops get com.kerygma.biblia READ_EXTERNAL_STORAGE
-adb shell appops get com.kerygma.biblia WRITE_EXTERNAL_STORAGE
+adb shell appops get com.codex.biblia READ_EXTERNAL_STORAGE
+adb shell appops get com.codex.biblia WRITE_EXTERNAL_STORAGE
 ```
 
 ### Logs do App
@@ -234,7 +234,7 @@ console.log('Android version:', androidVersion);
 
 **Solução:**
 - Verifique `file_paths.xml`
-- Certifique-se de que o diretório `Documents/Kerygma/modules` existe
+- Certifique-se de que o diretório `Documents/Codex/modules` existe
 - Use o **Device File Explorer** no Android Studio
 
 ### 3. Funciona no Android 12, mas não no 13+

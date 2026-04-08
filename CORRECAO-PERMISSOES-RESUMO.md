@@ -36,11 +36,11 @@
 
 **Mudanças:**
 - Adicionado suporte ao diretório `Documents`
-- Adicionado caminho específico para módulos Kerygma
+- Adicionado caminho específico para módulos Codex
 
 ```xml
 <external-files-path name="documents" path="Documents" />
-<external-files-path name="kerygma_modules" path="Kerygma/modules" />
+<external-files-path name="codex_modules" path="Codex/modules" />
 ```
 
 ---
@@ -160,7 +160,7 @@ npx cap open android
 2. **Android 13+ sem permissão** → Diálogo aparece
 3. **Usuário clica "Conceder Permissão"** → Sistema solicita acesso
 4. **Usuário permite** → Importação liberada
-5. **Usuário importa módulo** → Arquivo salvo em `Documents/Kerygma/modules/`
+5. **Usuário importa módulo** → Arquivo salvo em `Documents/Codex/modules/`
 
 ---
 
@@ -203,12 +203,12 @@ npx cap open android
 adb install android/app/build/outputs/apk/release/app-release-unsigned.apk
 
 # Verificar permissões
-adb shell dumpsys package com.kerygma.biblia | grep permission
+adb shell dumpsys package com.codex.biblia | grep permission
 
 # Conceder permissões manualmente (Android 13+)
-adb shell pm grant com.kerygma.biblia android.permission.READ_MEDIA_IMAGES
-adb shell pm grant com.kerygma.biblia android.permission.READ_MEDIA_VIDEO
-adb shell pm grant com.kerygma.biblia android.permission.READ_MEDIA_AUDIO
+adb shell pm grant com.codex.biblia android.permission.READ_MEDIA_IMAGES
+adb shell pm grant com.codex.biblia android.permission.READ_MEDIA_VIDEO
+adb shell pm grant com.codex.biblia android.permission.READ_MEDIA_AUDIO
 
 # Logcat em tempo real
 adb logcat | Select-String "permissions|ModuleManagement|Filesystem"

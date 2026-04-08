@@ -1,9 +1,9 @@
 ---
-name: kerygma-ai-study
-description: GenAI integration patterns for Biblia Kerygma. Using Google Gemini API, Pentecostal Assembly style prompting, and Firebase Firestore caching. Triggers on AI integration, gemini, aiStudyService, theological bot.
+name: codex-ai-study
+description: GenAI integration patterns for Biblia Codex. Using Google Gemini API, Pentecostal Assembly style prompting, and Firebase Firestore caching. Triggers on AI integration, gemini, aiStudyService, theological bot.
 ---
 
-# Biblia Kerygma - AI Study Service
+# Biblia Codex - AI Study Service
 
 This skill outlines how the `@google/genai` module integrates with the theological rules, specifically configured for Assembly of God ("Assembleiano Clássico") patterns and Firestore caching.
 

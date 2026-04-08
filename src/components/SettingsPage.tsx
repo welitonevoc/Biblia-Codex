@@ -92,7 +92,7 @@ export const SettingsPage: React.FC = () => {
     >
       <div className="premium-page__content max-w-6xl pb-32">
         <header className="premium-hero space-y-5">
-          <span className="premium-kicker">Studio Kerygma</span>
+          <span className="premium-kicker">Studio Codex</span>
           <h1 className="premium-title">Configurações</h1>
           <p className="premium-subtitle">
             Ajuste o app inteiro a partir de um único sistema visual: leitura, contraste, tipografia, navegação e temas.

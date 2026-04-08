@@ -27,7 +27,7 @@ export const scanForBibleModules = async (): Promise<BibleModule[]> => {
     }));
   }
 
-  const BASE_PATH = 'Kerygma/modules/installed';
+  const BASE_PATH = 'Codex/modules/installed';
   const SUB_DIRS = ['mybible', 'mysword', 'sword', 'epub'];
   const allModules: BibleModule[] = [];
 

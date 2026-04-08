@@ -24,7 +24,7 @@ Garantir que nenhuma linha de código quebre a integridade das Sagradas Escritur
 ## Contexto do Projeto
 - App Android em Kotlin com Jetpack Compose, Room, Koin
 - Suporta os formatos MySword (.bbl.mybible) e MyBible (.SQLite3)
-- Base: AndBible/Kerygma + YouVersion Platform API
+- Base: AndBible/Codex + YouVersion Platform API
 - Desenvolvido para a comunidade cristã brasileira
 
 ## Domínio Bíblico — Regras Absolutas

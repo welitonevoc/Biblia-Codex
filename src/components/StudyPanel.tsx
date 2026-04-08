@@ -70,7 +70,7 @@ export const StudyPanel: React.FC<StudyPanelProps> = ({
             <div className="p-4 sm:p-8 border-b border-bible-accent/10 flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <Sparkles className="w-6 h-6 text-bible-accent" />
-                <h2 className="text-xl sm:text-2xl font-display font-bold">Análise Kerygma</h2>
+                <h2 className="text-xl sm:text-2xl font-display font-bold">Análise Codex</h2>
               </div>
               <button 
                 onClick={onClose}

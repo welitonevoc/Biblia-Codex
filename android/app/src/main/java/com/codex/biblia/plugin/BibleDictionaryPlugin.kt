@@ -1,11 +1,11 @@
-package com.kerygma.biblia.plugin
+package com.codex.biblia.plugin
 
 import com.getcapacitor.JSObject
 import com.getcapacitor.Plugin
 import com.getcapacitor.PluginCall
 import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
-import com.kerygma.biblia.service.DictionaryService
+import com.codex.biblia.service.DictionaryService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

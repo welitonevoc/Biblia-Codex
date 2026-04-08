@@ -1,4 +1,4 @@
-# 📱 Verificação Android - Bíblia Kerygma
+# 📱 Verificação Android - Bíblia Codex
 
 ## ✅ Status das Funcionalidades - App Web vs Android
 
@@ -164,7 +164,7 @@ npx cap open android
 ## 📁 Estrutura de Arquivos
 
 ```
-biblia-kerygma/
+biblia-codex/
 ├── src/                      ← Código React (compartilhado)
 │   ├── components/
 │   │   ├── MapsPage.tsx      ← NOVO - Mapas
@@ -176,7 +176,7 @@ biblia-kerygma/
 │   ├── app/
 │   │   ├── src/main/
 │   │   │   ├── java/
-│   │   │   │   └── com/kerygma/biblia/
+│   │   │   │   └── com.codex.biblia/
 │   │   │   │       ├── MainActivity.java
 │   │   │   │       ├── plugin/
 │   │   │   │       └── service/

@@ -39,7 +39,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <BookOpen className="h-6 w-6" />
             </div>
             <div>
-              <div className="ui-text text-[11px] font-extrabold uppercase tracking-[0.24em] text-bible-text/45">Bíblia Kerygma</div>
+              <div className="ui-text text-[11px] font-extrabold uppercase tracking-[0.24em] text-bible-text/45">Bíblia Codex</div>
               <div className="font-display text-lg font-semibold tracking-tight text-bible-text md:text-2xl">Leitura premium</div>
             </div>
           </div>

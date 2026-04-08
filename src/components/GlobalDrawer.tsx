@@ -91,7 +91,7 @@ export const GlobalDrawer: React.FC = () => {
                     <BookOpen className="w-6 h-6" />
                   </div>
                   <div className="flex flex-col">
-                    <h1 className="ui-text text-lg font-black uppercase tracking-widest text-bible-accent">Kerygma</h1>
+                    <h1 className="ui-text text-lg font-black uppercase tracking-widest text-bible-accent">Codex</h1>
                     <span className="ui-text text-[10px] font-bold opacity-30">V. 2.5.0 Premium</span>
                   </div>
                 </div>

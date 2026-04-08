@@ -93,7 +93,7 @@ export const checkStoragePermission = async (): Promise<PermissionStatus> => {
     try {
       await Filesystem.readdir({
         directory: Directory.Documents,
-        path: 'Kerygma',
+        path: 'Codex',
       });
       return {
         storage: 'granted',
@@ -149,7 +149,7 @@ export const requestStoragePermission = async (): Promise<PermissionStatus> => {
     // Tenta criar o diretório base para disparar o pedido de permissão do sistema (Android < 13)
     await Filesystem.mkdir({
       directory: Directory.Documents,
-      path: 'Kerygma',
+      path: 'Codex',
       recursive: true,
     });
     return {
@@ -232,7 +232,7 @@ export const getPermissionInfo = async (): Promise<{
 
 export const testStorageAccess = async (): Promise<boolean> => {
   try {
-    const testPath = 'Kerygma/.test_permission';
+    const testPath = 'Codex/.test_permission';
     const testContent = 'test';
 
     await Filesystem.writeFile({

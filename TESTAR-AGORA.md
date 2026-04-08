@@ -35,7 +35,7 @@ npx cap open android
 4. Aguarde a instalação no dispositivo
 
 **No Dispositivo:**
-1. Abra o app **Bíblia Kerygma**
+1. Abra o app **Bíblia Codex**
 2. Vá em **Configurações** → **Módulos**
 3. Toque na aba **Importar**
 4. **Diálogo de permissão deve aparecer** (Android 13+)
@@ -95,12 +95,12 @@ adb logcat | Select-String "permissions|ModuleManagement|Filesystem"
 
 ```bash
 # Verificar permissões manualmente
-adb shell dumpsys package com.kerygma.biblia | grep permission
+adb shell dumpsys package com.codex.biblia | grep permission
 
 # Conceder permissões manualmente (Android 13+)
-adb shell pm grant com.kerygma.biblia android.permission.READ_MEDIA_IMAGES
-adb shell pm grant com.kerygma.biblia android.permission.READ_MEDIA_VIDEO
-adb shell pm grant com.kerygma.biblia android.permission.READ_MEDIA_AUDIO
+adb shell pm grant com.codex.biblia android.permission.READ_MEDIA_IMAGES
+adb shell pm grant com.codex.biblia android.permission.READ_MEDIA_VIDEO
+adb shell pm grant com.codex.biblia android.permission.READ_MEDIA_AUDIO
 ```
 
 ### Limpar e Rebuild:
@@ -190,12 +190,12 @@ npx cap open android
 ## 💡 Dica Importante
 
 **Android 13+ usa "Scoped Storage"** - o app só pode acessar:
-- Seu próprio diretório (`Documents/Kerygma/`)
+- Seu próprio diretório (`Documents/Codex/`)
 - Arquivos selecionados pelo usuário (via File Picker)
 
 **Solução implementada:**
 - Usa `Directory.Documents` do Capacitor
-- Cria diretório `Kerygma/modules/installed/`
+- Cria diretório `Codex/modules/installed/`
 - Respeita as restrições do Android 13+
 
 ---

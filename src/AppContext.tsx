@@ -79,7 +79,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       accentColor: defaultPreset.colors.accent,
       contrast: 1,
     };
-    const saved = localStorage.getItem('kerygma-theme');
+    const saved = localStorage.getItem('codex-theme');
     if (!saved) return defaults;
     try {
       const parsed = JSON.parse(saved);
@@ -141,7 +141,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         status: 'idle',
       },
     };
-    const saved = localStorage.getItem('kerygma-settings');
+    const saved = localStorage.getItem('codex-settings');
     if (!saved) return defaults;
     try {
       return { ...defaults, ...JSON.parse(saved) };
@@ -222,7 +222,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('kerygma-theme', JSON.stringify(config));
+    localStorage.setItem('codex-theme', JSON.stringify(config));
     
     // Apply theme to document
     const root = document.documentElement;
@@ -239,7 +239,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [config, user, syncToCloud, settings]);
 
   useEffect(() => {
-    localStorage.setItem('kerygma-settings', JSON.stringify(settings));
+    localStorage.setItem('codex-settings', JSON.stringify(settings));
     if (user) {
       syncToCloud(config, settings);
     }

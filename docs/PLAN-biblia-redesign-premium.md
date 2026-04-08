@@ -1,8 +1,8 @@
-# Plano de Redesign Premium da Bíblia Kerygma
+# Plano de Redesign Premium da Bíblia Codex
 
 ## Contexto
 
-Solicitação: refazer o design e o layout da Bíblia Kerygma sem alterar funcionalidades, unificando a experiência visual em um único modelo premium inspirado em apps como YouVersion, Dwell, Olive Tree, Logos e Hallow.
+Solicitação: refazer o design e o layout da Bíblia Codex sem alterar funcionalidades, unificando a experiência visual em um único modelo premium inspirado em apps como YouVersion, Dwell, Olive Tree, Logos e Hallow.
 
 Referências internas consideradas:
 - `.agent/AGENTE_AUTONOMO.md`

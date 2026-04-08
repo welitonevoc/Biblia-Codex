@@ -1,4 +1,4 @@
-# ✅ Build Android - Bíblia Kerygma
+# ✅ Build Android - Bíblia Codex
 
 ## 📊 Status da Compilação
 
@@ -155,7 +155,7 @@ dist/assets/index-DQqgiX_0.js        1,834.28 kB │ gzip: 514.76 kB
 #### 4. file_paths.xml - Caminhos Configurados
 ```xml
 <external-files-path name="documents" path="Documents" />
-<external-files-path name="kerygma_modules" path="Kerygma/modules" />
+<external-files-path name="codex_modules" path="Codex/modules" />
 ```
 
 ### Documentação
@@ -172,8 +172,8 @@ dist/assets/index-DQqgiX_0.js        1,834.28 kB │ gzip: 514.76 kB
 
 ### Capacitor 6
 ```typescript
-appId: 'com.kerygma.biblia'
-appName: 'Bíblia Kerygma'
+appId: 'com.codex.biblia'
+appName: 'Bíblia Codex'
 webDir: 'dist'
 android: {
   allowMixedContent: false,
@@ -266,7 +266,7 @@ android/app/build/outputs/apk/release/app-release.apk
 
 ### Keystore (Para APK Release)
 ```bash
-keytool -genkey -v -keystore kerygma-release.keystore -alias kerygma -keyalg RSA -keysize 2048 -validity 10000
+keytool -genkey -v -keystore codex-release.keystore -alias codex -keyalg RSA -keysize 2048 -validity 10000
 ```
 
 ---

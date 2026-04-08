@@ -32,7 +32,7 @@ console.log(`Pode acessar: ${status.canAccessStorage}`);
 ```
 
 **Comportamento por versão:**
-- **Android 13+ (API 33+):** Verifica acesso ao diretório `Documents/Kerygma`
+- **Android 13+ (API 33+):** Verifica acesso ao diretório `Documents/Codex`
 - **Android 6-12 (API 23-32):** Verifica permissão legacy
 - **Android < 6:** Retorna `granted` automaticamente
 - **Web/Outros:** Retorna `granted` automaticamente
@@ -56,7 +56,7 @@ if (result.canAccessStorage) {
 ```
 
 **Comportamento:**
-- Tenta criar diretório `Documents/Kerygma`
+- Tenta criar diretório `Documents/Codex`
 - Se existir, retorna `granted`
 - Se falhar por permissão, retorna `denied`
 - Detecta automaticamente erros de permissão vs outros erros
@@ -180,7 +180,7 @@ if (works) {
 ```
 
 **O que faz:**
-1. Escreve arquivo `Kerygma/.test_permission`
+1. Escreve arquivo `Codex/.test_permission`
 2. Lê o arquivo
 3. Verifica conteúdo
 4. Deleta arquivo de teste
@@ -330,7 +330,7 @@ const debugPermissions = async () => {
                                 ↓
                       ┌─────────────────────┐
                       │ Tenta criar         │
-                      │ Documents/Kerygma   │
+                      │ Documents/Codex   │
                       └─────────────────────┘
                                 ↓
                       ┌─────────────────────┐

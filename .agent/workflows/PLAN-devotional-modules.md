@@ -2,7 +2,7 @@
 
 ## Contexto
 
-O app Biblia Kerygma já possui:
+O app Biblia Codex já possui:
 - Sistema de módulos com importação via `ModuleManagement.tsx`
 - Detecção automática de categoria `.devot.` → `devotional` em `moduleService.ts`
 - Leitura de SQLite via `sql.js` (WASM) em `BibleService.ts`
