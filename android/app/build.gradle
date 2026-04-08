@@ -68,8 +68,8 @@ dependencies {
     implementation "androidx.room:room-ktx:2.6.1"
     kapt "androidx.room:room-compiler:2.6.1"
 
-    // Koin atualizado para v4
-    implementation "io.insert-koin:koin-android:4.2.0"
+    // Koin v4 em versão com metadata Kotlin mais compatível com R8 do AGP atual
+    implementation "io.insert-koin:koin-android:4.1.0"
 
     // Gemini
     implementation "com.google.ai.client.generativeai:generativeai:0.9.0"
