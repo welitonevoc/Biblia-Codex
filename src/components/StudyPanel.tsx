@@ -67,10 +67,10 @@ export const StudyPanel: React.FC<StudyPanelProps> = ({
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="fixed right-0 top-0 bottom-0 w-full max-w-xl bg-bible-bg border-l border-bible-accent/20 z-[200] shadow-2xl flex flex-col"
           >
-            <div className="p-8 border-b border-bible-accent/10 flex items-center justify-between">
+            <div className="p-4 sm:p-8 border-b border-bible-accent/10 flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <Sparkles className="w-6 h-6 text-bible-accent" />
-                <h2 className="text-2xl font-display font-bold">Análise Kerygma</h2>
+                <h2 className="text-xl sm:text-2xl font-display font-bold">Análise Kerygma</h2>
               </div>
               <button 
                 onClick={onClose}
@@ -80,7 +80,7 @@ export const StudyPanel: React.FC<StudyPanelProps> = ({
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8">
               {selectedVerses.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40">
                   <BookOpen className="w-12 h-12" />

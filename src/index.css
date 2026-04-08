@@ -679,6 +679,82 @@ select {
   opacity: 0.64;
 }
 
+@media (max-width: 640px) {
+  .premium-page {
+    padding: 14px 12px 84px;
+  }
+
+  .premium-page__content {
+    gap: 16px;
+  }
+
+  .premium-hero {
+    border-radius: 28px;
+    padding: 18px;
+  }
+
+  .premium-kicker {
+    padding: 6px 10px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+  }
+
+  .premium-title {
+    font-size: clamp(1.9rem, 8vw, 2.7rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+  }
+
+  .premium-subtitle {
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .premium-card,
+  .premium-card-strong,
+  .glass-panel {
+    border-radius: 24px;
+  }
+
+  .premium-card-soft {
+    border-radius: 20px;
+  }
+
+  .premium-section-title {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+  }
+
+  .premium-input {
+    min-height: 46px;
+    border-radius: 18px;
+    padding: 0 14px;
+  }
+
+  .premium-chip {
+    min-height: 38px;
+    padding: 8px 12px;
+  }
+
+  .premium-icon-button {
+    width: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    border-radius: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .bible-text {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .premium-page {
+    padding: 12px 10px 80px;
+  }
+}
+
 .strongs-link {
   color: var(--accent-bible);
   opacity: 0.5;

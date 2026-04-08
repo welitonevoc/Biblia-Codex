@@ -27,8 +27,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [showVersionMenu, setShowVersionMenu] = React.useState(false);
 
   return (
-    <header className="app-frame sticky top-0 z-50 px-4 pb-3 pt-4 md:px-6">
-      <div className="premium-card mx-auto flex min-h-[78px] max-w-[1320px] items-center justify-between gap-3 rounded-[30px] px-3 py-3 md:px-5">
+    <header className="app-frame sticky top-0 z-50 px-2 pb-2 pt-2 sm:px-4 sm:pb-3 sm:pt-4 md:px-6">
+      <div className="premium-card mx-auto flex min-h-[68px] max-w-[1320px] items-center justify-between gap-2 rounded-[24px] px-2 py-2 sm:min-h-[78px] sm:gap-3 sm:rounded-[30px] sm:px-3 sm:py-3 md:px-5">
         <div className="flex items-center gap-2 md:gap-3">
           <button onClick={onToggleSidebar} className="premium-icon-button rounded-2xl">
             <Menu className="h-5 w-5" />
@@ -40,7 +40,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </div>
             <div>
               <div className="ui-text text-[11px] font-extrabold uppercase tracking-[0.24em] text-bible-text/45">Bíblia Kerygma</div>
-              <div className="font-display text-2xl font-semibold tracking-tight text-bible-text">Leitura premium</div>
+              <div className="font-display text-lg font-semibold tracking-tight text-bible-text md:text-2xl">Leitura premium</div>
             </div>
           </div>
         </div>
@@ -54,7 +54,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
           <div className="min-w-0">
             <div className="ui-text text-[10px] font-extrabold uppercase tracking-[0.22em] text-bible-text/40">Posição Atual</div>
-            <div className="truncate font-display text-2xl font-semibold tracking-tight text-bible-text">
+            <div className="truncate font-display text-base font-semibold tracking-tight text-bible-text sm:text-lg md:text-2xl">
               {currentBook.name} {currentChapter}
             </div>
           </div>
@@ -82,7 +82,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                     initial={{ opacity: 0, y: 8, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                    className="premium-card absolute right-0 z-50 mt-3 w-64 rounded-[28px] p-2"
+                    className="premium-card absolute right-0 z-50 mt-3 w-[min(90vw,18rem)] rounded-[24px] p-2"
                   >
                     <div className="premium-section-title px-3 py-2 opacity-80">Versões Instaladas</div>
                     <div className="premium-scroll max-h-72 overflow-y-auto">
@@ -111,7 +111,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </AnimatePresence>
           </div>
 
-          <button className="premium-icon-button rounded-2xl">
+          <button className="premium-icon-button hidden rounded-2xl sm:inline-flex">
             <Search className="h-5 w-5" />
           </button>
           <button onClick={onSettingsOpen} className="premium-icon-button rounded-2xl">

@@ -104,7 +104,7 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="relative w-full max-w-2xl h-[80vh] bg-premium-dark rounded-t-[2.5rem] border-t border-white/10 shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
+          className="relative w-full max-w-2xl h-[88dvh] sm:h-[80vh] bg-premium-dark rounded-t-[1.8rem] sm:rounded-t-[2.5rem] border-t border-white/10 shadow-2xl overflow-hidden flex flex-col pointer-events-auto"
         >
           {/* Top Handle */}
           <div className="absolute top-0 left-0 right-0 h-10 flex items-center justify-center">
@@ -112,10 +112,10 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
           </div>
 
           {/* Header */}
-          <div className="p-8 pt-10 border-b border-white/5 space-y-4">
+          <div className="p-4 pt-8 sm:p-8 sm:pt-10 border-b border-white/5 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-3xl font-display font-black text-gold">{term}</h2>
+                <h2 className="text-2xl sm:text-3xl font-display font-black text-gold">{term}</h2>
                 {context && <p className="ui-text text-[10px] uppercase tracking-widest opacity-40 font-bold mt-1">Ref: {context}</p>}
               </div>
               <button 
@@ -136,7 +136,7 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
                 )}
               >
                 <Book className="w-4 h-4" />
-                <span className="ui-text text-[10px] font-black uppercase tracking-widest">Dicionário Offline</span>
+                <span className="ui-text text-[9px] sm:text-[10px] font-black uppercase tracking-wide sm:tracking-widest">Dicionário Offline</span>
               </button>
               <button 
                 onClick={() => { setActiveTab('ai'); handleSearchAI(); }}
@@ -146,13 +146,13 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
                 )}
               >
                 <Sparkles className="w-4 h-4" />
-                <span className="ui-text text-[10px] font-black uppercase tracking-widest">Assistente IA</span>
+                <span className="ui-text text-[9px] sm:text-[10px] font-black uppercase tracking-wide sm:tracking-widest">Assistente IA</span>
               </button>
             </div>
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 overflow-y-auto p-8 premium-scroll pb-24">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 premium-scroll pb-16 sm:pb-24">
             <AnimatePresence mode="wait">
               {activeTab === 'local' ? (
                 <motion.div 

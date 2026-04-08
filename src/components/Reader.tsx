@@ -385,7 +385,7 @@ export const Reader: React.FC<ReaderProps> = ({
               initial={settings.navigation.navAnimation ? { opacity: 0, y: 20 } : {}}
               animate={{ opacity: 1, y: 0 }}
               key={`${book.id}-${chapter}`}
-              className="font-display text-5xl font-semibold tracking-tight md:text-7xl"
+            className="font-display text-3xl sm:text-4xl font-semibold tracking-tight md:text-7xl"
             >
               {book.name} {chapter}
             </motion.h1>
@@ -396,7 +396,7 @@ export const Reader: React.FC<ReaderProps> = ({
         )}
 
         {loading ? (
-          <div className="premium-card flex flex-col items-center justify-center space-y-4 rounded-[36px] py-24">
+          <div className="premium-card flex flex-col items-center justify-center space-y-4 rounded-[30px] sm:rounded-[36px] py-16 sm:py-24">
             <div className="w-12 h-12 border-4 border-bible-accent/20 border-t-bible-accent rounded-full animate-spin" />
             <p className="ui-text text-sm opacity-50 italic">Carregando as Escrituras...</p>
           </div>
@@ -405,7 +405,7 @@ export const Reader: React.FC<ReaderProps> = ({
             initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
             animate={{ opacity: 1 }}
             className={cn(
-                "premium-card rounded-[36px] p-6 md:p-8 space-y-6",
+                "premium-card rounded-[30px] sm:rounded-[36px] p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6",
                 settings.textDisplay.paragraphMode ? "flex flex-wrap items-baseline gap-x-1.5" : "flex flex-col space-y-4"
               )}
             style={{ 

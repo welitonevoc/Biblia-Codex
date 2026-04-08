@@ -57,7 +57,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   return (
     <div className="fixed inset-0 bg-bible-bg z-[500] flex flex-col overflow-hidden">
       {/* Progress Bar */}
-      <div className="flex gap-1 px-6 pt-12 pb-8">
+      <div className="flex gap-1 px-4 sm:px-6 pt-8 sm:pt-12 pb-6 sm:pb-8">
         {Array.from({ length: totalSteps }).map((_, i) => (
           <div
             key={i}
@@ -67,7 +67,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         ))}
       </div>
 
-      <div className="flex-1 flex flex-col px-6 pb-12 max-w-lg mx-auto w-full">
+      <div className="flex-1 flex flex-col px-4 sm:px-6 pb-8 sm:pb-12 max-w-lg mx-auto w-full">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -78,12 +78,12 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
           >
             {step === 0 && (
               <div className="flex-1 flex flex-col items-center justify-center text-center space-y-8">
-                <div className="w-24 h-24 bg-bible-accent rounded-[32px] flex items-center justify-center text-bible-bg shadow-2xl shadow-bible-accent/20">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-bible-accent rounded-[26px] sm:rounded-[32px] flex items-center justify-center text-bible-bg shadow-2xl shadow-bible-accent/20">
                   <BookOpen className="w-12 h-12" />
                 </div>
                 <div className="space-y-4">
-                  <h1 className="text-4xl font-display font-bold tracking-tight">Bíblia Kerygma</h1>
-                  <p className="ui-text opacity-60 leading-relaxed text-lg">
+                  <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-tight">Bíblia Kerygma</h1>
+                  <p className="ui-text opacity-60 leading-relaxed text-base sm:text-lg">
                     A Bíblia no seu ritmo.<br />Um versículo por vez, um dia de cada vez.
                   </p>
                 </div>
@@ -101,7 +101,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             {step === 1 && (
               <div className="space-y-8">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-display font-bold">Qual é o seu objetivo?</h2>
+                  <h2 className="text-2xl sm:text-3xl font-display font-bold">Qual é o seu objetivo?</h2>
                   <p className="ui-text opacity-60">Vamos personalizar sua experiência</p>
                 </div>
                 <div className="grid gap-3">
@@ -117,7 +117,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                         <g.icon className="w-6 h-6" />
                       </div>
                       <div>
-                        <div className="font-display font-bold text-lg">{g.label}</div>
+                        <div className="font-display font-bold text-base sm:text-lg">{g.label}</div>
                         <div className="ui-text text-xs opacity-40">{g.sub}</div>
                       </div>
                     </button>
@@ -138,7 +138,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             {step === 2 && (
               <div className="space-y-8">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-display font-bold">Quanto tempo por dia?</h2>
+                  <h2 className="text-2xl sm:text-3xl font-display font-bold">Quanto tempo por dia?</h2>
                   <p className="ui-text opacity-60">Você pode mudar isso quando quiser</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -169,11 +169,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             {step === 3 && (
               <div className="space-y-8">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-display font-bold">Ativar lembretes?</h2>
+                  <h2 className="text-2xl sm:text-3xl font-display font-bold">Ativar lembretes?</h2>
                   <p className="ui-text opacity-60">Usuários com notificação têm 3× mais consistência</p>
                 </div>
 
-                <div className="bg-bible-accent/5 border border-bible-accent/10 rounded-[32px] p-6 space-y-4">
+                <div className="bg-bible-accent/5 border border-bible-accent/10 rounded-[28px] sm:rounded-[32px] p-4 sm:p-6 space-y-4">
                   <div className="flex items-center space-x-3 opacity-40">
                     <Bell className="w-4 h-4" />
                     <span className="ui-text text-[10px] font-bold uppercase tracking-widest">Notificação</span>
@@ -213,11 +213,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             {step === 4 && (
               <div className="space-y-8">
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-display font-bold">Seu plano personalizado</h2>
+                  <h2 className="text-2xl sm:text-3xl font-display font-bold">Seu plano personalizado</h2>
                   <p className="ui-text opacity-60">Baseado no seu objetivo</p>
                 </div>
 
-                <div className="bg-bible-accent/5 border border-bible-accent/10 rounded-[40px] p-8 space-y-6">
+                <div className="bg-bible-accent/5 border border-bible-accent/10 rounded-[30px] sm:rounded-[40px] p-5 sm:p-8 space-y-6">
                   <div className="space-y-2">
                     <h3 className="font-display font-bold text-2xl">{GOALS[goal].label}</h3>
                     <p className="ui-text text-sm opacity-60">{GOALS[goal].sub} · 30 dias</p>
@@ -246,7 +246,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
               <div className="space-y-8">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <h2 className="text-3xl font-display font-bold">Versículo de hoje</h2>
+                  <h2 className="text-2xl sm:text-3xl font-display font-bold">Versículo de hoje</h2>
                     <p className="ui-text opacity-60">Seu streak começou agora</p>
                   </div>
                   <div className="bg-bible-accent text-bible-bg px-4 py-2 rounded-2xl font-bold ui-text text-[10px] uppercase tracking-widest shadow-lg shadow-bible-accent/20">
@@ -254,9 +254,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   </div>
                 </div>
 
-                <div className="bg-bible-accent text-bible-bg rounded-[40px] p-10 space-y-6 shadow-2xl shadow-bible-accent/20 relative overflow-hidden">
+                <div className="bg-bible-accent text-bible-bg rounded-[30px] sm:rounded-[40px] p-5 sm:p-10 space-y-6 shadow-2xl shadow-bible-accent/20 relative overflow-hidden">
                   <Sparkles className="absolute -top-4 -right-4 w-24 h-24 opacity-10 rotate-12" />
-                  <p className="bible-text text-2xl italic leading-relaxed">
+                  <p className="bible-text text-lg sm:text-2xl italic leading-relaxed">
                     "Bem-aventurado o homem que não anda no conselho dos ímpios, mas medita na sua lei dia e noite."
                   </p>
                   <p className="ui-text text-xs font-bold uppercase tracking-widest opacity-60">Salmos 1:1–2</p>
@@ -265,7 +265,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 <div className="space-y-4">
                   <p className="ui-text text-xs font-bold uppercase tracking-widest opacity-40">O que este texto fala com você hoje?</p>
                   <textarea
-                    className="w-full bg-bible-accent/5 border border-bible-accent/10 rounded-3xl p-6 ui-text text-sm min-h-[120px] focus:outline-none focus:border-bible-accent transition-colors"
+                    className="w-full bg-bible-accent/5 border border-bible-accent/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 ui-text text-sm min-h-[110px] sm:min-h-[120px] focus:outline-none focus:border-bible-accent transition-colors"
                     placeholder="Anote sua reflexão..."
                   />
                 </div>

@@ -78,18 +78,18 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            <div className="grid min-w-[280px] grid-cols-2 gap-3">
+            <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:min-w-[280px]">
               <div className="premium-card-soft rounded-[28px] p-4">
                 <div className="premium-section-title opacity-75">Sequência</div>
                 <div className="mt-3 flex items-end gap-2">
                   <Flame className="h-5 w-5 text-gold" />
-                  <span className="font-display text-4xl font-semibold">{streak}</span>
+                  <span className="font-display text-3xl font-semibold sm:text-4xl">{streak}</span>
                 </div>
                 <div className="ui-text mt-2 text-xs text-bible-text/55">dias seguidos</div>
               </div>
               <div className="premium-card-soft rounded-[28px] p-4">
                 <div className="premium-section-title opacity-75">Plano</div>
-                <div className="mt-3 font-display text-4xl font-semibold">{planDay}</div>
+                <div className="mt-3 font-display text-3xl font-semibold sm:text-4xl">{planDay}</div>
                 <div className="ui-text mt-2 text-xs text-bible-text/55">dia atual</div>
               </div>
             </div>
@@ -144,17 +144,17 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               ].map((item) => (
                 <div key={item.label} className="premium-card-soft rounded-[28px] p-4">
                   <item.icon className="h-5 w-5 text-gold" />
-                  <div className="mt-4 font-display text-3xl font-semibold">{item.value}</div>
+                  <div className="mt-4 font-display text-2xl font-semibold sm:text-3xl">{item.value}</div>
                   <div className="ui-text mt-1 text-xs text-bible-text/55">{item.label}</div>
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="premium-card-strong flex min-h-[420px] flex-col justify-between rounded-[36px] p-6 md:p-8">
+          <section className="premium-card-strong flex min-h-[360px] flex-col justify-between rounded-[36px] p-5 sm:p-6 md:min-h-[420px] md:p-8">
             <div className="space-y-4">
               <span className="premium-kicker">Versículo do Dia</span>
-              <blockquote className="bible-text px-0 text-[1.25rem] italic leading-relaxed md:text-[1.55rem]">
+              <blockquote className="bible-text px-0 text-[1.05rem] italic leading-relaxed sm:text-[1.2rem] md:text-[1.55rem]">
                 "Bem-aventurado o homem que não anda no conselho dos ímpios, mas medita na sua lei dia e noite."
               </blockquote>
               <div className="ui-text text-xs font-extrabold uppercase tracking-[0.22em] text-bible-text/55">Salmos 1:1-2</div>

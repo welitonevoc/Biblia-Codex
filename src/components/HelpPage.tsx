@@ -31,10 +31,10 @@ export const HelpPage: React.FC = () => {
   ];
 
   return (
-    <div className="h-full overflow-y-auto bg-bible-bg p-8 md:p-16 lg:p-24">
-      <div className="max-w-4xl mx-auto space-y-16">
+    <div className="h-full overflow-y-auto bg-bible-bg p-4 sm:p-8 md:p-16 lg:p-24">
+      <div className="max-w-4xl mx-auto space-y-10 sm:space-y-16">
         <header className="space-y-6">
-          <h1 className="text-4xl md:text-6xl font-display font-bold tracking-tight">Suporte & Ajuda</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-bold tracking-tight">Suporte & Ajuda</h1>
           <div className="relative max-w-xl">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 opacity-40" />
             <input 
@@ -45,9 +45,9 @@ export const HelpPage: React.FC = () => {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
           {categories.map((cat, idx) => (
-            <div key={idx} className="p-8 rounded-3xl bg-bible-accent/5 border border-bible-accent/10 space-y-6">
+            <div key={idx} className="p-5 sm:p-8 rounded-3xl bg-bible-accent/5 border border-bible-accent/10 space-y-5 sm:space-y-6">
               <div className="p-3 bg-bible-accent/10 rounded-xl w-fit">
                 <cat.icon className="w-6 h-6 text-bible-accent" />
               </div>

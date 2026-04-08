@@ -60,17 +60,17 @@ export const Navigation: React.FC<NavigationProps> = ({
           initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
           animate={{ opacity: 1 }}
           exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-md md:p-8"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-3 backdrop-blur-md sm:p-4 md:p-8"
           onClick={onClose}
         >
           <motion.div
             initial={settings.navigation.navAnimation ? { scale: 0.96, opacity: 0, y: 18 } : {}}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={settings.navigation.navAnimation ? { scale: 0.96, opacity: 0, y: 18 } : {}}
-            className="premium-card flex h-[82vh] w-full max-w-5xl flex-col overflow-hidden rounded-[40px]"
+            className="premium-card flex h-[90dvh] w-full max-w-5xl flex-col overflow-hidden rounded-[26px] sm:h-[82vh] sm:rounded-[40px]"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="border-b border-bible-accent/10 p-5 md:p-6">
+            <div className="border-b border-bible-accent/10 p-4 sm:p-5 md:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   {step === 'chapter' && (
@@ -83,10 +83,10 @@ export const Navigation: React.FC<NavigationProps> = ({
                       <Sparkles className="h-4 w-4" />
                       Navegação Bíblica
                     </span>
-                    <h2 className="font-display text-4xl font-semibold tracking-tight text-bible-text">
+                    <h2 className="font-display text-2xl font-semibold tracking-tight text-bible-text sm:text-3xl md:text-4xl">
                       {step === 'book' ? 'Escolha um livro' : selectedBook.name}
                     </h2>
-                    <p className="ui-text mt-2 text-sm text-bible-text/55">
+                    <p className="ui-text mt-2 text-xs text-bible-text/55 sm:text-sm">
                       {step === 'book'
                         ? `Você está em ${currentBook.name} ${currentChapter}.`
                         : `Selecione o capítulo de ${selectedBook.name}.`}
@@ -101,7 +101,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             </div>
 
             {step === 'book' && (
-              <div className="border-b border-bible-accent/10 p-5 md:px-6 md:pb-5 md:pt-4">
+              <div className="border-b border-bible-accent/10 p-4 sm:p-5 md:px-6 md:pb-5 md:pt-4">
                 <div className="relative">
                   <Search className="absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-bible-text/40" />
                   <input
@@ -114,7 +114,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                   />
                 </div>
 
-                <div className="mt-4 flex gap-2">
+                <div className="mt-4 flex flex-wrap gap-2">
                   <button
                     onClick={() => setSelectedTestament('OT')}
                     className={cn("premium-chip px-5", selectedTestament === 'OT' && "premium-chip-active")}
@@ -131,7 +131,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               </div>
             )}
 
-            <div className="premium-scroll flex-1 overflow-y-auto p-5 md:p-6">
+            <div className="premium-scroll flex-1 overflow-y-auto p-4 sm:p-5 md:p-6">
               {step === 'book' ? (
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-5">
                   {(selectedTestament === 'OT' ? otBooks : ntBooks).map((book) => (
@@ -139,13 +139,13 @@ export const Navigation: React.FC<NavigationProps> = ({
                       key={book.id}
                       onClick={() => handleBookSelect(book)}
                       className={cn(
-                        "premium-card-soft flex min-h-[92px] flex-col items-start justify-between rounded-[28px] p-4 text-left transition-all hover:border-bible-accent/20",
+                        "premium-card-soft flex min-h-[84px] flex-col items-start justify-between rounded-[24px] p-3 text-left transition-all hover:border-bible-accent/20 sm:min-h-[92px] sm:rounded-[28px] sm:p-4",
                         currentBook.id === book.id && "premium-card-strong border-gold/40"
                       )}
                     >
                       <BookOpen className="h-4 w-4 text-gold" />
                       <div>
-                        <div className="ui-text text-sm font-extrabold text-bible-text">{book.name}</div>
+                        <div className="ui-text text-xs font-extrabold text-bible-text sm:text-sm">{book.name}</div>
                         <div className="ui-text mt-1 text-[11px] uppercase tracking-[0.18em] text-bible-text/40">
                           {book.chapters} capítulos
                         </div>
@@ -160,7 +160,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                       key={chapter}
                       onClick={() => handleChapterSelect(chapter)}
                       className={cn(
-                        "premium-card-soft aspect-square rounded-[24px] text-lg font-semibold transition-all hover:border-bible-accent/20",
+                        "premium-card-soft aspect-square rounded-[18px] text-base font-semibold transition-all hover:border-bible-accent/20 sm:rounded-[24px] sm:text-lg",
                         currentBook.id === selectedBook.id && currentChapter === chapter && "premium-card-strong border-gold/40"
                       )}
                     >

@@ -32,10 +32,10 @@ const Toggle: React.FC<{
 }> = ({ label, active, onClick, description }) => (
   <button
     onClick={onClick}
-    className="premium-card-soft w-full flex items-center justify-between p-4 rounded-2xl border border-transparent hover:border-bible-accent/20 transition-all text-left"
+    className="premium-card-soft w-full flex items-center justify-between p-3 sm:p-4 rounded-2xl border border-transparent hover:border-bible-accent/20 transition-all text-left"
   >
     <div className="flex-1 pr-4">
-      <h4 className="ui-text font-bold text-sm">{label}</h4>
+      <h4 className="ui-text font-bold text-xs sm:text-sm">{label}</h4>
       {description && <p className="ui-text text-[11px] opacity-40 leading-tight mt-0.5">{description}</p>}
     </div>
     <div className={cn(
@@ -60,7 +60,7 @@ const SettingsCard: React.FC<{
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-    className="premium-card rounded-[32px] p-6 space-y-6"
+    className="premium-card rounded-[28px] sm:rounded-[32px] p-4 sm:p-6 space-y-5 sm:space-y-6"
   >
     <div className="flex items-center space-x-3 opacity-50 px-2">
       <Icon className="w-4 h-4" />
@@ -202,9 +202,9 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-bible-bg border-l border-bible-accent/10 z-[200] shadow-2xl overflow-hidden flex flex-col"
           >
-            <div className="flex items-center justify-between p-8 pt-10">
+            <div className="flex items-center justify-between p-4 pt-5 sm:p-8 sm:pt-10">
               <div className="flex flex-col">
-                <h2 className="text-3xl font-display font-black tracking-tight">Ajustes</h2>
+                <h2 className="text-2xl sm:text-3xl font-display font-black tracking-tight">Ajustes</h2>
                 <p className="ui-text text-[10px] opacity-40 uppercase font-bold tracking-widest mt-1">Personalize sua experiência</p>
               </div>
               <button
@@ -215,7 +215,7 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 pb-24">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6 pb-20 sm:pb-24">
               <SettingsCard title="Leitura" icon={BookOpen} delay={0.05}>
                 <div className="grid grid-cols-4 gap-2">
                   {[
@@ -552,7 +552,7 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
               </SettingsCard>
             </div>
 
-            <div className="p-8 border-t border-bible-accent/10 bg-bible-bg/80 backdrop-blur-md flex flex-col items-center space-y-2">
+            <div className="p-4 sm:p-8 border-t border-bible-accent/10 bg-bible-bg/80 backdrop-blur-md flex flex-col items-center space-y-2">
               <p className="ui-text text-[10px] uppercase tracking-[0.3em] opacity-40 font-black">Bíblia Kerygma</p>
               <div className="px-3 py-1 rounded-full bg-bible-accent/10">
                 <span className="ui-text text-[9px] font-bold text-bible-accent">PREMIUM EDITION v2.5.0</span>

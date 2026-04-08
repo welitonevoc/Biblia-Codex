@@ -902,7 +902,7 @@ export const ReadingPlans: React.FC<ReadingPlansProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            <div className="grid min-w-[280px] grid-cols-2 gap-3 md:grid-cols-3">
+            <div className="grid w-full grid-cols-2 gap-3 sm:w-auto sm:min-w-[280px] md:grid-cols-3">
               {[
                 { label: 'Planos ativos', value: activePlans.length, icon: Play },
                 { label: 'Salvos', value: state.savedPlanIds.length, icon: Library },
@@ -910,7 +910,7 @@ export const ReadingPlans: React.FC<ReadingPlansProps> = ({ onNavigate }) => {
               ].map((item) => (
                 <div key={item.label} className="premium-card-soft rounded-[28px] p-4">
                   <item.icon className="h-5 w-5 text-gold" />
-                  <div className="mt-4 font-display text-3xl font-semibold">{item.value}</div>
+                  <div className="mt-4 font-display text-2xl font-semibold sm:text-3xl">{item.value}</div>
                   <div className="ui-text mt-1 text-xs text-bible-text/55">{item.label}</div>
                 </div>
               ))}
@@ -924,7 +924,7 @@ export const ReadingPlans: React.FC<ReadingPlansProps> = ({ onNavigate }) => {
                 <span className="premium-kicker">Hoje</span>
                 <div>
                   <div className="premium-section-title">Continue seu plano</div>
-                  <h2 className="mt-2 font-display text-4xl font-semibold leading-none md:text-5xl">{todayPlan.plan.title}</h2>
+                  <h2 className="mt-2 font-display text-3xl font-semibold leading-none sm:text-4xl md:text-5xl">{todayPlan.plan.title}</h2>
                 </div>
                 <p className="ui-text max-w-2xl text-sm leading-7 text-bible-text/70">
                   Dia {todayPlan.currentDay} de {todayPlan.plan.duration}. {todayPlan.plan.days[todayPlan.currentDay - 1]?.focus}
@@ -981,7 +981,7 @@ export const ReadingPlans: React.FC<ReadingPlansProps> = ({ onNavigate }) => {
 
         <section className="premium-card rounded-[36px] p-5 md:p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <label className="relative block xl:min-w-[360px]">
+            <label className="relative block lg:min-w-[280px] xl:min-w-[360px]">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-bible-text/40" />
               <input
                 value={query}
@@ -1222,7 +1222,7 @@ export const ReadingPlans: React.FC<ReadingPlansProps> = ({ onNavigate }) => {
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-2">
                         <span className="premium-kicker">{plan.isCustom ? 'Seu plano' : plan.badge}</span>
-                        <h3 className="font-display text-3xl leading-none">{plan.title}</h3>
+                        <h3 className="font-display text-2xl leading-none sm:text-3xl">{plan.title}</h3>
                       </div>
                       {isSaved && <Star className="h-4 w-4 fill-current text-gold" />}
                     </div>
@@ -1255,7 +1255,7 @@ export const ReadingPlans: React.FC<ReadingPlansProps> = ({ onNavigate }) => {
                   Detalhe do Plano
                 </span>
                 <div className="space-y-3">
-                  <h2 className="font-display text-5xl leading-none">{selectedPlan.title}</h2>
+                  <h2 className="font-display text-3xl leading-none sm:text-4xl md:text-5xl">{selectedPlan.title}</h2>
                   <p className="ui-text text-sm leading-7 text-bible-text/68">{selectedPlan.description}</p>
                   <p className="ui-text text-sm leading-7 text-bible-text/52">{selectedPlan.tone}</p>
                 </div>
@@ -1357,7 +1357,7 @@ export const ReadingPlans: React.FC<ReadingPlansProps> = ({ onNavigate }) => {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <div className="premium-section-title">Preview do dia</div>
-                      <h3 className="mt-2 font-display text-3xl leading-none">{previewDay.title}</h3>
+                      <h3 className="mt-2 font-display text-2xl leading-none sm:text-3xl">{previewDay.title}</h3>
                       <p className="ui-text mt-2 text-sm text-bible-text/60">{previewDay.subtitle}</p>
                     </div>
                     <div className="premium-chip">{previewDay.minutes} min</div>

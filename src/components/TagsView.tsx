@@ -112,7 +112,7 @@ export const TagsView: React.FC = () => {
   ];
 
   const renderSidebar = () => (
-    <aside className="w-64 border-r border-bible-accent/10 bg-bible-accent/5 flex flex-col">
+    <aside className="w-full border-b border-bible-accent/10 bg-bible-accent/5 flex flex-col lg:w-64 lg:border-b-0 lg:border-r">
       <div className="p-4 border-b border-bible-accent/10">
         <h3 className="text-[10px] font-bold uppercase tracking-widest text-bible-accent/50 mb-4">Etiquetas</h3>
         <div className="space-y-1">
@@ -160,7 +160,7 @@ export const TagsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-4 mt-auto">
+      <div className="p-4 mt-2 lg:mt-auto">
         <h3 className="text-[10px] font-bold uppercase tracking-widest text-bible-accent/50 mb-3">Nova Etiqueta</h3>
         <div className="bg-white/50 border border-dashed border-bible-accent/20 rounded-xl p-3 space-y-3">
           <div className="flex space-x-2">
@@ -232,7 +232,7 @@ export const TagsView: React.FC = () => {
   const renderLib = () => (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex items-baseline space-x-3">
-        <h2 className="text-3xl font-display font-bold text-bible-accent">
+          <h2 className="text-2xl font-display font-bold text-bible-accent sm:text-3xl">
           {activeTag ? `#${activeTag.name}` : 'Biblioteca de Temas'}
         </h2>
         <span className="text-xs font-medium opacity-40 uppercase tracking-widest">
@@ -301,14 +301,14 @@ export const TagsView: React.FC = () => {
     return (
       <div className="max-w-2xl mx-auto space-y-8 animate-in slide-in-from-bottom-4 duration-500">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-display font-bold text-bible-accent">Corrente Temática</h2>
+          <h2 className="text-2xl font-display font-bold text-bible-accent sm:text-3xl">Corrente Temática</h2>
           <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-40">
             {activeTag ? `#${activeTag.name}` : 'Geral'} · {chainBookmarks.length} versículos
           </p>
         </div>
 
         {chainBookmarks.length > 0 ? (
-          <div className="bg-bible-accent/5 rounded-[2rem] p-10 border border-bible-accent/10 shadow-xl relative overflow-hidden group">
+          <div className="bg-bible-accent/5 rounded-[2rem] p-5 border border-bible-accent/10 shadow-xl relative overflow-hidden group sm:p-8 md:p-10">
             <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
               <Link2 className="w-32 h-32" />
             </div>
@@ -318,7 +318,7 @@ export const TagsView: React.FC = () => {
                 <span className="text-xs font-bold uppercase tracking-widest text-bible-accent/40 mb-4 block">
                   {current.bookId} {current.chapter}:{current.verse}
                 </span>
-                <h3 className="text-3xl font-display leading-relaxed text-bible-accent italic">
+                <h3 className="text-2xl font-display leading-relaxed text-bible-accent italic sm:text-3xl">
                   "{current.text}"
                 </h3>
               </div>
@@ -388,11 +388,11 @@ export const TagsView: React.FC = () => {
   const renderMood = () => (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="text-center space-y-2 max-w-lg mx-auto">
-        <h2 className="text-3xl font-display font-bold text-bible-accent">Como você está?</h2>
+        <h2 className="text-2xl font-display font-bold text-bible-accent sm:text-3xl">Como você está?</h2>
         <p className="text-sm opacity-60">Escolha um momento e encontraremos versículos para você agora.</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-4">
         {MOODS.map((m, i) => (
           <button
             key={i}
@@ -416,9 +416,9 @@ export const TagsView: React.FC = () => {
 
     return (
       <div className="space-y-8 animate-in zoom-in-95 duration-500">
-        <h2 className="text-3xl font-display font-bold text-bible-accent">Painel de Estudo</h2>
+        <h2 className="text-2xl font-display font-bold text-bible-accent sm:text-3xl">Painel de Estudo</h2>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
           <div className="bg-bible-accent/5 rounded-2xl p-6 border border-bible-accent/10">
             <div className="text-4xl font-display font-bold text-bible-accent">{bookmarks.length}</div>
             <div className="text-[10px] font-bold uppercase tracking-widest opacity-40 mt-1">Versículos marcados</div>
@@ -479,21 +479,21 @@ export const TagsView: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-bible-bg overflow-hidden">
       {/* Header Tabs */}
-      <div className="px-6 py-4 border-b border-bible-accent/10 flex items-center justify-between">
+      <div className="px-3 py-3 border-b border-bible-accent/10 flex flex-wrap items-center justify-between gap-2 sm:px-6 sm:py-4">
         <div className="flex items-center space-x-2">
           <div className="p-2 bg-bible-accent/5 rounded-xl">
             <TagIcon className="w-5 h-5 text-bible-accent" />
           </div>
-          <h1 className="text-xl font-display font-bold text-bible-accent tracking-tight">Verbum <span className="font-sans font-light opacity-40">tags</span></h1>
+          <h1 className="text-lg font-display font-bold text-bible-accent tracking-tight sm:text-xl">Verbum <span className="font-sans font-light opacity-40">tags</span></h1>
         </div>
 
-        <div className="flex bg-bible-accent/5 p-1 rounded-2xl">
+        <div className="flex bg-bible-accent/5 p-1 rounded-2xl overflow-x-auto max-w-full">
           {(['lib', 'chain', 'mood', 'dash'] as ViewType[]).map(v => (
             <button
               key={v}
               onClick={() => setActiveView(v)}
               className={cn(
-                "px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all",
+                "px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all sm:px-5 sm:text-xs sm:tracking-widest",
                 activeView === v ? "bg-white text-bible-accent shadow-sm" : "text-bible-accent/40 hover:text-bible-accent/60"
               )}
             >
@@ -503,10 +503,10 @@ export const TagsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden lg:flex-row">
         {renderSidebar()}
 
-        <main className="flex-1 overflow-y-auto p-8 bg-white/30 backdrop-blur-sm">
+        <main className="flex-1 overflow-y-auto p-4 bg-white/30 backdrop-blur-sm sm:p-8">
           <AnimatePresence mode="wait">
             {loading ? (
               <div className="h-full flex flex-col items-center justify-center space-y-4 opacity-20">

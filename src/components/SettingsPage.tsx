@@ -117,13 +117,13 @@ export const SettingsPage: React.FC = () => {
           <section className="premium-card space-y-6 rounded-[36px] p-6 md:p-8">
             <SectionHeader icon={Palette} title="Aparência" />
 
-            <div className="premium-card-soft flex items-center justify-between rounded-[28px] p-2">
+            <div className="premium-card-soft flex items-center justify-between rounded-[24px] p-2 sm:rounded-[28px]">
               <button onClick={() => setFontSize(Math.max(9, config.fontSize - 1))} className="premium-icon-button rounded-2xl border-0 shadow-none">
                 <Minus className="h-4 w-4" />
               </button>
               <div className="text-center">
                 <div className="premium-section-title opacity-70">Tamanho da Fonte</div>
-                <div className="font-display text-4xl font-bold text-gold">{config.fontSize}</div>
+                <div className="font-display text-3xl sm:text-4xl font-bold text-gold">{config.fontSize}</div>
               </div>
               <button onClick={() => setFontSize(Math.min(36, config.fontSize + 1))} className="premium-icon-button rounded-2xl border-0 shadow-none">
                 <Plus className="h-4 w-4" />
