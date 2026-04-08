@@ -388,7 +388,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (availableDictionaries.length > 0) {
       const savedPath = settings.studyTools.selectedStrongsDictionary;
       if (savedPath && savedPath !== 'ai') {
-        const found = availableDictionaries.find(d => d.path === savedPath);
+        const found = availableDictionaries.find(d => d.path === savedPath || d.path.endsWith(savedPath));
         if (found) {
           setSelectedDictionaryModule(found as any);
         }

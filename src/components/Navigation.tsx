@@ -103,13 +103,13 @@ export const Navigation: React.FC<NavigationProps> = ({
             {step === 'book' && (
               <div className="border-b border-bible-accent/10 p-4 sm:p-5 md:px-6 md:pb-5 md:pt-4">
                 <div className="relative">
-                  <Search className="absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-bible-text/40" />
+                  <Search className="pointer-events-none absolute left-3.5 sm:left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-bible-text/45" />
                   <input
                     type="text"
                     placeholder="Buscar livro..."
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    className="premium-input pl-12"
+                    className="premium-input h-11 sm:h-12 pl-10 sm:pl-12 text-sm"
                     autoFocus
                   />
                 </div>

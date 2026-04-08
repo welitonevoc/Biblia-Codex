@@ -28,7 +28,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <header className="app-frame sticky top-0 z-50 px-2 pb-2 pt-2 sm:px-4 sm:pb-3 sm:pt-4 md:px-6">
-      <div className="premium-card mx-auto flex min-h-[68px] max-w-[1320px] items-center justify-between gap-2 rounded-[24px] px-2 py-2 sm:min-h-[78px] sm:gap-3 sm:rounded-[30px] sm:px-3 sm:py-3 md:px-5">
+      <div className="premium-card mx-auto flex min-h-[68px] max-w-[1320px] items-center justify-between gap-2 rounded-[22px] px-2 py-2 sm:min-h-[78px] sm:gap-3 sm:rounded-[30px] sm:px-3 sm:py-3 md:px-5">
         <div className="flex items-center gap-2 md:gap-3">
           <button onClick={onToggleSidebar} className="premium-icon-button rounded-2xl">
             <Menu className="h-5 w-5" />
@@ -47,18 +47,18 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         <button
           onClick={onNavOpen}
-          className="premium-card-soft flex min-w-0 flex-1 items-center justify-center gap-3 rounded-[24px] px-4 py-3 text-left transition-all hover:border-bible-accent/25 md:max-w-[360px]"
+          className="premium-card-soft flex min-h-[52px] min-w-0 flex-1 items-center justify-start gap-2 sm:gap-3 rounded-[20px] sm:rounded-[24px] px-3 sm:px-4 py-2.5 sm:py-3 text-left transition-all hover:border-bible-accent/25 md:max-w-[360px]"
         >
           <div className="hidden h-10 w-10 items-center justify-center rounded-2xl bg-bible-accent/10 text-bible-accent md:flex">
             <Sparkles className="h-4 w-4" />
           </div>
-          <div className="min-w-0">
-            <div className="ui-text text-[10px] font-extrabold uppercase tracking-[0.22em] text-bible-text/40">Posição Atual</div>
-            <div className="truncate font-display text-base font-semibold tracking-tight text-bible-text sm:text-lg md:text-2xl">
+          <div className="min-w-0 flex-1">
+            <div className="ui-text text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.16em] sm:tracking-[0.22em] text-bible-text/40">Posição Atual</div>
+            <div className="truncate font-display text-[1.05rem] font-semibold leading-tight tracking-tight text-bible-text sm:text-lg md:text-2xl">
               {currentBook.name} {currentChapter}
             </div>
           </div>
-          <ChevronDown className="h-4 w-4 shrink-0 text-bible-accent/70" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-bible-accent/70 mt-0.5" />
         </button>
 
         <div className="flex items-center gap-2">

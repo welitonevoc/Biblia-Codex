@@ -32,7 +32,8 @@
       "Bash(curl *)",
       "Bash(powershell *)",
       "Bash(del *)",
-      "Bash(rmdir *)"
+      "Bash(rmdir *)",
+      "Read(C:\\Projetos\\BibleCodex-main/**)"
     ]
   },
   "$version": 3
