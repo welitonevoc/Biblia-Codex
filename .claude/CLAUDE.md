@@ -1,7 +1,9 @@
 # Agentes para Claude — Bible App
 **Desenvolvedor:** Diácono Jose Menezes  
 **Projeto:** Bible App Android (YouVersion + AndBible)
+**Idioma:** Responda sempre em Português Brasileiro (PT-BR).
 
+---
 Cada agente tem 3 formatos:
 - **Projeto claude.ai** → Cole em *Project Instructions* em claude.ai/projects
 - **System Prompt** → Cole como instrução de sistema em qualquer conversa

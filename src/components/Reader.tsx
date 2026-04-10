@@ -471,7 +471,7 @@ export const Reader: React.FC<ReaderProps> = ({
                     )}
                     <span 
                       className={cn(
-                        settings.textDisplay.wordsOfJesusRed && v.text.includes("Jesus") && "text-red-500/80"
+                        settings.textDisplay.wordsOfJesusRed && v.text.includes("Jesus") && "words-of-jesus"
                       )}
                       dangerouslySetInnerHTML={{ __html: bodyHtml }}
                     />
@@ -551,7 +551,8 @@ export const Reader: React.FC<ReaderProps> = ({
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-8 left-1/2 z-50 flex -translate-x-1/2 items-center space-x-6 rounded-full border border-bible-accent/20 bg-bible-bg px-6 py-3 shadow-2xl backdrop-blur-md premium-toolbar"
+            className="fixed left-1/2 z-50 flex -translate-x-1/2 items-center space-x-6 rounded-full border border-bible-accent/20 bg-bible-bg px-6 py-3 shadow-2xl backdrop-blur-md premium-toolbar"
+            style={{ bottom: 'calc(2rem + var(--sab))' }}
           >
             <span className="ui-text text-sm font-medium border-r border-bible-accent/20 pr-4">
               {selectedVerses.length} {selectedVerses.length === 1 ? 'versículo' : 'versículos'}
@@ -682,7 +683,10 @@ export const Reader: React.FC<ReaderProps> = ({
       />
 
       {/* Navegação Inferior Minimalista */}
-      <div className="sticky bottom-4 z-40 flex justify-center px-4">
+      <div 
+        className="sticky z-40 flex justify-center px-4"
+        style={{ bottom: 'calc(1rem + var(--sab))' }}
+      >
         <div className="bg-bible-bg/80 backdrop-blur-md border border-bible-accent/10 rounded-full flex items-center gap-6 px-6 py-2 shadow-lg shadow-black/5">
           <button
             onClick={() => {

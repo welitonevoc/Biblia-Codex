@@ -111,7 +111,7 @@ export const PermissionScreen: React.FC<PermissionScreenProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+    <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 overflow-y-auto premium-scroll">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

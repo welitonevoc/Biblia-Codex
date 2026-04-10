@@ -34,18 +34,18 @@
   --danger-bible: #b3504e;
 
   --font-bible-family: "Libre Baskerville", serif;
-  --font-bible-size: 18px;
+  --font-bible-size: clamp(1rem, 0.95rem + 1vw, 1.25rem); /* Proporção fluida */
   --font-bible-line-height: 1.6;
-  --font-bible-letter-spacing: 0em;
-  --horizontal-margin: 32px;
+  --font-bible-letter-spacing: -0.01em;
+  --horizontal-margin: clamp(1rem, 2vw + 1rem, 2.5rem);
   --shadow-premium: 0 32px 80px -38px rgba(var(--accent-bible-rgb), 0.42);
   --shadow-soft: 0 24px 48px -30px rgba(17, 20, 24, 0.28);
   --radius-premium: 32px;
 
-  /* Safe area insets for foldables/notches */
-  --sat: env(safe-area-inset-top, 0px);
+  /* Safe area insets for foldables/notches - Extended protection */
+  --sat: max(env(safe-area-inset-top, 0px), 12px);
   --sar: env(safe-area-inset-right, 0px);
-  --sab: env(safe-area-inset-bottom, 0px);
+  --sab: max(env(safe-area-inset-bottom, 0px), 16px);
   --sal: env(safe-area-inset-left, 0px);
 }
 
@@ -68,11 +68,7 @@ body {
     linear-gradient(180deg, var(--hero-end) 0%, var(--bg-bible-alt) 24%, var(--bg-bible) 100%);
   color: var(--text-bible);
   transition: background 0.35s ease, color 0.35s ease;
-  /* Safe area padding for notches */
-  padding-top: var(--sat);
-  padding-right: var(--sar);
-  padding-bottom: var(--sab);
-  padding-left: var(--sal);
+  /* Safe area padding managed by components for better background bleed */
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
 }
@@ -116,35 +112,7 @@ select {
 }
 
 /* Responsive breakpoints for different screen sizes */
-@media screen and (max-width: 360px) {
-  :root {
-    --font-bible-size: 16px;
-  }
-}
-
-@media screen and (min-width: 361px) and (max-width: 480px) {
-  :root {
-    --font-bible-size: 17px;
-  }
-}
-
-@media screen and (min-width: 481px) and (max-width: 768px) {
-  :root {
-    --font-bible-size: 18px;
-  }
-}
-
-@media screen and (min-width: 769px) and (max-width: 1024px) {
-  :root {
-    --font-bible-size: 19px;
-  }
-}
-
-@media screen and (min-width: 1025px) {
-  :root {
-    --font-bible-size: 20px;
-  }
-}
+/* Tipografia fluida e adaptabilidade automática removendo breakpoints rígidos */
 
 /* Foldable inner screen (Z Fold unfolded) */
 @media (screen-spanning: single-fold-vertical) {
@@ -222,15 +190,20 @@ select {
 }
 
 .premium-page {
-  padding: 24px 20px 96px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
 }
 
 .premium-page__content {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--horizontal-margin);
+  padding-right: var(--horizontal-margin);
+  padding-bottom: calc(2rem + var(--sab));
+  padding-top: 1rem;
 }
 
 .premium-hero {
@@ -619,9 +592,10 @@ select {
 
 /* MySword Specific Tags Styling */
 .words-of-jesus {
-  color: #d32f2f;
+  color: var(--danger-bible);
   font-weight: 500;
   transition: color 0.3s ease;
+  text-shadow: 0 0 1px rgba(var(--accent-bible-rgb), 0.1);
 }
 
 .forest .words-of-jesus,

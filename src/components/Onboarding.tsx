@@ -55,7 +55,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-bible-bg z-[500] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-bible-bg z-[500] flex flex-col overflow-y-auto premium-scroll">
       {/* Progress Bar */}
       <div className="flex gap-1 px-4 sm:px-6 pt-8 sm:pt-12 pb-6 sm:pb-8">
         {Array.from({ length: totalSteps }).map((_, i) => (

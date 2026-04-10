@@ -71,7 +71,13 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 26, stiffness: 240 }}
-            className="fixed inset-y-0 left-0 z-[210] w-[86vw] max-w-[380px] p-3"
+            className="fixed inset-y-0 left-0 z-[210] w-[86vw] max-w-[380px]"
+            style={{ 
+              paddingTop: 'var(--sat)', 
+              paddingBottom: 'var(--sab)',
+              paddingLeft: 'var(--sal)',
+              paddingRight: '12px' 
+            }}
           >
             <div className="premium-card flex h-full flex-col rounded-[34px] p-3">
               <div className="premium-card-soft rounded-[28px] p-4">

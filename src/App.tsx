@@ -22,6 +22,7 @@ import { StudyToolsPanel } from './components/StudyToolsPanel';
 import { Devotional } from './components/Devotional';
 import { ReadingPlans } from './components/ReadingPlans';
 import { MapsPage } from './components/MapsPage';
+import { SearchView } from './components/SearchView';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { Book, Verse } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -31,6 +32,9 @@ import { Onboarding } from './components/Onboarding';
 import { PermissionScreen } from './components/PermissionScreen';
 import { ensureStoragePermission } from './services/permissionsService';
 import { Capacitor } from '@capacitor/core';
+
+// Scratchpad de teste - disponível no console via window.runBibleServiceTests()
+import('./scratchpad');
 
 function AppContent() {
   const {
@@ -116,6 +120,7 @@ function AppContent() {
           currentChapter={currentChapter}
           onNavOpen={() => setIsNavOpen(true)}
           onSettingsOpen={() => setIsSettingsOpen(true)}
+          onSearchOpen={() => setActiveTab('search')}
           onToggleSidebar={() => setIsHamburgerOpen(!isHamburgerOpen)}
         />
 
@@ -249,6 +254,21 @@ function AppContent() {
                 }} />
               </motion.div>
             )}
+            {activeTab === 'search' && (
+              <motion.div
+                key="search"
+                initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                animate={{ opacity: 1 }}
+                exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                className="h-full"
+              >
+                <SearchView onNavigate={(bookId, chapter, verse) => {
+                  setActiveTab('bible');
+                  const book = BIBLE_BOOKS.find(b => b.id === bookId);
+                  if (book) handleSelect(book, chapter, verse);
+                }} />
+              </motion.div>
+            )}
             {activeTab === 'maps' && (
               <motion.div
                 key="maps"
@@ -264,7 +284,7 @@ function AppContent() {
               </motion.div>
             )}
 
-            {!['home', 'bible', 'notes', 'settings', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional'].includes(activeTab) && (
+            {!['home', 'bible', 'notes', 'settings', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional', 'search'].includes(activeTab) && (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
                 <div className="opacity-20 flex flex-col items-center space-y-4">
                   <BookOpen className="w-16 h-16" />

@@ -9,6 +9,7 @@ interface TopBarProps {
   currentChapter: number;
   onNavOpen: () => void;
   onSettingsOpen: () => void;
+  onSearchOpen: () => void;
   onToggleSidebar: () => void;
 }
 
@@ -21,14 +22,18 @@ export const TopBar: React.FC<TopBarProps> = ({
   currentChapter,
   onNavOpen,
   onSettingsOpen,
+  onSearchOpen,
   onToggleSidebar
 }) => {
   const { availableVersions, currentVersion, selectVersion } = useAppContext();
   const [showVersionMenu, setShowVersionMenu] = React.useState(false);
 
   return (
-    <header className="app-frame sticky top-0 z-50 px-2 pb-2 pt-2 sm:px-4 sm:pb-3 sm:pt-4 md:px-6">
-      <div className="premium-card mx-auto flex min-h-[68px] max-w-[1320px] items-center justify-between gap-2 rounded-[22px] px-2 py-2 sm:min-h-[78px] sm:gap-3 sm:rounded-[30px] sm:px-3 sm:py-3 md:px-5">
+    <header 
+      className="app-frame sticky top-0 z-50 px-2 pb-2 sm:px-4 sm:pb-3 md:px-6"
+      style={{ paddingTop: 'var(--sat)' }}
+    >
+      <div className="premium-card mx-auto flex min-h-[64px] max-w-[1320px] items-center justify-between gap-1.5 rounded-[22px] px-2 py-2 sm:min-h-[78px] sm:gap-3 sm:rounded-[30px] sm:px-3 sm:py-3 md:px-5">
         <div className="flex items-center gap-2 md:gap-3">
           <button onClick={onToggleSidebar} className="premium-icon-button rounded-2xl">
             <Menu className="h-5 w-5" />
@@ -111,7 +116,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </AnimatePresence>
           </div>
 
-          <button className="premium-icon-button hidden rounded-2xl sm:inline-flex">
+          <button onClick={onSearchOpen} className="premium-icon-button rounded-2xl sm:inline-flex">
             <Search className="h-5 w-5" />
           </button>
           <button onClick={onSettingsOpen} className="premium-icon-button rounded-2xl">
