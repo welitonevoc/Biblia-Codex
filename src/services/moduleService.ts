@@ -4,7 +4,7 @@
  */
 import { Filesystem, Directory } from '@capacitor/filesystem';
 
-export type ModuleCategory = 'bible' | 'commentary' | 'dictionary' | 'cross_reference' | 'book' | 'map' | 'devotional' | 'other';
+export type ModuleCategory = 'bible' | 'commentary' | 'dictionary' | 'cross_reference' | 'book' | 'map' | 'people' | 'devotional' | 'other';
 export type ModuleFormat = 'mybible' | 'mysword' | 'sword' | 'epub' | 'other';
 
 export interface ModuleInfo {
@@ -36,6 +36,7 @@ const detectCategory = (fileName: string): ModuleCategory => {
   if (name.includes('.xref.') || name.includes('.ref.') || name.includes('.xrefs.')) return 'cross_reference';
   if (name.includes('.bok.') || name.includes('.book.')) return 'book';
   if (name.includes('.map.') || name.includes('.atlas.') || name.includes(' mapa') || name.includes(' atlas') || name.includes('mapa.') || name.includes('atlas.')) return 'map';
+  if (name.includes('people') || name.includes('people.') || name.includes('.people.')) return 'people';
   if (name.includes('.devot.') || name.includes('.devotions.')) return 'devotional';
   return 'bible';
 };

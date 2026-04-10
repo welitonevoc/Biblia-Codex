@@ -7,6 +7,7 @@ import { auth, db, onAuthStateChanged, User, loginWithGoogle, logout, handleRedi
 import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { dictionaryService, createAiModule } from './services/dictionaryService';
 import { scanForBibleModules } from './services/moduleScanner';
+import { listInstalledModules, ModuleInfo } from './services/moduleService';
 import { DEFAULT_THEME_MODE, THEME_CLASSNAMES, getThemePreset, getThemeVariables, normalizeThemeMode } from './theme/presets';
 
 interface AppContextType {
@@ -19,6 +20,7 @@ interface AppContextType {
   selectedXrefModule: StudyModule | null;
   availableVersions: BibleModule[];
   availableDictionaries: BibleModule[];
+  availableModules: ModuleInfo[];
   currentVersion: BibleModule | null;
   selectVersion: (version: BibleModule) => void;
   isDrawerOpen: boolean;
@@ -62,7 +64,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [drawerContext, setDrawerContext] = useState<DrawerContext>('general');
   const [activeTab, setActiveTab] = useState('home');
   const [availableVersions, setAvailableVersions] = useState<BibleModule[]>([]);
-  const [availableDictionaries, setAvailableDictionaries] = useState<BibleModule[]>([]); // Added
+  const [availableDictionaries, setAvailableDictionaries] = useState<BibleModule[]>([]);
+  const [availableModules, setAvailableModules] = useState<ModuleInfo[]>([]);
   const [currentVersion, setCurrentVersion] = useState<BibleModule | null>(null);
 
 
@@ -342,6 +345,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const bibles = unified.filter(m => m.type === 'bible');
       const dictionaries = unified.filter(m => m.type === 'dictionary');
 
+      setAvailableModules(installedRaw);
+
       // Só atualiza se o conteúdo realmente mudou (evita re-renders desnecessários)
       setAvailableVersions(prev => {
         if (prev.length === bibles.length && prev.every((v, i) => v.id === bibles[i].id && v.path === bibles[i].path)) {
@@ -408,6 +413,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     selectedDictionaryModule,
     availableVersions,
     availableDictionaries,
+    availableModules,
     currentVersion,
     selectVersion,
     setMode, 
@@ -438,7 +444,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     searchDictionary
   }), [
     config, settings, user, isAuthReady, selectedDictionaryModule,
-    availableVersions, availableDictionaries, currentVersion, selectVersion, setMode,
+    availableVersions, availableDictionaries, availableModules, currentVersion, selectVersion, setMode,
     setFontSize, setLineHeight, setLetterSpacing, setFontFamily,
     setHorizontalMargin, setAccentColor, updateSettings, toggleSetting,
     toggleModule, syncNow, refreshModules, login, handleLogout,

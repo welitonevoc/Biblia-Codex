@@ -16,7 +16,7 @@ interface ReaderWithAudioProps {
   onVerseSelect?: (verse: Verse) => void;
   onNavigate?: (bookId: string, chapter: number, verse?: number) => void;
   onStudyOpen: (selectedVerses: { verse: number, text: string }[]) => void;
-  onToolOpen: (verse: Verse, type: 'commentary' | 'dictionary' | 'xrefs') => void;
+  onToolOpen: (verse: Verse, type: 'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places') => void;
   audioTracks?: AudioTrack[];
   hasAudioSupport?: boolean;
 }

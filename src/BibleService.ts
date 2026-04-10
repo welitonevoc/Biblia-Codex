@@ -202,6 +202,103 @@ export const BibleService = {
     } catch (error) { return []; }
   },
 
+  getPeopleData: async (bookId: string, chapter: number, verse: number): Promise<any[]> => {
+    try {
+      const { availableModules } = await import('../AppContext').catch(() => ({ availableModules: [] }));
+      const peopleModule = availableModules?.find((m: any) => m.category === 'people');
+      
+      if (!peopleModule) {
+        return [{ name: 'Módulo de Pessoas', description: 'Nenhum módulo de pessoas encontrado. Instale peopledata.mybible para ver informações sobre pessoas bíblicas neste versículo.' }];
+      }
+
+      const SQL = await getSqlInstance();
+      let binaryData: Uint8Array;
+      if (isWeb) {
+        binaryData = await readModuleBinaryFromPublic(peopleModule.path);
+      } else {
+        binaryData = await readModuleBinary(peopleModule.path);
+      }
+      const db = new SQL.Database(binaryData);
+      
+      const tablesResult = db.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
+      const tableNames = (tablesResult[0]?.values ?? []).map((row: any[]) => String(row[0]).toLowerCase());
+      
+      // Try common table names for people data
+      const table = tableNames.find(t => t.includes('people') || t.includes('person') || t.includes('character')) || tableNames[0];
+      
+      if (!table) return [];
+      
+      const pragma = db.exec(`PRAGMA table_info("${table}")`);
+      const cols = pragma[0]?.values.map((v: any[]) => v[1].toLowerCase()) || [];
+      
+      // Search for people mentioned in this verse reference
+      const bookNum = BIBLE_BOOKS.find(b => b.id === bookId)?.numericId || 1;
+      const query = `SELECT * FROM ${table} WHERE book = ? AND chapter = ? AND verse = ? LIMIT 20`;
+      const result = db.exec(query, [bookNum, chapter, verse]);
+      
+      if (result.length > 0 && result[0].values.length > 0) {
+        return result[0].values.map((row: any[]) => {
+          const obj: any = {};
+          cols.forEach((col: string, idx: number) => {
+            obj[col] = row[idx];
+          });
+          return obj;
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados de pessoas:', error);
+    }
+    return [];
+  },
+
+  getPlacesData: async (bookId: string, chapter: number, verse: number): Promise<any[]> => {
+    try {
+      const { availableModules } = await import('../AppContext').catch(() => ({ availableModules: [] }));
+      const placesModule = availableModules?.find((m: any) => m.category === 'map');
+      
+      if (!placesModule) {
+        return [{ name: 'Módulo de Lugares', description: 'Nenhum módulo de mapas/lugares encontrado. Instale mapgeodata.mybible para ver informações sobre lugares bíblicos neste versículo.' }];
+      }
+
+      const SQL = await getSqlInstance();
+      let binaryData: Uint8Array;
+      if (isWeb) {
+        binaryData = await readModuleBinaryFromPublic(placesModule.path);
+      } else {
+        binaryData = await readModuleBinary(placesModule.path);
+      }
+      const db = new SQL.Database(binaryData);
+      
+      const tablesResult = db.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
+      const tableNames = (tablesResult[0]?.values ?? []).map((row: any[]) => String(row[0]).toLowerCase());
+      
+      // Try common table names for places data
+      const table = tableNames.find(t => t.includes('place') || t.includes('location') || t.includes('map') || t.includes('geo')) || tableNames[0];
+      
+      if (!table) return [];
+      
+      const pragma = db.exec(`PRAGMA table_info("${table}")`);
+      const cols = pragma[0]?.values.map((v: any[]) => v[1].toLowerCase()) || [];
+      
+      const bookNum = BIBLE_BOOKS.find(b => b.id === bookId)?.numericId || 1;
+      const query = `SELECT * FROM ${table} WHERE book = ? AND chapter = ? AND verse = ? LIMIT 20`;
+      const result = db.exec(query, [bookNum, chapter, verse]);
+      
+      if (result.length > 0 && result[0].values.length > 0) {
+        return result[0].values.map((row: any[]) => {
+          const obj: any = {};
+          cols.forEach((col: string, idx: number) => {
+            obj[col] = row[idx];
+          });
+          return obj;
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados de lugares:', error);
+    }
+    return [];
+  },
+
   search: async (query: string, version?: BibleModule): Promise<Verse[]> => {
     if (!version?.path || !query || query.length < 2) return [];
 

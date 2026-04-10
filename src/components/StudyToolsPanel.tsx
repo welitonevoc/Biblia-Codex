@@ -22,7 +22,7 @@ interface StudyToolsPanelProps {
   onClose: () => void;
   verse: Verse;
   book: Book;
-  type: 'commentary' | 'dictionary' | 'xrefs';
+  type: 'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places';
   onNavigate: (bookId: string, chapter: number, verse?: number) => void;
 }
 
@@ -49,6 +49,12 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
         setContent(data);
       } else if (type === 'xrefs') {
         const data = await BibleService.getCrossReferences(book.id, verse.chapter, verse.verse, settings.ai.model);
+        setContent(data);
+      } else if (type === 'people') {
+        const data = await BibleService.getPeopleData(book.id, verse.chapter, verse.verse);
+        setContent(data);
+      } else if (type === 'places') {
+        const data = await BibleService.getPlacesData(book.id, verse.chapter, verse.verse);
         setContent(data);
       }
       setLoading(false);
@@ -83,16 +89,24 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
   const titles = {
     commentary: 'Comentários Bíblicos',
     dictionary: 'Dicionário Teológico',
-    xrefs: 'Referências Cruzadas'
+    xrefs: 'Referências Cruzadas',
+    people: 'Pessoas Bíblicas',
+    places: 'Lugares Bíblicos'
   };
 
-  const icons = {
+  const iconComponents = {
     commentary: MessageSquare,
     dictionary: Library,
     xrefs: Layers
   };
 
-  const Icon = icons[type];
+  const emojiIcons = {
+    people: '👥',
+    places: '📍'
+  };
+
+  const IconComponent = iconComponents[type];
+  const emoji = emojiIcons[type];
 
   return (
     <AnimatePresence>
@@ -114,7 +128,11 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
           >
             <div className="p-6 border-b border-bible-accent/10 flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <Icon className="w-6 h-6 text-bible-accent" />
+                {IconComponent ? (
+                  <IconComponent className="w-6 h-6 text-bible-accent" />
+                ) : (
+                  <span className="w-6 h-6 flex items-center justify-center text-2xl">{emoji}</span>
+                )}
                 <h2 className="text-xl font-display font-bold">{titles[type]}</h2>
               </div>
               <button 
@@ -159,6 +177,33 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
                             <p className="ui-text text-sm opacity-70">{ref.reason}</p>
                           </div>
                         </button>
+                      ))}
+                    </div>
+                  ) : type === 'people' || type === 'places' ? (
+                    <div className="space-y-4">
+                      {(content as any[]).map((item, idx) => (
+                        <div 
+                          key={idx}
+                          className="p-5 rounded-2xl bg-bible-accent/5 border border-bible-accent/10"
+                        >
+                          {item.name && (
+                            <h3 className="font-display font-bold text-lg mb-2 flex items-center gap-2">
+                              {type === 'people' ? '👥' : '📍'} {item.name}
+                            </h3>
+                          )}
+                          {item.description && (
+                            <p className="bible-text text-base opacity-80 leading-relaxed">{item.description}</p>
+                          )}
+                          {item.details && (
+                            <p className="bible-text text-sm opacity-60 mt-2">{item.details}</p>
+                          )}
+                          {Object.keys(item).filter(k => !['name', 'description', 'details'].includes(k)).map(key => (
+                            <div key={key} className="mt-2 text-sm">
+                              <span className="font-bold opacity-60">{key}: </span>
+                              <span className="opacity-80">{item[key]}</span>
+                            </div>
+                          ))}
+                        </div>
                       ))}
                     </div>
                   ) : (
