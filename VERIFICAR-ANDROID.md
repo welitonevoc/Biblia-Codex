@@ -194,17 +194,17 @@ biblia-codex/
 ## ✅ Checklist de Verificação
 
 ### Antes do Build
-- [ ] `npm install` executado
-- [ ] `.env` com `GEMINI_API_KEY`
-- [ ] `google-services.json` presente
-- [ ] Build web funciona (`npm run dev`)
+- [x] `npm install` executado
+- [x] `.env` com `GEMINI_API_KEY`
+- [x] `google-services.json` presente
+- [x] Build web funciona (`npm run dev`)
 
 ### Build Android
-- [ ] `npm run build` sem erros
-- [ ] `npx cap sync android` sem erros
-- [ ] Android Studio abre projeto
-- [ ] Gradle sync completo
-- [ ] APK gera sem erros
+- [x] `npm run build` sem erros
+- [x] `npx cap sync android` sem erros
+- [x] Android Studio abre projeto
+- [x] Gradle sync completo
+- [x] APK gera sem erros
 
 ### Testes
 - [ ] App abre no emulador/dispositivo
