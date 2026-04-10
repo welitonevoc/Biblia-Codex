@@ -33,7 +33,8 @@
       "Bash(powershell *)",
       "Bash(del *)",
       "Bash(rmdir *)",
-      "Read(C:\\Projetos\\BibleCodex-main/**)"
+      "Read(C:\\Projetos\\BibleCodex-main/**)",
+      "Bash(opencode *)"
     ]
   },
   "$version": 3
