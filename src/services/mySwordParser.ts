@@ -59,8 +59,11 @@ export class MySwordParser {
         parsed = parsed.replace(/<S(\d+)>/gi, `<a href="s${prefix}$1" class="${strongsClass}">${prefix}$1</a>`);
         parsed = parsed.replace(/<S>(\d+)<\/S>/gi, `<a href="s${prefix}$1" class="${strongsClass}">${prefix}$1</a>`);
     } else {
-        // Hide Strong's
-        parsed = parsed.replace(/<WG\d+>|<WH\d+>|<S\d+>|<S>.*?<\/S>/gi, '');
+        // Hide Strong's - remove all forms
+        parsed = parsed.replace(/<WH\d+>/gi, '');
+        parsed = parsed.replace(/<WG\d+>/gi, '');
+        parsed = parsed.replace(/<S\d+>/gi, '');
+        parsed = parsed.replace(/<S>\d+<\/S>/gi, '');
     }
 
     // 4. Morphology
