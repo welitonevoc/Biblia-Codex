@@ -16,7 +16,7 @@ O arquivo `permissionsService.ts` agora está **completo e production-ready** co
 
 ### ✅ 2. `requestStoragePermission()`
 - Solicita permissão ao sistema
-- Tenta criar diretório `Documents/Kerygma`
+- Tenta criar diretório `Documents/Codex`
 - Detecta erros de permissão vs outros erros
 - Retorna status detalhado com versão do Android
 

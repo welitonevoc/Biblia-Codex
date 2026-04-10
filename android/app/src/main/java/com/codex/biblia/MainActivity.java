@@ -1,8 +1,8 @@
-package com.kerygma.biblia;
+package com.codex.biblia;
 
 import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
-import com.kerygma.biblia.plugin.BibleDictionaryPlugin;
+import com.codex.biblia.plugin.BibleDictionaryPlugin;
 
 public class MainActivity extends BridgeActivity {
     @Override

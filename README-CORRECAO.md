@@ -2,7 +2,7 @@
 
 ## 🎯 Problema Resolvido
 
-**Issue:** Ao instalar o APK da Bíblia Kerygma em Android 13+, não era possível importar módulos MySword/MyBible porque o app não conseguia acesso ao armazenamento.
+**Issue:** Ao instalar o APK da Bíblia Codex em Android 13+, não era possível importar módulos MySword/MyBible porque o app não conseguia acesso ao armazenamento.
 
 **Causa:** Android 13+ (API 33+) mudou o sistema de permissões de armazenamento. As permissões `READ_EXTERNAL_STORAGE` e `WRITE_EXTERNAL_STORAGE` foram depreciadas.
 
@@ -51,7 +51,7 @@ export const ensureStoragePermission = async (): Promise<boolean> => {
 
 ```xml
 <external-files-path name="documents" path="Documents" />
-<external-files-path name="kerygma_modules" path="Kerygma/modules" />
+<external-files-path name="codex_modules" path="Codex/modules" />
 ```
 
 ---

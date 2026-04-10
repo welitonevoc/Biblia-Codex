@@ -1,7 +1,7 @@
-package com.kerygma.biblia
+package com.codex.biblia
 
 import android.app.Application
-import com.kerygma.biblia.di.appModule
+import com.codex.biblia.di.appModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 

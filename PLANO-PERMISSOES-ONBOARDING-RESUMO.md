@@ -27,7 +27,7 @@
 **Arquivo:** `.agent/agents/mobile-developer.md`
 
 **Conteúdo:**
-- ✅ Contexto do projeto Bíblia Kerygma
+- ✅ Contexto do projeto Bíblia Codex
 - ✅ Stack tecnológico completo
 - ✅ Filosofia de desenvolvimento
 - ✅ **MANDATÓRIO: Fluxo de permissões Android 13+**
@@ -218,7 +218,7 @@ adb install android/app/build/outputs/apk/release/app-release-unsigned.apk
 ## 📁 Estrutura de Arquivos
 
 ```
-biblia-kerygma/
+biblia-codex/
 ├── .agent/
 │   ├── agents/
 │   │   └── mobile-developer.md          ✅ ATUALIZADO

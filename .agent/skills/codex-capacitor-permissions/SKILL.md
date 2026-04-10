@@ -1,9 +1,9 @@
 ---
-name: kerygma-capacitor-permissions
-description: Android 13+ storage/media permissions guidelines for the web/capacitor Biblia Kerygma app. Using the custom usePermissions hook and PermissionScreen components in onboarding loops.
+name: codex-capacitor-permissions
+description: Android 13+ storage/media permissions guidelines for the web/capacitor Biblia Codex app. Using the custom usePermissions hook and PermissionScreen components in onboarding loops.
 ---
 
-# Biblia Kerygma - Android Capacitor Permissions
+# Biblia Codex - Android Capacitor Permissions
 
 This skill guides the implementation of permission requests natively on Android when operating through the Capacitor wrapper, specifically targeting the storage constraints introduced with Android 13+.
 

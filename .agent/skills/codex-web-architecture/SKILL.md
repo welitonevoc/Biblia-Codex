@@ -1,11 +1,11 @@
 ---
-name: kerygma-web-architecture
-description: Architecture, State Management, and Build patterns for the Biblia Kerygma React+Capacitor App. Use this when developing new UI components, configuring the build process, managing global state, or writing storage logic. Triggers on Kerygma, Tailwind 4, Capacitor build, IDB, React 19.
+name: codex-web-architecture
+description: Architecture, State Management, and Build patterns for the Biblia Codex React+Capacitor App. Use this when developing new UI components, configuring the build process, managing global state, or writing storage logic. Triggers on Codex, Tailwind 4, Capacitor build, IDB, React 19.
 ---
 
-# Biblia Kerygma - Web/Mobile Architecture 
+# Biblia Codex - Web/Mobile Architecture 
 
-This skill defines the structural patterns, technology stack, and best practices exclusively for the **Biblia Kerygma** application (React + Capacitor hybrid).
+This skill defines the structural patterns, technology stack, and best practices exclusively for the **Biblia Codex** application (React + Capacitor hybrid).
 
 ## 🛠 Tech Stack
 
@@ -23,7 +23,7 @@ This skill defines the structural patterns, technology stack, and best practices
 
 ### 2. Styling Patterns (Tailwind 4 + UI Libraries)
 - Utilize the `clsx` and `tailwind-merge` utility for dynamic class names: `className={twMerge(clsx("base", dynamicCondition && "active"))}`
-- Component designs must follow the Kerygma application's unified premium aesthetic (clean contrasts, dark mode support in Tailwind).
+- Component designs must follow the Codex application's unified premium aesthetic (clean contrasts, dark mode support in Tailwind).
 - For animations, strictly rely on `framer-motion` properties (`initial`, `animate`, `exit`).
 
 ### 3. File Execution & Scripts

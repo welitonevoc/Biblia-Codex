@@ -9,7 +9,7 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.kerygma.biblia" />
+                  <option name="appId" value="com.codex.biblia" />
                   <option name="mobileSdkAppId" value="1:272884651706:android:9271e3acb5e8cfac42d483" />
                   <option name="projectId" value="dadosebd" />
                   <option name="projectNumber" value="272884651706" />

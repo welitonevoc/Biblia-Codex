@@ -2,7 +2,7 @@
 
 ## Objetivo geral
 
-O projeto `biblia-kerygma` é um aplicativo bíblico híbrido:
+O projeto `biblia-codex` é um aplicativo bíblico híbrido:
 
 - frontend em React 19 + TypeScript + Vite;
 - empacotamento mobile via Capacitor 7;
@@ -124,7 +124,7 @@ Scripts principais:
 - `src/services/moduleService.ts`
   Gerencia módulos externos no filesystem do dispositivo via Capacitor Filesystem.
   Base física:
-  `Documents/Kerygma/modules/installed/{mybible|mysword|sword|epub}`.
+  `Documents/Codex/modules/installed/{mybible|mysword|sword|epub}`.
   Implementa:
   detecção de categoria por nome de arquivo, detecção de formato, listagem, leitura binária, exclusão e importação.
 - `src/services/moduleScanner.ts`
@@ -224,7 +224,7 @@ Fluxo:
 Fluxo:
 
 - importação parte de `ModuleManagement.tsx` ou `Settings.tsx`;
-- `moduleService.importModule` grava arquivo em `Documents/Kerygma/modules/installed/...`;
+- `moduleService.importModule` grava arquivo em `Documents/Codex/modules/installed/...`;
 - `AppContext.refreshModules` junta o que veio de `scanForBibleModules()` com `listInstalledModules()`;
 - `TopBar` e `VersionSelector` usam a lista para trocar a versão atual.
 
@@ -261,7 +261,7 @@ Persistência local web:
 
 Persistência local Android:
 
-- Room para cache de respostas de IA em `android/app/src/main/java/com/kerygma/biblia/data`.
+- Room para cache de respostas de IA em `android/app/src/main/java/com.codex.biblia/data`.
 
 Persistência em nuvem:
 
@@ -317,8 +317,8 @@ Arquivos observados:
 
 - `capacitor.config.ts`
   define:
-  `appId = com.kerygma.biblia`,
-  `appName = Bíblia Kerygma`,
+  `appId = com.codex.biblia`,
+  `appName = Bíblia Codex`,
   `webDir = dist`,
   `androidScheme = https`,
   `allowMixedContent = false`,
@@ -364,7 +364,7 @@ A pasta `android/` é um projeto Gradle completo, não apenas uma casca.
 - `android/app/build.gradle`
   módulo Android principal.
   Características:
-  namespace `com.kerygma.biblia`,
+  namespace `com.codex.biblia`,
   Java 21,
   Kotlin kapt,
   Firebase BoM,
@@ -390,15 +390,15 @@ A pasta `android/` é um projeto Gradle completo, não apenas uma casca.
   `MyApplication`,
   `MainActivity`,
   `FileProvider`.
-- `android/app/src/main/java/com/kerygma/biblia/MainActivity.java`
+- `android/app/src/main/java/com.codex.biblia/MainActivity.java`
   estende `BridgeActivity`.
   Registra manualmente o plugin `BibleDictionaryPlugin`.
-- `android/app/src/main/java/com/kerygma/biblia/MyApplication.kt`
+- `android/app/src/main/java/com.codex.biblia/MyApplication.kt`
   inicializa Koin em nível de aplicação.
 
 #### Injeção de dependência
 
-- `android/app/src/main/java/com/kerygma/biblia/di/AppModule.kt`
+- `android/app/src/main/java/com.codex.biblia/di/AppModule.kt`
   define o módulo Koin.
   Cria:
   `AppDatabase`,
@@ -410,23 +410,23 @@ A pasta `android/` é um projeto Gradle completo, não apenas uma casca.
 
 #### Banco local Android
 
-- `android/app/src/main/java/com/kerygma/biblia/data/AppDatabase.kt`
+- `android/app/src/main/java/com.codex.biblia/data/AppDatabase.kt`
   banco Room.
-- `android/app/src/main/java/com/kerygma/biblia/data/AIStudyCache.kt`
+- `android/app/src/main/java/com.codex.biblia/data/AIStudyCache.kt`
   entidade `ai_study_cache`.
-- `android/app/src/main/java/com/kerygma/biblia/data/AIStudyCacheDao.kt`
+- `android/app/src/main/java/com.codex.biblia/data/AIStudyCacheDao.kt`
   DAO com:
   insert, getOldest, deleteById, getCount, getByQuery.
-- `android/app/src/main/java/com/kerygma/biblia/data/DictionaryEntry.kt`
+- `android/app/src/main/java/com.codex.biblia/data/DictionaryEntry.kt`
   model simples de entrada de dicionário.
 
 #### Serviços Android
 
-- `android/app/src/main/java/com/kerygma/biblia/service/GeminiAISearchService.kt`
+- `android/app/src/main/java/com.codex.biblia/service/GeminiAISearchService.kt`
   usa `GenerativeModel` do Gemini Android SDK.
   Modelo configurado:
   `gemini-1.5-flash`.
-- `android/app/src/main/java/com/kerygma/biblia/service/DictionaryService.kt`
+- `android/app/src/main/java/com.codex.biblia/service/DictionaryService.kt`
   orquestra busca:
   cache Room primeiro,
   depois IA,
@@ -435,7 +435,7 @@ A pasta `android/` é um projeto Gradle completo, não apenas uma casca.
 
 #### Plugin Capacitor nativo
 
-- `android/app/src/main/java/com/kerygma/biblia/plugin/BibleDictionaryPlugin.kt`
+- `android/app/src/main/java/com.codex.biblia/plugin/BibleDictionaryPlugin.kt`
   plugin exposto para a camada JS com nome `BibleDictionary`.
   Método:
   `getDefinition(query, useAI)`.

@@ -1,9 +1,9 @@
 ---
-name: kerygma-people-modules
+name: codex-people-modules
 description: Regras para extração de dados de biografias em módulos MyBible/MySword que utilizam tabelas cruzadas (people + verse).
 ---
 
-# Biblia Kerygma - People Module Support
+# Biblia Codex - People Module Support
 
 Este guia define como extrair o máximo de informação de módulos de personagens (People/Dictionary) que utilizam tabelas relacionais em vez de uma única coluna de descrição.
 

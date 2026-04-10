@@ -1,7 +1,7 @@
 import { openDB, IDBPDatabase } from 'idb';
 import { Bookmark, Note, BibleModule, Tag } from './types';
 
-const DB_NAME = 'kerygma_db';
+const DB_NAME = 'codex_db';
 const DB_VERSION = 3; // Incremented version to add tags store
 
 class StorageService {

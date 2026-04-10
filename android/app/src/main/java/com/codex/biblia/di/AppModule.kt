@@ -1,10 +1,10 @@
-package com.kerygma.biblia.di
+package com.codex.biblia.di
 
 import android.content.Context
 import androidx.room.Room
-import com.kerygma.biblia.data.AppDatabase
-import com.kerygma.biblia.service.DictionaryService
-import com.kerygma.biblia.service.GeminiAISearchService
+import com.codex.biblia.data.AppDatabase
+import com.codex.biblia.service.DictionaryService
+import com.codex.biblia.service.GeminiAISearchService
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 

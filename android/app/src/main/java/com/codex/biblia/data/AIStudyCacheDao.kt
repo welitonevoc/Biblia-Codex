@@ -1,4 +1,4 @@
-package com.kerygma.biblia.data
+package com.codex.biblia.data
 
 import androidx.room.Dao
 import androidx.room.Insert

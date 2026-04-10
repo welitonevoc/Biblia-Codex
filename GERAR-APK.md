@@ -1,4 +1,4 @@
-# 📱 Guia Completo — Gerar APK da Bíblia Kerygma
+# 📱 Guia Completo — Gerar APK da Bíblia Codex
 
 ## Pré-requisitos
 
@@ -31,7 +31,7 @@ GEMINI_API_KEY=sua_chave_aqui
 ## Passo 3 — Inicializar o Capacitor (só na primeira vez)
 
 ```bash
-npx cap init "Bíblia Kerygma" "com.kerygma.biblia" --web-dir dist
+npx cap init "Bíblia Codex" "com.codex.biblia" --web-dir dist
 npx cap add android
 ```
 
@@ -59,7 +59,7 @@ npx cap sync android
 No [Console do Firebase](https://console.firebase.google.com):
 
 1. Vá em **Configurações do projeto → Seus apps → Adicionar app → Android**
-2. Package name: `com.kerygma.biblia`
+2. Package name: `com.codex.biblia`
 3. Baixe o `google-services.json`
 4. Coloque em `android/app/google-services.json`
 5. Em **Authentication → Sign-in method → Google**, certifique-se que está habilitado
@@ -110,7 +110,7 @@ npm run cap:run
 ## Estrutura dos arquivos modificados
 
 ```
-biblia-kerygma/
+biblia-codex/
 ├── capacitor.config.ts     ← NOVO — configuração do Capacitor
 ├── vite.config.ts          ← ALTERADO — adicionado base: './'
 ├── package.json            ← ALTERADO — adicionadas deps do Capacitor

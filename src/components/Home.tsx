@@ -96,8 +96,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           </div>
         </motion.section>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-          <section className="premium-card space-y-6 rounded-[36px] p-6 md:p-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[1.05fr_0.95fr]">
+          <section className="premium-card space-y-6 rounded-[36px] p-5 sm:p-6 md:p-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="premium-icon-button rounded-2xl">
@@ -151,7 +151,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             </div>
           </section>
 
-          <section className="premium-card-strong flex min-h-[360px] flex-col justify-between rounded-[36px] p-5 sm:p-6 md:min-h-[420px] md:p-8">
+          <section className="premium-card-strong flex min-h-[320px] flex-col justify-between rounded-[36px] p-5 sm:p-6 md:min-h-[420px] md:p-8">
             <div className="space-y-4">
               <span className="premium-kicker">Versículo do Dia</span>
               <blockquote className="bible-text px-0 text-[1.05rem] italic leading-relaxed sm:text-[1.2rem] md:text-[1.55rem]">
@@ -187,8 +187,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           </section>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <section className="premium-card space-y-6 rounded-[36px] p-6 md:p-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <section className="premium-card space-y-6 rounded-[36px] p-5 sm:p-6 md:p-8">
             <div className="flex items-center justify-between">
               <div>
                 <div className="premium-section-title">Planos de Leitura</div>
@@ -227,7 +227,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             </div>
           </section>
 
-          <section className="premium-card space-y-6 rounded-[36px] p-6 md:p-8">
+          <section className="premium-card space-y-6 rounded-[36px] p-5 sm:p-6 md:p-8">
             <div className="flex items-center justify-between">
               <div>
                 <div className="premium-section-title">Histórico Recente</div>

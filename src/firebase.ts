@@ -18,7 +18,7 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-const GOOGLE_ACCESS_TOKEN_KEY = 'kerygma-google-access-token';
+const GOOGLE_ACCESS_TOKEN_KEY = 'codex-google-access-token';
 
 googleProvider.addScope('https://www.googleapis.com/auth/documents');
 googleProvider.addScope('https://www.googleapis.com/auth/drive.file');

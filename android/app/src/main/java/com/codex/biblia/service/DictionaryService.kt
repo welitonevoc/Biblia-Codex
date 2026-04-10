@@ -1,8 +1,8 @@
-package com.kerygma.biblia.service
+package com.codex.biblia.service
 
-import com.kerygma.biblia.data.AIStudyCacheDao
-import com.kerygma.biblia.data.AIStudyCache
-import com.kerygma.biblia.data.DictionaryEntryDao
+import com.codex.biblia.data.AIStudyCacheDao
+import com.codex.biblia.data.AIStudyCache
+import com.codex.biblia.data.DictionaryEntryDao
 import java.util.UUID
 
 class DictionaryService(

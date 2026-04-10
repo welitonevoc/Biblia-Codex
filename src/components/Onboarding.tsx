@@ -82,7 +82,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   <BookOpen className="w-12 h-12" />
                 </div>
                 <div className="space-y-4">
-                  <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-tight">Bíblia Kerygma</h1>
+                  <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-tight">Bíblia Codex</h1>
                   <p className="ui-text opacity-60 leading-relaxed text-base sm:text-lg">
                     A Bíblia no seu ritmo.<br />Um versículo por vez, um dia de cada vez.
                   </p>

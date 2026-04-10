@@ -44,7 +44,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <BookOpen className="h-6 w-6" />
             </div>
             <div>
-              <div className="ui-text text-[11px] font-extrabold uppercase tracking-[0.24em] text-bible-text/45">Bíblia Kerygma</div>
+              <div className="ui-text text-[11px] font-extrabold uppercase tracking-[0.24em] text-bible-text/45">Bíblia Codex</div>
               <div className="font-display text-lg font-semibold tracking-tight text-bible-text md:text-2xl">Leitura premium</div>
             </div>
           </div>
@@ -58,8 +58,8 @@ export const TopBar: React.FC<TopBarProps> = ({
             <Sparkles className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="ui-text text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.16em] sm:tracking-[0.22em] text-bible-text/40">Posição Atual</div>
-            <div className="truncate font-display text-[1.05rem] font-semibold leading-tight tracking-tight text-bible-text sm:text-lg md:text-2xl">
+            <div className="ui-text text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.16em] sm:tracking-[0.22em] text-bible-text/40">Posição Atual</div>
+            <div className="truncate font-display text-[1.1rem] font-semibold leading-tight tracking-tight text-bible-text sm:text-lg md:text-2xl">
               {currentBook.name} {currentChapter}
             </div>
           </div>
@@ -73,7 +73,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="premium-chip hidden md:flex"
             >
               <Globe className="h-4 w-4" />
-              <span className="ui-text text-[10px] font-extrabold uppercase tracking-[0.18em]">
+              <span className="ui-text text-[11px] font-extrabold uppercase tracking-[0.18em]">
                 {currentVersion?.abbreviation || 'Bíblia'}
               </span>
               <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showVersionMenu && "rotate-180")} />

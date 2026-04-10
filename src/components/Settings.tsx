@@ -553,7 +553,7 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             </div>
 
             <div className="p-4 sm:p-8 border-t border-bible-accent/10 bg-bible-bg/80 backdrop-blur-md flex flex-col items-center space-y-2">
-              <p className="ui-text text-[10px] uppercase tracking-[0.3em] opacity-40 font-black">Bíblia Kerygma</p>
+              <p className="ui-text text-[10px] uppercase tracking-[0.3em] opacity-40 font-black">Bíblia Codex</p>
               <div className="px-3 py-1 rounded-full bg-bible-accent/10">
                 <span className="ui-text text-[9px] font-bold text-bible-accent">PREMIUM EDITION v2.5.0</span>
               </div>

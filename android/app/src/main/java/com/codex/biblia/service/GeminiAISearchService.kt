@@ -1,4 +1,4 @@
-package com.kerygma.biblia.service
+package com.codex.biblia.service
 
 import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.Dispatchers

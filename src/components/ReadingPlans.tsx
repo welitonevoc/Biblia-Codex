@@ -100,7 +100,7 @@ interface ReadingPlansProps {
   onNavigate: (bookId: string, chapter: number, verse?: number) => void;
 }
 
-const STORAGE_KEY = 'kerygma-reading-plans-v1';
+const STORAGE_KEY = 'codex-reading-plans-v1';
 
 function getBook(bookId: string) {
   return BIBLE_BOOKS.find((book) => book.id === bookId);
@@ -333,7 +333,7 @@ function encodePlan(plan: ReadingPlanDefinition) {
 
 function buildPlanPayload(plan: ReadingPlanDefinition) {
   return {
-    app: 'kerygma-reading-plan',
+    app: 'codex-reading-plan',
     version: 1,
     exportedAt: new Date().toISOString(),
     plan: {
@@ -350,7 +350,7 @@ function stringifyPlanFile(plan: ReadingPlanDefinition) {
 function parsePlanPayload(raw: string): ReadingPlanDefinition | null {
   try {
     const payload = JSON.parse(raw) as { app?: string; version?: number; plan?: ReadingPlanDefinition };
-    if (payload.app !== 'kerygma-reading-plan' || !payload.plan) return null;
+    if (payload.app !== 'codex-reading-plan' || !payload.plan) return null;
     return payload.plan;
   } catch {
     return null;
@@ -391,7 +391,7 @@ function downloadPlanFile(plan: ReadingPlanDefinition) {
   const anchor = document.createElement('a');
   const slug = normalizeText(plan.title).replace(/\s+/g, '-');
   anchor.href = url;
-  anchor.download = `${slug || 'plano-kerygma'}.kerygma-plan.json`;
+  anchor.download = `${slug || 'plano-codex'}.codex-plan.json`;
   document.body.appendChild(anchor);
   anchor.click();
   document.body.removeChild(anchor);
@@ -797,7 +797,7 @@ export const ReadingPlans: React.FC<ReadingPlansProps> = ({ onNavigate }) => {
       '',
       `Categoria: ${plan.category}`,
       `Duracao: ${plan.duration} dias`,
-      `Codigo Kerygma: ${shareCode}`,
+      `Codigo Codex: ${shareCode}`,
     ].join('\n');
 
     if (navigator.share) {
@@ -852,7 +852,7 @@ export const ReadingPlans: React.FC<ReadingPlansProps> = ({ onNavigate }) => {
       const importedPlan = decodePlanFile(raw) ?? decodePlan(raw.trim());
 
       if (!importedPlan) {
-        setFeedback('Arquivo invalido. Use um arquivo exportado pelo Kerygma.');
+        setFeedback('Arquivo invalido. Use um arquivo exportado pelo Codex.');
         return;
       }
 
@@ -1071,12 +1071,12 @@ export const ReadingPlans: React.FC<ReadingPlansProps> = ({ onNavigate }) => {
             <div className="mt-5 premium-card-soft rounded-[28px] p-5">
               <div className="premium-section-title">Importar plano compartilhado</div>
               <p className="ui-text mt-2 text-sm leading-6 text-bible-text/60">
-                Cole o codigo Kerygma ou envie um arquivo exportado para adicionar o plano na sua biblioteca.
+                Cole o codigo Codex ou envie um arquivo exportado para adicionar o plano na sua biblioteca.
               </p>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".json,.kerygma-plan.json,.txt"
+                accept=".json,.codex-plan.json,.txt"
                 onChange={handleImportFile}
                 className="hidden"
               />

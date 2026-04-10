@@ -1,11 +1,11 @@
 ---
-name: kerygma-module-parser
-description: Web/JS module parsing rules for the Kerygma app. Loading SQLite blobs via sql.js, mapping GBF/HTML tags, Strongs and Morphology parsing. Triggers on read bible, import module, Parse verse tags, sql.js blobs, mySwordParser. 
+name: codex-module-parser
+description: Web/JS module parsing rules for the Codex app. Loading SQLite blobs via sql.js, mapping GBF/HTML tags, Strongs and Morphology parsing. Triggers on read bible, import module, Parse verse tags, sql.js blobs, mySwordParser. 
 ---
 
-# Biblia Kerygma - Module Parser
+# Biblia Codex - Module Parser
 
-The Kerygma web app parses and visualizes theological modules (MySword, MyBible, and Devotionals) in standard HTML/React. Because it executes entirely in the JavaScript environment, special rules apply to how strings and binaries are handled.
+The Codex web app parses and visualizes theological modules (MySword, MyBible, and Devotionals) in standard HTML/React. Because it executes entirely in the JavaScript environment, special rules apply to how strings and binaries are handled.
 
 ## 🛠 Parsing Architecture
 

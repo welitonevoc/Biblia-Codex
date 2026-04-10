@@ -74,7 +74,7 @@ export const HelpPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="ui-text font-bold text-sm">E-mail</p>
-                  <p className="ui-text text-xs opacity-40">suporte@kerygma.app</p>
+                  <p className="ui-text text-xs opacity-40">suporte@codex.app</p>
                 </div>
               </div>
               <ExternalLink className="w-4 h-4 opacity-20 group-hover:opacity-100 transition-opacity" />
@@ -97,7 +97,7 @@ export const HelpPage: React.FC = () => {
         <footer className="pt-16 border-t border-bible-accent/10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center space-x-4 opacity-40">
             <Star className="w-5 h-5 text-bible-accent" />
-            <span className="ui-text text-xs font-bold uppercase tracking-widest">Obrigado por usar o Kerygma</span>
+            <span className="ui-text text-xs font-bold uppercase tracking-widest">Obrigado por usar o Codex</span>
           </div>
           <div className="flex items-center space-x-6">
             <button className="p-2 hover:bg-bible-accent/5 rounded-full transition-colors opacity-40 hover:opacity-100">

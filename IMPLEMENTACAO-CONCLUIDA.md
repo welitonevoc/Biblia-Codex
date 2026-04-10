@@ -324,7 +324,7 @@ adb install android/app/build/outputs/apk/debug/app-debug.apk
 adb logcat | Select-String "permissions|ModuleManagement"
 
 # Verificar permissões
-adb shell dumpsys package com.kerygma.biblia | grep permission
+adb shell dumpsys package com.codex.biblia | grep permission
 ```
 
 ---

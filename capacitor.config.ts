@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.kerygma.biblia',
-  appName: 'Bíblia Kerygma',
+  appId: 'com.codex.biblia',
+  appName: 'Bíblia Codex',
 
   webDir: 'dist',
 
