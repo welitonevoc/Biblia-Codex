@@ -4,6 +4,7 @@ export interface Book {
   chapters: number;
   testament: 'OT' | 'NT';
   numericId: number;
+  abbreviation?: string;
 }
 
 export interface Verse {

@@ -387,7 +387,7 @@ export const Reader: React.FC<ReaderProps> = ({
               key={`${book.id}-${chapter}`}
             className="font-display text-3xl sm:text-4xl font-semibold tracking-tight md:text-7xl"
             >
-              {book.name} {chapter}
+              {book.abbreviation || book.name} {chapter}
             </motion.h1>
             <p className="ui-text mx-auto mt-4 max-w-xl text-sm leading-relaxed text-bible-text/55">
               Toque em um versículo para destacar, estudar, anotar ou navegar com mais profundidade.

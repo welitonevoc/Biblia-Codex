@@ -44,8 +44,8 @@ export class MySwordParser {
     parsed = parsed.replace(/<v=[^>]+>/gi, '');
     
     // 3. Strong's Numbers (Support MySword <WG1234>/<WH1234> and MyBible <S1234>)
-    // If settings are not provided, we show Strong's by default to help identification
-    const showStrongs = settings?.studyTools?.strongsTags !== false;
+    // By default, hide Strong's unless explicitly enabled
+    const showStrongs = settings?.studyTools?.strongsTags === true;
     const linkedStrongs = settings?.studyTools?.strongsLinks === true;
 
     if (showStrongs) {
