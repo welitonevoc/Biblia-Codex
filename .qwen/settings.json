@@ -34,7 +34,11 @@
       "Bash(del *)",
       "Bash(rmdir *)",
       "Read(C:\\Projetos\\BibleCodex-main/**)",
-      "Bash(opencode *)"
+      "Bash(opencode *)",
+      "Bash(git ls-remote *)",
+      "Bash(git pull *)",
+      "Bash(git stash)",
+      "Bash(git stash *)"
     ]
   },
   "$version": 3
