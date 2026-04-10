@@ -37,7 +37,8 @@ const detectSchema = (db: any) => {
     bookCol: cols.find(c => ['book', 'book_number', 'book_id', 'b'].includes(c)) || 'book',
     chapterCol: cols.find(c => ['chapter', 'c'].includes(c)) || 'chapter',
     verseCol: cols.find(c => ['verse', 'v'].includes(c)) || 'verse',
-    textCol: cols.find(c => ['scripture', 'text', 't'].includes(c)) || 'text'
+    textCol: cols.find(c => ['scripture', 'text', 't'].includes(c)) || 'text',
+    isMyBible: db.exec(`SELECT COUNT(*) FROM ${table} WHERE ${cols.find(c => ['book', 'book_number', 'book_id', 'b'].includes(c)) || 'book'} > 66`)[0]?.values[0][0] > 0
   };
 };
 
@@ -66,7 +67,7 @@ const getDbInstance = async (version: BibleModule) => {
     const schema = detectSchema(db);
     if (!schema) throw new Error("Schema não suportado");
     
-    cached = { db, schema };
+    cached = { db, schema: schema as any };
     dbCache.set(cacheKey, cached);
   }
   return cached;
@@ -217,7 +218,16 @@ export const BibleService = {
       if (result.length > 0) {
         return result[0].values.map((row: any[]) => {
           const bookNum = Number(row[0]);
-          const bookMetadata = BIBLE_BOOKS.find(b => b.numericId === bookNum || BookNumberConverter.toMyBible(b.numericId) === bookNum);
+          let bookMetadata;
+          
+          // Heurística para detecção de sistema de numeração (MyBible utiliza 10, 20... Standard utiliza 1-66)
+          if ((schema as any).isMyBible || bookNum > 66) {
+            const stdId = BookNumberConverter.fromMyBible(bookNum);
+            bookMetadata = BIBLE_BOOKS.find(b => b.numericId === stdId);
+          } else {
+            bookMetadata = BIBLE_BOOKS.find(b => b.numericId === bookNum);
+          }
+
           return {
             bookId: bookMetadata?.id || String(bookNum),
             chapter: Number(row[1]),

@@ -1,0 +1,107 @@
+﻿On branch main
+Your branch and 'origin/main' have diverged,
+and have 1 and 6 different commits each, respectively.
+  (use "git pull" if you want to integrate the remote branch with yours)
+
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Changes to be committed:
+	renamed:    .agent/skills/kerygma-ai-study/SKILL.md -> .agent/skills/codex-ai-study/SKILL.md
+	renamed:    .agent/skills/kerygma-capacitor-permissions/SKILL.md -> .agent/skills/codex-capacitor-permissions/SKILL.md
+	renamed:    .agent/skills/kerygma-module-parser/SKILL.md -> .agent/skills/codex-module-parser/SKILL.md
+	renamed:    .agent/skills/kerygma-people-modules/SKILL.md -> .agent/skills/codex-people-modules/SKILL.md
+	renamed:    .agent/skills/kerygma-web-architecture/SKILL.md -> .agent/skills/codex-web-architecture/SKILL.md
+	modified:   .agent/workflows/PLAN-devotional-modules.md
+	modified:   .claude/CLAUDE.md
+	renamed:    .idea/biblia-kerygma.iml -> .idea/biblia-codex.iml
+	new file:   AUDIO-EXAMPLE.md
+	new file:   AUDIO-FEATURE.md
+	modified:   BUILD-ANDROID-STATUS.md
+	modified:   CORRECAO-PERMISSOES-RESUMO.md
+	modified:   GERAR-APK.md
+	modified:   IMPLEMENTACAO-CONCLUIDA.md
+	modified:   PERMISSIONS-SERVICE-STATUS.md
+	modified:   PERMISSOES-ARMAZENAMENTO.md
+	modified:   PLANO-PERMISSOES-ONBOARDING-RESUMO.md
+	modified:   README-CORRECAO.md
+	modified:   README.md
+	modified:   TESTAR-AGORA.md
+	new file:   TESTE-IMPORTACAO-MODULOS.md
+	modified:   VERIFICAR-ANDROID.md
+	modified:   android/.idea/appInsightsSettings.xml
+	modified:   android/app/build.gradle
+	modified:   android/app/google-services.json
+	modified:   android/app/src/main/AndroidManifest.xml
+	renamed:    android/app/src/main/java/com/kerygma/biblia/MainActivity.java -> android/app/src/main/java/com/codex/biblia/MainActivity.java
+	renamed:    android/app/src/main/java/com/kerygma/biblia/MyApplication.kt -> android/app/src/main/java/com/codex/biblia/MyApplication.kt
+	renamed:    android/app/src/main/java/com/kerygma/biblia/data/AIStudyCache.kt -> android/app/src/main/java/com/codex/biblia/data/AIStudyCache.kt
+	renamed:    android/app/src/main/java/com/kerygma/biblia/data/AIStudyCacheDao.kt -> android/app/src/main/java/com/codex/biblia/data/AIStudyCacheDao.kt
+	renamed:    android/app/src/main/java/com/kerygma/biblia/data/AppDatabase.kt -> android/app/src/main/java/com/codex/biblia/data/AppDatabase.kt
+	renamed:    android/app/src/main/java/com/kerygma/biblia/data/DictionaryEntry.kt -> android/app/src/main/java/com/codex/biblia/data/DictionaryEntry.kt
+	renamed:    android/app/src/main/java/com/kerygma/biblia/data/DictionaryEntryDao.kt -> android/app/src/main/java/com/codex/biblia/data/DictionaryEntryDao.kt
+	renamed:    android/app/src/main/java/com/kerygma/biblia/di/AppModule.kt -> android/app/src/main/java/com/codex/biblia/di/AppModule.kt
+	renamed:    android/app/src/main/java/com/kerygma/biblia/plugin/BibleDictionaryPlugin.kt -> android/app/src/main/java/com/codex/biblia/plugin/BibleDictionaryPlugin.kt
+	renamed:    android/app/src/main/java/com/kerygma/biblia/service/DictionaryService.kt -> android/app/src/main/java/com/codex/biblia/service/DictionaryService.kt
+	renamed:    android/app/src/main/java/com/kerygma/biblia/service/GeminiAISearchService.kt -> android/app/src/main/java/com/codex/biblia/service/GeminiAISearchService.kt
+	modified:   android/app/src/main/res/values/strings.xml
+	modified:   android/app/src/main/res/xml/file_paths.xml
+	modified:   capacitor.config.ts
+	modified:   docs/PLAN-biblia-redesign-premium.md
+	modified:   docs/codigo-fonte-app-curado.txt
+	modified:   docs/codigo-fonte-app.txt
+	modified:   docs/inventario-completo-do-app.md
+	modified:   index.html
+	modified:   metadata.json
+	modified:   package-lock.json
+	modified:   package.json
+	modified:   src/App.tsx
+	modified:   src/AppContext.tsx
+	modified:   src/StorageService.ts
+	new file:   src/components/AudioPlayer.tsx
+	new file:   src/components/AudioSpeedSelector.tsx
+	modified:   src/components/Devotional.tsx
+	modified:   src/components/GlobalDrawer.tsx
+	modified:   src/components/HelpPage.tsx
+	modified:   src/components/Home.tsx
+	modified:   src/components/ModuleManagement.tsx
+	modified:   src/components/Navigation.tsx
+	modified:   src/components/Onboarding.tsx
+	new file:   src/components/ReaderWithAudio.tsx
+	new file:   src/components/ReadingModeSelector.tsx
+	modified:   src/components/ReadingPlans.tsx
+	modified:   src/components/Settings.tsx
+	modified:   src/components/SettingsPage.tsx
+	modified:   src/components/StudyPanel.tsx
+	modified:   src/components/StudyToolsPanel.tsx
+	modified:   src/components/TopBar.tsx
+	new file:   src/data/audioData.ts
+	modified:   src/firebase.ts
+	new file:   src/hooks/useAudio.ts
+	modified:   src/services/PERMISSIONS-SERVICE.md
+	new file:   src/services/audioService.ts
+	modified:   src/services/moduleScanner.ts
+	modified:   src/services/moduleService.ts
+	modified:   src/services/permissionsService.ts
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+	both modified:   src/components/HamburgerMenu.tsx
+	both modified:   src/index.css
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .env.local
+	modified:   src/App.tsx
+	modified:   src/BibleService.ts
+	modified:   src/components/Onboarding.tsx
+	modified:   src/components/PermissionScreen.tsx
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	start-local.ps1
+	status.txt
+	status2.txt
+

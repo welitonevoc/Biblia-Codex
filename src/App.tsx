@@ -36,8 +36,6 @@ import { PermissionScreen } from './components/PermissionScreen';
 import { ensureStoragePermission } from './services/permissionsService';
 import { Capacitor } from '@capacitor/core';
 
-// Scratchpad de teste - disponível no console via window.runBibleServiceTests()
-import('./scratchpad');
 
 function AppContent() {
   const {
