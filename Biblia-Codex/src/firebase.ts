@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -8,8 +8,9 @@ import {
   signOut,
   onAuthStateChanged,
   User,
+  type Auth,
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, serverTimestamp, type Firestore } from 'firebase/firestore';
 
 // ── Configuração do Firebase via variáveis de ambiente ─────────────────────────
 // Para desenvolvimento local, crie um arquivo .env.local com:
@@ -28,22 +29,37 @@ const firebaseConfig = {
 };
 
 // Verificar se as variáveis de ambiente estão configuradas
-if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+const isFirebaseConfigured = firebaseConfig.apiKey && firebaseConfig.projectId;
+
+if (!isFirebaseConfigured) {
   console.warn(
     '⚠️ Configuração do Firebase ausente. ' +
-    'Crie um arquivo .env.local com as variáveis VITE_FIREBASE_* ou ' +
-    'configure no painel do Vercel para produção.'
+    'O app funcionará em modo local (sem login/sync). ' +
+    'Configure VITE_FIREBASE_* no painel do Vercel para ativar autenticação.'
   );
 }
 
-// ── Inicialização ──────────────────────────────────────────────────────────────
-const app = initializeApp(firebaseConfig);
+// ── Inicialização condicional ──────────────────────────────────────────────────
+// Inicializa Firebase apenas se configurado, evitando crash do app
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
 
-// Usar o ID do banco de dados do ambiente ou padrão
-const firestoreDatabaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID || '(default)';
-export const db = getFirestore(app, firestoreDatabaseId);
-export const auth = getAuth(app);
+if (isFirebaseConfigured) {
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    const firestoreDatabaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID || '(default)';
+    db = getFirestore(app, firestoreDatabaseId);
+  } catch (error) {
+    console.error('❌ Erro ao inicializar Firebase:', error);
+  }
+}
+
+// Re-exports seguros - sempre exportam algo, mesmo que seja null/fallback
+export { app, auth, db };
 export const googleProvider = new GoogleAuthProvider();
+const GOOGLE_ACCESS_TOKEN_KEY = 'codex-google-access-token';
 
 googleProvider.addScope('https://www.googleapis.com/auth/documents');
 googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
@@ -75,6 +91,9 @@ export const clearStoredGoogleAccessToken = (): void => {
 //   2. Ao voltar, chame handleRedirectResult() uma vez na inicialização do app.
 //
 export const loginWithGoogle = async (): Promise<void> => {
+  if (!auth) {
+    throw new Error('Firebase não configurado. Adicione as variáveis VITE_FIREBASE_* no Vercel.');
+  }
   try {
     // ✅ CAPACITOR — usamos signInWithRedirect apenas em ambiente nativo.
     // No navegador (localhost), usamos signInWithPopup para melhor UX.
@@ -104,6 +123,7 @@ export const loginWithGoogle = async (): Promise<void> => {
 //   }, []);
 //
 export const handleRedirectResult = async (): Promise<User | null> => {
+  if (!auth) return null;
   try {
     const result = await getRedirectResult(auth);
     const credential = result ? GoogleAuthProvider.credentialFromResult(result) : null;
@@ -117,6 +137,7 @@ export const handleRedirectResult = async (): Promise<User | null> => {
 
 // ── Logout ────────────────────────────────────────────────────────────────────
 export const logout = async (): Promise<void> => {
+  if (!auth) return;
   try {
     await signOut(auth);
     clearStoredGoogleAccessToken();

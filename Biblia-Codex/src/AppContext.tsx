@@ -192,6 +192,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error('Erro no redirect de autenticação:', err)
     );
 
+    // Se Firebase não está configurado, pula autenticação
+    if (!auth) {
+      setIsAuthReady(true);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setIsAuthReady(true);
@@ -203,7 +209,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Sync from Cloud
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
 
     const userDocRef = doc(db, 'users', user.uid);
     const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
@@ -232,7 +238,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Sync to Cloud
   const syncToCloud = useCallback(async (newConfig: ThemeConfig, newSettings: AppSettings) => {
-    if (!user) return;
+    if (!user || !db) return;
 
     try {
       const settingsStr = JSON.stringify(newSettings);
