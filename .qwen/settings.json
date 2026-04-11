@@ -13,7 +13,8 @@
       "Bash(ls *)",
       "Bash(findstr *)",
       "Bash(move *)",
-      "Bash(test *)"
+      "Bash(test *)",
+      "Bash(git log *)"
     ]
   },
   "$version": 3

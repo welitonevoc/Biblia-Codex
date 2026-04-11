@@ -3,8 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "build": "cd Biblia-Codex && npm run build",
+    "build": "cd Biblia-Codex && npm install && npm run build",
     "dev": "cd Biblia-Codex && npm run dev",
-    "install-post": "cd Biblia-Codex && npm install"
+    "postinstall": "cd Biblia-Codex && npm install"
   }
 }
