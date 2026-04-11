@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(mkdir *)",
+      "Bash(dir *)",
+      "Bash(findstr *)",
+      "Bash(move *)",
+      "Bash(robocopy *)",
+      "WebFetch(github.com)",
+      "Bash(xcopy *)",
+      "Bash(powershell *)"
+    ]
+  },
+  "$version": 3
+}

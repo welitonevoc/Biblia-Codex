@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Verbum — Sistema de Etiquetas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --ink:#0f0f0f;--ink2:#5a5a5a;--ink3:#999;
+      --sur:#fff;--sur2:#f7f6f3;--sur3:#efefec;
+      --bdr:rgba(0,0,0,.07);--bdr2:rgba(0,0,0,.12);
+      --font:'DM Sans',sans-serif;--serif:'DM Serif Display',serif;
+    }
+    body{font-family:var(--font);background:var(--sur2);color:var(--ink);min-height:100vh}
+    .shell{display:grid;grid-template-columns:260px 1fr;grid-template-rows:52px 1fr;height:100vh;background:var(--sur)}
+
+    /* NAV */
+    .nav{grid-column:1/-1;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid var(--bdr);background:var(--sur);gap:12px}
+    .nav-logo{font-family:var(--serif);font-size:18px;letter-spacing:-.3px;margin-right:auto}
+    .nav-logo span{font-style:italic;color:var(--ink2)}
+    .nav-tabs{display:flex;gap:2px;background:var(--sur2);border-radius:10px;padding:3px}
+    .ntab{font-size:12px;font-family:var(--font);font-weight:400;padding:5px 13px;border-radius:8px;cursor:pointer;border:none;background:transparent;color:var(--ink2);transition:all .18s}
+    .ntab.on{background:var(--sur);color:var(--ink);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+    /* SIDEBAR */
+    .side{background:var(--sur2);border-right:1px solid var(--bdr);overflow-y:auto;display:flex;flex-direction:column}
+    .side-inner{padding:16px 10px;flex:1}
+    .cat-block{margin-bottom:18px}
+    .cat-label{font-size:9px;font-weight:600;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase;padding:0 8px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+    .cat-label::after{content:'';flex:1;height:1px;background:var(--bdr)}
+    .tag-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:9px;cursor:pointer;margin-bottom:1px;transition:background .12s}
+    .tag-row:hover{background:rgba(0,0,0,.04)}
+    .tag-row.on{background:var(--sur);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+    .tpill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;flex:1;letter-spacing:.01em}
+    .tcnt{font-size:10px;color:var(--ink3);font-weight:300}
+
+    /* SEARCH */
+    .side-search{padding:10px 10px 0;position:sticky;top:0;background:var(--sur2);z-index:1;border-bottom:1px solid var(--bdr)}
+    .search-inp{width:100%;font-size:12px;font-family:var(--font);padding:7px 10px;border:1px solid var(--bdr2);border-radius:9px;background:var(--sur);color:var(--ink);outline:none;margin-bottom:10px}
+    .search-inp:focus{border-color:rgba(0,0,0,.2)}
+
+    /* ADD AREA */
+    .add-area{border-top:1px solid var(--bdr);padding:12px 10px;background:var(--sur2);position:sticky;bottom:0}
+    .add-toggle{font-size:11px;font-family:var(--font);color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:5px;padding:4px 0}
+    .add-toggle:hover{color:var(--ink)}
+    .add-form{display:none;margin-top:10px}
+    .add-form.open{display:block}
+    .add-row{display:flex;gap:6px;margin-bottom:8px}
+    .add-inp{flex:1;font-size:12px;font-family:var(--font);padding:6px 10px;border:1px solid var(--bdr2);border-radius:9px;background:var(--sur);color:var(--ink);outline:none}
+    .add-inp:focus{border-color:rgba(0,0,0,.2)}
+    .add-btn-main{font-size:11px;font-family:var(--font);padding:6px 12px;border:none;border-radius:9px;cursor:pointer;background:var(--ink);color:#fff;font-weight:500;transition:opacity .15s;white-space:nowrap}
+    .add-btn-main:hover{opacity:.8}
+    .cmode-row{display:flex;gap:5px;margin-bottom:8px}
+    .cmode-btn{font-size:10px;font-family:var(--font);padding:4px 9px;border-radius:7px;border:1px solid var(--bdr2);cursor:pointer;background:transparent;color:var(--ink2);transition:all .15s;display:flex;align-items:center;gap:4px}
+    .cmode-btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .auto-preview{border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;border:1px solid transparent;transition:all .3s}
+    .auto-preview-pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+    .regen-btn{font-size:10px;font-family:var(--font);padding:3px 8px;border-radius:7px;border:1px solid rgba(0,0,0,.12);cursor:pointer;background:transparent;transition:background .15s;display:flex;align-items:center;gap:3px}
+    .regen-btn:hover{background:rgba(0,0,0,.06)}
+    .color-opts{display:flex;gap:5px;flex-wrap:wrap}
+    .co{width:20px;height:20px;border-radius:50%;cursor:pointer;transition:transform .15s;border:2px solid transparent;position:relative}
+    .co:hover{transform:scale(1.15)}
+    .co.sel::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--ink)}
+
+    /* MAIN */
+    .main{padding:28px;overflow-y:auto}
+    .view{display:none}
+    .view.on{display:block}
+    .page-header{display:flex;align-items:baseline;gap:10px;margin-bottom:20px}
+    .page-title{font-family:var(--serif);font-size:24px;letter-spacing:-.3px}
+    .page-sub{font-size:13px;color:var(--ink3);font-weight:300}
+
+    /* VERSE CARDS */
+    .vcard{background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:16px 18px;margin-bottom:10px;transition:border-color .15s,transform .15s}
+    .vcard:hover{border-color:var(--bdr2);transform:translateY(-1px)}
+    .vref{font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+    .vtext{font-size:14px;line-height:1.72;color:var(--ink);font-weight:300}
+    .vtags{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px}
+    .vtag{font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px}
+
+    /* CHAIN */
+    .chain-wrap{background:var(--sur2);border-radius:16px;padding:22px;margin-bottom:16px}
+    .chain-ref{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px}
+    .chain-text{font-family:var(--serif);font-size:20px;line-height:1.65;color:var(--ink);letter-spacing:-.2px}
+    .chain-nav{display:flex;align-items:center;gap:10px;margin-top:20px}
+    .cnbtn{font-size:12px;font-family:var(--font);padding:7px 16px;border:1px solid var(--bdr2);border-radius:10px;cursor:pointer;background:var(--sur);color:var(--ink);font-weight:500;transition:all .15s}
+    .cnbtn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+    .cnbtn:disabled{opacity:.3;cursor:default}
+    .cnbtn:disabled:hover{background:var(--sur);color:var(--ink)}
+    .chain-prog{flex:1;display:flex;gap:4px;justify-content:center;align-items:center;flex-wrap:wrap}
+    .cpdot{width:6px;height:6px;border-radius:50%;background:var(--bdr2);cursor:pointer;transition:all .22s}
+    .cpdot.on{width:18px;border-radius:10px}
+    .note-area{font-size:13px;font-family:var(--font);line-height:1.65;padding:12px;border:1px solid var(--bdr);border-radius:12px;background:var(--sur);color:var(--ink);resize:none;width:100%;height:72px;outline:none}
+    .note-area:focus{border-color:var(--bdr2)}
+    .chain-select{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px;max-height:90px;overflow-y:auto}
+    .chain-tag-btn{font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;cursor:pointer;transition:all .15s;opacity:.55}
+    .chain-tag-btn.on{opacity:1;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+
+    /* MOOD */
+    .mood-intro{font-size:14px;color:var(--ink2);font-weight:300;margin-bottom:18px;line-height:1.65}
+    .mood-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+    .mcard{border:1px solid var(--bdr);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;transition:all .18s;background:var(--sur)}
+    .mcard:hover{border-color:var(--bdr2);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.06)}
+    .mcard.on{border-width:1.5px}
+    .micon{font-size:20px;margin-bottom:5px}
+    .mname{font-size:11px;color:var(--ink2)}
+
+    /* DASHBOARD */
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+    .scard{background:var(--sur2);border-radius:14px;padding:16px}
+    .snum{font-family:var(--serif);font-size:28px;color:var(--ink);letter-spacing:-.5px}
+    .slbl{font-size:10px;color:var(--ink3);margin-top:3px;font-weight:300}
+    .dash-cats{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+    .dash-cat-block{background:var(--sur2);border-radius:14px;padding:16px}
+    .dash-cat-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px}
+    .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+    .bar-lbl{font-size:11px;color:var(--ink2);width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .bar-track{flex:1;height:4px;background:var(--sur3);border-radius:10px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:10px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+    .bar-n{font-size:10px;color:var(--ink3);width:22px;text-align:right}
+    .suggest{background:var(--ink);border-radius:16px;padding:22px;color:#fff}
+    .sug-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:8px}
+    .sug-text{font-size:14px;line-height:1.65;font-weight:300;color:rgba(255,255,255,.9)}
+    .source-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--ink3);border:1px solid var(--bdr);border-radius:8px;padding:3px 9px;margin-bottom:16px}
+    .source-dot{width:6px;height:6px;border-radius:50%;background:#15803d;flex-shrink:0}
+
+    /* TAG GRID (overview) */
+    .tag-grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:24px}
+    .tag-grid-card{background:var(--sur);border:1px solid var(--bdr);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .15s}
+    .tag-grid-card:hover{border-color:var(--bdr2);transform:translateY(-1px)}
+    .tgc-pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:8px}
+    .tgc-count{font-size:20px;font-family:var(--serif);color:var(--ink);letter-spacing:-.3px}
+    .tgc-sub{font-size:10px;color:var(--ink3);margin-top:1px}
+    .tgc-cat{font-size:9px;color:var(--ink3);margin-top:6px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    @keyframes pop{0%{transform:scale(.92);opacity:.6}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
+    .fade-up{animation:fadeUp .22s ease}
+    .popin{animation:pop .22s ease}
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:10px}
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <nav class="nav">
+    <div class="nav-logo">Verbum <span>tags</span></div>
+    <div class="nav-tabs">
+      <button class="ntab on"  onclick="go('lib',this)">Biblioteca</button>
+      <button class="ntab"     onclick="go('tags',this)">Etiquetas</button>
+      <button class="ntab"     onclick="go('chain',this)">Corrente</button>
+      <button class="ntab"     onclick="go('mood',this)">Momento</button>
+      <button class="ntab"     onclick="go('dash',this)">Painel</button>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <div class="side-search">
+      <input class="search-inp" id="search-inp" placeholder="Buscar etiqueta..." oninput="filterSidebar()"/>
+    </div>
+    <div class="side-inner" id="side-inner"></div>
+    <div class="add-area">
+      <div class="add-toggle" onclick="toggleAddForm()">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v6M5 8h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Nova etiqueta
+      </div>
+      <div class="add-form" id="add-form">
+        <div class="add-row">
+          <input class="add-inp" id="tinput" type="text" placeholder="#NomeDaTag" oninput="onNameInput()" onkeydown="if(event.key==='Enter')addTag()"/>
+          <button class="add-btn-main" onclick="addTag()">Criar</button>
+        </div>
+        <div class="cmode-row">
+          <button class="cmode-btn on" id="btn-auto" onclick="setMode('auto')">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.22 3.22l1.41 1.41M11.37 11.37l1.41 1.41M3.22 12.78l1.41-1.41M11.37 4.63l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Automático
+          </button>
+          <button class="cmode-btn" id="btn-manual" onclick="setMode('manual')">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/></svg>
+            Manual
+          </button>
+        </div>
+        <div id="pane-auto">
+          <div class="auto-preview" id="autopreview">
+            <span class="auto-preview-pill" id="autopill">#NomeDaTag</span>
+            <button class="regen-btn" id="regenbtn" onclick="regen()">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5c1.8 0 3.4.87 4.4 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13.5 2.5v2.2H11.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Gerar outra
+            </button>
+          </div>
+        </div>
+        <div id="pane-manual" style="display:none"><div class="color-opts" id="copts"></div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- BIBLIOTECA -->
+    <div class="view on" id="view-lib">
+      <div class="page-header">
+        <h1 class="page-title" id="libtitle">Todos os versículos</h1>
+        <span class="page-sub" id="libsub"></span>
+      </div>
+      <div class="source-badge" id="source-badge">
+        <div class="source-dot"></div>
+        65 etiquetas · Teologia AD + Thompson Chain + 344k referências cruzadas
+      </div>
+      <div id="verselist"></div>
+    </div>
+
+    <!-- VISÃO GERAL DAS ETIQUETAS -->
+    <div class="view" id="view-tags">
+      <div class="page-header">
+        <h1 class="page-title">Todas as etiquetas</h1>
+        <span class="page-sub" id="tags-sub"></span>
+      </div>
+      <div id="tag-grid-container"></div>
+    </div>
+
+    <!-- CORRENTE -->
+    <div class="view" id="view-chain">
+      <div class="page-header">
+        <h1 class="page-title">Corrente temática</h1>
+        <span class="page-sub" id="chain-meta"></span>
+      </div>
+      <div class="chain-select" id="chain-select"></div>
+      <div class="chain-wrap">
+        <div class="chain-ref" id="cref"></div>
+        <div class="chain-text" id="ctext"></div>
+        <div class="vtags" id="ctags" style="margin-top:12px"></div>
+        <div class="chain-nav">
+          <button class="cnbtn" id="cprev" onclick="mv(-1)">← Anterior</button>
+          <div class="chain-prog" id="cprog"></div>
+          <button class="cnbtn" id="cnext" onclick="mv(1)">Próximo →</button>
+        </div>
+      </div>
+      <textarea class="note-area" placeholder="Anotação sobre este versículo na corrente..."></textarea>
+    </div>
+
+    <!-- MOMENTO -->
+    <div class="view" id="view-mood">
+      <div class="page-header"><h1 class="page-title">Como você está?</h1></div>
+      <p class="mood-intro">Escolha um momento e encontraremos versículos para você agora.</p>
+      <div class="mood-grid" id="moodgrid"></div>
+      <div id="moodresult"></div>
+    </div>
+
+    <!-- PAINEL -->
+    <div class="view" id="view-dash">
+      <div class="page-header"><h1 class="page-title">Painel</h1></div>
+      <div class="stats">
+        <div class="scard"><div class="snum" id="d-verses">0</div><div class="slbl">versículos marcados</div></div>
+        <div class="scard"><div class="snum" id="d-tags">65</div><div class="slbl">etiquetas ativas</div></div>
+        <div class="scard"><div class="snum" id="d-cats">10</div><div class="slbl">categorias teológicas</div></div>
+        <div class="scard"><div class="snum">344k</div><div class="slbl">referências analisadas</div></div>
+      </div>
+      <div class="dash-cats" id="dash-cats"></div>
+      <div class="suggest">
+        <div class="sug-label">Base teológica</div>
+        <div class="sug-text">Sistema baseado nas 16 Verdades Fundamentais das Assembleias de Deus, cadeias do Thompson Chain Reference e análise de 344.800 referências cruzadas do openbible.info.</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ================================================================
+   CATEGORIAS E ETIQUETAS
+   Fontes: AD 16 Verdades Fundamentais · Thompson Chain Reference
+           · 344.800 referências cruzadas openbible.info
+================================================================ */
+const CATEGORIES = [
+  {
+    id:"atributos", label:"Atributos de Deus",
+    tags:[
+      {id:"soberania",   n:"Soberania",      dot:"#1e3a8a",bg:"#dbeafe",tc:"#1e40af"},
+      {id:"onipotencia", n:"Onipotência",     dot:"#1d4ed8",bg:"#eff6ff",tc:"#1e40af"},
+      {id:"fidelidade",  n:"Fidelidade",      dot:"#0369a1",bg:"#e0f2fe",tc:"#075985"},
+      {id:"misericordia",n:"Misericórdia",    dot:"#0891b2",bg:"#cffafe",tc:"#0e7490"},
+      {id:"gloria",      n:"Glória de Deus",  dot:"#1e40af",bg:"#e0e7ff",tc:"#1e3a8a"},
+      {id:"onipresenca", n:"Onipresença",     dot:"#075985",bg:"#e0f2fe",tc:"#0c4a6e"},
+      {id:"santidadeDeus",n:"Santidade",      dot:"#1a1a1a",bg:"#f0f0ee",tc:"#1a1a1a"},
+      {id:"eternidade",  n:"Eternidade",      dot:"#334155",bg:"#f1f5f9",tc:"#1e293b"},
+    ]
+  },
+  {
+    id:"salvacao", label:"Salvação",
+    tags:[
+      {id:"graca",       n:"Graça",           dot:"#7c3aed",bg:"#ede9fe",tc:"#6d28d9"},
+      {id:"redencao",    n:"Redenção",        dot:"#b91c1c",bg:"#fee2e2",tc:"#991b1b"},
+      {id:"justificacao",n:"Justificação",    dot:"#9333ea",bg:"#f3e8ff",tc:"#7e22ce"},
+      {id:"santificacao",n:"Santificação",    dot:"#6d28d9",bg:"#f5f3ff",tc:"#5b21b6"},
+      {id:"arrependimento",n:"Arrependimento",dot:"#dc2626",bg:"#fff1f2",tc:"#b91c1c"},
+      {id:"conversao",   n:"Conversão",       dot:"#16a34a",bg:"#dcfce7",tc:"#15803d"},
+      {id:"novaCriatura",n:"Nova Criatura",   dot:"#059669",bg:"#d1fae5",tc:"#047857"},
+      {id:"perdao",      n:"Perdão",          dot:"#d946ef",bg:"#fae8ff",tc:"#a21caf"},
+    ]
+  },
+  {
+    id:"espirito", label:"Espírito Santo",
+    tags:[
+      {id:"batismoEsp",  n:"Batismo no Espírito",dot:"#f59e0b",bg:"#fef3c7",tc:"#b45309"},
+      {id:"linguas",     n:"Línguas",          dot:"#d97706",bg:"#fef9c3",tc:"#92400e"},
+      {id:"donsEsp",     n:"Dons do Espírito", dot:"#ea580c",bg:"#ffedd5",tc:"#c2410c"},
+      {id:"frutosEsp",   n:"Frutos do Espírito",dot:"#65a30d",bg:"#ecfccb",tc:"#3f6212"},
+      {id:"uncao",       n:"Unção",            dot:"#ca8a04",bg:"#fef9c3",tc:"#854d0e"},
+      {id:"profecia",    n:"Profecia",          dot:"#b45309",bg:"#fef3c7",tc:"#92400e"},
+    ]
+  },
+  {
+    id:"vida", label:"Vida Cristã",
+    tags:[
+      {id:"oracao",      n:"Oração",           dot:"#0e7490",bg:"#cffafe",tc:"#155e75"},
+      {id:"jejum",       n:"Jejum",             dot:"#4b5563",bg:"#f3f4f6",tc:"#374151"},
+      {id:"adoracao",    n:"Adoração",          dot:"#be185d",bg:"#fce7f3",tc:"#9d174d"},
+      {id:"fe",          n:"Fé",                dot:"#15803d",bg:"#dcfce7",tc:"#166534"},
+      {id:"esperanca",   n:"Esperança",         dot:"#1e40af",bg:"#e0e7ff",tc:"#1e3a8a"},
+      {id:"amor",        n:"Amor",              dot:"#be185d",bg:"#fce7f3",tc:"#9d174d"},
+      {id:"humildade",   n:"Humildade",         dot:"#854d0e",bg:"#fef9c3",tc:"#713f12"},
+      {id:"paciencia",   n:"Paciência",         dot:"#6b7280",bg:"#f9fafb",tc:"#374151"},
+      {id:"perseveranca",n:"Perseverança",      dot:"#1d4ed8",bg:"#dbeafe",tc:"#1e40af"},
+      {id:"obediencia",  n:"Obediência",        dot:"#065f46",bg:"#d1fae5",tc:"#064e3b"},
+      {id:"mordomia",    n:"Mordomia",          dot:"#92400e",bg:"#fef3c7",tc:"#78350f"},
+      {id:"discipulado", n:"Discipulado",       dot:"#0f766e",bg:"#ccfbf1",tc:"#134e4a"},
+    ]
+  },
+  {
+    id:"conflito", label:"Conflito Espiritual",
+    tags:[
+      {id:"guerraEsp",   n:"Guerra Espiritual", dot:"#7f1d1d",bg:"#fee2e2",tc:"#991b1b"},
+      {id:"tentacao",    n:"Tentação",          dot:"#9f1239",bg:"#ffe4e6",tc:"#be123c"},
+      {id:"vitoria",     n:"Vitória",           dot:"#1d4ed8",bg:"#dbeafe",tc:"#1e40af"},
+      {id:"protecao",    n:"Proteção",          dot:"#155e75",bg:"#cffafe",tc:"#0e7490"},
+    ]
+  },
+  {
+    id:"igreja", label:"Igreja e Missão",
+    tags:[
+      {id:"igreja",      n:"Igreja",            dot:"#1e3a8a",bg:"#dbeafe",tc:"#1e40af"},
+      {id:"evangelismo", n:"Evangelismo",       dot:"#15803d",bg:"#dcfce7",tc:"#166534"},
+      {id:"missoes",     n:"Missões",           dot:"#0369a1",bg:"#e0f2fe",tc:"#075985"},
+      {id:"batismoAgua", n:"Batismo (água)",    dot:"#0891b2",bg:"#cffafe",tc:"#0e7490"},
+      {id:"ceia",        n:"Ceia do Senhor",    dot:"#7c3aed",bg:"#ede9fe",tc:"#6d28d9"},
+      {id:"lideranca",   n:"Liderança",         dot:"#1a1a1a",bg:"#f0f0ee",tc:"#1a1a1a"},
+      {id:"comunidade",  n:"Comunidade",        dot:"#059669",bg:"#d1fae5",tc:"#047857"},
+    ]
+  },
+  {
+    id:"escato", label:"Escatologia",
+    tags:[
+      {id:"segundaVinda",n:"Segunda Vinda",     dot:"#7c3aed",bg:"#ede9fe",tc:"#6d28d9"},
+      {id:"arrebatamento",n:"Arrebatamento",    dot:"#6d28d9",bg:"#f5f3ff",tc:"#5b21b6"},
+      {id:"milenio",     n:"Milênio",           dot:"#4338ca",bg:"#e0e7ff",tc:"#3730a3"},
+      {id:"julgamento",  n:"Juízo Final",       dot:"#b91c1c",bg:"#fee2e2",tc:"#991b1b"},
+      {id:"novaJerusalem",n:"Nova Jerusalém",   dot:"#0369a1",bg:"#e0f2fe",tc:"#075985"},
+      {id:"ressurreicao",n:"Ressurreição",      dot:"#1d4ed8",bg:"#dbeafe",tc:"#1e40af"},
+    ]
+  },
+  {
+    id:"cura", label:"Cura e Promessas",
+    tags:[
+      {id:"curaDivina",  n:"Cura Divina",       dot:"#16a34a",bg:"#dcfce7",tc:"#15803d"},
+      {id:"provisao",    n:"Provisão",           dot:"#ca8a04",bg:"#fef9c3",tc:"#854d0e"},
+      {id:"bencao",      n:"Bênção",             dot:"#d97706",bg:"#fef3c7",tc:"#b45309"},
+      {id:"paz",         n:"Paz",                dot:"#0f766e",bg:"#ccfbf1",tc:"#134e4a"},
+      {id:"forca",       n:"Força",              dot:"#1d4ed8",bg:"#dbeafe",tc:"#1e40af"},
+    ]
+  },
+  {
+    id:"teologia", label:"Teologia Bíblica",
+    tags:[
+      {id:"criacao",     n:"Criação",            dot:"#065f46",bg:"#d1fae5",tc:"#064e3b"},
+      {id:"alianca",     n:"Aliança",            dot:"#92400e",bg:"#fef3c7",tc:"#78350f"},
+      {id:"leiGraca",    n:"Lei e Graça",        dot:"#7c3aed",bg:"#ede9fe",tc:"#6d28d9"},
+      {id:"proposito",   n:"Propósito",          dot:"#b45309",bg:"#fef3c7",tc:"#92400e"},
+      {id:"sabedoria",   n:"Sabedoria",          dot:"#854d0e",bg:"#fef9c3",tc:"#713f12"},
+      {id:"identidade",  n:"Identidade",         dot:"#0369a1",bg:"#e0f2fe",tc:"#075985"},
+    ]
+  },
+  {
+    id:"familia", label:"Família",
+    tags:[
+      {id:"familia",     n:"Família",            dot:"#be185d",bg:"#fce7f3",tc:"#9d174d"},
+      {id:"casamento",   n:"Casamento",          dot:"#db2777",bg:"#fce7f3",tc:"#9d174d"},
+      {id:"filhos",      n:"Filhos",             dot:"#16a34a",bg:"#dcfce7",tc:"#15803d"},
+    ]
+  },
+];
+
+// Flat TAGS array
+let TAGS = CATEGORIES.flatMap(c => c.tags.map(t => ({...t, cat: c.id, catLabel: c.label})));
+
+/* ================================================================
+   VERSÍCULOS HUB — extraídos por análise de rede (openbible.info)
+   + versículos clássicos AD / Thompson para cada etiqueta
+================================================================ */
+const VERSES = [
+  // ATRIBUTOS DE DEUS
+  {r:"Isaías 46:10",   g:["soberania","proposito"],      t:"Desde o princípio anuncio o fim, e desde a antiguidade as coisas que ainda não sucederam; dizendo: O meu conselho será firme."},
+  {r:"Jeremias 32:17", g:["onipotencia","criacao"],      t:"Ah! Senhor Deus! Eis que tu fizeste o céu e a terra pelo teu grande poder e pelo teu braço estendido; nada é demasiado difícil para ti."},
+  {r:"Salmos 36:5",    g:["fidelidade","misericordia"],  t:"A tua misericórdia, Senhor, chega até aos céus, e a tua fidelidade até às nuvens."},
+  {r:"Lamentações 3:22-23",g:["misericordia","fidelidade"],t:"As misericórdias do Senhor não têm fim, as suas compaixões não se esgotam; renovam-se cada manhã; grande é a tua fidelidade."},
+  {r:"Salmos 19:1",    g:["gloria","criacao"],           t:"Os céus declaram a glória de Deus, e o firmamento anuncia a obra das suas mãos."},
+  {r:"Salmos 139:7-8", g:["onipresenca"],                t:"Para onde me irei do teu Espírito? Para onde fugirei da tua face? Se subir ao céu, lá estás tu."},
+  {r:"Isaías 6:3",     g:["santidadeDeus","gloria"],     t:"E clamavam uns para os outros: Santo, Santo, Santo é o Senhor dos Exércitos; toda a terra está cheia da sua glória."},
+  {r:"Apocalipse 1:8", g:["eternidade","soberania"],     t:"Eu sou o Alfa e o Ômega, diz o Senhor Deus, aquele que é, e que era, e que há de vir, o Todo-Poderoso."},
+
+  // SALVAÇÃO
+  {r:"Efésios 2:8-9",  g:["graca","fe"],                 t:"Porque pela graça sois salvos, por meio da fé; e isso não vem de vós; é dom de Deus; não vem das obras, para que ninguém se glorie."},
+  {r:"Romanos 10:9",   g:["conversao","fe"],             t:"Se com a tua boca confessares ao Senhor Jesus, e em teu coração creres que Deus o ressuscitou dos mortos, serás salvo."},
+  {r:"1 João 1:9",     g:["perdao","arrependimento"],    t:"Se confessarmos os nossos pecados, ele é fiel e justo para nos perdoar os pecados e nos purificar de toda a injustiça."},
+  {r:"Romanos 3:23-24",g:["redencao","graca"],           t:"Todos pecaram e destituídos estão da glória de Deus; sendo justificados gratuitamente pela sua graça, pela redenção que há em Cristo Jesus."},
+  {r:"2 Coríntios 5:17",g:["novaCriatura","conversao"],  t:"Assim que, se alguém está em Cristo, nova criatura é; as coisas velhas já passaram; eis que tudo se fez novo."},
+  {r:"João 3:16",      g:["amor","redencao","graca"],    t:"Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna."},
+  {r:"1 Tessalonicenses 4:3",g:["santificacao","santidadeDeus"],t:"Porque esta é a vontade de Deus, a vossa santificação."},
+  {r:"Atos 2:38",      g:["arrependimento","batismoAgua","batismoEsp"],t:"Arrependei-vos, e cada um de vós seja batizado em nome de Jesus Cristo, para perdão dos pecados, e recebereis o dom do Espírito Santo."},
+
+  // ESPÍRITO SANTO
+  {r:"Atos 1:8",       g:["batismoEsp","missoes","donsEsp"],t:"Mas recebereis a virtude do Espírito Santo que há de vir sobre vós; e ser-me-eis testemunhas, tanto em Jerusalém como em toda a Judeia e Samaria e até aos confins da terra."},
+  {r:"Atos 2:4",       g:["batismoEsp","linguas"],        t:"E todos foram cheios do Espírito Santo e começaram a falar noutras línguas, conforme o Espírito Santo lhes concedia que falassem."},
+  {r:"1 Coríntios 12:7-8",g:["donsEsp"],                 t:"Mas a manifestação do Espírito é dada a cada um para o proveito de todos. Porque a um é dada, pelo Espírito, a palavra da sabedoria."},
+  {r:"Gálatas 5:22-23",g:["frutosEsp","amor","paciencia"],t:"O fruto do Espírito, porém, é: amor, gozo, paz, longanimidade, benignidade, bondade, fé, mansidão, temperança."},
+  {r:"Lucas 4:18",     g:["uncao","evangelismo","curaDivina"],t:"O Espírito do Senhor é sobre mim, pelo que me ungiu para evangelizar os pobres; enviou-me a curar os quebrantados do coração."},
+  {r:"1 Coríntios 14:1",g:["profecia","donsEsp"],         t:"Segui o amor e procurai os dons espirituais, mas principalmente o de profetizar."},
+  {r:"Joel 2:28",      g:["batismoEsp","profecia"],        t:"E acontecerá depois que derramarei o meu Espírito sobre toda a carne; e vossos filhos e vossas filhas profetizarão."},
+
+  // VIDA CRISTÃ
+  {r:"Filipenses 4:6", g:["oracao"],                     t:"Não estejais ansiosos por coisa alguma; pelo contrário, em tudo fazei conhecidas as vossas petições a Deus, em oração e súplica, com ações de graças."},
+  {r:"Isaías 58:6",    g:["jejum"],                      t:"Porventura não é este o jejum que escolhi: que soltes as ligaduras da impiedade, que desfaças as ataduras do jugo?"},
+  {r:"Salmos 100:4",   g:["adoracao"],                   t:"Entrai pelas suas portas com ações de graças, e pelos seus átrios com hinos; louvai-o e bendizei o seu nome."},
+  {r:"Hebreus 11:1",   g:["fe","esperanca"],             t:"Ora, a fé é a certeza de coisas que se esperam, a convicção de coisas que não se veem."},
+  {r:"Romanos 15:13",  g:["esperanca"],                  t:"Ora, o Deus de esperança vos encha de todo o gozo e paz em crença, para que abundeis em esperança pela virtude do Espírito Santo."},
+  {r:"1 João 4:8",     g:["amor"],                       t:"Aquele que não ama não conhece a Deus; porque Deus é amor."},
+  {r:"Tiago 4:10",     g:["humildade"],                  t:"Humilhai-vos perante o Senhor, e ele vos exaltará."},
+  {r:"Romanos 5:3-4",  g:["paciencia","perseveranca"],   t:"E não somente isto, mas também nos gloriamos nas tribulações; sabendo que a tribulação produz a paciência, e a paciência a experiência."},
+  {r:"Hebreus 12:1",   g:["perseveranca"],               t:"Também nós, pois, já que temos tão grande nuvem de testemunhas, lancemos fora todo o embaraço e o pecado que tão de perto nos rodeia, e corramos com perseverança a carreira que nos está proposta."},
+  {r:"João 14:15",     g:["obediencia","amor"],          t:"Se me amardes, guardai os meus mandamentos."},
+  {r:"Malaquias 3:10", g:["mordomia","bencao"],          t:"Trazei todos os dízimos à casa do tesouro, para que haja mantimento na minha casa; e provai-me nisto, diz o Senhor dos Exércitos."},
+  {r:"Mateus 28:19-20",g:["discipulado","missoes","evangelismo"],t:"Portanto ide, ensinai todas as nações, batizando-as em nome do Pai, e do Filho, e do Espírito Santo; ensinando-as a guardar todas as coisas que eu vos tenho mandado."},
+
+  // CONFLITO ESPIRITUAL
+  {r:"Efésios 6:12",   g:["guerraEsp"],                 t:"Porque não temos que lutar contra a carne e o sangue, mas contra os principados, contra as potestades, contra os príncipes das trevas deste século."},
+  {r:"1 Coríntios 10:13",g:["tentacao","vitoria"],      t:"Não veio sobre vós tentação que não fosse humana; mas fiel é Deus, que não vos deixará ser tentados além do que podeis suportar."},
+  {r:"1 João 5:4",     g:["vitoria","fe"],              t:"Porque tudo o que é nascido de Deus vence o mundo; e esta é a vitória que vence o mundo: a nossa fé."},
+  {r:"Salmos 91:11",   g:["protecao"],                  t:"Porque ele dará ordens aos seus anjos a teu respeito, para que te guardem em todos os teus caminhos."},
+
+  // IGREJA E MISSÃO
+  {r:"Mateus 16:18",   g:["igreja"],                    t:"E eu te digo que tu és Pedro, e sobre esta pedra edificarei a minha igreja; e as portas do inferno não prevalecerão contra ela."},
+  {r:"Romanos 10:14",  g:["evangelismo","missoes"],     t:"Como, pois, invocarão aquele em quem não creram? E como crerão naquele de quem não ouviram? E como ouvirão, se não há quem pregue?"},
+  {r:"Marcos 16:15",   g:["evangelismo","missoes"],     t:"E disse-lhes: Ide por todo o mundo, pregai o evangelho a toda criatura."},
+  {r:"Romanos 6:4",    g:["batismoAgua","novaCriatura"],t:"De sorte que fomos sepultados com ele pelo batismo na morte; para que, como Cristo ressuscitou dos mortos pela glória do Pai, assim também nós andemos em novidade de vida."},
+  {r:"Lucas 22:19-20", g:["ceia"],                      t:"E, tomando o pão, e tendo dado graças, o partiu e lhes deu, dizendo: Isto é o meu corpo, que é dado por vós; fazei isto em memória de mim."},
+  {r:"1 Timóteo 3:2",  g:["lideranca","igreja"],        t:"É necessário que o bispo seja irrepreensível, marido de uma mulher, sóbrio, prudente, de boa conduta, hospitaleiro, apto para ensinar."},
+  {r:"Atos 2:42",      g:["comunidade","ceia","oracao"],t:"E perseveravam na doutrina dos apóstolos, e na comunhão, e no partir do pão, e nas orações."},
+
+  // ESCATOLOGIA
+  {r:"1 Tessalonicenses 4:16-17",g:["segundaVinda","arrebatamento"],t:"Porque o mesmo Senhor descerá do céu com alarido, com voz de arcanjo, e com a trombeta de Deus; e os mortos em Cristo ressuscitarão primeiro. Depois nós, os que ficarmos vivos, seremos arrebatados."},
+  {r:"Apocalipse 20:4",g:["milenio","ressurreicao"],    t:"E vi os tronos, e sentaram-se sobre eles, e foi-lhes dado o poder de julgar; e vi as almas dos que foram decapitados pelo testemunho de Jesus. E reinaram com Cristo durante mil anos."},
+  {r:"Hebreus 9:27",   g:["julgamento"],                t:"E, assim como aos homens está ordenado morrerem uma vez, vindo depois disso o juízo."},
+  {r:"Apocalipse 21:2",g:["novaJerusalem","esperanca"], t:"E eu, João, vi a cidade santa, a nova Jerusalém, que de Deus descia do céu, adereçada como uma esposa ataviada para o seu marido."},
+  {r:"1 Coríntios 15:52",g:["ressurreicao","arrebatamento"],t:"Num momento, num abrir e fechar de olhos, ao som da última trombeta; porque a trombeta soará, e os mortos ressuscitarão incorruptíveis."},
+  {r:"João 14:3",      g:["segundaVinda","esperanca"],  t:"E quando eu for e vos preparar lugar, virei outra vez e vos levarei para mim mesmo, para que onde eu estiver estejais vós também."},
+
+  // CURA E PROMESSAS
+  {r:"Isaías 53:5",    g:["curaDivina","redencao"],     t:"Mas ele foi traspassado por causa das nossas transgressões, foi esmagado por causa das nossas iniquidades; o castigo que nos traz a paz estava sobre ele, e pelas suas pisaduras fomos sarados."},
+  {r:"Tiago 5:14-15",  g:["curaDivina","oracao"],       t:"Está alguém entre vós enfermo? Chame os presbíteros da igreja, e orem sobre ele, ungindo-o com azeite em nome do Senhor; e a oração da fé salvará o enfermo."},
+  {r:"Filipenses 4:19",g:["provisao","bencao"],         t:"O meu Deus, segundo as suas riquezas em glória, suprirá todas as vossas necessidades em Cristo Jesus."},
+  {r:"João 16:33",     g:["paz","vitoria"],             t:"Essas coisas vos disse, para que em mim tenhais paz. No mundo tereis aflições; mas tende bom ânimo, eu venci o mundo."},
+  {r:"Isaías 41:10",   g:["forca","protecao"],          t:"Não temas, porque eu sou contigo; não te assombres, porque eu sou o teu Deus; eu te fortaleço, e te ajudo, e te sustento com a destra da minha justiça."},
+  {r:"Deuteronômio 28:2",g:["bencao","obediencia"],     t:"E todas estas bênçãos virão sobre ti e te alcançarão, quando deres ouvidos à voz do Senhor teu Deus."},
+
+  // TEOLOGIA BÍBLICA
+  {r:"Gênesis 1:1",    g:["criacao"],                   t:"No princípio, Deus criou os céus e a terra."},
+  {r:"Hebreus 8:6",    g:["alianca","graca"],            t:"Mas agora alcançou ele ministério tanto mais excelente, quanto é mediador de uma melhor aliança, estabelecida sobre melhores promessas."},
+  {r:"Romanos 6:14",   g:["leiGraca","graca"],           t:"Porque o pecado não terá domínio sobre vós; pois não estais debaixo da lei, mas debaixo da graça."},
+  {r:"Jeremias 29:11", g:["proposito","esperanca"],      t:"Porque eu bem sei os pensamentos que tenho a vosso respeito, diz o Senhor; pensamentos de paz, e não de mal, para vos dar o fim que esperais."},
+  {r:"Provérbios 1:7", g:["sabedoria"],                  t:"O princípio da sabedoria é o temor do Senhor; os loucos desprezam a sabedoria e o ensino."},
+  {r:"1 Pedro 2:9",    g:["identidade","igreja"],        t:"Mas vós sois a geração eleita, o sacerdócio real, a nação santa, o povo adquirido por Deus, para que anuncieis as virtudes daquele que vos chamou das trevas para a sua maravilhosa luz."},
+
+  // FAMÍLIA
+  {r:"Josué 24:15",    g:["familia"],                    t:"Mas eu e a minha casa serviremos ao Senhor."},
+  {r:"Efésios 5:25",   g:["casamento","amor"],           t:"Maridos, amai vossas mulheres, como também Cristo amou a igreja, e a si mesmo se entregou por ela."},
+  {r:"Provérbios 22:6",g:["filhos","discipulado"],       t:"Ensina a criança no caminho em que deve andar, e, até quando envelhecer, não se desviará dele."},
+];
+
+/* ================================================================
+   MOODS
+================================================================ */
+const MOODS = [
+  {ic:"😔",n:"Tristeza",    g:["esperanca","misericordia","amor"],   desc:"Consolo, restauração e amor eterno de Deus"},
+  {ic:"😰",n:"Ansiedade",   g:["oracao","paz","forca"],              desc:"Descanso, paz e força que vêm do Senhor"},
+  {ic:"🙏",n:"Gratidão",    g:["adoracao","bencao","graca"],         desc:"Adoração pelas bênçãos e misericórdias"},
+  {ic:"🔍",n:"Dúvida",      g:["fe","sabedoria","soberania"],        desc:"Fundamentos da fé e sabedoria divina"},
+  {ic:"⚖️",n:"Decisão",    g:["sabedoria","proposito","oracao"],    desc:"Discernimento, propósito e direção divina"},
+  {ic:"💪",n:"Fraqueza",    g:["forca","vitoria","batismoEsp"],      desc:"Força no Espírito e vitória em Cristo"},
+  {ic:"✨",n:"Identidade",  g:["identidade","novaCriatura","graca"], desc:"Quem você é em Cristo e sua nova natureza"},
+  {ic:"🌱",n:"Renovação",   g:["santificacao","frutosEsp","novaCriatura"],desc:"Transformação e crescimento espiritual"},
+  {ic:"⚔️",n:"Ataque esp.", g:["guerraEsp","protecao","vitoria"],   desc:"Proteção divina e autoridade espiritual"},
+  {ic:"❤️",n:"Amor",       g:["amor","familia","casamento"],        desc:"Amor de Deus e relacionamentos abençoados"},
+  {ic:"🌍",n:"Missão",     g:["evangelismo","missoes","discipulado"],desc:"Chamado missionário e Grande Comissão"},
+  {ic:"🕊️",n:"Paz",        g:["paz","esperanca","fidelidade"],      desc:"Paz que excede todo entendimento"},
+];
+
+/* ================================================================
+   PALETA MANUAL
+================================================================ */
+const PALETTE=[
+  {dot:"#1a1a1a",bg:"#f0f0ee",tc:"#1a1a1a"},{dot:"#2563eb",bg:"#dbeafe",tc:"#1d4ed8"},
+  {dot:"#16a34a",bg:"#dcfce7",tc:"#15803d"},{dot:"#9333ea",bg:"#f3e8ff",tc:"#7e22ce"},
+  {dot:"#ea580c",bg:"#ffedd5",tc:"#c2410c"},{dot:"#db2777",bg:"#fce7f3",tc:"#be185d"},
+  {dot:"#0891b2",bg:"#cffafe",tc:"#0e7490"},{dot:"#854d0e",bg:"#fef9c3",tc:"#713f12"},
+];
+
+/* ================================================================
+   AUTO COLOR
+================================================================ */
+const HUE_STEPS=[210,140,270,25,330,185,45,90,310,0,160,240];
+let hueIdx=0;
+function hslToHex(h,s,l){s/=100;l/=100;const a=s*Math.min(l,1-l);const f=n=>{const k=(n+h/30)%12;const c=l-a*Math.max(Math.min(k-3,9-k,1),-1);return Math.round(255*c).toString(16).padStart(2,'0')};return '#'+f(0)+f(8)+f(4);}
+function genColor(){const base=HUE_STEPS[hueIdx%HUE_STEPS.length];hueIdx++;const h=(base+Math.floor(Math.random()*30)-15+360)%360;return{dot:hslToHex(h,62,38),bg:hslToHex(h,80,94),tc:hslToHex(h,62,25)};}
+let currentAuto=genColor();
+function regen(){currentAuto=genColor();updateAutoPreview();const el=document.getElementById('autopreview');el.classList.remove('popin');void el.offsetWidth;el.classList.add('popin');}
+function updateAutoPreview(){const name=document.getElementById('tinput').value.trim().replace(/^#/,'')||'NomeDaTag';const prev=document.getElementById('autopreview'),pill=document.getElementById('autopill'),rbtn=document.getElementById('regenbtn');prev.style.background=currentAuto.bg;prev.style.borderColor=currentAuto.dot+'33';pill.style.background=currentAuto.dot+'22';pill.style.color=currentAuto.tc;pill.textContent='#'+name;rbtn.style.color=currentAuto.tc;rbtn.style.borderColor=currentAuto.dot+'44';}
+function onNameInput(){updateAutoPreview();}
+let mode='auto',selC=0,addOpen=false;
+function setMode(m){mode=m;document.getElementById('btn-auto').classList.toggle('on',m==='auto');document.getElementById('btn-manual').classList.toggle('on',m==='manual');document.getElementById('pane-auto').style.display=m==='auto'?'block':'none';document.getElementById('pane-manual').style.display=m==='manual'?'block':'none';}
+function renderCOpts(){document.getElementById('copts').innerHTML=PALETTE.map((p,i)=>`<div class="co${selC===i?' sel':''}" style="background:${p.dot}" onclick="selColor(${i})"></div>`).join('');}
+function selColor(i){selC=i;renderCOpts();}
+function toggleAddForm(){addOpen=!addOpen;document.getElementById('add-form').classList.toggle('open',addOpen);}
+
+/* ================================================================
+   HELPERS
+================================================================ */
+let activeTag=null;
+function gt(id){return TAGS.find(t=>t.id===id);}
+function tagPill(id){const t=gt(id);return t?`<span class="vtag" style="background:${t.bg};color:${t.tc}">#${t.n}</span>`:'';}
+function verseCount(tagId){return VERSES.filter(v=>v.g.includes(tagId)).length;}
+
+/* ================================================================
+   SIDEBAR
+================================================================ */
+let sidebarFilter='';
+function filterSidebar(){sidebarFilter=document.getElementById('search-inp').value.toLowerCase();renderSidebar();}
+function renderSidebar(){
+  const si=document.getElementById('side-inner');
+  const html=CATEGORIES.map(cat=>{
+    const filtered=cat.tags.filter(t=>!sidebarFilter||t.n.toLowerCase().includes(sidebarFilter)||cat.label.toLowerCase().includes(sidebarFilter));
+    if(!filtered.length)return'';
+    return`<div class="cat-block">
+      <div class="cat-label">${cat.label}</div>
+      ${filtered.map(t=>`
+        <div class="tag-row${activeTag===t.id?' on':''}" onclick="filt('${t.id}')">
+          <span class="tpill" style="background:${t.bg};color:${t.tc}">#${t.n}</span>
+          <span class="tcnt">${verseCount(t.id)}</span>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+  si.innerHTML=html;
+  document.getElementById('d-tags').textContent=TAGS.length;
+}
+function filt(id){activeTag=activeTag===id?null:id;renderSidebar();renderVerses();}
+function addTag(){
+  const raw=document.getElementById('tinput').value.trim().replace(/^#/,'');
+  if(!raw)return;
+  const id=raw.toLowerCase().replace(/\s+/g,'_').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(TAGS.find(t=>t.id===id))return;
+  const c=mode==='auto'?currentAuto:PALETTE[selC];
+  // Add to a custom category
+  let customCat=CATEGORIES.find(c=>c.id==='custom');
+  if(!customCat){customCat={id:'custom',label:'Personalizadas',tags:[]};CATEGORIES.push(customCat);}
+  customCat.tags.push({id,n:raw,dot:c.dot,bg:c.bg,tc:c.tc,cat:'custom',catLabel:'Personalizadas'});
+  TAGS=CATEGORIES.flatMap(c=>c.tags.map(t=>({...t,cat:c.id,catLabel:c.label})));
+  document.getElementById('tinput').value='';
+  if(mode==='auto'){currentAuto=genColor();updateAutoPreview();}
+  renderSidebar();renderVerses();renderTagGrid();
+}
+
+/* ================================================================
+   BIBLIOTECA
+================================================================ */
+function renderVerses(){
+  const list=activeTag?VERSES.filter(v=>v.g.includes(activeTag)):VERSES;
+  const tg=activeTag?gt(activeTag):null;
+  document.getElementById('libtitle').textContent=tg?`#${tg.n}`:'Todos os versículos';
+  document.getElementById('libsub').textContent=`${list.length} versículo${list.length!==1?'s':''}`;
+  document.getElementById('source-badge').style.display=activeTag?'none':'inline-flex';
+  document.getElementById('verselist').innerHTML=list.map(v=>`
+    <div class="vcard fade-up">
+      <div class="vref">${v.r}</div>
+      <div class="vtext">${v.t}</div>
+      <div class="vtags">${v.g.map(tagPill).join('')}</div>
+    </div>`).join('');
+  document.getElementById('d-verses').textContent=list.length;
+}
+
+/* ================================================================
+   VISÃO GERAL DE ETIQUETAS
+================================================================ */
+function renderTagGrid(){
+  const cnt=TAGS.length;
+  document.getElementById('tags-sub').textContent=`${cnt} etiquetas em ${CATEGORIES.length} categorias`;
+  const html=CATEGORIES.map(cat=>`
+    <div style="margin-bottom:24px">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+        ${cat.label}<span style="flex:1;height:1px;background:var(--bdr)"></span>
+      </div>
+      <div class="tag-grid-view">
+        ${cat.tags.map(t=>`
+          <div class="tag-grid-card" onclick="filt('${t.id}');go('lib',document.querySelector('.ntab'))">
+            <div><span class="tgc-pill" style="background:${t.bg};color:${t.tc}">#${t.n}</span></div>
+            <div class="tgc-count">${verseCount(t.id)}</div>
+            <div class="tgc-sub">versículos</div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+  document.getElementById('tag-grid-container').innerHTML=html;
+}
+
+/* ================================================================
+   CORRENTE
+================================================================ */
+let chainTagId=TAGS[0].id,ci=0;
+function renderChainSelect(){
+  document.getElementById('chain-select').innerHTML=TAGS.map(t=>`
+    <button class="chain-tag-btn${chainTagId===t.id?' on':''}"
+      style="background:${t.bg};color:${t.tc};border-color:${chainTagId===t.id?t.dot:'transparent'}"
+      onclick="setChainTag('${t.id}')">#${t.n}</button>`).join('');
+}
+function setChainTag(id){chainTagId=id;ci=0;renderChainSelect();renderChain();}
+function chainVerses(){return VERSES.filter(v=>v.g.includes(chainTagId));}
+function renderChain(){
+  const cv=chainVerses(),tg=gt(chainTagId);
+  if(!cv.length){
+    document.getElementById('ctext').textContent='Nenhum versículo nesta etiqueta.';
+    document.getElementById('cref').textContent='';document.getElementById('ctags').innerHTML='';document.getElementById('cprog').innerHTML='';
+    document.getElementById('chain-meta').textContent=`#${tg?.n} · 0 versículos`;return;
+  }
+  ci=Math.max(0,Math.min(cv.length-1,ci));const v=cv[ci];
+  document.getElementById('cref').textContent=v.r;
+  document.getElementById('ctext').textContent=v.t;
+  document.getElementById('ctags').innerHTML=v.g.map(tagPill).join('');
+  document.getElementById('chain-meta').textContent=`#${tg?.n} · ${cv.length} versículo${cv.length!==1?'s':''}`;
+  document.getElementById('cprog').innerHTML=cv.map((_,i)=>`<div class="cpdot${ci===i?' on':''}" style="${ci===i?`background:${tg?.dot||'#1a1a1a'}`:''};" onclick="ci=${i};renderChain()"></div>`).join('');
+  document.getElementById('cprev').disabled=ci===0;
+  document.getElementById('cnext').disabled=ci===cv.length-1;
+}
+function mv(d){ci=Math.max(0,Math.min(chainVerses().length-1,ci+d));renderChain();}
+
+/* ================================================================
+   MOMENTO
+================================================================ */
+function renderMoods(){
+  document.getElementById('moodgrid').innerHTML=MOODS.map((m,i)=>`
+    <div class="mcard" onclick="showMood(${i},this)">
+      <div class="micon">${m.ic}</div>
+      <div class="mname">${m.n}</div>
+    </div>`).join('');
+}
+function showMood(i,el){
+  document.querySelectorAll('.mcard').forEach(c=>{c.classList.remove('on');c.style.borderColor='';});
+  const m=MOODS[i],tg=TAGS.find(t=>m.g.includes(t.id));
+  el.classList.add('on');if(tg)el.style.borderColor=tg.dot;
+  const vv=VERSES.filter(v=>m.g.some(g=>v.g.includes(g))).slice(0,3);
+  document.getElementById('moodresult').innerHTML=`
+    <p style="font-size:11px;color:var(--ink3);margin-bottom:12px">${m.desc}</p>
+    ${vv.map(v=>`<div class="vcard fade-up"><div class="vref">${v.r}</div><div class="vtext">${v.t}</div><div class="vtags">${v.g.map(tagPill).join('')}</div></div>`).join('')}`;
+}
+
+/* ================================================================
+   PAINEL
+================================================================ */
+function renderDash(){
+  // Per-category bar charts
+  const html=CATEGORIES.map(cat=>{
+    const catCounts=cat.tags.map(t=>({n:t.n,c:verseCount(t.id),dot:t.dot})).sort((a,b)=>b.c-a.c);
+    const mx=catCounts[0]?.c||1;
+    return`<div class="dash-cat-block">
+      <div class="dash-cat-title">${cat.label}</div>
+      ${catCounts.map(c=>`
+        <div class="bar-row">
+          <div class="bar-lbl">#${c.n}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.round(c.c/mx*100)}%;background:${c.dot}"></div></div>
+          <div class="bar-n">${c.c}</div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+  document.getElementById('dash-cats').innerHTML=html;
+  document.getElementById('d-cats').textContent=CATEGORIES.length;
+}
+
+/* ================================================================
+   NAVEGAÇÃO
+================================================================ */
+function go(id,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('view-'+id).classList.add('on');
+  if(btn)btn.classList.add('on');
+  if(id==='chain'){renderChainSelect();renderChain();}
+  if(id==='dash')renderDash();
+  if(id==='tags')renderTagGrid();
+}
+
+/* ================================================================
+   INIT
+================================================================ */
+renderSidebar();
+renderVerses();
+renderMoods();
+renderCOpts();
+updateAutoPreview();
+</script>
+</body>
+</html>

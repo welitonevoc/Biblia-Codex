@@ -1,0 +1,29 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+!.env.example
+
+# Android
+android/.gradle/
+android/.gradle-local/
+android/.kotlin/
+android/capturer/
+android/build/
+android/**/build/
+android/app/build/
+android/**/release/
+*.apk
+*.aab
+*.keystore
+!android/.gitignore
+
+# Scripts de build
+scripts/*.ps1
+!scripts/.gitignore
+
+# Telemetry
+.npm/
+.gitmessage-ptbr.txt

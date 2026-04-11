@@ -1,0 +1,2 @@
+﻿NAME                ID              SIZE      PROCESSOR    CONTEXT    UNTIL              
+qwen2.5-coder:7b    dae161e27b0e    4.6 GB    100% CPU     4096       4 minutes from now    
