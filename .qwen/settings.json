@@ -10,7 +10,9 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(git pull *)",
-      "Bash(ls *)"
+      "Bash(ls *)",
+      "Bash(findstr *)",
+      "Bash(move *)"
     ]
   },
   "$version": 3

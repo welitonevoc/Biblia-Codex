@@ -4,6 +4,7 @@ import { GoogleGenAI } from "@google/genai";
 import { readModuleBinary } from './services/moduleService';
 import { BookNumberConverter } from './services/BookNumberConverter';
 import initSqlJs from 'sql.js';
+import { LRUCache } from 'lru-cache';
 
 const getAI = () => new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
@@ -11,7 +12,10 @@ const isWeb = typeof window !== 'undefined' && !(window as any).Capacitor?.isNat
 
 // Performance Cache for Premium Experience
 let sqlInstance: any = null;
-const dbCache = new Map<string, { db: any; schema: { table: string; bookCol: string; chapterCol: string; verseCol: string; textCol: string } }>();
+const dbCache = new LRUCache<string, { db: any; schema: { table: string; bookCol: string; chapterCol: string; verseCol: string; textCol: string } }>({
+  max: 50,
+  ttl: 1000 * 60 * 30 // 30 minutes
+});
 
 const getSqlInstance = async () => {
   if (!sqlInstance) {

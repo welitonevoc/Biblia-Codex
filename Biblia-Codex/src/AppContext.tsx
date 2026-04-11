@@ -301,18 +301,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     root.style.setProperty('--radius-premium', radiusMap[config.uiGeometry] || '32px');
     root.style.setProperty('--radius-compact', config.uiGeometry === 'sharp' || config.uiGeometry === 'geometric' ? '0px' : '16px');
-
-    if (user) {
-      syncToCloud(config, settings);
-    }
-  }, [config, user, syncToCloud, settings]);
+  }, [config]);
 
   useEffect(() => {
     localStorage.setItem('codex-settings', JSON.stringify(settings));
-    if (user) {
+  }, [settings]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Combined effect with debounce for sync
+    const timer = setTimeout(() => {
       syncToCloud(config, settings);
-    }
-  }, [settings, user, syncToCloud, config]);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [config, settings, user, syncToCloud]);
 
   const selectVersion = useCallback((version: BibleModule) => {
     setCurrentVersion(prev => {

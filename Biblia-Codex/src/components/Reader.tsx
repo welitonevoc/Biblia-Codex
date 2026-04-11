@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Verse, Book, Bookmark as BookmarkType, Tag as TagType } from '../types';
 import { BibleService } from '../BibleService';
 import { BIBLE_BOOKS } from '../data/bibleMetadata';
@@ -464,10 +464,12 @@ export const Reader: React.FC<ReaderProps> = ({
               fontFamily: 'var(--font-bible-family)'
             }}
           >
-            {verses.map((v) => {
+            {useMemo(() => verses.map((v) => {
+              const { headingsHtml, bodyHtml, parsedHtml } = splitVerseHtml(v.text, v.verse, v.isChapterHeader);
+              return { verse: v, headingsHtml, bodyHtml, parsedHtml };
+            }), [verses]).map(({ verse: v, headingsHtml, bodyHtml, parsedHtml }) => {
               const bookmark = isBookmarked(v.verse);
               const showHighlight = settings.visualResources.highlights && bookmark;
-              const { headingsHtml, bodyHtml, parsedHtml } = splitVerseHtml(v.text, v.verse, v.isChapterHeader);
               const isChapterHeader = v.isChapterHeader || v.verse === 0;
               const chapterHeaderHtml = headingsHtml || `<span class="bible-title bible-title-1">${bodyHtml || parsedHtml}</span>`;
               const hasHeadingBlock = Boolean(headingsHtml) || isChapterHeader;
