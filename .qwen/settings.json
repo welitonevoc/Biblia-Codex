@@ -15,7 +15,8 @@
       "Bash(move *)",
       "Bash(test *)",
       "Bash(git log *)",
-      "Bash(git ls-remote *)"
+      "Bash(git ls-remote *)",
+      "Bash(dir *)"
     ]
   },
   "$version": 3

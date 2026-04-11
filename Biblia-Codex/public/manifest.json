@@ -1,44 +1,23 @@
 {
-  "name": "Biblia Codex",
-  "short_name": "Codex",
-  "description": "Aplicativo de estudo bíblico com recursos avançados de exegese, concordância Strong, referências cruzadas e planos de leitura.",
+  "name": "Bíblia Codex",
+  "short_name": "Bíblia",
+  "description": "Estudo bíblico com IA",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#1a1a2e",
-  "theme_color": "#8b5cf6",
-  "categories": ["education", "reference", "books"],
-  "lang": "pt-BR",
+  "background_color": "#ffffff",
+  "theme_color": "#1e3a5f",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/icon-192.svg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icon-512.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [],
-  "prefer_related_applications": false,
-  "related_applications": [],
-  "shortcuts": [
-    {
-      "name": "Buscar",
-      "short_name": "Buscar",
-      "url": "/?tab=search",
-      "description": "Pesquisar na Bíblia"
-    },
-    {
-      "name": "Planos de Leitura",
-      "short_name": "Planos",
-      "url": "/?tab=reading-plans",
-      "description": "Iniciar plano de leitura bíblica"
     }
   ]
 }
