@@ -7,6 +7,7 @@ import { storage } from '../StorageService';
 import { MySwordParser } from '../services/mySwordParser';
 import { TagService } from '../services/TagService';
 import { motion, AnimatePresence } from 'motion/react';
+import DOMPurify from 'dompurify';
 import {
   Bookmark, Highlighter, Share2, Info, MessageSquare,
   Sparkles, Library, Layers, ChevronRight, ChevronLeft, Plus,
@@ -487,7 +488,7 @@ export const Reader: React.FC<ReaderProps> = ({
                         "w-full basis-full",
                         settings.textDisplay.paragraphMode ? "mb-2" : "mb-4"
                       )}
-                      dangerouslySetInnerHTML={{ __html: chapterHeaderHtml }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(chapterHeaderHtml) }}
                     />
                   ) : (
                     <>
@@ -497,7 +498,7 @@ export const Reader: React.FC<ReaderProps> = ({
                             "w-full",
                             settings.textDisplay.paragraphMode ? "mb-2 basis-full" : "mb-3"
                           )}
-                          dangerouslySetInnerHTML={{ __html: headingsHtml }}
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(headingsHtml) }}
                         />
                       )}
                       <span
@@ -522,7 +523,7 @@ export const Reader: React.FC<ReaderProps> = ({
                           className={cn(
                             settings.textDisplay.wordsOfJesusRed && v.text.includes("Jesus") && "words-of-jesus"
                           )}
-                          dangerouslySetInnerHTML={{ __html: bodyHtml }}
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(bodyHtml) }}
                         />
 
                         {/* Tags Pills Inline */}

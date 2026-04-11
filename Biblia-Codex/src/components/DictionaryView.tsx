@@ -6,6 +6,7 @@ import { createAiModule, AI_MODULE_ID } from '../services/dictionaryService';
 import { MySwordParser } from '../services/mySwordParser';
 import { storage } from '../StorageService';
 import { motion, AnimatePresence } from 'motion/react';
+import DOMPurify from 'dompurify';
 
 export const DictionaryView: React.FC = () => {
   const { searchDictionary, selectedDictionaryModule, setSelectedDictionaryModule, user, login } = useAppContext();
@@ -193,7 +194,7 @@ export const DictionaryView: React.FC = () => {
                   <div 
                     onClick={handleLinkClick}
                     className="ui-text leading-relaxed whitespace-pre-wrap opacity-80"
-                    dangerouslySetInnerHTML={{ __html: MySwordParser.parseContent(entry.definition) }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(MySwordParser.parseContent(entry.definition)) }}
                   />
                 </div>
               ))}

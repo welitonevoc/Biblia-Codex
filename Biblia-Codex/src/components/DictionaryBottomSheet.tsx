@@ -11,6 +11,7 @@ import { DictionaryEntry } from '../types';
 import { MySwordParser } from '../services/mySwordParser';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import DOMPurify from 'dompurify';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -171,7 +172,7 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
                     <div className="space-y-6">
                       <div
                         className="dictionary-sheet-content ui-text text-base leading-relaxed max-w-none"
-                        dangerouslySetInnerHTML={{ __html: MySwordParser.parseContent(localEntry.definition) }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(MySwordParser.parseContent(localEntry.definition)) }}
                       />
                       <div className="rounded-[var(--radius-lg)] p-4 flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.05)' }}>
                         <span className="ui-text text-[9px] font-black uppercase tracking-widest opacity-30">Termo</span>

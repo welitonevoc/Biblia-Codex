@@ -15,6 +15,7 @@ import { useAppContext } from '../AppContext';
 import { BibleService } from '../BibleService';
 import { Verse } from '../types';
 import { myBibleBookIdToStandard } from '../services/devotionalParser';
+import DOMPurify from 'dompurify';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -675,7 +676,7 @@ const DevotionalReader: React.FC<{
                   <div
                     onClick={handleBodyReferenceClick}
                     className="devo-body prose prose-bible max-w-none"
-                    dangerouslySetInnerHTML={{ __html: decoratedMorningText }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(decoratedMorningText) }}
                   />
                 </motion.div>
 
@@ -703,7 +704,7 @@ const DevotionalReader: React.FC<{
                       <div
                         onClick={handleBodyReferenceClick}
                         className="devo-body prose prose-bible max-w-none"
-                        dangerouslySetInnerHTML={{ __html: decoratedEveningText }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(decoratedEveningText) }}
                       />
                     </motion.div>
                   </>
@@ -716,7 +717,7 @@ const DevotionalReader: React.FC<{
                 transition={{ delay: 0.3 }}
                 onClick={handleBodyReferenceClick}
                 className="devo-body prose prose-bible max-w-none"
-                dangerouslySetInnerHTML={{ __html: decoratedBody }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(decoratedBody) }}
               />
             ) : null}
 

@@ -14,6 +14,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { GenealogyTree } from './GenealogyTree';
 import { PlacesView } from './PlacesView';
+import DOMPurify from 'dompurify';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -220,7 +221,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
                             onClick={handleLinkClick}
                             className="prose prose-bible max-w-none"
                             dangerouslySetInnerHTML={{
-                              __html: MySwordParser.parseHTML(content.content || content.text || '', settings)
+                              __html: DOMPurify.sanitize(MySwordParser.parseHTML(content.content || content.text || '', settings))
                             }}
                           />
                         </div>
@@ -243,7 +244,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
                               <div
                                 onClick={handleLinkClick}
                                 className="text-sm text-bible-text leading-relaxed"
-                                dangerouslySetInnerHTML={{ __html: value }}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
                               />
                             </motion.div>
                           ))}

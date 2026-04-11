@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "392789867407",
+    "project_id": "gen-lang-client-0018210539",
+    "storage_bucket": "gen-lang-client-0018210539.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:392789867407:android:ddce463fe81b9eac1869fa",
+        "android_client_info": {
+          "package_name": "com.Codex.biblia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "392789867407-ps7iscoishespdl48fr8he5e1ck8ujr0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_VeiBdQJ-zjGjSlNUWK1Eni-I8q4u_Fs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "392789867407-ps7iscoishespdl48fr8he5e1ck8ujr0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:392789867407:android:0e52568a7edd10bd1869fa",
+        "android_client_info": {
+          "package_name": "com.kerygma.biblia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "392789867407-ps7iscoishespdl48fr8he5e1ck8ujr0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_VeiBdQJ-zjGjSlNUWK1Eni-I8q4u_Fs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "392789867407-ps7iscoishespdl48fr8he5e1ck8ujr0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
