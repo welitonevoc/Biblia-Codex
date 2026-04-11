@@ -5,8 +5,7 @@ import {
   UIGeometry, NavigationStyle, FontPreference,
   AnimationStyle, AnimationIntensity, AnimationSpeed, LightingEffect, PageTransition
 } from './types';
-import { auth, db, onAuthStateChanged, User, loginWithGoogle, logout, handleRedirectResult } from './firebase';
-import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { auth, db, onAuthStateChanged, User, loginWithGoogle, logout, handleRedirectResult, doc, setDoc, onSnapshot, serverTimestamp } from './firebase';
 import { dictionaryService, createAiModule } from './services/dictionaryService';
 import { scanForBibleModules } from './services/moduleScanner';
 import { listInstalledModules, ModuleInfo } from './services/moduleService';

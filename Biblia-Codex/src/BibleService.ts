@@ -5,7 +5,7 @@ import { readModuleBinary } from './services/moduleService';
 import { BookNumberConverter } from './services/BookNumberConverter';
 import initSqlJs from 'sql.js';
 
-const getAI = () => new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+const getAI = () => new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
 const isWeb = typeof window !== 'undefined' && !(window as any).Capacitor?.isNativePlatform?.();
 

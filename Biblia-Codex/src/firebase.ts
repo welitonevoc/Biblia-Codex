@@ -11,14 +11,39 @@ import {
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 
-import firebaseConfig from '../firebase-applet-config.json';
+// ── Configuração do Firebase via variáveis de ambiente ─────────────────────────
+// Para desenvolvimento local, crie um arquivo .env.local com:
+// VITE_FIREBASE_API_KEY=...
+// VITE_FIREBASE_AUTH_DOMAIN=...
+// etc.
+//
+// Para produção no Vercel, configure as variáveis de ambiente no painel do Vercel.
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+};
+
+// Verificar se as variáveis de ambiente estão configuradas
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.warn(
+    '⚠️ Configuração do Firebase ausente. ' +
+    'Crie um arquivo .env.local com as variáveis VITE_FIREBASE_* ou ' +
+    'configure no painel do Vercel para produção.'
+  );
+}
 
 // ── Inicialização ──────────────────────────────────────────────────────────────
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+
+// Usar o ID do banco de dados do ambiente ou padrão
+const firestoreDatabaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID || '(default)';
+export const db = getFirestore(app, firestoreDatabaseId);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-const GOOGLE_ACCESS_TOKEN_KEY = 'codex-google-access-token';
 
 googleProvider.addScope('https://www.googleapis.com/auth/documents');
 googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
@@ -26,17 +51,18 @@ googleProvider.setCustomParameters({
   prompt: 'consent select_account',
 });
 
+let currentAccessToken: string | null = null;
+
 const persistGoogleAccessToken = (accessToken?: string | null) => {
-  if (!accessToken) return;
-  localStorage.setItem(GOOGLE_ACCESS_TOKEN_KEY, accessToken);
+  currentAccessToken = accessToken || null;
 };
 
 export const getStoredGoogleAccessToken = (): string | null => {
-  return localStorage.getItem(GOOGLE_ACCESS_TOKEN_KEY);
+  return currentAccessToken;
 };
 
 export const clearStoredGoogleAccessToken = (): void => {
-  localStorage.removeItem(GOOGLE_ACCESS_TOKEN_KEY);
+  currentAccessToken = null;
 };
 
 // ── Login com Google ───────────────────────────────────────────────────────────
@@ -101,5 +127,5 @@ export const logout = async (): Promise<void> => {
 };
 
 // ── Re-exports para compatibilidade com o restante do código ──────────────────
-export { onAuthStateChanged };
+export { onAuthStateChanged, doc, setDoc, getDoc, onSnapshot, serverTimestamp };
 export type { User };

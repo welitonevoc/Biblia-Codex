@@ -26,7 +26,7 @@ export class AIStudyService {
     const cached = await this.getCachedExplanation(userId, cacheKey);
     if (cached) return cached;
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" });
     try {
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
@@ -57,7 +57,7 @@ export class AIStudyService {
     const cached = await this.getCachedExplanation(userId, cacheKey);
     if (cached) return cached;
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Comente e explique os seguintes versículos (${reference}): "${text}"`,
