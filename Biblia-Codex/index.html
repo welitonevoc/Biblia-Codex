@@ -8,7 +8,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#fdfcf8" media="(prefers-color-scheme: light)" />
-    <title>Bíblia Codex</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <title>Bíbia Codex</title>
     <style>
       /* Foldable & multi-screen support */
       @supports (span: span 1) {
@@ -47,5 +50,6 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script src="/app.js"></script>
   </body>
 </html>

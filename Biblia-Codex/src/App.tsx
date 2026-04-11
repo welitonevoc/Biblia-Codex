@@ -45,6 +45,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 function AppContent() {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const {
     settings, activeTab, setActiveTab, config
   } = useAppContext();
@@ -118,7 +119,18 @@ function AppContent() {
   };
 
   return (
-    <div className="app-shell flex h-[100dvh] w-full overflow-hidden text-bible-text selection:bg-bible-accent/20" style={{ minHeight: '100svh' }}>
+    <div 
+      className="app-shell flex h-[100dvh] w-full overflow-hidden text-bible-text selection:bg-bible-accent/20" 
+      style={{ minHeight: '100svh' }}
+      role="application"
+      aria-label="Bíblia Codex - Aplicativo de estudo bíblico"
+    >
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-bible-accent focus:text-white rounded"
+      >
+        Pular para conteúdo principal
+      </a>
 
       <HamburgerMenu
         isOpen={isHamburgerOpen}

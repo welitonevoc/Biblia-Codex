@@ -14,8 +14,8 @@ const config: CapacitorConfig = {
     allowMixedContent: false,
     captureInput: true,
     webContentsDebuggingEnabled: false,
-    // Foldable & multi-screen support
     useLegacyBridge: false,
+    enablePwaComponents: true,
   },
 
   plugins: {
