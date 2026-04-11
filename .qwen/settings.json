@@ -1,7 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(echo.)"
+      "Bash(echo.)",
+      "Bash(npm run *)",
+      "Bash(npm install)",
+      "Bash(copy *)",
+      "Bash(git add *)",
+      "Bash(git reset *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git pull *)"
     ]
-  }
+  },
+  "$version": 3
 }
