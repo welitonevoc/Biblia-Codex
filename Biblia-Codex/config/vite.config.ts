@@ -15,6 +15,9 @@ export default defineConfig(({mode}) => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    optimizeDeps: {
+      include: ['lucide-react', 'firebase', '@google/genai', 'sql.js'],
+    },
     // ✅ CAPACITOR: caminhos relativos para funcionar no WebView do Android
     base: './',
     build: {
