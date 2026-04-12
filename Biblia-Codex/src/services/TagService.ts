@@ -2,7 +2,7 @@ import { Tag } from '../types';
 import { storage } from '../StorageService';
 
 const HUE_STEPS = [210, 140, 270, 25, 330, 185, 45, 90, 310, 0, 160, 240];
-let hueIdx = Math.floor(Math.random() * HUE_STEPS.length);
+let hueIdx = 0;
 
 function hslToHex(h: number, s: number, l: number) {
   s /= 100;
@@ -42,7 +42,7 @@ export const TagService = {
   generateColor() {
     const base = HUE_STEPS[hueIdx % HUE_STEPS.length];
     hueIdx++;
-    const h = (base + Math.floor(Math.random() * 30) - 15 + 360) % 360;
+    const h = (base + (((hueIdx * 7) % 30) - 15) + 360) % 360;
     return {
       dot: hslToHex(h, 62, 38),
       bg: hslToHex(h, 80, 94),
