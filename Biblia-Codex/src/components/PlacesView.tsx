@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, MapPin, ExternalLink, ImageIcon, Calendar, BookOpen, Globe, Navigation } from 'lucide-react';
+import { X, MapPin, ExternalLink, ImageIcon, Calendar, BookOpen, Globe, Navigation, ChevronRight } from 'lucide-react';
 import { BibleService } from '../BibleService';
 import { clsx } from 'clsx';
 
@@ -15,6 +15,7 @@ interface Place {
   book?: number;
   chapter?: number;
   verse?: number;
+  verses?: string;
   description?: string;
   comment?: string;
   image?: string;

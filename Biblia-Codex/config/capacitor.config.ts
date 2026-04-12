@@ -15,7 +15,6 @@ const config: CapacitorConfig = {
     captureInput: true,
     webContentsDebuggingEnabled: false,
     useLegacyBridge: false,
-    enablePwaComponents: true,
   },
 
   plugins: {

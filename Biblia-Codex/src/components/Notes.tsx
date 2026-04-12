@@ -386,7 +386,10 @@ export const Notes: React.FC = () => {
 
   const handleCreateTag = async () => {
     if (!newTagName.trim()) return;
-    const colors = tagColorMode === 'auto' ? autoColor : PALETTE[selectedPaletteIdx];
+    const paletteColor = PALETTE[selectedPaletteIdx];
+    const colors = tagColorMode === 'auto' 
+      ? { dot: autoColor.color, bg: autoColor.background, tc: autoColor.textColor }
+      : { dot: paletteColor.dot, bg: paletteColor.bg, tc: paletteColor.tc };
     const tag = await TagService.createTag(newTagName, colors);
     setAllTags(prev => [...prev, tag]);
     setNewTagName('');
@@ -751,7 +754,9 @@ export const Notes: React.FC = () => {
                     <div className="flex items-center gap-1.5 flex-1 min-w-0 flex-wrap">
                       {draftNote.tags.map(tagId => {
                         const tag = allTags.find(t => t.id === tagId);
-                        const color = tag || genAutoColor();
+                        const color = tag 
+                          ? { color: tag.color, background: tag.background, textColor: tag.textColor }
+                          : genAutoColor();
                         return (
                           <motion.span
                             key={tagId}
