@@ -103,7 +103,16 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     const centerY = dimensions.height / 2;
     const availableWidth = dimensions.width;
     const availableHeight = dimensions.height;
-    const maxRadius = Math.min(availableWidth, availableHeight) * 0.42;
+    
+    // If only one node, center it
+    if (nodes.length === 1) {
+      nodes[0].x = centerX;
+      nodes[0].y = centerY;
+      setTreeNodes(nodes);
+      return;
+    }
+
+    const maxRadius = Math.min(availableWidth, availableHeight) * 0.38;
 
     // Find root node
     const rootNode = nodes.find(n => n.id === centerNode);
@@ -113,14 +122,19 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     rootNode.x = centerX;
     rootNode.y = centerY;
 
-    // Get all other nodes sorted by generation
+    // Get all other nodes
     const otherNodes = nodes.filter(n => n.id !== centerNode);
+    if (otherNodes.length === 0) {
+      setTreeNodes(nodes);
+      return;
+    }
+    
     const maxGen = Math.max(...otherNodes.map(n => n.generation), 1);
 
     // Position each node by generation in concentric rings
     otherNodes.forEach((node) => {
       const gen = node.generation;
-      const ringRadius = (gen / maxGen) * maxRadius + maxRadius * 0.15;
+      const ringRadius = maxRadius * (gen / maxGen);
       
       // Get siblings in same generation and same parent
       const siblings = otherNodes.filter(n => 
@@ -129,17 +143,18 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
       const siblingIdx = siblings.indexOf(node);
       const totalSiblings = siblings.length || 1;
 
-      // Calculate angle - spread evenly around the circle
-      // Offset by parent's angle to keep family connected
-      const parentAngle = node.parentId 
-        ? Math.atan2(
-            (nodes.find(n => n.id === node.parentId)?.y || centerY) - centerY,
-            (nodes.find(n => n.id === node.parentId)?.x || centerX) - centerX
-          )
-        : -Math.PI / 2;
+      // Calculate angle - evenly spread around parent direction
+      let baseAngle: number;
+      if (node.parentId) {
+        const parent = nodes.find(n => n.id === node.parentId);
+        baseAngle = parent ? Math.atan2(parent.y - centerY, parent.x - centerX) : -Math.PI / 2;
+      } else {
+        baseAngle = -Math.PI / 2;
+      }
       
-      const angleOffset = (siblingIdx / totalSiblings) * (Math.PI / 3); // ±30° spread from parent
-      const angle = parentAngle + angleOffset;
+      // Spread siblings in an arc around the parent
+      const arcSpan = Math.PI * 0.6; // 60% of circle spread
+      const angle = baseAngle + (siblingIdx - (totalSiblings - 1) / 2) * (arcSpan / Math.max(totalSiblings, 1));
 
       node.x = centerX + Math.cos(angle) * ringRadius;
       node.y = centerY + Math.sin(angle) * ringRadius;
