@@ -16,7 +16,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     optimizeDeps: {
-      include: ['lucide-react', 'firebase', '@google/genai', 'sql.js'],
+      include: ['lucide-react', '@google/genai', 'sql.js'],
+      exclude: ['firebase'],
     },
     // ✅ CAPACITOR: caminhos relativos para funcionar no WebView do Android
     base: './',
