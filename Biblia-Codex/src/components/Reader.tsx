@@ -104,6 +104,7 @@ export const Reader: React.FC<ReaderProps> = ({
 
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     if (!loading && targetVerse && verseRefs.current[targetVerse]) {
       verseRefs.current[targetVerse]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setSelectedVerses([targetVerse]);
@@ -112,6 +113,7 @@ export const Reader: React.FC<ReaderProps> = ({
   }, [loading, targetVerse]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     setSelectedBookId(book.id);
   }, [book.id, chapter]);
 
@@ -476,7 +478,7 @@ export const Reader: React.FC<ReaderProps> = ({
 
               return (
                 <div
-                  key={`${v.verse}-${v.text.slice(0, 40)}`}
+                  key={`verse-${book.id}-${chapter}-${v.verse}`}
                   ref={(el) => { verseRefs.current[v.verse] = el; }}
                   className={cn(
                     "group relative",
