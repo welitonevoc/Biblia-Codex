@@ -76,17 +76,34 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     onComplete();
   };
 
+  const handleSkipAll = () => {
+    try {
+      localStorage.setItem('hasLaunched', 'true');
+    } catch (err) {
+      console.error('Erro ao salvar hasLaunched:', err);
+    }
+    onComplete();
+  };
+
   return (
     <div className="fixed inset-0 bg-bible-bg z-[500] flex flex-col overflow-auto">
-      {/* Progress Bar */}
-      <div className="flex gap-1 px-4 sm:px-6 pt-8 sm:pt-12 pb-6 sm:pb-8">
-        {Array.from({ length: totalSteps }).map((_, i) => (
-          <div
-            key={i}
-            className={`h-1 flex-1 rounded-full transition-all duration-500 ${i <= step ? 'bg-bible-accent' : 'bg-bible-accent/10'
-              }`}
-          />
-        ))}
+      {/* Header com Progress Bar e Skip */}
+      <div className="flex items-center px-4 sm:px-6 pt-8 sm:pt-12 pb-6 sm:pb-8">
+        <div className="flex-1 flex gap-1 mr-4">
+          {Array.from({ length: totalSteps }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-1 flex-1 rounded-full transition-all duration-500 ${i <= step ? 'bg-bible-accent' : 'bg-bible-accent/10'
+                }`}
+            />
+          ))}
+        </div>
+        <button
+          onClick={handleSkipAll}
+          className="ui-text text-xs font-bold uppercase tracking-widest opacity-40 hover:opacity-80 transition-opacity whitespace-nowrap"
+        >
+          Pular
+        </button>
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
