@@ -215,7 +215,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 Lendo
               </span>
               <span className="text-sm font-bold text-[var(--text-bible)]">
-                {currentBook.abbrev} {currentChapter}
+                {currentBook.abbreviation} {currentChapter}
               </span>
             </motion.button>
 

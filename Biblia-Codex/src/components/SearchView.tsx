@@ -244,7 +244,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                     <div className="flex items-center gap-2 mb-2">
                       <BookOpen className="w-4 h-4 text-[var(--accent-bible)]" />
                       <span className="text-xs font-bold text-[var(--accent-bible)] uppercase tracking-wide">
-                        {book?.abbrev} {verse.chapter}:{verse.verse}
+                        {book?.abbreviation} {verse.chapter}:{verse.verse}
                       </span>
                     </div>
                     <p className="text-sm text-[var(--text-bible)] line-clamp-2">

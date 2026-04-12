@@ -11,6 +11,8 @@ export interface AudioTrack {
   url: string;
   duration: number;
   language: string;
+  title?: string;
+  artist?: string;
 }
 
 export interface AudioPlaybackState {

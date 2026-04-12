@@ -277,7 +277,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-bold text-[var(--accent-bible)] uppercase tracking-wide">
-                    {BIBLE_BOOKS.find(b => b.id === verse.bookId)?.abbrev} {verse.chapter}:{verse.verse}
+                    {BIBLE_BOOKS.find(b => b.id === verse.bookId)?.abbreviation} {verse.chapter}:{verse.verse}
                   </div>
                   <p className="text-sm text-[var(--text-bible)] truncate mt-0.5">
                     {verse.text}

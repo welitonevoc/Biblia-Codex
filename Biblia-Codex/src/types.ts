@@ -151,8 +151,8 @@ export interface AppSettings {
     originalLanguages: boolean;
     translatorNotes: boolean;
     transliteration: boolean;
-    selectedStrongsDictionary?: string; // Caminho do módulo .dct.mybible
-    selectedCommentaryDictionary?: string; // Caminho do módulo .cmt.mybible
+    selectedStrongsDictionary?: string;
+    selectedCommentaryDictionary?: string;
   };
   visualResources: {
     highlights: boolean;
@@ -192,9 +192,12 @@ export interface AppSettings {
     language: string;
     autoSuggest: boolean;
   };
-  sync: {
-    enabled: boolean;
-    lastSyncedAt?: number;
-    status: 'idle' | 'syncing' | 'error';
-  };
+  accentColor?: string;
+  fontSize?: number;
+  glowEnabled?: boolean;
+  particlesEnabled?: boolean;
+  lightingEffect?: LightingEffect;
+  animationStyle?: AnimationStyle;
+  animationIntensity?: AnimationIntensity;
+  animationSpeed?: AnimationSpeed;
 }

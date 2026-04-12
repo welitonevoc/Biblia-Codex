@@ -148,4 +148,8 @@ export class MySwordParser {
 
     return parsed;
   }
+
+  static parseHTML(text: string, settings?: any): string {
+    return MySwordParser.parseBibleText(text, settings);
+  }
 }
