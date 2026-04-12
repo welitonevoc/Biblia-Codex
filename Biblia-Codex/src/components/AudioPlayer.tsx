@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Headphones, Disc } from 'lucide-react';
+import { motion } from 'motion/react';
 import audioService, { AudioPlaybackState, AudioTrack } from '../services/audioService';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: (string | boolean | undefined)[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface AudioPlayerProps {
   track: AudioTrack;
@@ -18,12 +25,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const [previousVolume, setPreviousVolume] = useState(1);
 
   useEffect(() => {
-    // Carregar a faixa de áudio
     audioService.loadAudio(track).catch(error => {
       console.error('Erro ao carregar áudio:', error);
     });
-
-    // Inscrever-se nas mudanças de estado
     const unsubscribe = audioService.subscribe(setState);
     return () => unsubscribe();
   }, [track]);
@@ -74,97 +78,183 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     : 0;
 
   return (
-    <div className={`bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900 rounded-lg p-4 shadow-md ${className}`}>
-      {/* Título da faixa */}
-      <div className="mb-4">
-        <p className="text-sm font-semibold text-slate-900 dark:text-white">
-          {track.bookId} {track.chapter}:{track.verse}
-        </p>
-        <p className="text-xs text-slate-600 dark:text-slate-400">
-          {track.language}
-        </p>
+    <div className={cn(
+      "relative overflow-hidden rounded-2xl",
+      "bg-gradient-to-br from-[var(--accent-bible)]/5 via-[var(--surface-1)] to-[var(--accent-bible)]/10",
+      "border border-[var(--border-bible)]",
+      "shadow-lg shadow-black/5",
+      className
+    )}>
+      {/* Animated background */}
+      <div className="absolute inset-0 opacity-50">
+        <div className="absolute top-0 left-0 w-32 h-32 bg-[var(--accent-bible)]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-24 h-24 bg-[var(--accent-bible)]/10 rounded-full blur-2xl" />
       </div>
 
-      {/* Barra de progresso */}
-      <div className="mb-3">
-        <input
-          type="range"
-          min="0"
-          max={state.duration || 0}
-          value={state.currentTime}
-          onChange={handleSeek}
-          className="w-full h-2 bg-slate-300 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
-          style={{
-            background: `linear-gradient(to right, rgb(37, 99, 235) 0%, rgb(37, 99, 235) ${progressPercentage}%, rgb(203, 213, 225) ${progressPercentage}%, rgb(203, 213, 225) 100%)`
-          }}
-        />
-        <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mt-1">
-          <span>{formatTime(state.currentTime)}</span>
-          <span>{formatTime(state.duration)}</span>
+      <div className="relative p-4 md:p-5">
+        {/* Track Info */}
+        <div className="flex items-center gap-4 mb-4">
+          <motion.div 
+            animate={{ rotate: state.isPlaying ? 360 : 0 }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            className={cn(
+              "w-12 h-12 rounded-xl flex items-center justify-center",
+              "bg-gradient-to-br from-[var(--accent-bible)] to-[var(--accent-bible-strong)]",
+              "text-white shadow-lg"
+            )}
+          >
+            <Disc className="w-5 h-5" />
+          </motion.div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <Headphones className="w-3.5 h-3.5 text-[var(--accent-bible)]" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--accent-bible)]">
+                Audiocast
+              </span>
+            </div>
+            <h3 className="text-sm font-bold text-[var(--text-bible)] truncate">
+              {track.title || 'Capítulo de Áudio'}
+            </h3>
+            <p className="text-xs text-[var(--text-bible-muted)] truncate">
+              {track.artist || 'Bíblia Codex'}
+            </p>
+          </div>
         </div>
-      </div>
 
-      {/* Controles principais */}
-      <div className="flex items-center justify-center gap-4 mb-4">
-        <button
-          onClick={handleSkipBackward}
-          className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-full transition-colors"
-          title="Retroceder 10 segundos"
-        >
-          <SkipBack className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-        </button>
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="relative h-1.5 rounded-full bg-[var(--surface-3)] overflow-hidden">
+            <motion.div 
+              className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible-strong)]"
+              style={{ width: `${progressPercentage}%` }}
+              animate={{ width: `${progressPercentage}%` }}
+              transition={{ duration: 0.1 }}
+            />
+          </div>
+          <div className="flex justify-between mt-2">
+            <span className="text-xs font-medium text-[var(--text-bible-muted)]">
+              {formatTime(state.currentTime)}
+            </span>
+            <span className="text-xs font-medium text-[var(--text-bible-muted)]">
+              {formatTime(state.duration)}
+            </span>
+          </div>
+        </div>
 
-        <button
-          onClick={handlePlayPause}
-          className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors shadow-lg"
-          title={state.isPlaying ? 'Pausar' : 'Reproduzir'}
-        >
-          {state.isPlaying ? (
-            <Pause className="w-6 h-6" />
-          ) : (
-            <Play className="w-6 h-6 ml-0.5" />
-          )}
-        </button>
+        {/* Controls */}
+        <div className="flex items-center justify-between">
+          {/* Volume */}
+          <div className="hidden sm:flex items-center gap-2">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={handleToggleMute}
+              className={cn(
+                "flex items-center justify-center w-8 h-8 rounded-lg",
+                "text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]",
+                "hover:bg-[var(--surface-2)] transition-all duration-200"
+              )}
+            >
+              {isMuted || state.volume === 0 ? (
+                <VolumeX className="w-4 h-4" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
+            </motion.button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={isMuted ? 0 : state.volume}
+              onChange={handleVolumeChange}
+              className={cn(
+                "w-20 h-1 rounded-full appearance-none cursor-pointer",
+                "bg-[var(--surface-3)]",
+                "[&::-webkit-slider-thumb]:appearance-none",
+                "[&::-webkit-slider-thumb]:w-3",
+                "[&::-webkit-slider-thumb]:h-3",
+                "[&::-webkit-slider-thumb]:rounded-full",
+                "[&::-webkit-slider-thumb]:bg-[var(--accent-bible)]"
+              )}
+            />
+          </div>
 
-        <button
-          onClick={handleSkipForward}
-          className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-full transition-colors"
-          title="Avançar 10 segundos"
-        >
-          <SkipForward className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-        </button>
-      </div>
+          {/* Main Controls */}
+          <div className="flex items-center gap-2">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={handleSkipBackward}
+              className={cn(
+                "flex items-center justify-center w-10 h-10 rounded-xl",
+                "bg-[var(--surface-1)] text-[var(--text-bible-muted)]",
+                "hover:bg-[var(--surface-2)] hover:text-[var(--text-bible)]",
+                "transition-all duration-200"
+              )}
+            >
+              <SkipBack className="w-5 h-5" />
+            </motion.button>
 
-      {/* Controles de volume */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={handleToggleMute}
-          className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors"
-          title={isMuted ? 'Desmutecer' : 'Mutecer'}
-        >
-          {isMuted ? (
-            <VolumeX className="w-4 h-4 text-slate-700 dark:text-slate-300" />
-          ) : (
-            <Volume2 className="w-4 h-4 text-slate-700 dark:text-slate-300" />
-          )}
-        </button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handlePlayPause}
+              className={cn(
+                "flex items-center justify-center w-14 h-14 rounded-xl",
+                "bg-gradient-to-br from-[var(--accent-bible)] to-[var(--accent-bible-strong)]",
+                "text-white shadow-lg shadow-[var(--accent-bible)]/30",
+                "hover:shadow-xl hover:shadow-[var(--accent-bible)]/40",
+                "transition-all duration-200"
+              )}
+            >
+              {state.isPlaying ? (
+                <Pause className="w-6 h-6" />
+              ) : (
+                <Play className="w-6 h-6 ml-0.5" />
+              )}
+            </motion.button>
 
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
-          value={isMuted ? 0 : state.volume}
-          onChange={handleVolumeChange}
-          className="flex-1 h-2 bg-slate-300 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer accent-blue-600"
-        />
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={handleSkipForward}
+              className={cn(
+                "flex items-center justify-center w-10 h-10 rounded-xl",
+                "bg-[var(--surface-1)] text-[var(--text-bible-muted)]",
+                "hover:bg-[var(--surface-2)] hover:text-[var(--text-bible)]",
+                "transition-all duration-200"
+              )}
+            >
+              <SkipForward className="w-5 h-5" />
+            </motion.button>
+          </div>
 
-        <span className="text-xs text-slate-600 dark:text-slate-400 w-8">
-          {Math.round((isMuted ? 0 : state.volume) * 100)}%
-        </span>
+          {/* Seek Display */}
+          <div className="hidden md:block w-20 text-right">
+            <input
+              type="range"
+              min="0"
+              max={state.duration || 100}
+              step="0.1"
+              value={state.currentTime}
+              onChange={handleSeek}
+              className={cn(
+                "w-full h-1 rounded-full appearance-none cursor-pointer",
+                "bg-[var(--surface-3)]",
+                "[&::-webkit-slider-thumb]:appearance-none",
+                "[&::-webkit-slider-thumb]:w-3",
+                "[&::-webkit-slider-thumb]:h-3",
+                "[&::-webkit-slider-thumb]:rounded-full",
+                "[&::-webkit-slider-thumb]:bg-[var(--accent-bible)]",
+                "[&::-webkit-slider-thumb]:opacity-0",
+                "hover:[&::-webkit-slider-thumb]:opacity-100",
+                "transition-opacity duration-200"
+              )}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
 };
-
-export default AudioPlayer;
