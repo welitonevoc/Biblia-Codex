@@ -1,8 +1,8 @@
 {
-  "buildCommand": "cd Biblia-Codex && npm install && npx vite build",
-  "outputDirectory": "Biblia-Codex/dist",
-  "devCommand": "cd Biblia-Codex && npm run dev",
-  "installCommand": "cd Biblia-Codex && npm install",
+  "buildCommand": "npm install && npx vite build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
   "framework": "vite",
   "rewrites": [
     {
@@ -12,7 +12,7 @@
   ],
   "headers": [
     {
-      "source": "/Biblia-Codex/assets/(.*)",
+      "source": "/assets/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

@@ -1181,7 +1181,7 @@ button, input, textarea, select { font: inherit; }
 .geom-elegant .premium-card,
 .geom-elegant .premium-card-soft { 
   border-radius: var(--radius-2xl);
-  border: 1px solid var(--bible-border);
+  border: 1px solid var(--border-bible);
 }
 
 /* Geometria: cyber - futuristic style */
@@ -1204,8 +1204,8 @@ button, input, textarea, select { font: inherit; }
 [class^="geom-"] .glass-panel,
 [class^="geom-"] .premium-card-soft,
 [class^="geom-"] .premium-card-strong {
-  background: var(--bible-surface);
-  border: 1px solid var(--bible-border);
+  background: var(--surface-bible);
+  border: 1px solid var(--border-bible);
   backdrop-filter: none;
   box-shadow: none;
 }
@@ -1216,6 +1216,26 @@ button, input, textarea, select { font: inherit; }
 .font-sans  { font-family: var(--font-sans); }
 .font-serif { font-family: "Libre Baskerville", serif; }
 .font-mono  { font-family: "JetBrains Mono", monospace; }
+
+/* ─────────────────────────────────────────────
+   BIBLE TEXT COLOR UTILITIES
+   ───────────────────────────────────────────── */
+.text-bible-text { color: var(--text-bible); }
+.text-bible-text-muted { color: var(--text-bible-muted); }
+.text-bible-text-subtle { color: var(--text-bible-subtle); }
+.text-bible-accent { color: var(--accent-bible); }
+
+.bg-bible-bg { background-color: var(--bg-bible); }
+.bg-bible-bg-alt { background-color: var(--bg-bible-alt); }
+.bg-bible-surface { background-color: var(--surface-0); }
+.bg-bible-surface-strong { background-color: var(--surface-2); }
+
+.border-bible-border { border-color: var(--border-bible); }
+.border-bible-border-strong { border-color: var(--border-bible-strong); }
+
+.selection\:bg-bible-accent\/20::selection {
+  background-color: rgba(var(--accent-bible-rgb), 0.2);
+}
 
 /* ─────────────────────────────────────────────
    BIBLE TEXT RENDERING
