@@ -57,11 +57,12 @@ function AppContent() {
   const [isStudyOpen, setIsStudyOpen] = useState(false);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [selectedVersesForStudy, setSelectedVersesForStudy] = useState<{ verse: number, text: string }[]>([]);
-  const [showOnboarding, setShowOnboarding] = useState(!localStorage.getItem('codex-onboarded'));
-  const [showPermissionRequest, setShowPermissionRequest] = useState(false);
-  const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
-  const [hasAudioSupport, setHasAudioSupport] = useState(false);
-  const [readingMode, setReadingMode] = useState<'text' | 'audio' | 'both'>('text');
+const [showOnboarding, setShowOnboarding] = useState(true);
+
+  useEffect(() => {
+    const hasOnboarded = localStorage.getItem('codex-onboarded');
+    if (!hasOnboarded) setShowOnboarding(true);
+  }, []);
 
   // Verificar permissões após onboarding
   useEffect(() => {

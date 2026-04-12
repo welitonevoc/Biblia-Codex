@@ -207,7 +207,7 @@ export const Notes: React.FC = () => {
   const [tagInput, setTagInput] = useState('');
   const [newTagName, setNewTagName] = useState('');
   const [tagColorMode, setTagColorMode] = useState<TagColorMode>('auto');
-  const [autoColor, setAutoColor] = useState(genAutoColor());
+  const [autoColor, setAutoColor] = useState(() => ({ color: '#8b5cf6', background: '#f3e8ff', textColor: '#7c3aed' }));
   const [selectedPaletteIdx, setSelectedPaletteIdx] = useState(0);
   const [showTagCreator, setShowTagCreator] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('notes');

@@ -24,7 +24,7 @@ export const TagsView: React.FC = () => {
   const [newTagName, setNewTagName] = useState('');
   const [tagMode, setTagMode] = useState<'auto' | 'manual'>('auto');
   const [selectedPaletteIdx, setSelectedPaletteIdx] = useState(0);
-  const [currentAutoColor, setCurrentAutoColor] = useState(TagService.generateColor());
+  const [currentAutoColor, setCurrentAutoColor] = useState(() => ({ dot: '#8b5cf6', bg: '#f3e8ff', tc: '#7c3aed' }));
 
   // For Chain View
   const [chainIndex, setChainIndex] = useState(0);
