@@ -86,13 +86,13 @@ export const TopBar: React.FC<TopBarProps> = ({
   return (
     <header
       className="sticky top-0 z-50"
-      style={{ 
+      style={{
         paddingTop: 'var(--sat)',
         background: 'linear-gradient(180deg, var(--bg-bible) 0%, var(--bg-bible) 60%, transparent 100%)'
       }}
     >
       <div className="mx-auto flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
-        
+
         {/* Left: Menu + Version Selector */}
         <div className="flex items-center gap-3">
           <motion.button
@@ -127,7 +127,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               )}
             >
               <Globe className="h-4 w-4 text-[var(--accent-bible)]" />
-              <span>{currentVersion}</span>
+              <span>{currentVersion?.name || 'Versão'}</span>
               <ChevronDown className={cn(
                 "h-3.5 w-3.5 text-[var(--text-bible-muted)] transition-transform duration-200",
                 showVersionMenu && "rotate-180"
@@ -300,9 +300,9 @@ export const TopBar: React.FC<TopBarProps> = ({
           </motion.button>
         </div>
       </div>
-      
+
       {/* Gradient fade at bottom */}
-      <div 
+      <div
         className="absolute bottom-0 left-0 right-0 h-px"
         style={{
           background: 'linear-gradient(90deg, transparent 0%, var(--border-bible) 50%, transparent 100%)'
