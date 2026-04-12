@@ -245,6 +245,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
               <button onClick={() => setStep(2)} className="w-full bg-bible-accent text-bible-bg py-5 rounded-2xl font-bold ui-text tracking-widest uppercase text-xs shadow-xl shadow-bible-accent/20">
                 Continuar
               </button>
+              <button onClick={() => setStep(5)} className="w-full ui-text text-xs font-bold uppercase tracking-widest opacity-40 text-center">
+                Pular
+              </button>
             </div>
           </section>
 
@@ -270,6 +273,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             <div className="pt-8 space-y-4">
               <button onClick={() => setStep(3)} className="w-full bg-bible-accent text-bible-bg py-5 rounded-2xl font-bold ui-text tracking-widest uppercase text-xs shadow-xl shadow-bible-accent/20">
                 Continuar
+              </button>
+              <button onClick={() => setStep(5)} className="w-full ui-text text-xs font-bold uppercase tracking-widest opacity-40 text-center">
+                Pular
               </button>
             </div>
           </section>
@@ -305,6 +311,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
               <button onClick={() => setStep(4)} className="w-full ui-text text-xs font-bold uppercase tracking-widest opacity-40 text-center">
                 Agora não
               </button>
+              <button onClick={() => setStep(5)} className="w-full ui-text text-xs font-bold uppercase tracking-widest opacity-40 text-center">
+                Pular
+              </button>
             </div>
           </section>
 
@@ -325,6 +334,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             </div>
             <button onClick={() => setStep(5)} className="w-full bg-bible-accent text-bible-bg py-5 rounded-2xl font-bold ui-text tracking-widest uppercase text-xs shadow-xl shadow-bible-accent/20">
               Iniciar este plano
+            </button>
+            <button onClick={() => setStep(5)} className="w-full ui-text text-xs font-bold uppercase tracking-widest opacity-40 text-center">
+              Pular
             </button>
           </section>
 
