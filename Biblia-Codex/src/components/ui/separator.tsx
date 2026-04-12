@@ -1,7 +1,11 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "../../lib/utils"
 
-const Separator: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+interface SeparatorProps extends React.HTMLAttributes<HTMLDivElement> {
+  orientation?: "horizontal" | "vertical";
+}
+
+const Separator: React.FC<SeparatorProps> = ({
   className,
   orientation = "horizontal",
   ...props

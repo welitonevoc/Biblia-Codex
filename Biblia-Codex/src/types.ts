@@ -200,4 +200,9 @@ export interface AppSettings {
   animationStyle?: AnimationStyle;
   animationIntensity?: AnimationIntensity;
   animationSpeed?: AnimationSpeed;
+  sync?: boolean;
+  syncConfig?: {
+    enabled: boolean;
+    status: string;
+  };
 }

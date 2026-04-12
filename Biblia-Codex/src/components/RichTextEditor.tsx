@@ -11,16 +11,18 @@ import {
 } from 'lucide-react';
 
 interface RichTextEditorProps {
-  title: string;
-  content: string;
-  onChange: (content: string) => void;
+  title?: string;
+  content?: string;
+  html?: string;
+  onChange?: (content: string) => void;
   onStatsChange?: (stats: { words: number; chars: number; lines: number }) => void;
-  theme: 'light' | 'dark';
-  onThemeChange: (theme: 'light' | 'dark') => void;
-  fontFamily: string;
-  onFontFamilyChange: (fontFamily: string) => void;
-  fontSize: number;
-  onFontSizeChange: (fontSize: number) => void;
+  theme?: 'light' | 'dark';
+  onThemeChange?: (theme: 'light' | 'dark') => void;
+  fontFamily?: string;
+  onFontFamilyChange?: (fontFamily: string) => void;
+  fontSize?: number;
+  onFontSizeChange?: (fontSize: number) => void;
+  height?: string;
 }
 
 const HIGHLIGHT_COLORS = [

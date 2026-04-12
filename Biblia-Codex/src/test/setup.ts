@@ -7,11 +7,17 @@ global.ResizeObserver = class ResizeObserver {
 };
 
 global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
+  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+    this.callback = callback;
+  }
+  private callback: IntersectionObserverCallback;
   observe() {}
   unobserve() {}
   disconnect() {}
   takeRecords() {
     return [];
   }
-};
+  get root() { return null; }
+  get rootMargin() { return ''; }
+  get thresholds() { return 0; }
+} as any;

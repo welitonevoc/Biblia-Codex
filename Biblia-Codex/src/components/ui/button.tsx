@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "../../lib/utils"
 
 const buttonVariants = {
   default: "bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)] shadow-md hover:bg-[var(--accent-bible-strong)] hover:shadow-lg active:scale-[0.98] transition-all duration-200",

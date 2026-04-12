@@ -171,7 +171,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         language: 'pt-BR',
         autoSuggest: true,
       },
-      sync: {
+      syncConfig: {
         enabled: false,
         status: 'idle',
       },
@@ -421,12 +421,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const syncNow = useCallback(() => {
     if (!user) return;
-    setSettings(prev => ({ ...prev, sync: { ...prev.sync, status: 'syncing' } }));
+    setSettings(prev => ({ ...prev, syncConfig: { ...prev.syncConfig!, status: 'syncing' } }));
     syncToCloud(config, settings).then(() => {
       setSettings(prev => ({
         ...prev,
-        sync: {
-          ...prev.sync,
+        syncConfig: {
+          ...prev.syncConfig!,
           status: 'idle',
           lastSyncedAt: Date.now()
         }

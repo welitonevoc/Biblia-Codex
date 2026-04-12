@@ -369,7 +369,8 @@ export const Notes: React.FC = () => {
       console.log('Google token obtained:', token ? 'Yes' : 'No');
       if (!token) {
         console.log('Requesting Google login...');
-        token = await loginWithGoogle();
+        await loginWithGoogle();
+        token = await getStoredGoogleAccessToken();
       }
 
       await exportNoteToGoogleDocs(draftNote, token);

@@ -64,7 +64,7 @@ const readModuleBinaryFromAssets = async (modulePath: string): Promise<Uint8Arra
     const { Filesystem, Directory } = await import('@capacitor/filesystem');
     const contents = await Filesystem.readFile({
       path: fileName,
-      directory: Directory.Application,
+      directory: 'APPLICATION' as any,
     });
     const raw = (contents as any).data;
     if (typeof raw === 'string') {

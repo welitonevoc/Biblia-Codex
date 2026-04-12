@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "../../lib/utils"
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "circular" | "text"
@@ -49,7 +49,11 @@ const SkeletonCard = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLD
 )
 SkeletonCard.displayName = "SkeletonCard"
 
-const SkeletonText = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+interface SkeletonTextProps extends React.HTMLAttributes<HTMLDivElement> {
+  lines?: number;
+}
+
+const SkeletonText = React.forwardRef<HTMLDivElement, SkeletonTextProps>(
   ({ className, lines = 3, ...props }, ref) => (
     <div ref={ref} className={cn("space-y-2", className)} {...props}>
       {Array.from({ length: lines }).map((_, i) => (

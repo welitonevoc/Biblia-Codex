@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "../../lib/utils"
 
 interface ToggleGroupProps extends React.HTMLAttributes<HTMLDivElement> {
   value?: string
@@ -31,11 +31,11 @@ const ToggleGroup: React.FC<ToggleGroupProps> = ({
     <div className={cn("inline-flex rounded-lg bg-[var(--surface-1)] p-1", className)} {...props}>
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
-          ? React.cloneElement(child as React.ReactElement<any>, {
+          ? React.cloneElement(child as React.ReactElement<{ value: string; selected?: boolean; onClick?: () => void }>, {
               selected: type === "single" 
-                ? child.props.value === value
-                : value?.split(",").includes(child.props.value),
-              onClick: () => handleChildClick(child.props.value),
+                ? (child.props as any).value === value
+                : value?.split(",").includes((child.props as any).value),
+              onClick: () => handleChildClick((child.props as any).value),
             })
           : child
       )}

@@ -150,7 +150,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                   <div className="p-1">
                     {availableVersions.map((version) => (
                       <button
-                        key={version}
+                        key={version.id}
                         onClick={() => {
                           selectVersion(version);
                           setShowVersionMenu(false);
@@ -161,8 +161,8 @@ export const TopBar: React.FC<TopBarProps> = ({
                           "transition-colors duration-150"
                         )}
                       >
-                        <span>{version}</span>
-                        {currentVersion === version && (
+                        <span>{version.id}</span>
+                        {currentVersion?.id === version.id && (
                           <Check className="h-4 w-4 text-[var(--accent-bible)]" />
                         )}
                       </button>
