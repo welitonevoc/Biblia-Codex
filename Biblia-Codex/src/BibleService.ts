@@ -48,9 +48,15 @@ const readModuleBinaryFromPublic = async (modulePath: string): Promise<Uint8Arra
     const response = await fetch(`/${fileName}`);
     if (!response.ok) throw new Error(`HTTP ${response.status} ao buscar ${fileName}`);
     const buffer = await response.arrayBuffer();
+    if (buffer.byteLength === 0) {
+      console.error(`[BibleService] Arquivo vazio: ${fileName}`);
+      throw new Error(`Arquivo vazio: ${fileName}`);
+    }
+    console.log(`[BibleService] Carregado: ${fileName} (${buffer.byteLength} bytes)`);
     return new Uint8Array(buffer);
-  } catch {
-    return new Uint8Array(0);
+  } catch (error) {
+    console.error(`[BibleService] Erro ao carregar ${fileName}:`, error);
+    throw error;
   }
 };
 
@@ -93,6 +99,7 @@ const getDbInstance = async (version: BibleModule) => {
   let cached = dbCache.get(cacheKey);
 
   if (!cached) {
+    console.log(`[BibleService] Carregando módulo: ${version.path}`);
     const SQL = await getSqlInstance();
     let binaryData: Uint8Array;
     if (isWeb) {
@@ -100,8 +107,10 @@ const getDbInstance = async (version: BibleModule) => {
     } else {
       binaryData = await readModuleBinary(version.path);
     }
+    console.log(`[BibleService] Dados binários carregados: ${binaryData.length} bytes`);
     const db = new SQL.Database(binaryData);
     const schema = detectSchema(db);
+    console.log(`[BibleService] Schema detectado:`, schema);
     if (!schema) throw new Error("Schema não suportado");
 
     cached = { db, schema: schema as any };
@@ -112,7 +121,10 @@ const getDbInstance = async (version: BibleModule) => {
 
 export const BibleService = {
   getVerses: async (bookId: string, chapter: number, version?: BibleModule, _settings?: any): Promise<Verse[]> => {
+    console.log(`[BibleService.getVerses] bookId=${bookId}, chapter=${chapter}, version=${version?.path || 'undefined'}`);
+    
     if (!version?.path) {
+      console.log('[BibleService.getVerses] Sem versão, retornando dados simulados');
       return Array.from({ length: 20 }, (_, i) => ({ bookId, chapter, verse: i + 1, text: `Texto simulado ${i + 1}`, isChapterHeader: false }));
     }
 
@@ -122,12 +134,17 @@ export const BibleService = {
       const myBibleBookId = BookNumberConverter.toMyBible(bookMetadata?.numericId || 1);
       const stdBookId = bookMetadata?.numericId || 1;
 
+      console.log(`[BibleService.getVerses] Consultando: book=${stdBookId} ou ${myBibleBookId}, chapter=${chapter}`);
+
       // Tenta com os dois tipos de ID (Padrão ou MyBible) de forma eficiente
       const query = `SELECT ${schema.verseCol}, ${schema.textCol} FROM ${schema.table} WHERE ${schema.bookCol} = ? AND ${schema.chapterCol} = ? ORDER BY ${schema.verseCol} ASC`;
 
       let queryRes = db.exec(query, [stdBookId, chapter]);
+      console.log(`[BibleService.getVerses] Resultado padrão (book=${stdBookId}):`, queryRes.length > 0 ? queryRes[0].values.length : 0, 'versículos');
+      
       if (!queryRes.length || !queryRes[0].values.length) {
         queryRes = db.exec(query, [myBibleBookId, chapter]);
+        console.log(`[BibleService.getVerses] Resultado MyBible (book=${myBibleBookId}):`, queryRes.length > 0 ? queryRes[0].values.length : 0, 'versículos');
       }
 
       if (queryRes.length > 0 && queryRes[0].values.length > 0) {
@@ -142,6 +159,8 @@ export const BibleService = {
           };
         });
       }
+      
+      console.log('[BibleService.getVerses] Nenhum versículo encontrado!');
     } catch (error) {
       console.error('Erro ao ler versículos:', error);
     }
