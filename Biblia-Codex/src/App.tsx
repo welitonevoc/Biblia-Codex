@@ -96,6 +96,14 @@ const [showOnboarding, setShowOnboarding] = useState(true);
   const [toolVerse, setToolVerse] = useState<Verse | null>(null);
   const [toolType, setToolType] = useState<'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places'>('commentary');
 
+  // Audio State
+  const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
+  const [hasAudioSupport, setHasAudioSupport] = useState(false);
+  const [readingMode, setReadingMode] = useState<'text' | 'audio' | 'both'>('text');
+
+  // Permission State
+  const [showPermissionRequest, setShowPermissionRequest] = useState(false);
+
   const handleSelect = (book: Book, chapter: number, verse?: number) => {
     setCurrentBook(book);
     setCurrentChapter(chapter);
