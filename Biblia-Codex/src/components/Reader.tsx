@@ -113,10 +113,13 @@ export const Reader: React.FC<ReaderProps> = ({
   }, [loading, targetVerse]);
 
   // ✅ Memoiza o processamento dos versículos para evitar re-renderizações desnecessárias
-  const processedVerses = useMemo(() => verses.map((v) => {
-    const { headingsHtml, bodyHtml, parsedHtml } = splitVerseHtml(v.text, v.verse, v.isChapterHeader);
-    return { verse: v, headingsHtml, bodyHtml, parsedHtml };
-  }), [verses]);
+  const processedVerses = useMemo(() => {
+    if (!verses || verses.length === 0) return [];
+    return verses.map((v) => {
+      const { headingsHtml, bodyHtml, parsedHtml } = splitVerseHtml(v.text, v.verse, v.isChapterHeader);
+      return { verse: v, headingsHtml, bodyHtml, parsedHtml };
+    });
+  }, [verses]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

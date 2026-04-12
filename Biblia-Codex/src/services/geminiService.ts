@@ -1,5 +1,3 @@
-import { useAppContext } from '../AppContext';
-
 /**
  * Serviço de Integração com Gemini AI
  * Focado em fornecer definições teológicas profundas (Assembleiano Clássico).
