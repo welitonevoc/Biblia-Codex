@@ -112,6 +112,12 @@ export const Reader: React.FC<ReaderProps> = ({
     }
   }, [loading, targetVerse]);
 
+  // ✅ Memoiza o processamento dos versículos para evitar re-renderizações desnecessárias
+  const processedVerses = useMemo(() => verses.map((v) => {
+    const { headingsHtml, bodyHtml, parsedHtml } = splitVerseHtml(v.text, v.verse, v.isChapterHeader);
+    return { verse: v, headingsHtml, bodyHtml, parsedHtml };
+  }), [verses]);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     setSelectedBookId(book.id);
@@ -466,10 +472,7 @@ export const Reader: React.FC<ReaderProps> = ({
               fontFamily: 'var(--font-bible-family)'
             }}
           >
-            {useMemo(() => verses.map((v) => {
-              const { headingsHtml, bodyHtml, parsedHtml } = splitVerseHtml(v.text, v.verse, v.isChapterHeader);
-              return { verse: v, headingsHtml, bodyHtml, parsedHtml };
-            }), [verses]).map(({ verse: v, headingsHtml, bodyHtml, parsedHtml }) => {
+            {processedVerses.map(({ verse: v, headingsHtml, bodyHtml, parsedHtml }) => {
               const bookmark = isBookmarked(v.verse);
               const showHighlight = settings.visualResources.highlights && bookmark;
               const isChapterHeader = v.isChapterHeader || v.verse === 0;
