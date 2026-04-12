@@ -74,7 +74,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     loadData();
   }, [bookId, chapter, verse]);
 
-  // Build radial tree nodes
+  // Build radial tree nodes - improved mind map layout
   useEffect(() => {
     if (!people.length || !centerNode) return;
 
@@ -98,36 +98,51 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
       }
     });
 
-    // Calculate radial positions - mind map style with center root
+    // Calculate radial positions - true mind map layout
     const centerX = dimensions.width / 2;
     const centerY = dimensions.height / 2;
-    const baseRadius = Math.min(dimensions.width, dimensions.height) * 0.25;
+    const availableWidth = dimensions.width;
+    const availableHeight = dimensions.height;
+    const maxRadius = Math.min(availableWidth, availableHeight) * 0.42;
 
-    // Group by generation
-    const generationGroups = new Map<number, TreeNode[]>();
-    nodes.forEach(node => {
+    // Find root node
+    const rootNode = nodes.find(n => n.id === centerNode);
+    if (!rootNode) return;
+
+    // Position root at center
+    rootNode.x = centerX;
+    rootNode.y = centerY;
+
+    // Get all other nodes sorted by generation
+    const otherNodes = nodes.filter(n => n.id !== centerNode);
+    const maxGen = Math.max(...otherNodes.map(n => n.generation), 1);
+
+    // Position each node by generation in concentric rings
+    otherNodes.forEach((node) => {
       const gen = node.generation;
-      if (!generationGroups.has(gen)) generationGroups.set(gen, []);
-      generationGroups.get(gen)!.push(node);
-    });
-
-    // Position nodes by generation - each generation in a ring
-    generationGroups.forEach((group, gen) => {
-      const radius = baseRadius + (gen * baseRadius * 0.8);
-      const totalInGen = group.length;
+      const ringRadius = (gen / maxGen) * maxRadius + maxRadius * 0.15;
       
-      group.forEach((node, idx) => {
-        if (node.id === centerNode) {
-          // Center node at center
-          node.x = centerX;
-          node.y = centerY;
-        } else {
-          // Other nodes in a circle around center
-          const angle = (idx / Math.max(totalInGen, 1)) * 2 * Math.PI - Math.PI / 2;
-          node.x = centerX + Math.cos(angle) * radius;
-          node.y = centerY + Math.sin(angle) * radius;
-        }
-      });
+      // Get siblings in same generation and same parent
+      const siblings = otherNodes.filter(n => 
+        n.generation === gen && n.parentId === node.parentId
+      );
+      const siblingIdx = siblings.indexOf(node);
+      const totalSiblings = siblings.length || 1;
+
+      // Calculate angle - spread evenly around the circle
+      // Offset by parent's angle to keep family connected
+      const parentAngle = node.parentId 
+        ? Math.atan2(
+            (nodes.find(n => n.id === node.parentId)?.y || centerY) - centerY,
+            (nodes.find(n => n.id === node.parentId)?.x || centerX) - centerX
+          )
+        : -Math.PI / 2;
+      
+      const angleOffset = (siblingIdx / totalSiblings) * (Math.PI / 3); // ±30° spread from parent
+      const angle = parentAngle + angleOffset;
+
+      node.x = centerX + Math.cos(angle) * ringRadius;
+      node.y = centerY + Math.sin(angle) * ringRadius;
     });
 
     setTreeNodes(nodes);
@@ -205,19 +220,40 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
           </filter>
         </defs>
 
-        {/* Connection to parent */}
-        {node.parentId && (
-          <path
-            d={`M ${treeNodes.find(n => n.id === node.parentId)?.x || 0} ${treeNodes.find(n => n.id === node.parentId)?.y || 0} 
-                Q ${(treeNodes.find(n => n.id === node.parentId)?.x || 0) + node.x} / 2, ${(treeNodes.find(n => n.id === node.parentId)?.y || 0) + node.y} / 2
-                ${node.x} ${node.y}`}
-            fill="none"
-            stroke={isSelected ? '#fbbf24' : isMale ? '#6366f1' : '#ec4899'}
-            strokeWidth={isSelected ? "3" : "2"}
-            strokeOpacity={isSelected ? "0.9" : "0.4"}
-            strokeDasharray={isExpanded ? "none" : "5,5"}
-          />
-        )}
+        {/* Connection to parent - smooth bezier curve */}
+        {node.parentId && (() => {
+          const parent = treeNodes.find(n => n.id === node.parentId);
+          if (!parent) return null;
+          
+          const startX = parent.x;
+          const startY = parent.y;
+          const endX = node.x;
+          const endY = node.y;
+          
+          // Calculate control points for smooth curve
+          const midX = (startX + endX) / 2;
+          const midY = (startY + endY) / 2;
+          const controlOffset = 50;
+          const dx = endX - startX;
+          const dy = endY - startY;
+          
+          // Perpendicular control point
+          const ctrl1X = startX + dx * 0.25;
+          const ctrl1Y = startY + dy * 0.25 - controlOffset * (dy / Math.abs(dy || 1));
+          const ctrl2X = endX - dx * 0.25;
+          const ctrl2Y = endY - dy * 0.25 + controlOffset * (dy / Math.abs(dy || 1));
+          
+          return (
+            <path
+              d={`M ${startX} ${startY} C ${ctrl1X} ${ctrl1Y}, ${ctrl2X} ${ctrl2Y}, ${endX} ${endY}`}
+              fill="none"
+              stroke={isCenter ? '#fbbf24' : isSelected ? '#fbbf24' : isMale ? '#6366f1' : '#ec4899'}
+              strokeWidth={isSelected ? "3" : "2"}
+              strokeOpacity={isSelected ? "0.9" : "0.35"}
+              strokeLinecap="round"
+            />
+          );
+        })()}
 
         {/* Node group */}
         <g
