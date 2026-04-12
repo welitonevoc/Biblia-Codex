@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight } from 'lucide-react';
+import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
-  return clsx(inputs);
+  return twMerge(clsx(inputs));
 }
 
 export const ReadingPlans: React.FC<{ onNavigate: (bookId: string, chapter: number, verse?: number) => void }> = ({ onNavigate }) => {
@@ -43,29 +44,55 @@ export const ReadingPlans: React.FC<{ onNavigate: (bookId: string, chapter: numb
   ];
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto scrollbar-thin">
       <div className="max-w-4xl mx-auto px-4 py-6 pb-28 space-y-6">
+        
         {/* Header Premium */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="premium-card p-5"
+          className={cn(
+            "relative overflow-hidden rounded-2xl p-5",
+            "bg-[var(--surface-1)] border border-[var(--border-bible)]",
+            "transition-all duration-300 hover:shadow-md"
+          )}
         >
-          <div className="flex items-start justify-between">
+          <div className="absolute top-0 right-0 w-32 h-32 opacity-10"
+            style={{
+              background: 'radial-gradient(circle, var(--accent-bible) 0%, transparent 70%)'
+            }}
+          />
+          <div className="relative flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <Compass className="w-4 h-4 text-bible-accent" />
-                <span className="premium-kicker">Planos de Leitura</span>
+                <Compass className="w-4 h-4 text-[var(--accent-bible)]" />
+                <span className={cn(
+                  "inline-flex items-center px-2.5 py-1 rounded-full",
+                  "text-[10px] font-bold uppercase tracking-wider",
+                  "bg-[var(--accent-bible)]/10 text-[var(--accent-bible)]"
+                )}>
+                  Planos de Leitura
+                </span>
               </div>
-              <h1 className="premium-title mt-2 mb-1">Jornada Guiada</h1>
-              <p className="premium-subtitle text-sm">
+              <h1 className={cn(
+                "text-3xl font-bold text-[var(--text-bible)]",
+                "tracking-tight"
+              )} style={{ fontFamily: 'var(--font-display)' }}>
+                Jornada Guiada
+              </h1>
+              <p className="mt-1 text-[var(--text-bible-muted)] text-sm">
                 Organize sua leitura bíblica diária
               </p>
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="premium-button p-3"
+              className={cn(
+                "flex items-center justify-center h-11 w-11 rounded-xl",
+                "bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)]",
+                "shadow-lg shadow-[var(--accent-bible)]/20",
+                "hover:bg-[var(--accent-bible-strong)] transition-all duration-200"
+              )}
             >
               <Plus className="w-5 h-5" />
             </motion.button>
@@ -80,121 +107,157 @@ export const ReadingPlans: React.FC<{ onNavigate: (bookId: string, chapter: numb
           className="grid grid-cols-3 gap-3"
         >
           {[
-            { label: 'Ativos', value: 0, icon: Play, color: 'text-green-600', bg: 'bg-green-500/10' },
-            { label: 'Salvos', value: 0, icon: Library, color: 'text-blue-600', bg: 'bg-blue-500/10' },
-            { label: 'Concluídos', value: 0, icon: CheckCircle2, color: 'text-purple-600', bg: 'bg-purple-500/10' },
-          ].map((item, i) => (
-            <motion.div
-              key={item.label}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 + i * 0.1 }}
-              className="premium-card p-4 text-center"
-            >
-              <div className={`inline-flex p-2.5 rounded-xl ${item.bg} mb-2`}>
-                <item.icon className={cn("w-5 h-5", item.color)} />
-              </div>
-              <div className="text-2xl font-bold text-bible-text">{item.value}</div>
-              <div className="text-xs text-bible-text-muted mt-0.5">{item.label}</div>
-            </motion.div>
-          ))}
+            { label: 'Planos ativos', value: '2', icon: Compass, color: 'blue' },
+            { label: 'Dias concluídos', value: '12', icon: CheckCircle2, color: 'green' },
+            { label: 'Este mês', value: '4d', icon: Calendar, color: 'amber' },
+          ].map((stat, index) => {
+            const Icon = stat.icon;
+            const colorClasses: Record<string, string> = {
+              blue: 'bg-blue-500/10 text-blue-500',
+              green: 'bg-green-500/10 text-green-500',
+              amber: 'bg-amber-500/10 text-amber-500',
+            };
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + index * 0.05 }}
+                className={cn(
+                  "flex flex-col items-center p-4 rounded-xl",
+                  "bg-[var(--surface-1)] border border-[var(--border-bible)]"
+                )}
+              >
+                <div className={cn("p-2 rounded-lg mb-2", colorClasses[stat.color])}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <span className="text-xl font-bold text-[var(--text-bible)]">{stat.value}</span>
+                <span className="text-xs text-[var(--text-bible-muted)] text-center mt-1">{stat.label}</span>
+              </motion.div>
+            );
+          })}
         </motion.div>
 
-        {/* Tabs Premium */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="flex gap-2 p-1 premium-card"
-        >
-          {['home', 'custom', 'explore'].map(tab => (
+        {/* Tabs */}
+        <div className="flex gap-2 p-1 rounded-xl bg-[var(--surface-1)] border border-[var(--border-bible)]">
+          {[
+            { id: 'home', label: 'Meus Planos' },
+            { id: 'custom', label: 'Personalizados' },
+            { id: 'explore', label: 'Explorar' },
+          ].map((tab) => (
             <motion.button
-              key={tab}
+              key={tab.id}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => setActiveTab(tab as any)}
+              onClick={() => setActiveTab(tab.id as any)}
               className={cn(
-                'flex-1 px-4 py-2.5 rounded-xl text-xs font-bold transition-all',
-                activeTab === tab
-                  ? 'bg-gradient-to-r from-bible-accent to-bible-accent-strong text-white shadow-md'
-                  : 'text-bible-text-muted hover:text-bible-text'
+                "flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                activeTab === tab.id
+                  ? "bg-[var(--surface-0)] text-[var(--text-bible)] shadow-sm"
+                  : "text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]"
               )}
             >
-              {tab === 'home' ? 'Início' : tab === 'custom' ? 'Personalizados' : 'Explorar'}
+              {tab.label}
             </motion.button>
           ))}
-        </motion.div>
+        </div>
 
         {/* Plans List */}
+        <div className="space-y-3">
+          {plans.map((plan, index) => {
+            const Icon = plan.icon;
+            return (
+              <motion.button
+                key={plan.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + index * 0.05 }}
+                whileHover={{ scale: 1.01, x: 4 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => {}}
+                className={cn(
+                  "w-full flex items-center gap-4 p-4 rounded-xl",
+                  "bg-[var(--surface-1)] border border-[var(--border-bible)]",
+                  "text-left transition-all duration-200",
+                  "hover:border-[var(--accent-bible)]/30 hover:shadow-md"
+                )}
+              >
+                <div className={cn(
+                  "w-14 h-14 rounded-xl flex items-center justify-center",
+                  "bg-gradient-to-br", plan.gradient,
+                  "text-white shadow-lg"
+                )}>
+                  <Icon className="w-6 h-6" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-bold text-[var(--text-bible)]">{plan.title}</h3>
+                  <p className="text-sm text-[var(--text-bible-muted)] mt-0.5">{plan.description}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex-1 h-1.5 rounded-full bg-[var(--surface-3)] overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(plan.progress / plan.totalDays) * 100}%` }}
+                        transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
+                        className={cn("h-full rounded-full bg-gradient-to-r", plan.gradient)}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-[var(--text-bible-muted)] whitespace-nowrap">
+                      {plan.progress}/{plan.totalDays}
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-[var(--text-bible-subtle)]" />
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Quick Start Section */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="space-y-3"
         >
-          {plans.map((plan, i) => (
-            <motion.button
-              key={plan.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 + i * 0.1 }}
-              whileHover={{ scale: 1.01, y: -2 }}
-              whileTap={{ scale: 0.99 }}
-              onClick={() => onNavigate('GEN', 1)}
-              className="premium-card p-5 w-full text-left group"
-            >
-              <div className="flex items-start gap-4">
-                <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${plan.gradient} text-white shadow-lg`}>
-                  <plan.icon className="w-6 h-6" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-bold text-bible-text mb-1">{plan.title}</h3>
-                  <p className="text-xs text-bible-text-muted mb-3">{plan.description}</p>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-2 rounded-full bg-bible-surface overflow-hidden">
-                      <div
-                        className={`h-full rounded-full bg-gradient-to-r ${plan.gradient}`}
-                        style={{ width: `${plan.progress}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-bold text-bible-text-muted">{plan.progress}%</span>
+          <h2 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-3">
+            Início rápido
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { title: 'Ler Salmos 23', subtitle: '6 versículos', icon: BookOpen, color: 'green' },
+              { title: 'João 3:16', subtitle: 'O amor de Deus', icon: Sparkles, color: 'purple' },
+            ].map((item, index) => {
+              const colorClasses: Record<string, string> = {
+                green: 'bg-green-500/10 text-green-500',
+                purple: 'bg-purple-500/10 text-purple-500',
+              };
+              return (
+                <motion.button
+                  key={item.title}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.45 + index * 0.05 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={cn(
+                    "flex items-center gap-3 p-4 rounded-xl",
+                    "bg-[var(--surface-1)] border border-[var(--border-bible)]",
+                    "text-left transition-all duration-200",
+                    "hover:border-[var(--accent-bible)]/30 hover:shadow-sm"
+                  )}
+                >
+                  <div className={cn("p-2 rounded-lg", colorClasses[item.color])}>
+                    <item.icon className="w-4 h-4" />
                   </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Calendar className="w-3.5 h-3.5 text-bible-text-muted" />
-                    <span className="text-xs text-bible-text-muted">{plan.totalDays} dias</span>
+                  <div>
+                    <div className="text-sm font-semibold text-[var(--text-bible)]">{item.title}</div>
+                    <div className="text-xs text-[var(--text-bible-muted)]">{item.subtitle}</div>
                   </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-bible-text-muted group-hover:text-bible-accent group-hover:translate-x-1 transition-all" />
-              </div>
-            </motion.button>
-          ))}
+                </motion.button>
+              );
+            })}
+          </div>
         </motion.div>
 
-        {/* Empty State */}
-        {plans.every(p => p.progress === 0) && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.6 }}
-            className="premium-card-soft p-12 text-center"
-          >
-            <div className="inline-flex p-4 rounded-2xl bg-bible-accent/10 mb-4">
-              <Calendar className="w-10 h-10 text-bible-accent" />
-            </div>
-            <h3 className="text-lg font-bold text-bible-text mb-2">Nenhum plano ativo</h3>
-            <p className="text-sm text-bible-text-muted mb-4">
-              Escolha um plano para começar sua jornada de leitura
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="premium-button px-6 py-3 inline-flex items-center gap-2"
-            >
-              Começar agora
-              <ArrowRight className="w-4 h-4" />
-            </motion.button>
-          </motion.div>
-        )}
       </div>
     </div>
   );
