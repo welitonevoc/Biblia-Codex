@@ -16,68 +16,6 @@ interface Lesson {
   sinopse: string;
 }
 
-function generateLessonLinks(year: number, quarter: number): string[] {
-  const links: string[] = [];
-  const baseUrl = `https://www.estudantesdabiblia.com.br/licoes_cpad/${year}`;
-  for (let i = 1; i <= 13; i++) {
-    const date = `${year}-${quarter.toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
-    links.push(`${baseUrl}/${date}.htm`);
-  }
-  return links;
-}
-
-function extractHTML($: cheerio.CheerioAPI, selector: string): string {
-  const element = $(selector).first();
-  if (element.length) {
-    element.find('script, style, iframe').remove();
-    return element.html() || '';
-  }
-  return '';
-}
-
-async function extractLesson(url: string, lessonNumber: number): Promise<Lesson> {
-  try {
-    const { data } = await axios.get(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-      timeout: 15000,
-      responseType: 'arraybuffer',
-      transformResponse: [(d: Buffer) => new TextDecoder('iso-8859-1').decode(d)]
-    });
-    const $ = cheerio.load(data);
-    $('script, style, iframe, .anuncio, .banner').remove();
-
-    let title = $('h1, h2, .titulo').first().text().trim() || `Lição ${lessonNumber}`;
-    title = title.replace(/^LIÇÕES BÍBLICAS\s*CPAD\s*/i, '').trim() || `Lição ${lessonNumber}`;
-
-    return {
-      number: lessonNumber,
-      title,
-      textAureo: extractHTML($, '.texto-aureo, .text-aureo') || '<p>"Porque Deus amou o mundo..." (João 3.16)</p>',
-      verdadePratica: extractHTML($, '.verdade-pratica') || '<p>A verdade prática desta lição.</p>',
-      leituraDiaria: extractHTML($, '.leitura-diaria') || '<p><strong>Segunda</strong> - Gn 1.1</p>',
-      leituraBiblica: extractHTML($, '.leitura-biblica') || '<p>Texto bíblico...</p>',
-      introducao: extractHTML($, '.introducao') || '<p>Introdução...</p>',
-      topicos: [
-        { title: 'I - Primeiro Tópico', content: extractHTML($, '.topico-1') || '<p>Conteúdo...</p>' },
-        { title: 'II - Segundo Tópico', content: extractHTML($, '.topico-2') || '<p>Conteúdo...</p>' },
-        { title: 'III - Terceiro Tópico', content: extractHTML($, '.topico-3') || '<p>Conteúdo...</p>' }
-      ],
-      conclusao: extractHTML($, '.conclusao') || '<p>Conclusão...</p>',
-      comentario: extractHTML($, '.comentario') || '<p>Comentário...</p>',
-      sinopse: extractHTML($, '.sinopse') || '<p>Sinopse...</p>'
-    };
-  } catch (error) {
-    return {
-      number: lessonNumber, title: `Lição ${lessonNumber}`,
-      textAureo: '<p>"Porque Deus amou o mundo..." (João 3.16)</p>',
-      verdadePratica: '<p>Verdade prática.</p>', leituraDiaria: '<p>Leitura...</p>',
-      leituraBiblica: '<p>Texto bíblico...</p>', introducao: '<p>Introdução...</p>',
-      topicos: [{ title: 'I - Tópico', content: '<p>Conteúdo...</p>' }],
-      conclusao: '<p>Conclusão...</p>', comentario: '<p>Comentário...</p>', sinopse: '<p>Sinopse...</p>'
-    };
-  }
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -87,17 +25,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method !== 'POST') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
   const { sumarioUrl } = req.body;
   if (!sumarioUrl) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
     return res.status(400).json({ error: 'URL do sumário é obrigatória' });
   }
 
   try {
-    let year = 2026;
-    let quarter = 1;
+    let year = 2026, quarter = 1;
     const yearMatch = sumarioUrl.match(/(\d{4})/);
     if (yearMatch) year = parseInt(yearMatch[1]);
     if (sumarioUrl.includes('2º') || sumarioUrl.includes('-02-')) quarter = 2;
@@ -116,31 +55,59 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const $ = cheerio.load(html);
       const pageTitle = $('h1, h2, .titulo').first().text().trim();
       if (pageTitle) title = pageTitle;
-    } catch (e) {
-      console.warn('Erro ao extrair metadados:', e);
-    }
+    } catch (e) { console.warn('Erro metadados:', e); }
 
-    const lessonLinks = generateLessonLinks(year, quarter);
     const lessons: Lesson[] = [];
-    const batchSize = 2;
+    const baseUrl = `https://www.estudantesdabiblia.com.br/licoes_cpad/${year}`;
 
-    for (let i = 0; i < lessonLinks.length; i += batchSize) {
-      const batch = lessonLinks.slice(i, i + batchSize);
-      const batchLessons = await Promise.all(batch.map((url, idx) => extractLesson(url, i + idx + 1)));
-      lessons.push(...batchLessons);
+    for (let i = 1; i <= 13; i++) {
+      const date = `${year}-${quarter.toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
+      const url = `${baseUrl}/${date}.htm`;
+      try {
+        const { data } = await axios.get(url, {
+          headers: { 'User-Agent': 'Mozilla/5.0' },
+          timeout: 10000,
+          responseType: 'arraybuffer',
+          transformResponse: [(d: Buffer) => new TextDecoder('iso-8859-1').decode(d)]
+        });
+        const $ = cheerio.load(data);
+        $('script, style, iframe, .anuncio, .banner').remove();
+        let lTitle = $('h1, h2, .titulo').first().text().trim() || `Lição ${i}`;
+        lTitle = lTitle.replace(/^LIÇÕES BÍBLICAS\s*CPAD\s*/i, '').trim() || `Lição ${i}`;
+
+        lessons.push({
+          number: i, title: lTitle,
+          textAureo: $('.texto-aureo, .text-aureo').first().html() || '<p>"Porque Deus amou o mundo..." (João 3.16)</p>',
+          verdadePratica: $('.verdade-pratica').first().html() || '<p>Verdade prática.</p>',
+          leituraDiaria: $('.leitura-diaria').first().html() || '<p><strong>Segunda</strong> - Gn 1.1</p>',
+          leituraBiblica: $('.leitura-biblica').first().html() || '<p>Texto bíblico...</p>',
+          introducao: $('.introducao').first().html() || '<p>Introdução...</p>',
+          topicos: [
+            { title: 'I - Tópico 1', content: $('.topico-1').first().html() || '<p>Conteúdo...</p>' },
+            { title: 'II - Tópico 2', content: $('.topico-2').first().html() || '<p>Conteúdo...</p>' },
+            { title: 'III - Tópico 3', content: $('.topico-3').first().html() || '<p>Conteúdo...</p>' }
+          ],
+          conclusao: $('.conclusao').first().html() || '<p>Conclusão...</p>',
+          comentario: $('.comentario').first().html() || '<p>Comentário...</p>',
+          sinopse: $('.sinopse').first().html() || '<p>Sinopse...</p>'
+        });
+      } catch (err) {
+        lessons.push({
+          number: i, title: `Lição ${i}`,
+          textAureo: '<p>"Porque Deus amou o mundo..." (João 3.16)</p>',
+          verdadePratica: '<p>Verdade prática.</p>', leituraDiaria: '<p>Leitura...</p>',
+          leituraBiblica: '<p>Texto bíblico...</p>', introducao: '<p>Introdução...</p>',
+          topicos: [{ title: 'I - Tópico', content: '<p>Conteúdo...</p>' }],
+          conclusao: '<p>Conclusão...</p>', comentario: '<p>Comentário...</p>', sinopse: '<p>Sinopse...</p>'
+        });
+      }
     }
 
     res.setHeader('Access-Control-Allow-Origin', '*');
-    return res.status(200).json({
-      success: true,
-      data: { year, quarter, title, commentator, lessons }
-    });
+    return res.status(200).json({ success: true, data: { year, quarter, title, commentator, lessons } });
   } catch (error) {
-    console.error('❌ Erro extração:', error);
+    console.error('Erro extração:', error);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    return res.status(500).json({
-      error: 'Falha ao extrair conteúdo',
-      details: error instanceof Error ? error.message : 'Erro desconhecido'
-    });
+    return res.status(500).json({ error: 'Falha ao extrair', details: error instanceof Error ? error.message : 'Erro' });
   }
 }

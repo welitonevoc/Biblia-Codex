@@ -24,7 +24,8 @@
       "Bash(tasklist)",
       "Bash(taskkill *)",
       "Bash(select-object *)",
-      "Bash(mkdir *)"
+      "Bash(mkdir *)",
+      "Bash(mv *)"
     ]
   },
   "$version": 3
