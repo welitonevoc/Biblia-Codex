@@ -238,7 +238,7 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       commentator: 'Comentarista: Elinaldo Renovato',
       color: 'from-amber-600 to-amber-800',
       icon: '📖',
-      coverImage: 'https://i.ibb.co/prW9Zjf4/L1.png',
+      coverImage: 'https://i.ibb.co/Gf6fWG0q/Capa2.jpg',
       lessons: [
         { number: 1, title: 'Abraão: Seu Chamado e Sua Jornada de Fé', date: 'Abril', text: 'O legado de Abraão...' },
         { number: 2, title: 'Isaque: O Filho da Promessa', date: 'Abril', text: 'O legado de Isaque...' },
