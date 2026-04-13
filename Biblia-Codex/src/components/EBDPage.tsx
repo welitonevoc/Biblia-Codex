@@ -409,17 +409,26 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
         {/* Grid de Capas dos Trimestres */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {quartersData.map((quarter, index) => (
-            <motion.div
-              key={quarter.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedQuarter(quarter)}
-              className="cursor-pointer group"
-            >
+{quartersData.map((quarter, index) => (
+    <motion.div
+      key={quarter.id}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      whileHover={{ scale: 1.05, y: -5 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={() => {
+        // Para o 1º Trimestre de 2026, mostrar diretamente o conteúdo da página.txt
+        if (quarter.id === '2026-q1') {
+          setMagazineUrl('/EBD/page.txt');
+          setMagazineHTML(null);
+          setShowDynamicBook(true);
+        } else {
+          setSelectedQuarter(quarter);
+        }
+      }}
+      className="cursor-pointer group"
+    >
               <div className={cn(
                 "relative aspect-[3/4] rounded-xl overflow-hidden shadow-lg",
                 quarter.coverImage ? "" : "bg-gradient-to-br",
