@@ -81,7 +81,7 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
       
       const initSqlJs = await import('sql.js');
       const SQL = await initSqlJs.default({
-        locateFile: () => '/sql-wasm.wasm'
+        locateFile: (file: string) => `https://sql.js.org/dist/${file}`
       });
       
       const db = new SQL.Database(dbData);
