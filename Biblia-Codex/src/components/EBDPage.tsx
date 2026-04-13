@@ -417,15 +417,22 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               transition={{ delay: index * 0.05 }}
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                if (quarter.id === '2026-q1') {
-                  setMagazineUrl('/EBD/page.txt');
-                  setMagazineHTML(null);
-                  setShowDynamicBook(true);
-                } else {
-                  setSelectedQuarter(quarter);
-                }
-              }}
+onClick={() => {
+        // Para o 1º Trimestre de 2026, mostrar diretamente o conteúdo da página.txt
+        if (quarter.id === '2026-q1') {
+          setMagazineUrl('/EBD/page.txt');
+          setMagazineHTML(null);
+          setShowDynamicBook(true);
+        } 
+        // Para o 2º Trimestre de 2026, mostrar diretamente o conteúdo da page2.txt
+        else if (quarter.id === '2026-q2') {
+          setMagazineUrl('/EBD/page2.txt');
+          setMagazineHTML(null);
+          setShowDynamicBook(true);
+        } else {
+          setSelectedQuarter(quarter);
+        }
+      }}
               className="cursor-pointer group"
             >
               <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-lg">
