@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { getSqlInstance } from '../BibleService';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
@@ -79,7 +80,6 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
       const zipData = await response.arrayBuffer();
       const dbData = await extractSqlFromZip(zipData);
       
-      const { getSqlInstance } = await import('../BibleService');
       const SQL = await getSqlInstance();
       
       const db = new SQL.Database(dbData);

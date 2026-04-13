@@ -13,7 +13,7 @@ const isWeb = typeof window !== 'undefined' && !(window as any).Capacitor?.isNat
 let sqlInstance: any = null;
 const dbCache = new Map<string, { db: any; schema: { table: string; bookCol: string; chapterCol: string; verseCol: string; textCol: string } }>();
 
-const getSqlInstance = async () => {
+export const getSqlInstance = async () => {
   if (!sqlInstance) {
     sqlInstance = await initSqlJs({
       locateFile: () => `/sql-wasm.wasm`
