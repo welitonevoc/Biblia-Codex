@@ -49,17 +49,16 @@ interface Quarter {
 }
 
 // ============ COMPONENTE DO LIVRO DINÂMICO (HTML PURO) ============
-const DynamicBook: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+const DynamicBook: React.FC<{ onBack: () => void; magazineUrl?: string }> = ({ onBack, magazineUrl }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [pageContent, setPageContent] = useState<string>('');
 
-  // Carregar o conteúdo do page.txt via fetch
+  // Carregar o conteúdo do HTML gerado
   useEffect(() => {
-    fetch('/EBD/page.txt')
+    const url = magazineUrl || '/EBD/page.txt';
+    fetch(url)
       .then(res => res.text())
       .then(html => {
-        setPageContent(html);
         if (iframeRef.current) {
           const iframe = iframeRef.current;
           const doc = iframe.contentDocument;
@@ -72,10 +71,10 @@ const DynamicBook: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         }
       })
       .catch(err => {
-        console.error('Erro ao carregar page.txt:', err);
+        console.error('Erro ao carregar revista:', err);
         setIsLoaded(true);
       });
-  }, []);
+  }, [magazineUrl]);
 
   return (
     <div className="h-full overflow-hidden bg-white relative">

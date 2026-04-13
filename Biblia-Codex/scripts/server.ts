@@ -3,7 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from "@google/genai";
-import { extractQuarterFromSumario } from './ebd-extractor';
+import { extractQuarterFromSumario, generateMagazineHTML } from './ebd-extractor';
 
 dotenv.config();
 
@@ -152,10 +152,19 @@ async function startServer() {
       console.log('🚀 Iniciando extração EBD:', sumarioUrl);
       const data = await extractQuarterFromSumario(sumarioUrl);
 
-      console.log('✅ Extração concluída com sucesso!');
+      // Gera o HTML completo no formato page.txt
+      const magazineHTML = generateMagazineHTML(data);
+
+      // Salva o HTML gerado na pasta public/EBD
+      const outputPath = path.join(process.cwd(), 'public', 'EBD', `extracted-${data.year}-q${data.quarter}.html`);
+      const fs = await import('fs');
+      fs.writeFileSync(outputPath, magazineHTML, 'utf-8');
+
+      console.log('✅ Extração concluída! HTML salvo em:', outputPath);
       res.json({
         success: true,
-        data
+        data,
+        magazineUrl: `/EBD/extracted-${data.year}-q${data.quarter}.html`
       });
     } catch (error) {
       console.error('❌ Erro na extração EBD:', error);
