@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Tag as TagIcon, Bookmark, ChevronRight, Hash, FolderOpen, Zap, Heart, Brain, Activity, LayoutDashboard, Link2, ArrowLeft, ArrowRight, RotateCcw, Trash2, Pencil, X, Check } from 'lucide-react';
+import { Tag as TagIcon, Bookmark, ChevronRight, Hash, FolderOpen, Zap, Heart, Brain, Activity, LayoutDashboard, Link2, ArrowLeft, ArrowRight, RotateCcw, Trash2, Pencil, X, Check, ExternalLink } from 'lucide-react';
 import { storage } from '../StorageService';
 import { Bookmark as BookmarkType, Tag } from '../types';
 import { TagService, PALETTE } from '../services/TagService';
+import { loadCrossReferences, getCrossReferences, hasCrossReference } from '../services/CrossReferenceService';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -35,6 +36,7 @@ export const TagsView: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+    loadCrossReferences();
   }, []);
 
   const fetchData = async () => {
@@ -272,6 +274,13 @@ export const TagsView: React.FC = () => {
                 </div>
               </div>
               <p className="bible-text !p-0 text-base leading-relaxed italic opacity-80 mb-4">"{b.text}"</p>
+              {hasCrossReference(b.bookId, b.chapter, b.verse) && (
+                <div className="flex items-center gap-2 mb-3 text-[10px] text-bible-accent/60">
+                  <Link2 className="w-3 h-3" />
+                  <span>Ref. cruzada disponível</span>
+                  <ExternalLink className="w-3 h-3" />
+                </div>
+              )}
               <div className="flex flex-wrap gap-2">
                 {b.tags.map(tId => {
                   const t = tags.find(x => x.id === tId);
