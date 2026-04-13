@@ -4,7 +4,7 @@ import { BibleService } from '../BibleService';
 import {
   Users, TreePine, List, X, Calendar, MapPin,
   BookOpen, ChevronRight, Search, Minus, Plus,
-  Maximize2, Heart, Star, GitBranch, User
+  Maximize2, Heart, Star, GitBranch, User, ArrowRight
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -46,8 +46,8 @@ interface GenealogyTreeProps {
 export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTreeProps) {
   const [people, setPeople] = useState<Person[]>([]);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [showTree, setShowTree] = useState(false);
   const [treeNodes, setTreeNodes] = useState<TreeNode[]>([]);
-  const [viewMode, setViewMode] = useState<'tree' | 'list'>('tree');
   const [loading, setLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -237,7 +237,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     }
 
     setTreeNodes(nodes);
-  }, [treeNodes, dimensions, centerNode, expandedNodes]);
+  }, [treeNodes, dimensions, centerNode, expandedNodes, showTree]);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -301,7 +301,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
             >
-              <GitBranch className="w-6 h-6 text-[var(--accent-bible)]" />
+              <Users className="w-6 h-6 text-[var(--accent-bible)]" />
             </motion.div>
           </div>
         </motion.div>
@@ -311,7 +311,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
           transition={{ delay: 0.3 }}
           className="mt-4 text-sm font-medium text-[var(--text-bible-muted)]"
         >
-          Construindo genealogia...
+          Carregando pessoas...
         </motion.p>
       </div>
     );
@@ -339,7 +339,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     );
   };
 
-  const renderNode = (node: TreeNode) => {
+  const renderTreeNode = (node: TreeNode) => {
     const isCenter = node.id === centerNode;
     const hasChildren = node.childIds.length > 0;
     const isExpanded = expandedNodes.has(node.id);
@@ -501,7 +501,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <GitBranch className="w-4 h-4" style={{ color: 'var(--accent-bible)' }} />
+                <Users className="w-4 h-4" style={{ color: 'var(--accent-bible)' }} />
                 <span 
                   className="text-[10px] font-bold uppercase tracking-widest"
                   style={{ color: 'var(--accent-bible)' }}
@@ -513,7 +513,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
                 className="text-lg font-bold"
                 style={{ color: 'var(--text-bible)', fontFamily: 'var(--font-display)' }}
               >
-                Árvore Genealógica
+                {showTree ? 'Árvore Genealógica' : 'Pessoas'}
               </h1>
               <div className="flex items-center gap-2 mt-1.5">
                 <div 
@@ -594,17 +594,22 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
               style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)' }}
             >
               {[
-                { id: 'tree' as const, icon: GitBranch, label: 'Mapa' },
-                { id: 'list' as const, icon: List, label: 'Lista' },
+                { id: false as const, icon: List, label: 'Lista' },
+                { id: true as const, icon: GitBranch, label: 'Árvore' },
               ].map((mode) => (
                 <motion.button
-                  key={mode.id}
+                  key={String(mode.id)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setViewMode(mode.id)}
+                  onClick={() => {
+                    setShowTree(mode.id);
+                    if (mode.id) {
+                      setSelectedPerson(null);
+                    }
+                  }}
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors',
-                    viewMode === mode.id
+                    showTree === mode.id
                       ? 'bg-[var(--accent-bible)] text-white'
                       : 'text-[var(--text-bible-muted)]'
                   )}
@@ -615,178 +620,186 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
               ))}
             </div>
 
-            <div 
-              className="flex gap-0.5 p-1 rounded-lg"
-              style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)' }}
-            >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setZoom(z => Math.max(0.3, z - 0.1))}
-                className="p-2 rounded-md transition-colors text-[var(--text-bible-muted)]"
+            {showTree && (
+              <div 
+                className="flex gap-0.5 p-1 rounded-lg"
+                style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)' }}
               >
-                <Minus className="w-3.5 h-3.5" />
-              </motion.button>
-              <span className="px-2 py-1.5 text-xs font-medium text-[var(--text-bible-muted)]">
-                {Math.round(zoom * 100)}%
-              </span>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setZoom(z => Math.min(2, z + 0.1))}
-                className="p-2 rounded-md transition-colors text-[var(--text-bible-muted)]"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setZoom(1)}
-                className="p-2 rounded-md transition-colors text-[var(--text-bible-muted)]"
-              >
-                <Maximize2 className="w-3.5 h-3.5" />
-              </motion.button>
-            </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setZoom(z => Math.max(0.3, z - 0.1))}
+                  className="p-2 rounded-md transition-colors text-[var(--text-bible-muted)]"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </motion.button>
+                <span className="px-2 py-1.5 text-xs font-medium text-[var(--text-bible-muted)]">
+                  {Math.round(zoom * 100)}%
+                </span>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setZoom(z => Math.min(2, z + 0.1))}
+                  className="p-2 rounded-md transition-colors text-[var(--text-bible-muted)]"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setZoom(1)}
+                  className="p-2 rounded-md transition-colors text-[var(--text-bible-muted)]"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </motion.button>
+              </div>
+            )}
           </div>
         </div>
       </motion.div>
 
       <div className="flex-1 overflow-hidden relative">
-        <AnimatePresence mode="wait">
-          {viewMode === 'tree' ? (
-            <motion.div
-              key="tree-view"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="w-full h-full"
-              onClick={() => setSelectedPerson(null)}
-            >
-              <svg
-                width={dimensions.width}
-                height={dimensions.height}
-                style={{
-                  transform: `scale(${zoom})`,
-                  transformOrigin: 'center center'
-                }}
-                className="w-full h-full"
-              >
-                <defs>
-                  <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="var(--accent-bible)" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="var(--accent-bible)" stopOpacity="0" />
-                  </radialGradient>
-                  <pattern id="gridLight" width="30" height="30" patternUnits="userSpaceOnUse">
-                    <circle cx="15" cy="15" r="1" fill="var(--border-bible)" opacity="0.3" />
-                  </pattern>
-                </defs>
-                
-                <rect width="100%" height="100%" fill="url(#gridLight)" opacity="0.5" />
-                
-                {treeNodes.filter(n => expandedNodes.has(n.id) || n.id === centerNode).map(renderNode)}
-                
-                {!treeNodes.length && (
-                  <text
-                    x={dimensions.width / 2}
-                    y={dimensions.height / 2}
-                    textAnchor="middle"
-                    fill="var(--text-bible-subtle)"
-                    fontSize="14"
-                  >
-                    Nenhuma genealogia encontrada
-                  </text>
-                )}
-              </svg>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="list-view"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="h-full overflow-y-auto p-4"
-            >
-              {filteredPeople.length === 0 ? (
-                <div className="text-center py-12">
-                  <User className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--text-bible-subtle)' }} />
-                  <p className="text-sm" style={{ color: 'var(--text-bible-muted)' }}>
-                    {searchQuery ? 'Nenhuma pessoa encontrada' : 'Nenhuma pessoa'}
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <AnimatePresence>
-                    {filteredPeople.map((person, idx) => {
-                      const isMale = person.gender === 'M';
-                      const isSelected = selectedPerson?.id === person.id;
-                      
-                      return (
-                        <motion.button
-                          key={person.id || idx}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ delay: idx * 0.03 }}
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
-                          onMouseEnter={() => setIsHoveringCard(person.id)}
-                          onMouseLeave={() => setIsHoveringCard(null)}
-                          onClick={() => setSelectedPerson(person)}
-                          className={cn(
-                            'relative flex items-center gap-3 p-3 rounded-xl text-left transition-all border'
-                          )}
-                          style={{
-                            backgroundColor: isSelected ? 'var(--surface-2)' : 'var(--surface-1)',
-                            borderColor: isSelected ? 'var(--accent-bible)' : 'var(--border-bible)',
+        {!showTree ? (
+          <motion.div
+            key="list-view"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="h-full overflow-y-auto p-4"
+          >
+            {filteredPeople.length === 0 ? (
+              <div className="text-center py-12">
+                <User className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--text-bible-subtle)' }} />
+                <p className="text-sm" style={{ color: 'var(--text-bible-muted)' }}>
+                  {searchQuery ? 'Nenhuma pessoa encontrada' : 'Nenhuma pessoa'}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <AnimatePresence>
+                  {filteredPeople.map((person, idx) => {
+                    const isMale = person.gender === 'M';
+                    const isSelected = selectedPerson?.id === person.id;
+                    
+                    return (
+                      <motion.button
+                        key={person.id || idx}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ delay: idx * 0.03 }}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        onMouseEnter={() => setIsHoveringCard(person.id)}
+                        onMouseLeave={() => setIsHoveringCard(null)}
+                        onClick={() => setSelectedPerson(person)}
+                        className={cn(
+                          'w-full flex items-center gap-3 p-4 rounded-xl text-left transition-all border'
+                        )}
+                        style={{
+                          backgroundColor: isSelected ? 'var(--surface-2)' : 'var(--surface-1)',
+                          borderColor: isSelected ? 'var(--accent-bible)' : 'var(--border-bible)',
+                        }}
+                      >
+                        <div 
+                          className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ 
+                            backgroundColor: isMale ? 'var(--accent-bible)' : '#8b5cf6',
+                            opacity: 0.15 
                           }}
                         >
-                          <div 
-                            className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                            style={{ 
-                              backgroundColor: isMale ? 'var(--accent-bible)' : '#8b5cf6',
-                              opacity: 0.15 
-                            }}
+                          <span 
+                            className="text-xl"
+                            style={{ color: isMale ? 'var(--accent-bible)' : '#8b5cf6' }}
                           >
-                            <span 
-                              className="text-base"
-                              style={{ color: isMale ? 'var(--accent-bible)' : '#8b5cf6' }}
+                            {isMale ? '♂' : '♀'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <h3 
+                            className="text-base font-semibold"
+                            style={{ color: 'var(--text-bible)' }}
+                          >
+                            {person.name}
+                          </h3>
+                          {(person.birthyear || person.deathyear) && (
+                            <p 
+                              className="text-xs mt-0.5"
+                              style={{ color: 'var(--text-bible-muted)' }}
                             >
-                              {isMale ? '♂' : '♀'}
-                            </span>
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <h3 
-                              className="text-sm font-medium truncate"
-                              style={{ color: 'var(--text-bible)' }}
+                              {person.birthyear || '?'} – {person.deathyear || '?'}
+                            </p>
+                          )}
+                          {person.verses && (
+                            <p 
+                              className="text-xs mt-1 truncate"
+                              style={{ color: 'var(--accent-bible)' }}
                             >
-                              {person.name}
-                            </h3>
-                            {(person.birthyear || person.deathyear) && (
-                              <p 
-                                className="text-xs mt-0.5"
-                                style={{ color: 'var(--text-bible-muted)' }}
-                              >
-                                {person.birthyear || '?'} – {person.deathyear || '?'}
-                              </p>
-                            )}
-                          </div>
-                          
-                          <ChevronRight 
-                            className="w-4 h-4 shrink-0" 
-                            style={{ color: 'var(--text-bible-subtle)' }} 
-                          />
-                        </motion.button>
-                      );
-                    })}
-                  </AnimatePresence>
-                </div>
+                              {person.verses.split(',').length} referência(s) bíblica(s)
+                            </p>
+                          )}
+                        </div>
+                        
+                        <ChevronRight 
+                          className="w-5 h-5 shrink-0" 
+                          style={{ color: 'var(--text-bible-subtle)' }} 
+                        />
+                      </motion.button>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="tree-view"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="w-full h-full"
+            onClick={() => setSelectedPerson(null)}
+          >
+            <svg
+              width={dimensions.width}
+              height={dimensions.height}
+              style={{
+                transform: `scale(${zoom})`,
+                transformOrigin: 'center center'
+              }}
+              className="w-full h-full"
+            >
+              <defs>
+                <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="var(--accent-bible)" stopOpacity="0.2" />
+                  <stop offset="100%" stopColor="var(--accent-bible)" stopOpacity="0" />
+                </radialGradient>
+                <pattern id="gridLight" width="30" height="30" patternUnits="userSpaceOnUse">
+                  <circle cx="15" cy="15" r="1" fill="var(--border-bible)" opacity="0.3" />
+                </pattern>
+              </defs>
+              
+              <rect width="100%" height="100%" fill="url(#gridLight)" opacity="0.5" />
+              
+              {treeNodes.filter(n => expandedNodes.has(n.id) || n.id === centerNode).map(renderTreeNode)}
+              
+              {!treeNodes.length && (
+                <text
+                  x={dimensions.width / 2}
+                  y={dimensions.height / 2}
+                  textAnchor="middle"
+                  fill="var(--text-bible-subtle)"
+                  fontSize="14"
+                >
+                  Nenhuma genealogia encontrada
+                </text>
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </svg>
+          </motion.div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -815,7 +828,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
             className="absolute bottom-0 left-0 right-0 z-50"
           >
             <div 
-              className="rounded-t-2xl p-5 max-h-[60vh] overflow-y-auto"
+              className="rounded-t-2xl p-5 max-h-[70vh] overflow-y-auto"
               style={{ 
                 backgroundColor: 'var(--bg-bible)',
                 borderTop: '1px solid var(--border-bible)'
@@ -831,7 +844,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
                   <div 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center border"
+                    className="w-14 h-14 rounded-xl flex items-center justify-center border"
                     style={{ 
                       backgroundColor: selectedPerson.gender === 'M' ? 'var(--accent-bible)' : '#8b5cf6',
                       opacity: 0.15,
@@ -839,7 +852,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
                     }}
                   >
                     <span 
-                      className="text-2xl"
+                      className="text-3xl"
                       style={{ color: selectedPerson.gender === 'M' ? 'var(--accent-bible)' : '#8b5cf6' }}
                     >
                       {selectedPerson.gender === 'M' ? '♂' : '♀'}
@@ -847,7 +860,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
                   </div>
                   <div>
                     <h2 
-                      className="text-lg font-bold"
+                      className="text-xl font-bold"
                       style={{ color: 'var(--text-bible)' }}
                     >
                       {selectedPerson.name}
@@ -944,30 +957,30 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
 
               {selectedPerson.verses && (
                 <div 
-                  className="p-3 rounded-xl border"
+                  className="p-4 rounded-xl border mb-4"
                   style={{ 
                     backgroundColor: 'var(--surface-1)',
                     borderColor: 'var(--border-bible)'
                   }}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <BookOpen className="w-3.5 h-3.5" style={{ color: 'var(--accent-bible)' }} />
+                  <div className="flex items-center gap-2 mb-3">
+                    <BookOpen className="w-4 h-4" style={{ color: 'var(--accent-bible)' }} />
                     <span 
-                      className="text-[10px] font-medium uppercase tracking-wider"
+                      className="text-xs font-bold uppercase tracking-wider"
                       style={{ color: 'var(--text-bible-muted)' }}
                     >
-                      Referências
+                      Referências Bíblicas
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {selectedPerson.verses.split(',').map((verse, idx) => (
                       <span
                         key={idx}
-                        className="px-2 py-1 rounded-md text-xs border"
+                        className="px-3 py-2 rounded-lg text-sm font-medium border"
                         style={{ 
                           backgroundColor: 'var(--surface-2)',
                           borderColor: 'var(--border-bible)',
-                          color: 'var(--text-bible-muted)'
+                          color: 'var(--text-bible)'
                         }}
                       >
                         {verse.trim()}
@@ -975,6 +988,25 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
                     ))}
                   </div>
                 </div>
+              )}
+
+              {!showTree && people.length > 1 && (
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowTree(true)}
+                  className="w-full flex items-center justify-center gap-2 p-4 rounded-xl font-semibold transition-all"
+                  style={{ 
+                    backgroundColor: 'var(--accent-bible)',
+                    color: 'white'
+                  }}
+                >
+                  <GitBranch className="w-5 h-5" />
+                  Ver Árvore Genealógica
+                </motion.button>
               )}
             </div>
           </motion.div>
