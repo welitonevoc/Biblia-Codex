@@ -68,8 +68,8 @@ const DynamicBook: React.FC<{ onBack: () => void; magazineUrl?: string; magazine
         }
       }
     } else {
-// Carrega de URL (servidor local)
-       const url = magazineUrl || '/public/EBD/page.txt';
+      // Carrega de URL (servidor local)
+      const url = magazineUrl || '/public/EBD/page.txt';
       fetch(url)
         .then(res => res.text())
         .then(html => {
@@ -135,6 +135,9 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [selectedQuarter, setSelectedQuarter] = useState<Quarter | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Quarter['lessons'][0] | null>(null);
   const [showDynamicBook, setShowDynamicBook] = useState(false);
+
+  // Detectar se está em produção (Vercel) ou desenvolvimento local
+  const isProduction = typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('biblia-codex'));
 
   // Carregar dados salvos ao inicializar
   useEffect(() => {
@@ -345,18 +348,20 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 Revista Completa
               </button>
             )}
-            <button
-              onClick={() => setShowExtractor(!showExtractor)}
-              className={cn(
-                "text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm",
-                showExtractor
-                  ? "bg-gray-600 hover:bg-gray-700"
-                  : "bg-blue-600 hover:bg-blue-700"
-              )}
-            >
-              <Globe className="h-4 w-4" />
-              {showExtractor ? 'Cancelar' : 'Importar da Web'}
-            </button>
+            {!isProduction && (
+              <button
+                onClick={() => setShowExtractor(!showExtractor)}
+                className={cn(
+                  "text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-sm",
+                  showExtractor
+                    ? "bg-gray-600 hover:bg-gray-700"
+                    : "bg-blue-600 hover:bg-blue-700"
+                )}
+              >
+                <Globe className="h-4 w-4" />
+                {showExtractor ? 'Cancelar' : 'Importar da Web'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -417,22 +422,22 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               transition={{ delay: index * 0.05 }}
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.95 }}
-onClick={() => {
-        // Para o 1º Trimestre de 2026, mostrar diretamente o conteúdo da página.txt
-        if (quarter.id === '2026-q1') {
-          setMagazineUrl('/public/EBD/page.txt');
-          setMagazineHTML(null);
-          setShowDynamicBook(true);
-        } 
-        // Para o 2º Trimestre de 2026, mostrar diretamente o conteúdo da page2.txt
-        else if (quarter.id === '2026-q2') {
-          setMagazineUrl('/public/EBD/page2.txt');
-          setMagazineHTML(null);
-          setShowDynamicBook(true);
-        } else {
-          setSelectedQuarter(quarter);
-        }
-      }}
+              onClick={() => {
+                // Para o 1º Trimestre de 2026, mostrar diretamente o conteúdo da página.txt
+                if (quarter.id === '2026-q1') {
+                  setMagazineUrl('/public/EBD/page.txt');
+                  setMagazineHTML(null);
+                  setShowDynamicBook(true);
+                }
+                // Para o 2º Trimestre de 2026, mostrar diretamente o conteúdo da page2.txt
+                else if (quarter.id === '2026-q2') {
+                  setMagazineUrl('/public/EBD/page2.txt');
+                  setMagazineHTML(null);
+                  setShowDynamicBook(true);
+                } else {
+                  setSelectedQuarter(quarter);
+                }
+              }}
               className="cursor-pointer group"
             >
               <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-lg">
