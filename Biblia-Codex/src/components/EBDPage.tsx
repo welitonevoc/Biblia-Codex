@@ -40,6 +40,7 @@ interface Quarter {
   commentator: string;
   color: string;
   icon: string;
+  coverImage?: string;
   lessons: Array<{
     number: number;
     title: string;
@@ -217,10 +218,11 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       year: 2026,
       quarter: 1,
       title: '1º Trimestre de 2026',
-      theme: 'Deus Trino e a Natureza Humana',
+      theme: 'A Santíssima Trindade',
       commentator: 'Comentarista: Douglas Baptista',
       color: 'from-blue-600 to-blue-800',
       icon: '✝️',
+      coverImage: 'https://i.ibb.co/Gf6fWG0q/Capa.jpg',
       lessons: [
         { number: 1, title: 'O Deus Trino e a Criação do Homem', date: 'Janeiro', text: 'Estudo sobre a Trindade na criação...' },
         { number: 2, title: 'O Deus Pai', date: 'Janeiro', text: 'Conhecemos a identidade, os atributos e a glória do Deus Pai...' },
@@ -418,12 +420,31 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             >
               <div className={cn(
                 "relative aspect-[3/4] rounded-xl overflow-hidden shadow-lg",
-                "bg-gradient-to-br", quarter.color
+                quarter.coverImage ? "" : "bg-gradient-to-br",
+                quarter.coverImage ? "" : quarter.color
               )}>
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent" />
+                {/* Capa da Revista (se disponível) */}
+                {quarter.coverImage && (
+                  <img
+                    src={quarter.coverImage}
+                    alt={quarter.theme}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                )}
+
+                {/* Overlay gradiente para legibilidade do texto */}
+                <div className={cn(
+                  "absolute inset-0",
+                  quarter.coverImage
+                    ? "bg-gradient-to-t from-black/90 via-black/40 to-transparent"
+                    : "bg-gradient-to-tr from-white/10 to-transparent"
+                )} />
+
                 <div className="relative h-full flex flex-col justify-between p-4 md:p-6 text-white">
                   <div>
-                    <div className="text-4xl md:text-5xl mb-2">{quarter.icon}</div>
+                    {!quarter.coverImage && (
+                      <div className="text-4xl md:text-5xl mb-2">{quarter.icon}</div>
+                    )}
                     <div className="text-xs md:text-sm font-medium opacity-90">{quarter.title}</div>
                   </div>
                   <div className="space-y-2">
