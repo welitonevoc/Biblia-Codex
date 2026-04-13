@@ -79,6 +79,79 @@ export interface StudyModule {
   path: string; // Changed from file
 }
 
+export type FootnoteType = 
+  | 'textual'      // Variantes textuais, traduções alternativas
+  | 'historical'   // Contexto histórico
+  | 'geographic'  // Localizações, mapas
+  | 'theological' // Doutrinas, conceitos
+  | 'chronological' // Datas, períodos
+  | 'application'; // Aplicação prática
+
+export interface Footnote {
+  id: string;
+  bookId: string;
+  chapter: number;
+  verse: number;
+  type: FootnoteType;
+  content: string;
+  references?: string[];
+  strongsNumber?: string;
+  author?: string;
+  source?: string;
+  language: 'pt' | 'en' | 'he' | 'gr';
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface FootnoteReference {
+  id: string;
+  footnoteId: string;
+  bookId: string;
+  chapter: number;
+  verseStart: number;
+  verseEnd?: number;
+}
+
+export interface StrongsEntry {
+  number: string;
+  language: 'hebrew' | 'greek';
+  word: string;
+  transliteration: string;
+  pronunciation: string;
+  definition: string;
+  etymology?: string;
+  compounds?: string[];
+  derivatives?: string[];
+}
+
+export interface Morphology {
+  strongsNumber: string;
+  language: 'hebrew' | 'greek';
+  partOfSpeech: string;
+  gender?: string;
+  number?: string;
+  person?: string;
+  tense?: string;
+  voice?: string;
+  mood?: string;
+  case?: string;
+  dialect?: string;
+}
+
+export interface CrossReferenceGroup {
+  id: string;
+  bookId: string;
+  chapter: number;
+  verse: number;
+  references: {
+    bookId: string;
+    chapter: number;
+    verse: number;
+    text?: string;
+    rank: number;
+  }[];
+}
+
 export type ModuleType = 'bible' | 'commentary' | 'dictionary' | 'xrefs' | 'book' | 'map' | 'devotional' | 'plan';
 
 export type DrawerContext = 'general' | 'bible' | 'search' | 'study';
