@@ -23,7 +23,8 @@
       "Bash(curl *)",
       "Bash(tasklist)",
       "Bash(taskkill *)",
-      "Bash(select-object *)"
+      "Bash(select-object *)",
+      "Bash(mkdir *)"
     ]
   },
   "$version": 3

@@ -506,33 +506,33 @@ export const BibleService = {
                          WHERE ${schema.textCol} LIKE ? 
                          LIMIT 100`;
 
-       const result = db.exec(sqlQuery, [sqlSearch]);
-       if (result.length > 0) {
-         return result[0].values.map((row: any[]) => {
-           const bookNum = Number(row[0]);
-           let bookMetadata;
+    const result = db.exec(sqlQuery, [sqlSearch]);
+    if (result.length > 0) {
+      return result[0].values.map((row: any[]) => {
+        const bookNum = Number(row[0]);
+        let bookMetadata;
 
-           // Heurística para detecção de sistema de numeração (MyBible utiliza 10, 20... Standard utiliza 1-66)
-           if ((schema as any).isMyBible || bookNum > 66) {
-             const stdId = BookNumberConverter.fromMyBible(bookNum);
-             bookMetadata = BIBLE_BOOKS.find(b => b.numericId === stdId);
-           } else {
-             bookMetadata = BIBLE_BOOKS.find(b => b.numericId === bookNum);
-           }
+        // Heurística para detecção de sistema de numeração (MyBible utiliza 10, 20... Standard utiliza 1-66)
+        if ((schema as any).isMyBible || bookNum > 66) {
+          const stdId = BookNumberConverter.fromMyBible(bookNum);
+          bookMetadata = BIBLE_BOOKS.find(b => b.numericId === stdId);
+        } else {
+          bookMetadata = BIBLE_BOOKS.find(b => b.numericId === bookNum);
+        }
 
-           return {
-             bookId: bookMetadata?.id || String(bookNum),
-             chapter: Number(row[1]),
-             verse: Number(row[2]),
-             text: row[3] as string,
-             isChapterHeader: Number(row[2]) === 0
-           };
-         });
-       } catch (error) {
-         console.error('Erro na busca:', error);
-       }
-       return [];
-     },
+        return {
+          bookId: bookMetadata?.id || String(bookNum),
+          chapter: Number(row[1]),
+          verse: Number(row[2]),
+          text: row[3] as string,
+          isChapterHeader: Number(row[2]) === 0
+        };
+       });
+     } catch (error) {
+       console.error('Erro na busca:', error);
+     }
+     return [];
+   },
 
     getFootnotes: async (bookId: string, chapter: number, verse: number): Promise<Footnote[]> => {
       try {
@@ -542,19 +542,18 @@ export const BibleService = {
           return footnotes;
         }
         
-        return getDefaultFootnotes(bookId, chapter, verse);
-      } catch (error) {
-        console.error('Erro ao buscar notas de rodapé:', error);
-        return [];
-      }
-    },
-  };
-}
+         return getDefaultFootnotes(bookId, chapter, verse);
+       } catch (error) {
+         console.error('Erro ao buscar notas de rodapé:', error);
+         return [];
+       }
+     },
+   };
 
-function getDefaultFootnotes(bookId: string, chapter: number, verse: number): Footnote[] {
-  const allDefaultFootnotes = getDefaultFootnotesData();
-  return allDefaultFootnotes.filter(f => f.bookId === bookId && f.chapter === chapter && f.verse === verse);
-}
+ function getDefaultFootnotes(bookId: string, chapter: number, verse: number): Footnote[] {
+   const allDefaultFootnotes = getDefaultFootnotesData();
+   return allDefaultFootnotes.filter(f => f.bookId === bookId && f.chapter === chapter && f.verse === verse);
+ }
 
 function getDefaultFootnotesData(): Footnote[] {
   return [
