@@ -115,6 +115,7 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState('');
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
+  const [magazineUrl, setMagazineUrl] = useState<string | null>(null);
   const [selectedQuarter, setSelectedQuarter] = useState<Quarter | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Quarter['lessons'][0] | null>(null);
   const [showDynamicBook, setShowDynamicBook] = useState(false);
@@ -154,6 +155,7 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
       if (result.success) {
         setExtractedData(result.data);
+        setMagazineUrl(result.magazineUrl || '/EBD/page.txt');
         localStorage.setItem('extracted_ebd_data', JSON.stringify(result.data));
         setShowExtractor(false);
         setSumarioUrl('');
@@ -180,7 +182,7 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
   // Se há dados extraídos e deve mostrar o livro dinâmico
   if (showDynamicBook) {
-    return <DynamicBook onBack={clearExtractedData} />;
+    return <DynamicBook onBack={clearExtractedData} magazineUrl={magazineUrl || undefined} />;
   }
 
   // Dados estáticos dos trimestres (1º Trimestre de 2026 com conteúdo real)
