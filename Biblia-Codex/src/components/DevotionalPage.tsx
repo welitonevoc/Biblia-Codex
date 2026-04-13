@@ -262,24 +262,30 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
 
       {selectedModule && !loading && (
         <>
-          <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border-bible)' }}>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-bible-muted)' }}>Calendário</h3>
-              <div className="flex items-center gap-1">
-                <button onClick={() => goToDay(currentDay - 1)} className="p-1 rounded hover:bg-[var(--surface-2)]">
-                  <ChevronLeft className="w-4 h-4" style={{ color: 'var(--text-bible-muted)' }} />
-                </button>
-                <span className="text-sm font-medium px-2" style={{ color: 'var(--text-bible)' }}>Dia {currentDay}</span>
-                <button onClick={() => goToDay(currentDay + 1)} className="p-1 rounded hover:bg-[var(--surface-2)]">
-                  <ChevronRight className="w-4 h-4" style={{ color: 'var(--text-bible-muted)' }} />
-                </button>
+          <div className="px-4 py-2 border-b overflow-x-auto" style={{ borderColor: 'var(--border-bible)' }}>
+            <div className="flex items-center gap-1">
+              <button onClick={() => goToDay(currentDay - 1)} className="p-1 rounded shrink-0 hover:bg-[var(--surface-2)]">
+                <ChevronLeft className="w-4 h-4" style={{ color: 'var(--text-bible-muted)' }} />
+              </button>
+              <div className="flex gap-1 overflow-x-auto py-1">
+                {devotions.slice(0, 365).map(d => (
+                  <button
+                    key={d.day}
+                    onClick={() => setCurrentDay(d.day)}
+                    className={cn(
+                      'w-8 h-8 rounded-lg text-xs font-medium shrink-0 transition-all',
+                      d.day === currentDay && 'bg-[var(--accent-bible)] text-white',
+                      d.day !== currentDay && 'bg-[var(--surface-2)] hover:bg-[var(--accent-bible)]/20',
+                      d.day !== currentDay && 'text-[var(--text-bible)]'
+                    )}
+                  >
+                    {d.day}
+                  </button>
+                ))}
               </div>
-            </div>
-            <div className="grid grid-cols-7 gap-1">
-              {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
-                <span key={i} className="text-[10px] text-center font-medium" style={{ color: 'var(--text-bible-subtle)' }}>{d}</span>
-              ))}
-              {renderCalendar()}
+              <button onClick={() => goToDay(currentDay + 1)} className="p-1 rounded shrink-0 hover:bg-[var(--surface-2)]">
+                <ChevronRight className="w-4 h-4" style={{ color: 'var(--text-bible-muted)' }} />
+              </button>
             </div>
           </div>
 
