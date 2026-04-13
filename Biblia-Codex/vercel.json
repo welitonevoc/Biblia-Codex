@@ -6,6 +6,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/ebd/extract",
+      "destination": "/api/ebd/extract.ts"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

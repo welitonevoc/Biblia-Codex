@@ -49,32 +49,46 @@ interface Quarter {
 }
 
 // ============ COMPONENTE DO LIVRO DINÂMICO (HTML PURO) ============
-const DynamicBook: React.FC<{ onBack: () => void; magazineUrl?: string }> = ({ onBack, magazineUrl }) => {
+const DynamicBook: React.FC<{ onBack: () => void; magazineUrl?: string; magazineHTML?: string }> = ({ onBack, magazineUrl, magazineHTML }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Carregar o conteúdo do HTML gerado
+  // Carregar o conteúdo do HTML gerado ou URL
   useEffect(() => {
-    const url = magazineUrl || '/EBD/page.txt';
-    fetch(url)
-      .then(res => res.text())
-      .then(html => {
-        if (iframeRef.current) {
-          const iframe = iframeRef.current;
-          const doc = iframe.contentDocument;
-          if (doc) {
-            doc.open();
-            doc.write(html);
-            doc.close();
-            setIsLoaded(true);
-          }
+    if (magazineHTML) {
+      // Usa HTML direto retornado pela Vercel
+      if (iframeRef.current) {
+        const doc = iframeRef.current.contentDocument;
+        if (doc) {
+          doc.open();
+          doc.write(magazineHTML);
+          doc.close();
+          setIsLoaded(true);
         }
-      })
-      .catch(err => {
-        console.error('Erro ao carregar revista:', err);
-        setIsLoaded(true);
-      });
-  }, [magazineUrl]);
+      }
+    } else {
+      // Carrega de URL (servidor local)
+      const url = magazineUrl || '/EBD/page.txt';
+      fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          if (iframeRef.current) {
+            const iframe = iframeRef.current;
+            const doc = iframe.contentDocument;
+            if (doc) {
+              doc.open();
+              doc.write(html);
+              doc.close();
+              setIsLoaded(true);
+            }
+          }
+        })
+        .catch(err => {
+          console.error('Erro ao carregar revista:', err);
+          setIsLoaded(true);
+        });
+    }
+  }, [magazineUrl, magazineHTML]);
 
   return (
     <div className="h-full overflow-hidden bg-white relative">
@@ -116,6 +130,7 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [loadingProgress, setLoadingProgress] = useState('');
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [magazineUrl, setMagazineUrl] = useState<string | null>(null);
+  const [magazineHTML, setMagazineHTML] = useState<string | null>(null);
   const [selectedQuarter, setSelectedQuarter] = useState<Quarter | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Quarter['lessons'][0] | null>(null);
   const [showDynamicBook, setShowDynamicBook] = useState(false);
@@ -143,7 +158,7 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     setLoadingProgress('Conectando ao servidor...');
 
     try {
-      // Usa o servidor local (mesma porta do Vite/server.ts)
+      // Tenta Vercel API (produção) ou servidor local (dev)
       const response = await fetch('/api/ebd/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -155,12 +170,20 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
       if (result.success) {
         setExtractedData(result.data);
-        setMagazineUrl(result.magazineUrl || '/EBD/page.txt');
         localStorage.setItem('extracted_ebd_data', JSON.stringify(result.data));
+
+        // Vercel retorna HTML direto, servidor local retorna URL
+        if (result.magazineHTML) {
+          setMagazineHTML(result.magazineHTML);
+          setMagazineUrl(null);
+        } else {
+          setMagazineUrl(result.magazineUrl || '/EBD/page.txt');
+          setMagazineHTML(null);
+        }
+
         setShowExtractor(false);
         setSumarioUrl('');
         setLoadingProgress('Extração concluída com sucesso!');
-        // Abre a revista dinamicamente
         setShowDynamicBook(true);
       } else {
         alert('Erro na extração: ' + (result.error || 'Erro desconhecido'));
@@ -176,13 +199,15 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
   const clearExtractedData = () => {
     setExtractedData(null);
+    setMagazineUrl(null);
+    setMagazineHTML(null);
     localStorage.removeItem('extracted_ebd_data');
     setShowDynamicBook(false);
   };
 
   // Se há dados extraídos e deve mostrar o livro dinâmico
   if (showDynamicBook) {
-    return <DynamicBook onBack={clearExtractedData} magazineUrl={magazineUrl || undefined} />;
+    return <DynamicBook onBack={clearExtractedData} magazineUrl={magazineUrl || undefined} magazineHTML={magazineHTML || undefined} />;
   }
 
   // Dados estáticos dos trimestres (1º Trimestre de 2026 com conteúdo real)
@@ -354,7 +379,7 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 placeholder="URL do sumário..."
                 value={sumarioUrl}
                 onChange={(e) => setSumarioUrl(e.target.value)}
-                className="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-400"
               />
               <button
                 onClick={handleExtract}
