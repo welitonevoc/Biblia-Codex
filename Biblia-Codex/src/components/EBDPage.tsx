@@ -50,7 +50,7 @@ interface Quarter {
 }
 
 // ============ COMPONENTE DO LIVRO DINÂMICO (HTML PURO) ============
-const DynamicBook: React.FC<{ onBack: () => void; magazineUrl?: string; magazineHTML?: string }> = ({ onBack, magazineUrl, magazineHTML }) => {
+const DynamicBook: React.FC<{ onBack: () => void; magazineUrl?: string; magazineHTML?: string; initialPageIndex?: number }> = ({ onBack, magazineUrl, magazineHTML, initialPageIndex }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -81,6 +81,27 @@ const DynamicBook: React.FC<{ onBack: () => void; magazineUrl?: string; magazine
               doc.write(html);
               doc.close();
               setIsLoaded(true);
+
+              // Navegar para página inicial se especificada
+              if (initialPageIndex) {
+                // Aguardar renderização do conteúdo
+                setTimeout(() => {
+                  try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                    if (iframeDoc && iframe.contentWindow) {
+                      // Chamar função showPage se existir no iframe
+                      const win = iframe.contentWindow as any;
+                      const showPageFn = win.showPage;
+                      if (typeof showPageFn === 'function') {
+                        showPageFn(initialPageIndex);
+                        console.log(`[DynamicBook] Navegado para página ${initialPageIndex}`);
+                      }
+                    }
+                  } catch (e) {
+                    console.warn('[DynamicBook] Não foi possível navegar para página:', e);
+                  }
+                }, 500);
+              }
             }
           }
         })
@@ -89,7 +110,7 @@ const DynamicBook: React.FC<{ onBack: () => void; magazineUrl?: string; magazine
           setIsLoaded(true);
         });
     }
-  }, [magazineUrl, magazineHTML]);
+  }, [magazineUrl, magazineHTML, initialPageIndex]);
 
   return (
     <div className="h-full overflow-hidden bg-white relative">
@@ -135,6 +156,7 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [selectedQuarter, setSelectedQuarter] = useState<Quarter | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Quarter['lessons'][0] | null>(null);
   const [showDynamicBook, setShowDynamicBook] = useState(false);
+  const [initialPageIndex, setInitialPageIndex] = useState<number | undefined>(undefined);
 
   // Detectar se está em produção (Vercel) ou desenvolvimento local
   const isProduction = typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('biblia-codex'));
@@ -205,13 +227,14 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     setExtractedData(null);
     setMagazineUrl(null);
     setMagazineHTML(null);
+    setInitialPageIndex(undefined);
     localStorage.removeItem('extracted_ebd_data');
     setShowDynamicBook(false);
   };
 
   // Se há dados extraídos e deve mostrar o livro dinâmico
   if (showDynamicBook) {
-    return <DynamicBook onBack={clearExtractedData} magazineUrl={magazineUrl || undefined} magazineHTML={magazineHTML || undefined} />;
+    return <DynamicBook onBack={clearExtractedData} magazineUrl={magazineUrl || undefined} magazineHTML={magazineHTML || undefined} initialPageIndex={initialPageIndex} />;
   }
 
   // Dados estáticos dos trimestres (1º Trimestre de 2026 com conteúdo real)
@@ -330,6 +353,12 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         quarter={selectedQuarter}
         onBack={() => setSelectedQuarter(null)}
         onSelectLesson={setSelectedLesson}
+        onOpenDynamicBook={(url, pageIndex) => {
+          setMagazineUrl(url);
+          setMagazineHTML(null);
+          setInitialPageIndex(pageIndex);
+          setShowDynamicBook(true);
+        }}
       />
     );
   }
@@ -514,9 +543,10 @@ interface QuarterViewProps {
   quarter: Quarter;
   onBack: () => void;
   onSelectLesson: (lesson: Quarter['lessons'][0]) => void;
+  onOpenDynamicBook?: (url: string, pageIndex?: number) => void;
 }
 
-const QuarterView: React.FC<QuarterViewProps> = ({ quarter, onBack, onSelectLesson }) => {
+const QuarterView: React.FC<QuarterViewProps> = ({ quarter, onBack, onSelectLesson, onOpenDynamicBook }) => {
   return (
     <div className="h-full overflow-auto bg-gradient-to-br from-bible-bg to-bible-surface p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
@@ -550,7 +580,17 @@ const QuarterView: React.FC<QuarterViewProps> = ({ quarter, onBack, onSelectLess
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
-              onClick={() => onSelectLesson(lesson)}
+              onClick={() => {
+                // Para 1º e 2º trimestre 2026, abrir revista completa na página da lição
+                if (onOpenDynamicBook && (quarter.id === '2026-q1' || quarter.id === '2026-q2')) {
+                  const url = quarter.id === '2026-q1' ? '/public/EBD/page.txt' : '/public/EBD/page2.txt';
+                  // Calcular página: lição 1 = page 3, lição 2 = page 4, etc.
+                  const pageIndex = lesson.number + 2; // +2 porque page 0=capa, page 1=editora, page 2=sumário
+                  onOpenDynamicBook(url, pageIndex);
+                } else {
+                  onSelectLesson(lesson);
+                }
+              }}
               className="w-full flex items-center gap-4 p-4 bg-bible-surface rounded-lg border border-bible-border hover:border-bible-accent/50 hover:bg-bible-surface/80 transition-all text-left group"
             >
               <div className={cn(
