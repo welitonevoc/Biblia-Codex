@@ -3,6 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from "@google/genai";
+import { extractQuarterFromSumario } from './ebd-extractor';
 
 dotenv.config();
 
@@ -137,6 +138,41 @@ async function startServer() {
       const message = error instanceof Error ? error.message : "Erro desconhecido";
       res.status(500).json({ error: "Falha ao buscar referências cruzadas", details: message });
     }
+  });
+
+  // EBD Extractor API - Extrai conteúdo das lições da EBD
+  app.post('/api/ebd/extract', async (req, res) => {
+    const { sumarioUrl } = req.body;
+
+    if (!sumarioUrl) {
+      return res.status(400).json({ error: 'URL do sumário é obrigatória' });
+    }
+
+    try {
+      console.log('🚀 Iniciando extração EBD:', sumarioUrl);
+      const data = await extractQuarterFromSumario(sumarioUrl);
+
+      console.log('✅ Extração concluída com sucesso!');
+      res.json({
+        success: true,
+        data
+      });
+    } catch (error) {
+      console.error('❌ Erro na extração EBD:', error);
+      const message = error instanceof Error ? error.message : 'Erro desconhecido';
+      res.status(500).json({
+        error: 'Falha ao extrair o conteúdo das lições',
+        details: message
+      });
+    }
+  });
+
+  // EBD Extractor API - GET para testar
+  app.get('/api/ebd/extract', (req, res) => {
+    res.json({
+      message: 'EBD Extractor API está funcionando!',
+      usage: 'Envie POST para /api/ebd/extract com { sumarioUrl: "URL" }'
+    });
   });
 
   // Vite middleware for development

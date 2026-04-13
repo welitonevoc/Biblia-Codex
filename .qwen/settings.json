@@ -18,7 +18,12 @@
       "Bash(git ls-remote *)",
       "Bash(dir *)",
       "Bash(timeout *)",
-      "WebFetch(minise.com.br)"
+      "WebFetch(minise.com.br)",
+      "Bash(npx *)",
+      "Bash(curl *)",
+      "Bash(tasklist)",
+      "Bash(taskkill *)",
+      "Bash(select-object *)"
     ]
   },
   "$version": 3

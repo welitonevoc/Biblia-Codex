@@ -21,6 +21,8 @@
     "@capacitor/core": "^6.0.0",
     "@capacitor/filesystem": "^6.0.0",
     "@google/genai": "^1.29.0",
+    "axios": "^1.15.0",
+    "cheerio": "^1.2.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "docx": "^9.6.1",

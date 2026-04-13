@@ -1,8 +1,9 @@
-import { Verse, BibleModule, DictionaryEntry } from './types';
+import { Verse, BibleModule, DictionaryEntry, Footnote, FootnoteType } from './types';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { GoogleGenAI } from "@google/genai";
 import { readModuleBinary } from './services/moduleService';
 import { BookNumberConverter } from './services/BookNumberConverter';
+import { footnoteService } from './services/FootnoteService';
 import initSqlJs from 'sql.js';
 
 const getAI = () => new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
@@ -493,44 +494,82 @@ export const BibleService = {
     return [];
   },
 
-  search: async (query: string, version?: BibleModule): Promise<Verse[]> => {
-    if (!version?.path || !query || query.length < 2) return [];
+   search: async (query: string, version?: BibleModule): Promise<Verse[]> => {
+     if (!version?.path || !query || query.length < 2) return [];
 
-    try {
-      const { db, schema } = await getDbInstance(version);
+     try {
+       const { db, schema } = await getDbInstance(version);
 
-      const sqlSearch = `%${query}%`;
-      const sqlQuery = `SELECT ${schema.bookCol}, ${schema.chapterCol}, ${schema.verseCol}, ${schema.textCol} 
-                        FROM ${schema.table} 
-                        WHERE ${schema.textCol} LIKE ? 
-                        LIMIT 100`;
+       const sqlSearch = `%${query}%`;
+       const sqlQuery = `SELECT ${schema.bookCol}, ${schema.chapterCol}, ${schema.verseCol}, ${schema.textCol} 
+                         FROM ${schema.table} 
+                         WHERE ${schema.textCol} LIKE ? 
+                         LIMIT 100`;
 
-      const result = db.exec(sqlQuery, [sqlSearch]);
-      if (result.length > 0) {
-        return result[0].values.map((row: any[]) => {
-          const bookNum = Number(row[0]);
-          let bookMetadata;
+       const result = db.exec(sqlQuery, [sqlSearch]);
+       if (result.length > 0) {
+         return result[0].values.map((row: any[]) => {
+           const bookNum = Number(row[0]);
+           let bookMetadata;
 
-          // Heurística para detecção de sistema de numeração (MyBible utiliza 10, 20... Standard utiliza 1-66)
-          if ((schema as any).isMyBible || bookNum > 66) {
-            const stdId = BookNumberConverter.fromMyBible(bookNum);
-            bookMetadata = BIBLE_BOOKS.find(b => b.numericId === stdId);
-          } else {
-            bookMetadata = BIBLE_BOOKS.find(b => b.numericId === bookNum);
-          }
+           // Heurística para detecção de sistema de numeração (MyBible utiliza 10, 20... Standard utiliza 1-66)
+           if ((schema as any).isMyBible || bookNum > 66) {
+             const stdId = BookNumberConverter.fromMyBible(bookNum);
+             bookMetadata = BIBLE_BOOKS.find(b => b.numericId === stdId);
+           } else {
+             bookMetadata = BIBLE_BOOKS.find(b => b.numericId === bookNum);
+           }
 
-          return {
-            bookId: bookMetadata?.id || String(bookNum),
-            chapter: Number(row[1]),
-            verse: Number(row[2]),
-            text: row[3] as string,
-            isChapterHeader: Number(row[2]) === 0
-          };
-        });
+           return {
+             bookId: bookMetadata?.id || String(bookNum),
+             chapter: Number(row[1]),
+             verse: Number(row[2]),
+             text: row[3] as string,
+             isChapterHeader: Number(row[2]) === 0
+           };
+         });
+       } catch (error) {
+         console.error('Erro na busca:', error);
+       }
+       return [];
+     },
+
+    getFootnotes: async (bookId: string, chapter: number, verse: number): Promise<Footnote[]> => {
+      try {
+        const footnotes = await footnoteService.getFootnotesForVerse(bookId, chapter, verse);
+        
+        if (footnotes.length > 0) {
+          return footnotes;
+        }
+        
+        return getDefaultFootnotes(bookId, chapter, verse);
+      } catch (error) {
+        console.error('Erro ao buscar notas de rodapé:', error);
+        return [];
       }
-    } catch (error) {
-      console.error('Erro na busca:', error);
+    },
+  };
+}
+
+function getDefaultFootnotes(bookId: string, chapter: number, verse: number): Footnote[] {
+  const allDefaultFootnotes = getDefaultFootnotesData();
+  return allDefaultFootnotes.filter(f => f.bookId === bookId && f.chapter === chapter && f.verse === verse);
+}
+
+function getDefaultFootnotesData(): Footnote[] {
+  return [
+    {
+      id: 'default-jn316-1',
+      bookId: 'JHN',
+      chapter: 3,
+      verse: 16,
+      type: 'theological' as FootnoteType,
+      content: 'Este é o versículo mais conhecido da Bíblia. O termo "kosmos" refere-se à totalidade da criação material, não apenas ao planeta Terra. A palavra "único" (monogenes) enfatiza a singularidade de Jesus como o Filho unigênito de Deus.',
+      references: ['Rm 3:24', 'Ef 1:7', '1Jo 4:9'],
+      language: 'pt',
+      source: 'Bible de Estudo NAA',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     }
-    return [];
-  },
-};
+  ];
+}
