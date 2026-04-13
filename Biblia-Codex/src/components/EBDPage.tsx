@@ -238,7 +238,7 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       commentator: 'Comentarista: Elinaldo Renovato',
       color: 'from-amber-600 to-amber-800',
       icon: '📖',
-      coverImage: 'https://i.ibb.co/Gf6fWG0q/Capa.jpg',
+      coverImage: 'https://i.ibb.co/prW9Zjf4/L1.png',
       lessons: [
         { number: 1, title: 'Abraão: Seu Chamado e Sua Jornada de Fé', date: 'Abril', text: 'O legado de Abraão...' },
         { number: 2, title: 'Isaque: O Filho da Promessa', date: 'Abril', text: 'O legado de Isaque...' },
@@ -409,67 +409,60 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
         {/* Grid de Capas dos Trimestres */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-{quartersData.map((quarter, index) => (
-    <motion.div
-      key={quarter.id}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      whileHover={{ scale: 1.05, y: -5 }}
-      whileTap={{ scale: 0.95 }}
-      onClick={() => {
-        // Para o 1º Trimestre de 2026, mostrar diretamente o conteúdo da página.txt
-        if (quarter.id === '2026-q1') {
-          setMagazineUrl('/EBD/page.txt');
-          setMagazineHTML(null);
-          setShowDynamicBook(true);
-        } else {
-          setSelectedQuarter(quarter);
-        }
-      }}
-      className="cursor-pointer group"
-    >
-              <div className={cn(
-                "relative aspect-[3/4] rounded-xl overflow-hidden shadow-lg",
-                quarter.coverImage ? "" : "bg-gradient-to-br",
-                quarter.coverImage ? "" : quarter.color
-              )}>
-                {/* Capa da Revista (se disponível) */}
-                {quarter.coverImage && (
-                  <img
-                    src={quarter.coverImage}
-                    alt={quarter.theme}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                )}
-
-                {/* Overlay gradiente para legibilidade do texto */}
-                <div className={cn(
-                  "absolute inset-0",
-                  quarter.coverImage
-                    ? "bg-gradient-to-t from-black/90 via-black/40 to-transparent"
-                    : "bg-gradient-to-tr from-white/10 to-transparent"
-                )} />
-
-                <div className="relative h-full flex flex-col justify-between p-4 md:p-6 text-white">
-                  <div>
-                    {!quarter.coverImage && (
-                      <div className="text-4xl md:text-5xl mb-2">{quarter.icon}</div>
-                    )}
-                    <div className="text-xs md:text-sm font-medium opacity-90">{quarter.title}</div>
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-base md:text-lg font-bold leading-tight">{quarter.theme}</h3>
-                    <p className="text-xs opacity-80">{quarter.commentator}</p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-xs opacity-80">
-                      <BookOpen className="h-3 w-3" />
-                      <span>{quarter.lessons.length} lições</span>
+          {quartersData.map((quarter, index) => (
+            <motion.div
+              key={quarter.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                if (quarter.id === '2026-q1') {
+                  setMagazineUrl('/EBD/page.txt');
+                  setMagazineHTML(null);
+                  setShowDynamicBook(true);
+                } else {
+                  setSelectedQuarter(quarter);
+                }
+              }}
+              className="cursor-pointer group"
+            >
+              <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-lg">
+                {quarter.coverImage ? (
+                  <>
+                    <img src={quarter.coverImage} alt={quarter.theme} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between text-white">
+                      <div className="flex items-center gap-1 text-xs">
+                        <BookOpen className="h-3 w-3" />
+                        <span className="font-semibold drop-shadow-lg">{quarter.lessons.length} lições</span>
+                      </div>
+                      <ChevronRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
-                    <ChevronRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </>
+                ) : (
+                  <div className={cn("h-full bg-gradient-to-br", quarter.color)}>
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent" />
+                    <div className="relative h-full flex flex-col justify-between p-4 md:p-6 text-white">
+                      <div>
+                        <div className="text-4xl md:text-5xl mb-2">{quarter.icon}</div>
+                        <div className="text-xs md:text-sm font-medium opacity-90">{quarter.title}</div>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-base md:text-lg font-bold leading-tight">{quarter.theme}</h3>
+                        <p className="text-xs opacity-80">{quarter.commentator}</p>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-xs opacity-80">
+                          <BookOpen className="h-3 w-3" />
+                          <span>{quarter.lessons.length} lições</span>
+                        </div>
+                        <ChevronRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="absolute inset-2 border-2 border-white/20 rounded-lg pointer-events-none" />
               </div>
             </motion.div>
