@@ -104,6 +104,7 @@ export const Reader: React.FC<ReaderProps> = ({
 
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     if (!loading && targetVerse && verseRefs.current[targetVerse]) {
       verseRefs.current[targetVerse]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setSelectedVerses([targetVerse]);
@@ -112,6 +113,7 @@ export const Reader: React.FC<ReaderProps> = ({
   }, [loading, targetVerse]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     setSelectedBookId(book.id);
   }, [book.id, chapter]);
 
@@ -362,6 +364,14 @@ export const Reader: React.FC<ReaderProps> = ({
     };
   };
 
+  const processedVerses = useMemo(() => {
+    if (!verses || verses.length === 0) return [];
+    return verses.map((v) => {
+      const { headingsHtml, bodyHtml, parsedHtml } = splitVerseHtml(v.text, v.verse, v.isChapterHeader);
+      return { verse: v, headingsHtml, bodyHtml, parsedHtml };
+    });
+  }, [verses]);
+
   const handleLinkClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     const anchor = target.closest('a');
@@ -464,10 +474,7 @@ export const Reader: React.FC<ReaderProps> = ({
               fontFamily: 'var(--font-bible-family)'
             }}
           >
-            {useMemo(() => verses.map((v) => {
-              const { headingsHtml, bodyHtml, parsedHtml } = splitVerseHtml(v.text, v.verse, v.isChapterHeader);
-              return { verse: v, headingsHtml, bodyHtml, parsedHtml };
-            }), [verses]).map(({ verse: v, headingsHtml, bodyHtml, parsedHtml }) => {
+            {processedVerses.map(({ verse: v, headingsHtml, bodyHtml, parsedHtml }) => {
               const bookmark = isBookmarked(v.verse);
               const showHighlight = settings.visualResources.highlights && bookmark;
               const isChapterHeader = v.isChapterHeader || v.verse === 0;
@@ -476,7 +483,7 @@ export const Reader: React.FC<ReaderProps> = ({
 
               return (
                 <div
-                  key={`${v.verse}-${v.text.slice(0, 40)}`}
+                  key={`verse-${book.id}-${chapter}-${v.verse}`}
                   ref={(el) => { verseRefs.current[v.verse] = el; }}
                   className={cn(
                     "group relative",

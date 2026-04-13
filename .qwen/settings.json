@@ -16,7 +16,8 @@
       "Bash(test *)",
       "Bash(git log *)",
       "Bash(git ls-remote *)",
-      "Bash(dir *)"
+      "Bash(dir *)",
+      "Bash(timeout *)"
     ]
   },
   "$version": 3

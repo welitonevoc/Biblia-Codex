@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Tag as TagIcon, Bookmark, ChevronRight, Hash, FolderOpen, Zap, Heart, Brain, Activity, LayoutDashboard, Link2, ArrowLeft, ArrowRight, RotateCcw, Trash2, Pencil, X, Check } from 'lucide-react';
+import { Tag as TagIcon, Bookmark, ChevronRight, Hash, FolderOpen, Zap, Heart, Brain, Activity, LayoutDashboard, Link2, ArrowLeft, ArrowRight, RotateCcw, Trash2, Pencil, X, Check, ExternalLink } from 'lucide-react';
 import { storage } from '../StorageService';
 import { Bookmark as BookmarkType, Tag } from '../types';
 import { TagService, PALETTE } from '../services/TagService';
+import { loadCrossReferences, getCrossReferences, hasCrossReference } from '../services/CrossReferenceService';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -24,7 +25,7 @@ export const TagsView: React.FC = () => {
   const [newTagName, setNewTagName] = useState('');
   const [tagMode, setTagMode] = useState<'auto' | 'manual'>('auto');
   const [selectedPaletteIdx, setSelectedPaletteIdx] = useState(0);
-  const [currentAutoColor, setCurrentAutoColor] = useState(TagService.generateColor());
+  const [currentAutoColor, setCurrentAutoColor] = useState(() => ({ dot: '#8b5cf6', bg: '#f3e8ff', tc: '#7c3aed' }));
 
   // For Chain View
   const [chainIndex, setChainIndex] = useState(0);
@@ -35,6 +36,7 @@ export const TagsView: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+    loadCrossReferences();
   }, []);
 
   const fetchData = async () => {
@@ -96,7 +98,12 @@ export const TagsView: React.FC = () => {
 
   const filteredBookmarks = useMemo(() => {
     if (!selectedTagId) return bookmarks;
-    return bookmarks.filter(b => b.tags?.includes(selectedTagId));
+    const userBookmarks = bookmarks.filter(b => b.tags?.includes(selectedTagId));
+    
+    const crossRefTags = getTagsForVerse('', 0, 0);
+    if (crossRefTags.length === 0) return userBookmarks;
+    
+    return userBookmarks;
   }, [bookmarks, selectedTagId]);
 
   const activeTag = useMemo(() => tags.find(t => t.id === selectedTagId), [tags, selectedTagId]);
@@ -146,7 +153,12 @@ export const TagsView: React.FC = () => {
                 <span className="font-medium truncate">#{tag.name}</span>
               </button>
               <div className="flex items-center space-x-1 shrink-0">
-                <span className="text-[10px] opacity-40">{bookmarks.filter(b => b.tags?.includes(tag.id)).length}</span>
+                <span className="text-[10px] opacity-40">
+                  {(() => {
+                    const userCount = bookmarks.filter(b => b.tags?.includes(tag.id)).length;
+                    return userCount;
+                  })()}
+                </span>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDeleteTag(tag.id); }}
                   className="p-1 rounded opacity-0 group-hover/item:opacity-50 hover:!opacity-100 hover:bg-red-500/10 hover:text-red-500 transition-all"
@@ -240,7 +252,7 @@ export const TagsView: React.FC = () => {
         </span>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 overflow-y-auto pb-24" style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
         {filteredBookmarks.length === 0 ? (
           <div className="py-24 text-center opacity-20 flex flex-col items-center">
             <TagIcon className="w-16 h-16 mb-4" />
@@ -272,6 +284,13 @@ export const TagsView: React.FC = () => {
                 </div>
               </div>
               <p className="bible-text !p-0 text-base leading-relaxed italic opacity-80 mb-4">"{b.text}"</p>
+              {hasCrossReference(b.bookId, b.chapter, b.verse) && (
+                <div className="flex items-center gap-2 mb-3 text-[10px] text-bible-accent/60">
+                  <Link2 className="w-3 h-3" />
+                  <span>Ref. cruzada disponível</span>
+                  <ExternalLink className="w-3 h-3" />
+                </div>
+              )}
               <div className="flex flex-wrap gap-2">
                 {b.tags.map(tId => {
                   const t = tags.find(x => x.id === tId);

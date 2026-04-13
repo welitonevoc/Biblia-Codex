@@ -22,9 +22,10 @@ import { DictionaryView } from './components/DictionaryView';
 import { ModuleManagement } from './components/ModuleManagement';
 import { TagsView } from './components/TagsView';
 import { StudyToolsPanel } from './components/StudyToolsPanel';
-import { Devotional } from './components/Devotional';
+import { DevotionalPage } from './components/DevotionalPage';
 import { ReadingPlans } from './components/ReadingPlans';
 import { MapsPage } from './components/MapsPage';
+import { XRefsPage } from './components/XRefsPage';
 import { SearchView } from './components/SearchView';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { Book, Verse } from './types';
@@ -57,11 +58,12 @@ function AppContent() {
   const [isStudyOpen, setIsStudyOpen] = useState(false);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [selectedVersesForStudy, setSelectedVersesForStudy] = useState<{ verse: number, text: string }[]>([]);
-  const [showOnboarding, setShowOnboarding] = useState(!localStorage.getItem('codex-onboarded'));
-  const [showPermissionRequest, setShowPermissionRequest] = useState(false);
-  const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
-  const [hasAudioSupport, setHasAudioSupport] = useState(false);
-  const [readingMode, setReadingMode] = useState<'text' | 'audio' | 'both'>('text');
+const [showOnboarding, setShowOnboarding] = useState(true);
+
+  useEffect(() => {
+    const hasOnboarded = localStorage.getItem('codex-onboarded');
+    if (!hasOnboarded) setShowOnboarding(true);
+  }, []);
 
   // Verificar permissões após onboarding
   useEffect(() => {
@@ -94,6 +96,14 @@ function AppContent() {
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [toolVerse, setToolVerse] = useState<Verse | null>(null);
   const [toolType, setToolType] = useState<'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places'>('commentary');
+
+  // Audio State
+  const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
+  const [hasAudioSupport, setHasAudioSupport] = useState(false);
+  const [readingMode, setReadingMode] = useState<'text' | 'audio' | 'both'>('text');
+
+  // Permission State
+  const [showPermissionRequest, setShowPermissionRequest] = useState(false);
 
   const handleSelect = (book: Book, chapter: number, verse?: number) => {
     setCurrentBook(book);
@@ -276,7 +286,7 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <Devotional onNavigate={(bookId, chapter, verse) => {
+                <DevotionalPage onNavigate={(bookId, chapter, verse) => {
                   const book = BIBLE_BOOKS.find(b => b.id === bookId);
                   if (book) handleSelect(book, chapter, verse);
                 }} />
@@ -320,6 +330,20 @@ function AppContent() {
                 className="h-full"
               >
                 <MapsPage onNavigate={(bookId, chapter, verse) => {
+                  const book = BIBLE_BOOKS.find(b => b.id === bookId);
+                  if (book) handleSelect(book, chapter, verse);
+                }} />
+              </motion.div>
+            )}
+            {activeTab === 'xrefs' && (
+              <motion.div
+                key="xrefs"
+                initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                animate={{ opacity: 1 }}
+                exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                className="h-full"
+              >
+                <XRefsPage onNavigate={(bookId, chapter, verse) => {
                   const book = BIBLE_BOOKS.find(b => b.id === bookId);
                   if (book) handleSelect(book, chapter, verse);
                 }} />

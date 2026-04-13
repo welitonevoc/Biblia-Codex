@@ -76,44 +76,144 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     onComplete();
   };
 
+  const handleSkipAll = () => {
+    try {
+      localStorage.setItem('hasLaunched', 'true');
+    } catch (err) {
+      console.error('Erro ao salvar hasLaunched:', err);
+    }
+    onComplete();
+  };
+
   return (
     <div className="fixed inset-0 bg-bible-bg z-[500] flex flex-col overflow-auto">
-      {/* Progress Bar */}
-      <div className="flex gap-1 px-4 sm:px-6 pt-8 sm:pt-12 pb-6 sm:pb-8">
-        {Array.from({ length: totalSteps }).map((_, i) => (
-          <div
-            key={i}
-            className={`h-1 flex-1 rounded-full transition-all duration-500 ${i <= step ? 'bg-bible-accent' : 'bg-bible-accent/10'
-              }`}
-          />
-        ))}
+      {/* Header com Progress Bar e Skip */}
+      <div className="flex items-center px-4 sm:px-6 pt-8 sm:pt-12 pb-6 sm:pb-8">
+        <div className="flex-1 flex gap-1 mr-4">
+          {Array.from({ length: totalSteps }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-1 flex-1 rounded-full transition-all duration-500 ${i <= step ? 'bg-bible-accent' : 'bg-bible-accent/10'
+                }`}
+            />
+          ))}
+        </div>
+        <button
+          onClick={handleSkipAll}
+          className="ui-text text-xs font-bold uppercase tracking-widest opacity-40 hover:opacity-80 transition-opacity whitespace-nowrap"
+        >
+          Pular
+        </button>
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div 
+        <div
           ref={scrollRef}
           onScroll={handleScroll}
           className="flex-1 flex overflow-x-auto snap-x snap-mandatory overflow-y-auto"
         >
-          {/* Passo 0: Boas-vindas */}
-          <section className="flex-shrink-0 w-full snap-start flex flex-col items-center justify-center p-6 text-center space-y-8 select-none">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-bible-accent rounded-[26px] sm:rounded-[32px] flex items-center justify-center text-bible-bg shadow-2xl shadow-bible-accent/20 transition-transform active:scale-95">
-              <BookOpen className="w-12 h-12" />
+          {/* Passo 0: Boas-vindas / Funcionalidades */}
+          <section className="flex-shrink-0 w-full snap-start flex flex-col items-center p-6 text-center select-none overflow-y-auto">
+            {/* Header com logo */}
+            <div className="pt-4 sm:pt-8 space-y-6 mb-8">
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", duration: 0.8, delay: 0.2 }}
+                className="w-20 h-20 sm:w-24 sm:h-24 bg-bible-accent rounded-[26px] sm:rounded-[32px] flex items-center justify-center text-bible-bg shadow-2xl shadow-bible-accent/20 mx-auto"
+              >
+                <BookOpen className="w-12 h-12" />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="space-y-2 max-w-xs mx-auto"
+              >
+                <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-tight">Bíblia Codex</h1>
+                <p className="ui-text opacity-60 leading-relaxed text-base sm:text-lg">
+                  Tudo que você precisa para sua jornada espiritual
+                </p>
+              </motion.div>
             </div>
-            <div className="space-y-4 max-w-xs mx-auto">
-              <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-tight">Bíblia Codex</h1>
-              <p className="ui-text opacity-60 leading-relaxed text-base sm:text-lg">
-                A Bíblia no seu ritmo.<br />Um versículo por vez, um dia de cada vez.
-              </p>
+
+            {/* Cards de Funcionalidades */}
+            <div className="w-full max-w-sm space-y-4 mb-8">
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 }}
+                className="bg-bible-accent/5 border border-bible-accent/10 rounded-3xl p-5 flex items-center space-x-4 text-left"
+              >
+                <div className="w-14 h-14 bg-bible-accent/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="w-7 h-7 text-bible-accent" />
+                </div>
+                <div>
+                  <div className="font-display font-bold text-base">Leitura Diária</div>
+                  <div className="ui-text text-xs opacity-50">Versículo do dia com plano personalizado</div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7 }}
+                className="bg-bible-accent/5 border border-bible-accent/10 rounded-3xl p-5 flex items-center space-x-4 text-left"
+              >
+                <div className="w-14 h-14 bg-bible-accent/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <Target className="w-7 h-7 text-bible-accent" />
+                </div>
+                <div>
+                  <div className="font-display font-bold text-base">Planos Temáticos</div>
+                  <div className="ui-text text-xs opacity-50">Devocionais por tema e objetivo</div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 }}
+                className="bg-bible-accent/5 border border-bible-accent/10 rounded-3xl p-5 flex items-center space-x-4 text-left"
+              >
+                <div className="w-14 h-14 bg-bible-accent/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <Bell className="w-7 h-7 text-bible-accent" />
+                </div>
+                <div>
+                  <div className="font-display font-bold text-base">Lembretes Inteligentes</div>
+                  <div className="ui-text text-xs opacity-50">Notificações no seu melhor horário</div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.9 }}
+                className="bg-bible-accent/5 border border-bible-accent/10 rounded-3xl p-5 flex items-center space-x-4 text-left"
+              >
+                <div className="w-14 h-14 bg-bible-accent/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-7 h-7 text-bible-accent" />
+                </div>
+                <div>
+                  <div className="font-display font-bold text-base">Reflexão Diária</div>
+                  <div className="ui-text text-xs opacity-50">Espaço para meditar e anotar</div>
+                </div>
+              </motion.div>
             </div>
-            <div className="w-full max-w-xs pt-8 space-y-4">
+
+            {/* Botões de Ação */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+              className="w-full max-w-xs pb-8 space-y-4"
+            >
               <button onClick={() => setStep(1)} className="w-full bg-bible-accent text-bible-bg py-5 rounded-2xl font-bold ui-text tracking-widest uppercase text-xs shadow-xl shadow-bible-accent/20">
                 Começar minha jornada
               </button>
               <button onClick={() => setStep(1)} className="w-full border border-bible-accent/20 py-5 rounded-2xl font-bold ui-text tracking-widest uppercase text-xs opacity-60">
                 Já tenho uma conta
               </button>
-            </div>
+            </motion.div>
           </section>
 
           {/* Passo 1: Objetivo */}
@@ -145,6 +245,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
               <button onClick={() => setStep(2)} className="w-full bg-bible-accent text-bible-bg py-5 rounded-2xl font-bold ui-text tracking-widest uppercase text-xs shadow-xl shadow-bible-accent/20">
                 Continuar
               </button>
+              <button onClick={() => setStep(5)} className="w-full ui-text text-xs font-bold uppercase tracking-widest opacity-40 text-center">
+                Pular
+              </button>
             </div>
           </section>
 
@@ -170,6 +273,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             <div className="pt-8 space-y-4">
               <button onClick={() => setStep(3)} className="w-full bg-bible-accent text-bible-bg py-5 rounded-2xl font-bold ui-text tracking-widest uppercase text-xs shadow-xl shadow-bible-accent/20">
                 Continuar
+              </button>
+              <button onClick={() => setStep(5)} className="w-full ui-text text-xs font-bold uppercase tracking-widest opacity-40 text-center">
+                Pular
               </button>
             </div>
           </section>
@@ -205,6 +311,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
               <button onClick={() => setStep(4)} className="w-full ui-text text-xs font-bold uppercase tracking-widest opacity-40 text-center">
                 Agora não
               </button>
+              <button onClick={() => setStep(5)} className="w-full ui-text text-xs font-bold uppercase tracking-widest opacity-40 text-center">
+                Pular
+              </button>
             </div>
           </section>
 
@@ -225,6 +334,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             </div>
             <button onClick={() => setStep(5)} className="w-full bg-bible-accent text-bible-bg py-5 rounded-2xl font-bold ui-text tracking-widest uppercase text-xs shadow-xl shadow-bible-accent/20">
               Iniciar este plano
+            </button>
+            <button onClick={() => setStep(5)} className="w-full ui-text text-xs font-bold uppercase tracking-widest opacity-40 text-center">
+              Pular
             </button>
           </section>
 

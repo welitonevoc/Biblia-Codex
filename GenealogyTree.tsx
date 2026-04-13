@@ -1,0 +1,936 @@
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { BibleService } from '../BibleService';
+import {
+  Users, TreePine, List, X, Calendar, MapPin,
+  BookOpen, ChevronRight, Search, Sparkles,
+  Star, Heart, Crown, Scroll, Zap, ZoomIn, ZoomOut, Maximize2
+} from 'lucide-react';
+import { clsx } from 'clsx';
+
+function cn(...inputs: (string | boolean | undefined)[]) {
+  return clsx(inputs);
+}
+
+interface Person {
+  id: number;
+  name: string;
+  gender?: string;
+  birthyear?: string;
+  deathyear?: string;
+  birthplace?: string;
+  deathplace?: string;
+  tree_id?: number;
+  verses?: string;
+}
+
+interface TreeNode extends Person {
+  x: number;
+  y: number;
+  generation: number;
+  connections: { from: number; to: number }[];
+  parentId?: number;
+  childIds: number[];
+  isExpanded: boolean;
+}
+
+interface GenealogyTreeProps {
+  bookId: string;
+  chapter: number;
+  verse: number;
+  onClose?: () => void;
+}
+
+export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTreeProps) {
+  const [people, setPeople] = useState<Person[]>([]);
+  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [treeNodes, setTreeNodes] = useState<TreeNode[]>([]);
+  const [viewMode, setViewMode] = useState<'tree' | 'list'>('tree');
+  const [loading, setLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterGender, setFilterGender] = useState<'all' | 'M' | 'F'>('all');
+  const [isHoveringCard, setIsHoveringCard] = useState<number | null>(null);
+  
+  // Radial tree state
+  const [centerNode, setCenterNode] = useState<number | null>(null);
+  const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+
+  // Load people data
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      const data = await BibleService.getPeopleData(bookId, chapter, verse);
+      setPeople(data);
+      if (data.length > 0) {
+        setCenterNode(data[0].id);
+        setExpandedNodes(new Set(data.map(p => p.id)));
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, [bookId, chapter, verse]);
+
+  // Build radial tree nodes
+  useEffect(() => {
+    if (!people.length || !centerNode) return;
+
+    const nodes: TreeNode[] = people.map(p => ({
+      ...p,
+      x: 0,
+      y: 0,
+      generation: 0,
+      connections: [],
+      childIds: [],
+      isExpanded: true
+    }));
+
+    // Build parent-child relationships based on order
+    people.forEach((p, idx) => {
+      if (idx > 0 && nodes[idx - 1]) {
+        nodes[idx].parentId = nodes[idx - 1].id;
+        nodes[idx - 1].childIds.push(p.id);
+        nodes[idx].generation = (nodes[idx - 1]?.generation || 0) + 1;
+        nodes[idx].connections.push({ from: nodes[idx - 1].id, to: p.id });
+      }
+    });
+
+
+  // Handle container resize
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight
+        });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+
+  // Filter people
+  const filteredPeople = useMemo(() => {
+    let result = people;
+    if (searchQuery) {
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    if (filterGender !== 'all') {
+      result = result.filter(p => p.gender === filterGender);
+    }
+    return result;
+  }, [people, searchQuery, filterGender]);
+
+  // Toggle node expansion
+  const toggleNode = (nodeId: number) => {
+    setExpandedNodes(prev => {
+      const next = new Set(prev);
+      if (next.has(nodeId)) {
+        next.delete(nodeId);
+      } else {
+        next.add(nodeId);
+      }
+      return next;
+    });
+  };
+
+  // Render radial tree node
+  const renderRadialNode = (node: TreeNode, idx: number) => {
+    const isMale = node.gender === 'M';
+    const isSelected = selectedPerson?.id === node.id;
+    const isHovered = isHoveringCard === node.id;
+    const isExpanded = expandedNodes.has(node.id);
+    const isCenter = node.id === centerNode;
+    const hasChildren = node.childIds.length > 0;
+    const radius = isCenter ? 50 : isSelected ? 42 : isHovered ? 40 : 38;
+
+    return (
+      <g key={node.id}>
+        <defs>
+          <radialGradient id={`grad-${node.id}`} cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stopColor={isCenter ? '#fbbf24' : isMale ? '#818cf8' : '#f9a8d4'} />
+            <stop offset="100%" stopColor={isCenter ? '#f59e0b' : isMale ? '#4f46e5' : '#ec4899'} />
+          </radialGradient>
+          <filter id={`glow-${node.id}`}>
+            <feGaussianBlur stdDeviation={isSelected ? "6" : "4"} result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id={`shadow-${node.id}`}>
+            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.4" />
+          </filter>
+        </defs>
+
+
+        {/* Node group */}
+        <g
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedPerson(node);
+            if (hasChildren) toggleNode(node.id);
+          }}
+          onMouseEnter={() => setIsHoveringCard(node.id)}
+          onMouseLeave={() => setIsHoveringCard(null)}
+          style={{ cursor: hasChildren ? 'pointer' : 'default' }}
+          transform={`translate(${node.x}, ${node.y})`}
+        >
+          {/* Outer glow ring */}
+          <circle
+            r={radius + 10}
+            fill="transparent"
+            stroke={isCenter ? '#fbbf24' : isMale ? '#6366f1' : '#ec4899'}
+            strokeWidth="2"
+            strokeOpacity={isSelected ? "0.8" : isHovered ? "0.5" : "0.2"}
+          />
+
+          {/* Expand indicator for nodes with children */}
+          {hasChildren && (
+            <circle
+              r={radius + 16}
+              fill="transparent"
+              stroke={isExpanded ? '#22c55e' : '#94a3b8'}
+              strokeWidth="1.5"
+              strokeDasharray={isExpanded ? "none" : "3,3"}
+              strokeOpacity="0.5"
+              className="transition-all"
+            />
+          )}
+
+          {/* Main circle */}
+          <circle
+            r={radius}
+            fill={isSelected ? `url(#grad-${node.id})` : isCenter ? '#1a1a2e' : isMale ? '#1e1b4b' : '#4c1d4d'}
+            stroke={isCenter ? '#fbbf24' : isMale ? '#818cf8' : '#f472b6'}
+            strokeWidth={isSelected ? 4 : isCenter ? 3 : isHovered ? 3 : 2.5}
+            strokeOpacity={isSelected ? 1 : 0.7}
+            filter={`url(#shadow-${node.id})`}
+          />
+
+          {/* Inner icon/text */}
+          <text
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="white"
+            fontSize={isCenter ? "28" : "22"}
+            y="-4"
+          >
+            {isCenter ? 'ðŸ‘‘' : isMale ? 'ðŸ‘¨â€ðŸŽ“' : 'ðŸ‘©â€ðŸŽ“'}
+          </text>
+
+          {/* Expand icon */}
+          {hasChildren && (
+            <g transform={`translate(${radius + 8}, ${radius + 8})`}>
+              <circle r="12" fill={isExpanded ? '#22c55e' : '#3b82f6'} stroke="none" />
+              <text
+                textAnchor="middle"
+                dominantBaseline="central"
+                fill="white"
+                fontSize="14"
+                fontWeight="bold"
+              >
+                {isExpanded ? 'âˆ’' : node.childIds.length}
+              </text>
+            </g>
+          )}
+
+          {/* Name label */}
+          <text
+            y={radius + 18}
+            textAnchor="middle"
+            fill={isCenter ? '#fbbf24' : isSelected ? '#e2e8f0' : '#cbd5e1'}
+            fontSize={isCenter ? "13" : isSelected ? "12" : "11"}
+            fontWeight={isCenter ? '800' : isSelected ? '700' : '600'}
+            style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
+          >
+            {node.name.length > 18 ? node.name.slice(0, 15) + '...' : node.name}
+          </text>
+
+          {/* Year label */}
+          {(node.birthyear || node.deathyear) && !isCenter && (
+            <text
+              y={radius + 32}
+              textAnchor="middle"
+              fill="#94a3b8"
+              fontSize="9"
+              fontWeight="500"
+            >
+              {node.birthyear || '?'}{node.birthyear && node.deathyear ? ' - ' : ''}{node.deathyear || ''}
+            </text>
+          )}
+        </g>
+      </g>
+    );
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 0.1, scale: 1 }}
+            transition={{ duration: 1 }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 blur-3xl"
+          />
+        </div>
+
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0, rotate: -180 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 100 }}
+          className="relative z-10"
+        >
+          <div className="relative">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+              className="w-20 h-20 rounded-full border-2 border-transparent border-t-bible-accent/40 border-r-bible-accent/20"
+            />
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-3 w-14 h-14 rounded-full border-2 border-transparent border-b-bible-accent/60 border-l-bible-accent/30"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Users className="w-7 h-7 text-bible-accent" />
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-6 text-center z-10"
+        >
+          <p className="text-sm font-semibold text-bible-text mb-1">
+            Construindo Ã¡rvore genealÃ³gica...
+          </p>
+          <p className="text-xs text-bible-text-muted">
+            Mapeando linhagens bÃ­blicas
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#0a0a0f]" ref={containerRef}>
+      {/* Ambient background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{ opacity: [0.03, 0.06, 0.03], scale: [1, 1.1, 1] }}
+          transition={{ duration: 8, repeat: Infinity }}
+          className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-gradient-to-br from-amber-600/20 to-orange-600/20 blur-3xl"
+        />
+        <motion.div
+          animate={{ opacity: [0.04, 0.07, 0.04], scale: [1, 1.15, 1] }}
+          transition={{ duration: 10, repeat: Infinity, delay: 2 }}
+          className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-gradient-to-br from-indigo-600/20 to-purple-600/20 blur-3xl"
+        />
+      </div>
+
+      {/* Header Premium */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="shrink-0 relative overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-transparent" />
+        <div className="absolute inset-0 border-b border-white/5" />
+
+        <div className="relative px-6 py-6">
+          <div className="flex items-start justify-between mb-5">
+            <div className="flex-1">
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="flex items-center gap-2.5 mb-3"
+              >
+                <div className="relative">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                  >
+                    <Crown className="w-4 h-4 text-amber-400" />
+                  </motion.div>
+                  <div className="absolute inset-0 w-4 h-4 bg-amber-400/30 rounded-full blur-md" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400/90">
+                  Genealogy
+                </span>
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/80"
+              >
+                Ãrvore GenealÃ³gica
+              </motion.h1>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center gap-2 mt-2"
+              >
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
+                  <Users className="w-3 h-3 text-bible-accent" />
+                  <span className="text-xs font-semibold text-white/70">
+                    {people.length} {people.length === 1 ? 'pessoa' : 'pessoas'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
+                  <Zap className="w-3 h-3 text-amber-400" />
+                  <span className="text-xs font-semibold text-white/70">
+                    {expandedNodes.size} expandidos
+                  </span>
+                </div>
+              </motion.div>
+            </div>
+
+            {onClose && (
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onClose}
+                className="relative group p-2.5 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all"
+              >
+                <X className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" />
+              </motion.button>
+            )}
+          </div>
+
+          {/* Search bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="relative mb-3"
+          >
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-white/40" />
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar pessoa..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-bible-accent/50 focus:border-bible-accent/50 transition-all"
+            />
+            <AnimatePresence>
+              {searchQuery && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  <X className="w-4 h-4 text-white/40 hover:text-white/70" />
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Controls */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex gap-2"
+          >
+            {/* Zoom controls */}
+            <div className="flex gap-1 p-1 rounded-xl bg-black/30 backdrop-blur-sm border border-white/5">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
+                className="p2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </motion.button>
+              <span className="px-2 py-1 text-xs font-medium text-white/60">
+                {Math.round(zoom * 100)}%
+              </span>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setZoom(z => Math.min(2, z + 0.1))}
+                className="p2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
+                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </motion.button>
+            </div>
+
+            {/* Gender filter */}
+            <div className="flex gap-1 p-1 rounded-xl bg-black/30 backdrop-blur-sm border border-white/5">
+              {[
+                { id: 'all' as const, label: 'Todos', icon: Users },
+                { id: 'M' as const, label: 'Homens', icon: Heart },
+                { id: 'F' as const, label: 'Mulheres', icon: Star },
+              ].map((filter) => (
+                <motion.button
+                  key={filter.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setFilterGender(filter.id)}
+                  className={cn(
+                    'flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-bold transition-all relative overflow-hidden',
+                    filterGender === filter.id
+                      ? 'text-white'
+                      : 'text-white/40 hover:text-white/70'
+                  )}
+                >
+                  {filterGender === filter.id && (
+                    <motion.div
+                      layoutId="genderFilter"
+                      className="absolute inset-0 bg-gradient-to-r from-indigo-500/90 to-purple-500/90 rounded-lg"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <filter.icon className="w-3.5 h-3.5 relative z-10" />
+                </motion.button>
+              ))}
+            </div>
+
+            {/* View toggle */}
+            <div className="flex gap-1 p-1 rounded-xl bg-black/30 backdrop-blur-sm border border-white/5">
+              {[
+                { id: 'tree' as const, label: 'Mapa', icon: TreePine },
+                { id: 'list' as const, label: 'Lista', icon: List },
+              ].map((mode) => (
+                <motion.button
+                  key={mode.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setViewMode(mode.id)}
+                  className={cn(
+                    'flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-bold transition-all relative overflow-hidden',
+                    viewMode === mode.id
+                      ? 'text-white'
+                      : 'text-white/40 hover:text-white/70'
+                  )}
+                >
+                  {viewMode === mode.id && (
+                    <motion.div
+                      layoutId="viewModeTab"
+                      className="absolute inset-0 bg-gradient-to-r from-amber-500/90 to-orange-500/90 rounded-lg"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <mode.icon className="w-4 h-4 relative z-10" />
+                  <span className="relative z-10">{mode.label}</span>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-hidden relative">
+        <AnimatePresence mode="wait">
+          {viewMode === 'tree' ? (
+            <motion.div
+              key="tree-view"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="w-full h-full overflow-auto"
+              onClick={() => setSelectedPerson(null)}
+            >
+              <svg
+                width={dimensions.width}
+                height={dimensions.height}
+                style={{ 
+                  transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+                  transformOrigin: 'center center'
+                }}
+                className="min-w-full min-h-full"
+              >
+                <defs>
+                  <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+                  </radialGradient>
+                  <pattern id="gridRadial" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="1" />
+                  </pattern>
+                </defs>
+
+                {/* Background */}
+                <rect width="100%" height="100%" fill="url(#gridRadial)" />
+                
+                {/* Center glow */}
+                {centerNode && (
+                  <circle
+                    cx={dimensions.width / 2}
+                    cy={dimensions.height / 2}
+                    r={200}
+                    fill="url(#centerGrad)"
+                  />
+                )}
+
+                {/* Tree nodes */}
+                {treeNodes.map(renderRadialNode)}
+
+                {/* Empty state */}
+                {!treeNodes.length && (
+                  <text
+                    x={dimensions.width / 2}
+                    y={dimensions.height / 2}
+                    textAnchor="middle"
+                    fill="rgba(255,255,255,0.3)"
+                    fontSize="16"
+                    fontWeight="500"
+                  >
+                    Nenhuma genealogia encontrada
+                  </text>
+                )}
+              </svg>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="list-view"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="h-full overflow-y-auto p-4"
+            >
+              {filteredPeople.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-16 px-4"
+                >
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    className="inline-flex p-5 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10 mb-5"
+                  >
+                    <Users className="w-10 h-10 text-white/40" />
+                  </motion.div>
+                  <h3 className="text-base font-bold text-white/80 mb-2">
+                    {searchQuery ? 'Nenhuma pessoa encontrada' : 'Nenhuma pessoa ainda'}
+                  </h3>
+                </motion.div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <AnimatePresence>
+                    {filteredPeople.map((person, idx) => {
+                      const isMale = person.gender === 'M';
+                      const isSelected = selectedPerson?.id === person.id;
+                      return (
+                        <motion.button
+                          key={person.id || idx}
+                          initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                          transition={{ delay: idx * 0.04 }}
+                          whileHover={{ scale: 1.02, y: -3 }}
+                          whileTap={{ scale: 0.98 }}
+                          onMouseEnter={() => setIsHoveringCard(person.id)}
+                          onMouseLeave={() => setIsHoveringCard(null)}
+                          onClick={() => setSelectedPerson(person)}
+                          className={cn(
+                            'relative overflow-hidden rounded-2xl p-4 text-left transition-all group',
+                            'backdrop-blur-sm border',
+                            isSelected
+                              ? 'bg-gradient-to-br from-white/10 to-white/5 border-bible-accent/50 shadow-lg shadow-bible-accent/20'
+                              : 'bg-gradient-to-br from-white/5 to-white/3 border-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-white/5'
+                          )}
+                        >
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: isHoveringCard === person.id ? 0.1 : 0 }}
+                            className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-500"
+                          />
+
+                          <div className="relative z-10">
+                            <div className="flex items-start gap-3.5">
+                              <motion.div
+                                whileHover={{ scale: 1.1, rotate: 5 }}
+                                className={cn(
+                                  'w-14 h-14 rounded-xl flex items-center justify-center shrink-0 relative overflow-hidden',
+                                  'border border-white/10',
+                                  isMale
+                                    ? 'bg-gradient-to-br from-indigo-500/25 to-blue-500/15'
+                                    : 'bg-gradient-to-br from-pink-500/25 to-rose-500/15'
+                                )}
+                              >
+                                <span className="text-2xl">
+                                  {isMale ? 'ðŸ‘¨â€ðŸŽ“' : 'ðŸ‘©â€ðŸŽ“'}
+                                </span>
+                              </motion.div>
+
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-sm font-bold text-white/90 mb-1.5 truncate group-hover:text-white transition-colors">
+                                  {person.name}
+                                </h3>
+
+                                {(person.birthyear || person.deathyear) && (
+                                  <motion.div
+                                    className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5"
+                                    whileHover={{ x: 3 }}
+                                  >
+                                    <Calendar className="w-3.5 h-3.5 text-white/40" />
+                                    <span>{person.birthyear || '?'} - {person.deathyear || '?'}</span>
+                                  </motion.div>
+                                )}
+
+                                {(person.birthplace || person.deathplace) && (
+                                  <motion.div
+                                    className="flex items-center gap-1.5 text-xs text-white/50"
+                                    whileHover={{ x: 3 }}
+                                  >
+                                    <MapPin className="w-3.5 h-3.5 text-white/40" />
+                                    <span className="truncate">
+                                      {person.birthplace || ''}{person.birthplace && person.deathplace ? ' â†’ ' : ''}{person.deathplace || ''}
+                                    </span>
+                                  </motion.div>
+                                )}
+                              </div>
+
+                              <motion.div
+                                animate={{ x: isSelected ? 4 : 0 }}
+                                className="flex-shrink-0 mt-1"
+                              >
+                                <ChevronRight className={cn(
+                                  'w-4 h-4 transition-all',
+                                  'text-white/30 group-hover:text-bible-accent',
+                                  isSelected && 'text-bible-accent'
+                                )} />
+                              </motion.div>
+                            </div>
+
+                            {person.verses && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className="mt-3 pt-3 border-t border-white/5"
+                              >
+                                <div className="flex items-center gap-1.5">
+                                  <Scroll className="w-3 h-3 text-bible-accent/70" />
+                                  <span className="text-[10px] font-medium text-white/40 truncate">
+                                    {person.verses.split(',').length} referÃªncias
+                                  </span>
+                                </div>
+                              </motion.div>
+                            )}
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </AnimatePresence>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Detail Panel */}
+      <AnimatePresence>
+        {selectedPerson && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedPerson(null)}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
+            />
+
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="absolute bottom-0 left-0 right-0 z-50"
+              style={{ maxHeight: '65vh' }}
+            >
+              <div className="relative overflow-hidden">
+                <div className="absolute inset-0 rounded-t-3xl bg-gradient-to-t from-amber-500/20 via-transparent to-transparent" />
+
+                <div className="relative backdrop-blur-2xl bg-gradient-to-t from-[#0a0a0f] via-[#0f0f1a]/95 to-[#0f0f1a]/90 border-t border-white/10 rounded-t-3xl">
+                  <div className="flex justify-center pt-3 pb-2">
+                    <div className="w-12 h-1.5 rounded-full bg-white/20" />
+                  </div>
+
+                  <div className="overflow-y-auto p-6" style={{ maxHeight: '60vh' }}>
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="flex items-start gap-4">
+                        <motion.div
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ type: 'spring', delay: 0.1 }}
+                          className={cn(
+                            'w-16 h-16 rounded-2xl flex items-center justify-center relative overflow-hidden',
+                            'border-2 border-white/20 shadow-lg',
+                            selectedPerson.gender === 'M'
+                              ? 'bg-gradient-to-br from-indigo-500 to-blue-600'
+                              : 'bg-gradient-to-br from-pink-500 to-rose-600'
+                          )}
+                        >
+                          <span className="text-3xl">
+                            {selectedPerson.gender === 'M' ? 'ðŸ‘¨â€ðŸŽ“' : 'ðŸ‘©â€ðŸŽ“'}
+                          </span>
+                        </motion.div>
+
+                        <div>
+                          <motion.h3
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.15 }}
+                            className="text-xl font-black text-white mb-2"
+                          >
+                            {selectedPerson.name}
+                          </motion.h3>
+                          {selectedPerson.tree_id && (
+                            <motion.span
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.2 }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 border border-amber-500/30"
+                            >
+                              <Crown className="w-3 h-3" />
+                              Ãrvore #{selectedPerson.tree_id}
+                            </motion.span>
+                          )}
+                        </div>
+                      </div>
+
+                      <motion.button
+                        whileHover={{ scale: 1.15, rotate: 90 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setSelectedPerson(null)}
+                        className="p-2.5 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all"
+                      >
+                        <X className="w-4 h-4 text-white/60" />
+                      </motion.button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mb-5">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.25 }}
+                        className="relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-sm border border-white/10"
+                      >
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-full blur-xl" />
+                        <div className="relative">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="p-1.5 rounded-lg bg-indigo-500/20">
+                              <Calendar className="w-4 h-4 text-indigo-400" />
+                            </div>
+                            <p className="text-[10px] font-black uppercase tracking-wider text-white/40">Nascimento</p>
+                          </div>
+                          <p className="text-base font-bold text-white">
+                            {selectedPerson.birthyear || '?'}
+                            {selectedPerson.birthplace ? (
+                              <span className="block text-xs font-medium text-white/60 mt-1">
+                                {selectedPerson.birthplace}
+                              </span>
+                            ) : ''}
+                          </p>
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-sm border border-white/10"
+                      >
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-pink-500/10 to-transparent rounded-full blur-xl" />
+                        <div className="relative">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="p-1.5 rounded-lg bg-pink-500/20">
+                              <MapPin className="w-4 h-4 text-pink-400" />
+                            </div>
+                            <p className="text-[10px] font-black uppercase tracking-wider text-white/40">Falecimento</p>
+                          </div>
+                          <p className="text-base font-bold text-white">
+                            {selectedPerson.deathyear || '?'}
+                            {selectedPerson.deathplace ? (
+                              <span className="block text-xs font-medium text-white/60 mt-1">
+                                {selectedPerson.deathplace}
+                              </span>
+                            ) : ''}
+                          </p>
+                        </div>
+                      </motion.div>
+                    </div>
+
+                    {selectedPerson.verses && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.35 }}
+                        className="relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-sm border border-white/10"
+                      >
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-bible-accent/10 to-transparent rounded-full blur-2xl" />
+                        <div className="relative">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="p-1.5 rounded-lg bg-bible-accent/20">
+                              <BookOpen className="w-4 h-4 text-bible-accent" />
+                            </div>
+                            <p className="text-[10px] font-black uppercase tracking-wider text-white/40">ReferÃªncias BÃ­blicas</p>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedPerson.verses.split(',').map((verse, idx) => (
+                              <motion.span
+                                key={idx}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.4 + idx * 0.05 }}
+                                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-all"
+                              >
+                                {verse.trim()}
+                              </motion.span>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+

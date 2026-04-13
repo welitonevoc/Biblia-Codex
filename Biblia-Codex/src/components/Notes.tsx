@@ -65,7 +65,7 @@ interface NoteStats {
 }
 
 const HUE_STEPS = [210, 140, 270, 25, 330, 185, 45, 90, 310, 0, 160, 240];
-let hueIdx = Math.floor(Math.random() * HUE_STEPS.length);
+let hueIdx = 0;
 
 function hslToHex(h: number, s: number, l: number): string {
   s /= 100; l /= 100;
@@ -81,7 +81,7 @@ function hslToHex(h: number, s: number, l: number): string {
 function genAutoColor(): { color: string; background: string; textColor: string } {
   const base = HUE_STEPS[hueIdx % HUE_STEPS.length];
   hueIdx++;
-  const h = (base + Math.floor(Math.random() * 30) - 15 + 360) % 360;
+  const h = (base + (((hueIdx * 7) % 30) - 15) + 360) % 360;
   return {
     color: hslToHex(h, 62, 38),
     background: hslToHex(h, 80, 94),
@@ -207,7 +207,7 @@ export const Notes: React.FC = () => {
   const [tagInput, setTagInput] = useState('');
   const [newTagName, setNewTagName] = useState('');
   const [tagColorMode, setTagColorMode] = useState<TagColorMode>('auto');
-  const [autoColor, setAutoColor] = useState(genAutoColor());
+  const [autoColor, setAutoColor] = useState(() => ({ color: '#8b5cf6', background: '#f3e8ff', textColor: '#7c3aed' }));
   const [selectedPaletteIdx, setSelectedPaletteIdx] = useState(0);
   const [showTagCreator, setShowTagCreator] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('notes');
