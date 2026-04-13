@@ -22,7 +22,7 @@ import { DictionaryView } from './components/DictionaryView';
 import { ModuleManagement } from './components/ModuleManagement';
 import { TagsView } from './components/TagsView';
 import { StudyToolsPanel } from './components/StudyToolsPanel';
-import { Devotional } from './components/Devotional';
+import { DevotionalPage } from './components/DevotionalPage';
 import { ReadingPlans } from './components/ReadingPlans';
 import { MapsPage } from './components/MapsPage';
 import { SearchView } from './components/SearchView';
@@ -285,7 +285,7 @@ const [showOnboarding, setShowOnboarding] = useState(true);
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <Devotional onNavigate={(bookId, chapter, verse) => {
+                <DevotionalPage onNavigate={(bookId, chapter, verse) => {
                   const book = BIBLE_BOOKS.find(b => b.id === bookId);
                   if (book) handleSelect(book, chapter, verse);
                 }} />

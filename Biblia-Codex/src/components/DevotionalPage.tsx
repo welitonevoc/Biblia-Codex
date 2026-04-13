@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   BookOpen, Calendar, ChevronLeft, ChevronRight, X,
   Sun, Moon, Sparkles, BookMarked, Settings, Plus,
-  ChevronDown, Play, Pause, Volume2, VolumeX
+  ChevronDown, Play, Pause, Volume2, VolumeX, Loader
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -39,16 +39,26 @@ const AVAILABLE_DEVOTIONALS: DevotionalModule[] = [
   { id: 'spurgeon', name: 'Spurgeon', description: 'Charles Spurgeon Daily', language: 'en', path: 'Spurgeon365.devotions.zip' },
 ];
 
-const getDevotionalModules = (): DevotionalModule[] => {
-  return AVAILABLE_DEVOTIONALS;
-};
+async function extractSqlFromZip(zipData: Uint8Array): Promise<Uint8Array> {
+  const JSZip = (await import('jszip')).default;
+  const zip = await JSZip.loadAsync(zipData);
+  
+  const dbFile = Object.keys(zip.files).find(f => f.endsWith('.SQLite3'));
+  if (!dbFile) {
+    throw new Error('No database file found in archive');
+  }
+  
+  const dbData = await zip.file(dbFile).async('arraybuffer');
+  return new Uint8Array(dbData);
+}
 
 export function DevotionalPage({ onClose }: DevotionalPageProps) {
-  const [modules] = useState<DevotionalModule[]>(getDevotionalModules);
+  const [modules] = useState<DevotionalModule[]>(AVAILABLE_DEVOTIONALS);
   const [selectedModule, setSelectedModule] = useState<DevotionalModule | null>(null);
   const [currentDay, setCurrentDay] = useState<number>(1);
   const [devotions, setDevotions] = useState<Devotion[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showModuleSelector, setShowModuleSelector] = useState(false);
   const [currentDevotion, setCurrentDevotion] = useState<Devotion | null>(null);
 
@@ -59,26 +69,22 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
 
   const loadModule = async (module: DevotionalModule) => {
     setLoading(true);
+    setError(null);
     setSelectedModule(module);
     setShowModuleSelector(false);
 
     try {
-      const response = await fetch(`/${module.path}`);
-      const buffer = await response.arrayBuffer();
+      const { readModuleBinaryFromPublic } = await import('../services/moduleService');
       
-      const JSZip = (await import('jszip')).default;
-      const zip = await JSZip.loadAsync(buffer);
+      const zipData = await readModuleBinaryFromPublic(module.path);
+      const dbData = await extractSqlFromZip(zipData);
       
-      const dbFile = Object.keys(zip.files).find(f => f.endsWith('.SQLite3'));
-      if (!dbFile) {
-        console.error('No database file found');
-        setLoading(false);
-        return;
-      }
-
-      const dbData = await zip.file(dbFile).async('arraybuffer');
-      const SQL = await initSqlJs();
-      const db = new SQL.Database(new Uint8Array(dbData));
+      const initSqlJs = (await import('sql.js')).default;
+      const SQL = await initSqlJs({
+        locateFile: (file: string) => `/${file}`
+      });
+      
+      const db = new SQL.Database(dbData);
 
       const result = db.exec('SELECT day, devotion FROM devotions ORDER BY day');
       if (result.length > 0) {
@@ -96,11 +102,14 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
           };
         });
         setDevotions(parsedDevotions);
+      } else {
+        setError('Nenhum devocional encontrado neste módulo');
       }
 
       db.close();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error loading devotional:', err);
+      setError(err.message || 'Erro ao carregar devocional');
     }
 
     setLoading(false);
@@ -159,13 +168,28 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
         >
           <div className="w-16 h-16 rounded-2xl border border-[var(--border-bible)] flex items-center justify-center bg-[var(--surface-1)]">
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
-              <BookOpen className="w-6 h-6 text-[var(--accent-bible)]" />
+              <Loader className="w-6 h-6 text-[var(--accent-bible)]" />
             </motion.div>
           </div>
         </motion.div>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-4 text-sm font-medium text-[var(--text-bible-muted)]">
           Carregando devocional...
         </motion.p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-[var(--bg-bible)]">
+        <div className="inline-flex p-4 rounded-2xl mb-4" style={{ backgroundColor: '#ef4444', opacity: 0.1 }}>
+          <X className="w-8 h-8" style={{ color: '#ef4444' }} />
+        </div>
+        <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--text-bible)' }}>Erro ao carregar</h3>
+        <p className="text-xs mb-4" style={{ color: 'var(--text-bible-muted)' }}>{error}</p>
+        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setSelectedModule(null)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--accent-bible)', color: 'white' }}>
+          Voltar
+        </motion.button>
       </div>
     );
   }
@@ -272,6 +296,12 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
                   </div>
                 </div>
 
+                {currentDevotion.verse && (
+                  <div className="p-3 rounded-lg border" style={{ backgroundColor: 'var(--accent-bible)', opacity: 0.1, borderColor: 'var(--accent-bible)' }}>
+                    <p className="text-sm italic" style={{ color: 'var(--accent-bible)' }}>"{currentDevotion.verse}"</p>
+                  </div>
+                )}
+
                 <div 
                   className="p-4 rounded-xl border prose prose-sm max-w-none"
                   style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}
@@ -298,11 +328,4 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
       )}
     </div>
   );
-}
-
-async function initSqlJs() {
-  const initSqlJs = (await import('sql.js')).default;
-  return initSqlJs({
-    locateFile: (file: string) => `/${file}`
-  });
 }
