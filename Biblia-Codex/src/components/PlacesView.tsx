@@ -283,6 +283,16 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                     
                     return (
                       <>
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h2 className="text-xl font-bold" style={{ color: 'var(--text-bible)', fontFamily: 'var(--font-display)' }}>{selectedPlace.location}</h2>
+                            {selectedPlace.modernName && <p className="text-sm mt-1" style={{ color: 'var(--text-bible-muted)' }}>📍 {selectedPlace.modernName}</p>}
+                          </div>
+                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setSelectedPlace(null)} className="p-2 rounded-lg border" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
+                            <X className="w-4 h-4" style={{ color: 'var(--text-bible-muted)' }} />
+                          </motion.button>
+                        </div>
+
                         {hasImages && (
                           <div className="relative mb-4 rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}>
                             <div className="aspect-video w-full flex items-center justify-center">
@@ -321,28 +331,6 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                             )}
                           </div>
                         )}
-                        
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h2 className="text-xl font-bold" style={{ color: 'var(--text-bible)', fontFamily: 'var(--font-display)' }}>{selectedPlace.location}</h2>
-                            {selectedPlace.modernName && <p className="text-sm mt-1" style={{ color: 'var(--text-bible-muted)' }}>📍 {selectedPlace.modernName}</p>}
-                          </div>
-                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setSelectedPlace(null)} className="p-2 rounded-lg border" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
-                            <X className="w-4 h-4" style={{ color: 'var(--text-bible-muted)' }} />
-                          </motion.button>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3 mb-4">
-                          {selectedPlace.lat !== 0 && selectedPlace.lon !== 0 && (
-                            <div className="col-span-2 p-3 rounded-xl border" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
-                              <div className="flex items-center gap-2 mb-1">
-                                <Globe className="w-3.5 h-3.5" style={{ color: 'var(--text-bible-muted)' }} />
-                                <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-bible-muted)' }}>Coordenadas</span>
-                              </div>
-                              <p className="text-sm font-mono" style={{ color: 'var(--text-bible)' }}>{selectedPlace.lat.toFixed(4)}°, {selectedPlace.lon.toFixed(4)}°</p>
-                            </div>
-                          )}
-                        </div>
 
                         {selectedPlace.description && (
                           <div className="p-4 rounded-xl border mb-4" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
@@ -351,6 +339,16 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                               <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-bible-muted)' }}>Descrição</span>
                             </div>
                             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-bible)' }}>{selectedPlace.description}</p>
+                          </div>
+                        )}
+
+                        {selectedPlace.lat !== 0 && selectedPlace.lon !== 0 && (
+                          <div className="p-3 rounded-xl border mb-4" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <Globe className="w-3.5 h-3.5" style={{ color: 'var(--text-bible-muted)' }} />
+                              <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-bible-muted)' }}>Coordenadas</span>
+                            </div>
+                            <p className="text-sm font-mono" style={{ color: 'var(--text-bible)' }}>{selectedPlace.lat.toFixed(4)}°, {selectedPlace.lon.toFixed(4)}°</p>
                           </div>
                         )}
 
