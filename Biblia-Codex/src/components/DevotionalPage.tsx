@@ -79,10 +79,8 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
       const zipData = await response.arrayBuffer();
       const dbData = await extractSqlFromZip(zipData);
       
-      const initSqlJs = await import('sql.js');
-      const SQL = await initSqlJs.default({
-        locateFile: (file: string) => `https://sql.js.org/dist/${file}`
-      });
+      const { getSqlInstance } = await import('../BibleService');
+      const SQL = await getSqlInstance();
       
       const db = new SQL.Database(dbData);
 
