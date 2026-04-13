@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BibleService } from '../BibleService';
 import {
-  MapPin, List, X, Globe, BookOpen, ChevronRight, Search,
+  MapPin, X, Globe, BookOpen, ChevronRight, Search,
   Image, Navigation, ArrowLeft, ArrowRight
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -13,23 +13,15 @@ function cn(...inputs: (string | boolean | undefined)[]) {
 }
 
 interface Place {
-  id?: number;
-  location?: string;
-  name?: string;
-  book?: number;
-  chapter?: number;
-  verse?: number;
-  verses?: string;
-  description?: string;
-  comment?: string;
-  image?: string;
-  images?: string;
-  modernName?: string;
-  lat?: number;
-  lon?: number;
-  type?: string;
-  region?: string;
-  country?: string;
+  id: number;
+  location: string;
+  lat: number;
+  lon: number;
+  verses: string;
+  description: string;
+  images: string[];
+  modernName: string;
+  type: string;
 }
 
 interface PlacesViewProps {
@@ -38,6 +30,37 @@ interface PlacesViewProps {
   verse?: number;
   places?: Place[];
   onClose?: () => void;
+}
+
+function extractImagesFromComment(comment: string): string[] {
+  const images: string[] = [];
+  if (!comment) return images;
+  
+  const imgRegex = /<img\s+src=['"]([^'"]+)['"]/gi;
+  let match;
+  while ((match = imgRegex.exec(comment)) !== null) {
+    if (match[1] && match[1].includes('openbible.info')) {
+      images.push(match[1]);
+    }
+  }
+  
+  return images;
+}
+
+function extractModernName(comment: string): string {
+  if (!comment) return '';
+  const match = comment.match(/<modern\s+id="[^"]+">([^<]+)<\/modern>/);
+  return match ? match[1] : '';
+}
+
+function cleanDescription(comment: string): string {
+  if (!comment) return '';
+  return comment
+    .replace(/<[^>]+>/g, '')
+    .replace(/\(modern\)/gi, '')
+    .replace(/OpenBible\.info details.*$/gi, '')
+    .replace(/Possible identification.*$/gi, '')
+    .trim();
 }
 
 export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onClose }: PlacesViewProps) {
@@ -50,8 +73,7 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
 
   useEffect(() => {
     if (initialPlaces && initialPlaces.length > 0) {
-      const processed = processPlaces(initialPlaces);
-      setPlaces(processed);
+      setPlaces(processPlaces(initialPlaces));
       setLoading(false);
       return;
     }
@@ -60,8 +82,7 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
       setLoading(true);
       BibleService.getPlacesData(bookId, chapter, verse || 1)
         .then(data => {
-          const processed = processPlaces(data || []);
-          setPlaces(processed);
+          setPlaces(processPlaces(data || []));
           setLoading(false);
         })
         .catch(err => {
@@ -75,34 +96,24 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
   }, [bookId, chapter, verse, initialPlaces]);
 
   function processPlaces(data: any[]): Place[] {
-    return (data || []).map((p: any) => ({
-      id: p.id || 0,
-      location: p.location || p.name || '',
-      name: p.name || p.location || p.place_name || '',
-      book: p.book,
-      chapter: p.chapter,
-      verse: p.verse,
-      description: p.comment || p.description || p.locinfo || '',
-      comment: p.comment || '',
-      image: p.image || p.images || '',
-      images: p.images || p.image || '',
-      lat: p.lat,
-      lon: p.lon,
-      modernName: p.modernName || p.modern_name || '',
-      verses: p.verses || '',
-      type: p.type || '',
-      region: p.region || '',
-      country: p.country || '',
-    })).filter((p: Place) => p.name || p.location);
+    return (data || []).map((p: any) => {
+      const images = extractImagesFromComment(p.comment || '');
+      return {
+        id: p.id || 0,
+        location: p.location || p.name || '',
+        lat: p.lat || 0,
+        lon: p.lon || 0,
+        verses: p.verses || '',
+        description: cleanDescription(p.comment || p.description || ''),
+        images: images,
+        modernName: extractModernName(p.comment || ''),
+        type: ''
+      };
+    }).filter((p: Place) => p.location);
   }
 
   const placeTypes = useMemo(() => {
-    const types = new Set<string>();
-    places.forEach(p => {
-      if (p.type) types.add(p.type);
-      if (p.region) types.add(p.region);
-    });
-    return ['all', ...Array.from(types).sort()];
+    return ['all'];
   }, [places]);
 
   const filteredPlaces = useMemo(() => {
@@ -111,31 +122,14 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(place =>
-        place.name?.toLowerCase().includes(q) ||
         place.location?.toLowerCase().includes(q) ||
         place.modernName?.toLowerCase().includes(q) ||
         place.description?.toLowerCase().includes(q)
       );
     }
 
-    if (filterType !== 'all') {
-      result = result.filter(place => 
-        place.type === filterType || place.region === filterType
-      );
-    }
-
     return result;
   }, [places, searchQuery, filterType]);
-
-  const getPlaceImages = (place: Place): string[] => {
-    const images: string[] = [];
-    if (place.image) images.push(place.image);
-    if (place.images) {
-      const imgs = place.images.split(',').map(i => i.trim()).filter(i => i);
-      images.push(...imgs);
-    }
-    return images;
-  };
 
   if (loading) {
     return (
@@ -215,16 +209,6 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-bible-subtle)' }} />
             <input type="text" placeholder="Buscar lugar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)', color: 'var(--text-bible)' }} />
           </div>
-
-          {placeTypes.length > 1 && (
-            <div className="flex gap-1.5 overflow-x-auto pb-1">
-              {placeTypes.map(type => (
-                <motion.button key={type} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setFilterType(type)} className={cn('px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors', filterType === type ? 'text-white' : 'text-[var(--text-bible-muted)]')} style={{ backgroundColor: filterType === type ? 'var(--accent-bible)' : 'var(--surface-1)', border: filterType === type ? 'none' : '1px solid var(--border-bible)' }}>
-                  {type === 'all' ? 'Todos' : type}
-                </motion.button>
-              ))}
-            </div>
-          )}
         </div>
       </motion.div>
 
@@ -239,14 +223,20 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
             <div className="space-y-3">
               <AnimatePresence>
                 {filteredPlaces.map((place, idx) => {
-                  const images = getPlaceImages(place);
-                  const hasImage = images.length > 0;
+                  const hasImage = place.images.length > 0;
                   
                   return (
                     <motion.button key={place.id || place.location || idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: idx * 0.03 }} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={() => { setSelectedPlace(place); setCurrentImageIndex(0); }} className="w-full flex items-start gap-3 p-3 rounded-xl text-left transition-all border" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
                       {hasImage ? (
                         <div className="w-20 h-20 rounded-lg shrink-0 overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}>
-                          <img src={images[0]} alt={place.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          <img 
+                            src={place.images[0]} 
+                            alt={place.location} 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }} 
+                          />
                         </div>
                       ) : (
                         <div className="w-20 h-20 rounded-lg shrink-0 flex items-center justify-center" style={{ backgroundColor: 'var(--accent-bible)', opacity: 0.1 }}>
@@ -255,7 +245,7 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                       )}
                       
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold" style={{ color: 'var(--text-bible)' }}>{place.name || place.location || 'Lugar'}</h3>
+                        <h3 className="text-sm font-semibold" style={{ color: 'var(--text-bible)' }}>{place.location}</h3>
                         {place.modernName && <p className="text-xs mt-0.5" style={{ color: 'var(--text-bible-muted)' }}>📍 {place.modernName}</p>}
                         {place.verses && (
                           <div className="flex items-center gap-1.5 mt-1.5">
@@ -288,15 +278,27 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                 
                 <div className="overflow-y-auto px-5 pb-6" style={{ maxHeight: 'calc(85vh - 40px)' }}>
                   {(() => {
-                    const images = getPlaceImages(selectedPlace);
+                    const images = selectedPlace.images;
                     const hasImages = images.length > 0;
                     
                     return (
                       <>
                         {hasImages && (
                           <div className="relative mb-4 rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}>
-                            <div className="aspect-video w-full">
-                              <img src={images[currentImageIndex]} alt={selectedPlace.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement?.classList.add('hidden'); }} />
+                            <div className="aspect-video w-full flex items-center justify-center">
+                              <img 
+                                src={images[currentImageIndex]} 
+                                alt={selectedPlace.location} 
+                                className="max-w-full max-h-full object-contain"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const parent = target.parentElement;
+                                  if (parent) {
+                                    parent.innerHTML = '<div class="flex items-center justify-center w-full h-full" style="background:var(--surface-2)"><svg class="w-12 h-12" style="color:var(--text-bible-subtle)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>';
+                                  }
+                                }} 
+                              />
                             </div>
                             {images.length > 1 && (
                               <>
@@ -322,7 +324,7 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                         
                         <div className="flex justify-between items-start mb-4">
                           <div>
-                            <h2 className="text-xl font-bold" style={{ color: 'var(--text-bible)', fontFamily: 'var(--font-display)' }}>{selectedPlace.name || selectedPlace.location || 'Lugar'}</h2>
+                            <h2 className="text-xl font-bold" style={{ color: 'var(--text-bible)', fontFamily: 'var(--font-display)' }}>{selectedPlace.location}</h2>
                             {selectedPlace.modernName && <p className="text-sm mt-1" style={{ color: 'var(--text-bible-muted)' }}>📍 {selectedPlace.modernName}</p>}
                           </div>
                           <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setSelectedPlace(null)} className="p-2 rounded-lg border" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
@@ -331,33 +333,13 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 mb-4">
-                          {selectedPlace.lat && selectedPlace.lon && (
+                          {selectedPlace.lat !== 0 && selectedPlace.lon !== 0 && (
                             <div className="col-span-2 p-3 rounded-xl border" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
                               <div className="flex items-center gap-2 mb-1">
                                 <Globe className="w-3.5 h-3.5" style={{ color: 'var(--text-bible-muted)' }} />
                                 <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-bible-muted)' }}>Coordenadas</span>
                               </div>
                               <p className="text-sm font-mono" style={{ color: 'var(--text-bible)' }}>{selectedPlace.lat.toFixed(4)}°, {selectedPlace.lon.toFixed(4)}°</p>
-                            </div>
-                          )}
-
-                          {(selectedPlace.type || selectedPlace.region) && (
-                            <div className="p-3 rounded-xl border" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
-                              <div className="flex items-center gap-2 mb-1">
-                                <Navigation className="w-3.5 h-3.5" style={{ color: 'var(--text-bible-muted)' }} />
-                                <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-bible-muted)' }}>Tipo</span>
-                              </div>
-                              <p className="text-sm font-medium" style={{ color: 'var(--text-bible)' }}>{selectedPlace.type || selectedPlace.region}</p>
-                            </div>
-                          )}
-
-                          {selectedPlace.country && (
-                            <div className="p-3 rounded-xl border" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
-                              <div className="flex items-center gap-2 mb-1">
-                                <MapPin className="w-3.5 h-3.5" style={{ color: 'var(--text-bible-muted)' }} />
-                                <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-bible-muted)' }}>País</span>
-                              </div>
-                              <p className="text-sm font-medium" style={{ color: 'var(--text-bible)' }}>{selectedPlace.country}</p>
                             </div>
                           )}
                         </div>
@@ -368,7 +350,7 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                               <Image className="w-4 h-4" style={{ color: 'var(--accent-bible)' }} />
                               <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-bible-muted)' }}>Descrição</span>
                             </div>
-                            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-bible)' }}>{selectedPlace.description.replace(/<[^>]+>/g, '')}</p>
+                            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-bible)' }}>{selectedPlace.description}</p>
                           </div>
                         )}
 
