@@ -234,13 +234,15 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       year: 2026,
       quarter: 2,
       title: '2º Trimestre de 2026',
-      theme: 'A Fé dos Patriarcas',
+      theme: 'Homens dos quais o Mundo não Era Digno',
       commentator: 'Comentarista: Elinaldo Renovato',
       color: 'from-amber-600 to-amber-800',
       icon: '📖',
+      coverImage: 'https://i.ibb.co/Gf6fWG0q/Capa.jpg',
       lessons: [
-        { number: 1, title: 'Abraão: Seu Chamado e Sua Jornada de Fé', date: 'Abril', text: 'Conteúdo sobre Abraão...' },
-        { number: 2, title: 'Isaque: O Filho da Promessa', date: 'Abril', text: 'Conteúdo sobre Isaque...' },
+        { number: 1, title: 'Abraão: Seu Chamado e Sua Jornada de Fé', date: 'Abril', text: 'O legado de Abraão...' },
+        { number: 2, title: 'Isaque: O Filho da Promessa', date: 'Abril', text: 'O legado de Isaque...' },
+        { number: 3, title: 'Jacó: Transformado por Deus', date: 'Maio', text: 'O legado de Jacó...' },
       ]
     },
     {
