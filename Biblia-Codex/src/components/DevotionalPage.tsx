@@ -74,9 +74,9 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
     setShowModuleSelector(false);
 
     try {
-      const { readModuleBinaryFromPublic } = await import('../services/moduleService');
-      
-      const zipData = await readModuleBinaryFromPublic(module.path);
+      const response = await fetch(`/${module.path}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const zipData = await response.arrayBuffer();
       const dbData = await extractSqlFromZip(zipData);
       
       const initSqlJs = (await import('sql.js')).default;
