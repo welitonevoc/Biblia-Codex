@@ -242,7 +242,7 @@ export const TagsView: React.FC = () => {
         </span>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 overflow-y-auto pb-24" style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
         {filteredBookmarks.length === 0 ? (
           <div className="py-24 text-center opacity-20 flex flex-col items-center">
             <TagIcon className="w-16 h-16 mb-4" />

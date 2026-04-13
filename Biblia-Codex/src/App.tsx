@@ -25,6 +25,7 @@ import { StudyToolsPanel } from './components/StudyToolsPanel';
 import { DevotionalPage } from './components/DevotionalPage';
 import { ReadingPlans } from './components/ReadingPlans';
 import { MapsPage } from './components/MapsPage';
+import { XRefsPage } from './components/XRefsPage';
 import { SearchView } from './components/SearchView';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { Book, Verse } from './types';
@@ -329,6 +330,20 @@ const [showOnboarding, setShowOnboarding] = useState(true);
                 className="h-full"
               >
                 <MapsPage onNavigate={(bookId, chapter, verse) => {
+                  const book = BIBLE_BOOKS.find(b => b.id === bookId);
+                  if (book) handleSelect(book, chapter, verse);
+                }} />
+              </motion.div>
+            )}
+            {activeTab === 'xrefs' && (
+              <motion.div
+                key="xrefs"
+                initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                animate={{ opacity: 1 }}
+                exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                className="h-full"
+              >
+                <XRefsPage onNavigate={(bookId, chapter, verse) => {
                   const book = BIBLE_BOOKS.find(b => b.id === bookId);
                   if (book) handleSelect(book, chapter, verse);
                 }} />
