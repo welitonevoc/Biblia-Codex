@@ -407,7 +407,7 @@ export const BibleService = {
           if (verseTable) {
             try {
               const verseResult = db.exec(
-                `SELECT v.location, l.location as place_name, l.lat, l.lon, l.verses, l.comment
+                `SELECT v.location, l.location as place_name, l.lat, l.lon, l.verses, l.comment, l.image, l.images, l.modern_name, l.type, l.region, l.country
                  FROM "${verseTable}" v
                  LEFT JOIN "${locationTable}" l ON v.location = l.location
                  WHERE v.book = ? AND v.chapter = ? AND v.verse = ?`,
@@ -421,7 +421,13 @@ export const BibleService = {
                   lat: row[2],
                   lon: row[3],
                   verses: row[4],
-                  comment: row[5]
+                  comment: row[5],
+                  image: row[6],
+                  images: row[7],
+                  modernName: row[8],
+                  type: row[9],
+                  region: row[10],
+                  country: row[11]
                 }));
               }
             } catch (e) {
