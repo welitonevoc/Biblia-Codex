@@ -36,13 +36,8 @@ function parseVerseRef(ref: string): VerseRef | null {
   };
 }
 
-function verseRefToString(ref: VerseRef, includeEnd?: boolean): string {
-  const book = BIBLE_BOOKS.find(b => b.id === ref.bookId);
-  const bookName = book?.name || ref.bookId;
-  if (includeEnd && ref.endVerse && ref.endVerse !== ref.verse) {
-    return `${bookName}.${ref.chapter}.${ref.verse}-${ref.endVerse}`;
-  }
-  return `${bookName}.${ref.chapter}.${ref.verse}`;
+function verseRefToKey(ref: VerseRef): string {
+  return `${ref.bookId}.${ref.chapter}.${ref.verse}`;
 }
 
 export async function loadCrossReferences(): Promise<void> {
@@ -67,8 +62,8 @@ export async function loadCrossReferences(): Promise<void> {
 
       const entry: CrossRefEntry = { from: fromRef, to: toRef, votes };
 
-      const fromKey = verseRefToString(fromRef);
-      const toKey = verseRefToString(toRef);
+      const fromKey = verseRefToKey(fromRef);
+      const toKey = verseRefToKey(toRef);
 
       if (!crossRefCache.has(fromKey)) {
         crossRefCache.set(fromKey, []);

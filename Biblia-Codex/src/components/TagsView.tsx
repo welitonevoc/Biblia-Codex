@@ -98,7 +98,12 @@ export const TagsView: React.FC = () => {
 
   const filteredBookmarks = useMemo(() => {
     if (!selectedTagId) return bookmarks;
-    return bookmarks.filter(b => b.tags?.includes(selectedTagId));
+    const userBookmarks = bookmarks.filter(b => b.tags?.includes(selectedTagId));
+    
+    const crossRefTags = getTagsForVerse('', 0, 0);
+    if (crossRefTags.length === 0) return userBookmarks;
+    
+    return userBookmarks;
   }, [bookmarks, selectedTagId]);
 
   const activeTag = useMemo(() => tags.find(t => t.id === selectedTagId), [tags, selectedTagId]);
@@ -148,7 +153,12 @@ export const TagsView: React.FC = () => {
                 <span className="font-medium truncate">#{tag.name}</span>
               </button>
               <div className="flex items-center space-x-1 shrink-0">
-                <span className="text-[10px] opacity-40">{bookmarks.filter(b => b.tags?.includes(tag.id)).length}</span>
+                <span className="text-[10px] opacity-40">
+                  {(() => {
+                    const userCount = bookmarks.filter(b => b.tags?.includes(tag.id)).length;
+                    return userCount;
+                  })()}
+                </span>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDeleteTag(tag.id); }}
                   className="p-1 rounded opacity-0 group-hover/item:opacity-50 hover:!opacity-100 hover:bg-red-500/10 hover:text-red-500 transition-all"
