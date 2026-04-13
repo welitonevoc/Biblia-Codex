@@ -212,26 +212,35 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     const centerX = dimensions.width / 2;
     positionNode(rootNode.id, centerX, startY);
 
+    // Calculate bounding box
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     nodes.forEach(node => {
-      if (node.x > 0) {
-        minX = Math.min(minX, node.x - 100);
-        maxX = Math.max(maxX, node.x + 100);
+      if (node.x > 0 && node.y > 0) {
+        minX = Math.min(minX, node.x - 90);
+        maxX = Math.max(maxX, node.x + 90);
         minY = Math.min(minY, node.y - 35);
-        maxY = Math.max(maxY, node.y + 45);
+        maxY = Math.max(maxY, node.y + 35);
       }
     });
 
-    if (minX !== Infinity) {
+    if (minX !== Infinity && maxX !== -Infinity) {
       const treeContentWidth = maxX - minX;
       const treeContentHeight = maxY - minY;
-      const offsetX = (dimensions.width - treeContentWidth) / 2 - minX;
-      const offsetY = Math.max(40, (dimensions.height - treeContentHeight) / 2 - minY + 30);
+      const centerOffsetX = (dimensions.width - treeContentWidth) / 2 - minX;
+      const centerOffsetY = (dimensions.height - treeContentHeight) / 2 - minY;
       
       nodes.forEach(node => {
-        if (node.x > 0) {
-          node.x += offsetX;
-          node.y += offsetY;
+        if (node.x > 0 && node.y > 0) {
+          node.x += centerOffsetX;
+          node.y += Math.max(60, centerOffsetY);
+        }
+      });
+    } else {
+      // Fallback: center the root node
+      nodes.forEach(node => {
+        if (node.id === centerNode) {
+          node.x = dimensions.width / 2;
+          node.y = dimensions.height / 2;
         }
       });
     }
