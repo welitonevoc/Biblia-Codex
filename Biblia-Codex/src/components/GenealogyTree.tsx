@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BibleService } from '../BibleService';
 import {
   Users, TreePine, List, X, Calendar, MapPin,
-  BookOpen, ChevronRight, Search, Sparkles,
-  Star, Heart, Crown, Scroll, Zap, ZoomIn, ZoomOut, Maximize2
+  BookOpen, ChevronRight, Search, Minus, Plus,
+  Maximize2, Heart, Star
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -22,13 +22,14 @@ interface Person {
   deathplace?: string;
   tree_id?: number;
   verses?: string;
+  parent_id?: number;
+  children?: Person[];
 }
 
 interface TreeNode extends Person {
   x: number;
   y: number;
   generation: number;
-  connections: { from: number; to: number }[];
   parentId?: number;
   childIds: number[];
   isExpanded: boolean;
@@ -53,58 +54,116 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
   const [filterGender, setFilterGender] = useState<'all' | 'M' | 'F'>('all');
   const [isHoveringCard, setIsHoveringCard] = useState<number | null>(null);
   
-  // Radial tree state
   const [centerNode, setCenterNode] = useState<number | null>(null);
   const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
   const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
 
-  // Load people data
   useEffect(() => {
     async function loadData() {
       setLoading(true);
       const data = await BibleService.getPeopleData(bookId, chapter, verse);
-      setPeople(data);
+      const peopleWithChildren = buildFamilyTree(data);
+      setPeople(peopleWithChildren);
       if (data.length > 0) {
-        setCenterNode(data[0].id);
-        setExpandedNodes(new Set(data.map(p => p.id)));
+        const root = findRootPerson(peopleWithChildren);
+        setCenterNode(root?.id || data[0].id);
+        const allIds = new Set<number>();
+        collectAllIds(root || data[0], allIds);
+        setExpandedNodes(allIds);
       }
       setLoading(false);
     }
     loadData();
   }, [bookId, chapter, verse]);
 
-  // Build radial tree nodes - improved mind map layout
+  function buildFamilyTree(data: Person[]): Person[] {
+    const map = new Map<number, Person>();
+    data.forEach(p => {
+      map.set(p.id, { ...p, children: [] });
+    });
+    
+    const roots: Person[] = [];
+    map.forEach(p => {
+      if (p.parent_id && map.has(p.parent_id)) {
+        const parent = map.get(p.parent_id)!;
+        parent.children = parent.children || [];
+        parent.children.push(p);
+      } else {
+        roots.push(p);
+      }
+    });
+    
+    if (roots.length === 0 && data.length > 0) {
+      return data.map(p => ({ ...p, children: [] }));
+    }
+    
+    return roots.length > 0 ? roots : data;
+  }
+
+  function findRootPerson(people: Person[]): Person | null {
+    return people.find(p => !p.parent_id) || people[0] || null;
+  }
+
+  function collectAllIds(person: Person, ids: Set<number>) {
+    if (!person) return;
+    ids.add(person.id);
+    person.children?.forEach(child => collectAllIds(child, ids));
+  }
+
+  function flattenTree(person: Person, generation = 0): TreeNode[] {
+    const node: TreeNode = {
+      ...person,
+      x: 0,
+      y: 0,
+      generation,
+      childIds: person.children?.map(c => c.id) || [],
+      isExpanded: true
+    };
+    const result = [node];
+    person.children?.forEach(child => {
+      result.push(...flattenTree(child, generation + 1));
+    });
+    return result;
+  }
+
   useEffect(() => {
     if (!people.length || !centerNode) return;
 
-    const nodes: TreeNode[] = people.map(p => ({
+    const root = findRootPerson(people);
+    const flatNodes = root ? flattenTree(root) : people.map(p => ({
       ...p,
       x: 0,
       y: 0,
       generation: 0,
-      connections: [],
       childIds: [],
       isExpanded: true
     }));
 
-    // Build parent-child relationships based on order
-    people.forEach((p, idx) => {
-      if (idx > 0 && nodes[idx - 1]) {
-        nodes[idx].parentId = nodes[idx - 1].id;
-        nodes[idx - 1].childIds.push(p.id);
-        nodes[idx].generation = (nodes[idx - 1]?.generation || 0) + 1;
-        nodes[idx].connections.push({ from: nodes[idx - 1].id, to: p.id });
+    const nodeMap = new Map<number, TreeNode>();
+    flatNodes.forEach(n => nodeMap.set(n.id, n));
+
+    flatNodes.forEach(n => {
+      if (n.parent_id) {
+        const parent = nodeMap.get(n.parent_id);
+        if (parent) {
+          n.parentId = parent.id;
+        }
       }
     });
 
-    // Calculate radial positions - true mind map layout
+    setTreeNodes(flatNodes);
+  }, [people, centerNode]);
+
+  useEffect(() => {
+    if (!treeNodes.length || !dimensions.width || !dimensions.height) return;
+
+    const nodes = [...treeNodes];
+    const nodeMap = new Map<number, TreeNode>();
+    nodes.forEach(n => nodeMap.set(n.id, n));
+
     const centerX = dimensions.width / 2;
     const centerY = dimensions.height / 2;
-    const availableWidth = dimensions.width;
-    const availableHeight = dimensions.height;
-    
-    // If only one node, center it
+
     if (nodes.length === 1) {
       nodes[0].x = centerX;
       nodes[0].y = centerY;
@@ -112,48 +171,37 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
       return;
     }
 
-    const maxRadius = Math.min(availableWidth, availableHeight) * 0.38;
+    const maxRadius = Math.min(dimensions.width, dimensions.height) * 0.42;
+    const maxGen = Math.max(...nodes.map(n => n.generation), 1);
 
-    // Find root node
     const rootNode = nodes.find(n => n.id === centerNode);
-    if (!rootNode) return;
-
-    // Position root at center
-    rootNode.x = centerX;
-    rootNode.y = centerY;
-
-    // Get all other nodes
-    const otherNodes = nodes.filter(n => n.id !== centerNode);
-    if (otherNodes.length === 0) {
-      setTreeNodes(nodes);
-      return;
+    if (rootNode) {
+      rootNode.x = centerX;
+      rootNode.y = centerY;
     }
-    
-    const maxGen = Math.max(...otherNodes.map(n => n.generation), 1);
 
-    // Position each node by generation in concentric rings
-    otherNodes.forEach((node) => {
+    const otherNodes = nodes.filter(n => n.id !== centerNode);
+    
+    otherNodes.forEach(node => {
       const gen = node.generation;
       const ringRadius = maxRadius * (gen / maxGen);
       
-      // Get siblings in same generation and same parent
       const siblings = otherNodes.filter(n => 
         n.generation === gen && n.parentId === node.parentId
       );
       const siblingIdx = siblings.indexOf(node);
       const totalSiblings = siblings.length || 1;
 
-      // Calculate angle - evenly spread around parent direction
       let baseAngle: number;
       if (node.parentId) {
-        const parent = nodes.find(n => n.id === node.parentId);
+        const parent = nodeMap.get(node.parentId);
         baseAngle = parent ? Math.atan2(parent.y - centerY, parent.x - centerX) : -Math.PI / 2;
       } else {
-        baseAngle = -Math.PI / 2;
+        const angleStep = (Math.PI * 2) / totalSiblings;
+        baseAngle = -Math.PI / 2 + siblingIdx * angleStep;
       }
       
-      // Spread siblings in an arc around the parent
-      const arcSpan = Math.PI * 0.6; // 60% of circle spread
+      const arcSpan = Math.PI * 0.7;
       const angle = baseAngle + (siblingIdx - (totalSiblings - 1) / 2) * (arcSpan / Math.max(totalSiblings, 1));
 
       node.x = centerX + Math.cos(angle) * ringRadius;
@@ -161,9 +209,8 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     });
 
     setTreeNodes(nodes);
-  }, [people, centerNode, dimensions]);
+  }, [treeNodes, dimensions, centerNode]);
 
-  // Handle container resize
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
@@ -173,15 +220,20 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
         });
       }
     };
-
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // Filter people
   const filteredPeople = useMemo(() => {
     let result = people;
+    const flattenPeople = (p: Person): Person[] => {
+      const arr = [p];
+      p.children?.forEach(child => arr.push(...flattenPeople(child)));
+      return arr;
+    };
+    result = people.flatMap(p => flattenPeople(p));
+    
     if (searchQuery) {
       result = result.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -193,7 +245,6 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     return result;
   }, [people, searchQuery, filterGender]);
 
-  // Toggle node expansion
   const toggleNode = (nodeId: number) => {
     setExpandedNodes(prev => {
       const next = new Set(prev);
@@ -206,163 +257,153 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     });
   };
 
-  // Render radial tree node
-  const renderRadialNode = (node: TreeNode, idx: number) => {
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full relative overflow-hidden bg-gradient-to-b from-stone-950 to-stone-900">
+        <div className="absolute inset-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-amber-500/5 blur-3xl" />
+        </div>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10"
+        >
+          <div className="w-16 h-16 rounded-2xl border border-stone-700 flex items-center justify-center">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            >
+              <TreePine className="w-6 h-6 text-amber-500" />
+            </motion.div>
+          </div>
+        </motion.div>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mt-4 text-sm font-medium text-stone-400"
+        >
+          Carregando genealogia...
+        </motion.p>
+      </div>
+    );
+  }
+
+  const renderNode = (node: TreeNode) => {
     const isMale = node.gender === 'M';
     const isSelected = selectedPerson?.id === node.id;
     const isHovered = isHoveringCard === node.id;
     const isExpanded = expandedNodes.has(node.id);
     const isCenter = node.id === centerNode;
     const hasChildren = node.childIds.length > 0;
-    const radius = isCenter ? 50 : isSelected ? 42 : isHovered ? 40 : 38;
+    const isVisible = isExpanded || isCenter;
+
+    const size = isCenter ? 48 : isSelected ? 44 : isHovered ? 42 : 40;
+    
+    const bgColor = isCenter 
+      ? 'from-amber-500/20 to-amber-600/10' 
+      : isMale 
+        ? 'from-stone-700/40 to-stone-800/30' 
+        : 'from-stone-700/40 to-stone-800/30';
+    
+    const borderColor = isCenter 
+      ? 'border-amber-500/50' 
+      : isMale 
+        ? 'border-stone-500/40' 
+        : 'border-stone-500/40';
+
+    const textColor = isCenter 
+      ? 'text-amber-400' 
+      : 'text-stone-200';
 
     return (
-      <g key={node.id}>
-        <defs>
-          <radialGradient id={`grad-${node.id}`} cx="30%" cy="30%" r="70%">
-            <stop offset="0%" stopColor={isCenter ? '#fbbf24' : isMale ? '#818cf8' : '#f9a8d4'} />
-            <stop offset="100%" stopColor={isCenter ? '#f59e0b' : isMale ? '#4f46e5' : '#ec4899'} />
-          </radialGradient>
-          <filter id={`glow-${node.id}`}>
-            <feGaussianBlur stdDeviation={isSelected ? "6" : "4"} result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <filter id={`shadow-${node.id}`}>
-            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.4" />
-          </filter>
-        </defs>
-
-        {/* Connection to parent - smooth bezier curve */}
+      <g key={node.id} style={{ opacity: isVisible ? 1 : 0.3, transition: 'opacity 0.3s' }}>
         {node.parentId && (() => {
           const parent = treeNodes.find(n => n.id === node.parentId);
           if (!parent) return null;
-          
-          const startX = parent.x;
-          const startY = parent.y;
-          const endX = node.x;
-          const endY = node.y;
-          
-          // Calculate control points for smooth curve
-          const midX = (startX + endX) / 2;
-          const midY = (startY + endY) / 2;
-          const controlOffset = 50;
-          const dx = endX - startX;
-          const dy = endY - startY;
-          
-          // Perpendicular control point
-          const ctrl1X = startX + dx * 0.25;
-          const ctrl1Y = startY + dy * 0.25 - controlOffset * (dy / Math.abs(dy || 1));
-          const ctrl2X = endX - dx * 0.25;
-          const ctrl2Y = endY - dy * 0.25 + controlOffset * (dy / Math.abs(dy || 1));
-          
           return (
             <path
-              d={`M ${startX} ${startY} C ${ctrl1X} ${ctrl1Y}, ${ctrl2X} ${ctrl2Y}, ${endX} ${endY}`}
+              d={`M ${parent.x} ${parent.y} L ${node.x} ${node.y}`}
               fill="none"
-              stroke={isCenter ? '#fbbf24' : isSelected ? '#fbbf24' : isMale ? '#6366f1' : '#ec4899'}
-              strokeWidth={isSelected ? "3" : "2"}
-              strokeOpacity={isSelected ? "0.9" : "0.35"}
+              stroke={isCenter ? '#f59e0b' : '#57534e'}
+              strokeWidth={isSelected ? 2 : 1.5}
+              strokeOpacity={isSelected ? 0.8 : 0.3}
               strokeLinecap="round"
             />
           );
         })()}
-
-        {/* Node group */}
+        
         <g
           onClick={(e) => {
             e.stopPropagation();
             setSelectedPerson(node);
-            if (hasChildren) toggleNode(node.id);
           }}
           onMouseEnter={() => setIsHoveringCard(node.id)}
           onMouseLeave={() => setIsHoveringCard(null)}
-          style={{ cursor: hasChildren ? 'pointer' : 'default' }}
+          style={{ cursor: 'pointer' }}
           transform={`translate(${node.x}, ${node.y})`}
         >
-          {/* Outer glow ring */}
           <circle
-            r={radius + 10}
+            r={size + 6}
             fill="transparent"
-            stroke={isCenter ? '#fbbf24' : isMale ? '#6366f1' : '#ec4899'}
-            strokeWidth="2"
-            strokeOpacity={isSelected ? "0.8" : isHovered ? "0.5" : "0.2"}
+            stroke={isCenter ? '#f59e0b' : '#78716c'}
+            strokeWidth="1"
+            strokeOpacity={isSelected ? 0.6 : isHovered ? 0.4 : 0.2}
           />
-
-          {/* Expand indicator for nodes with children */}
-          {hasChildren && (
-            <circle
-              r={radius + 16}
-              fill="transparent"
-              stroke={isExpanded ? '#22c55e' : '#94a3b8'}
-              strokeWidth="1.5"
-              strokeDasharray={isExpanded ? "none" : "3,3"}
-              strokeOpacity="0.5"
-              className="transition-all"
-            />
-          )}
-
-          {/* Main circle */}
+          
           <circle
-            r={radius}
-            fill={isSelected ? `url(#grad-${node.id})` : isCenter ? '#1a1a2e' : isMale ? '#1e1b4b' : '#4c1d4d'}
-            stroke={isCenter ? '#fbbf24' : isMale ? '#818cf8' : '#f472b6'}
-            strokeWidth={isSelected ? 4 : isCenter ? 3 : isHovered ? 3 : 2.5}
-            strokeOpacity={isSelected ? 1 : 0.7}
-            filter={`url(#shadow-${node.id})`}
+            r={size}
+            className={cn(
+              'fill stroke-2',
+              bgColor,
+              borderColor
+            )}
           />
-
-          {/* Inner icon/text */}
-          <text
-            textAnchor="middle"
-            dominantBaseline="central"
-            fill="white"
-            fontSize={isCenter ? "28" : "22"}
-            y="-4"
-          >
-            {isCenter ? '👑' : isMale ? '👨‍🎓' : '👩‍🎓'}
-          </text>
-
-          {/* Expand icon */}
+          
           {hasChildren && (
-            <g transform={`translate(${radius + 8}, ${radius + 8})`}>
-              <circle r="12" fill={isExpanded ? '#22c55e' : '#3b82f6'} stroke="none" />
+            <g transform={`translate(${size + 4}, ${size + 4})`}>
+              <circle r="10" fill="#292524" stroke="#57534e" strokeWidth="1" />
               <text
                 textAnchor="middle"
                 dominantBaseline="central"
-                fill="white"
-                fontSize="14"
-                fontWeight="bold"
+                fill="#a8a29e"
+                fontSize="10"
+                fontWeight="600"
               >
                 {isExpanded ? '−' : node.childIds.length}
               </text>
             </g>
           )}
-
-          {/* Name label */}
+          
           <text
-            y={radius + 18}
             textAnchor="middle"
-            fill={isCenter ? '#fbbf24' : isSelected ? '#e2e8f0' : '#cbd5e1'}
-            fontSize={isCenter ? "13" : isSelected ? "12" : "11"}
-            fontWeight={isCenter ? '800' : isSelected ? '700' : '600'}
-            style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
+            dominantBaseline="central"
+            fill={textColor}
+            fontSize={isCenter ? "18" : "14"}
+            fontWeight={isCenter ? "600" : "500"}
           >
-            {node.name.length > 18 ? node.name.slice(0, 15) + '...' : node.name}
+            {isCenter ? '⚜' : isMale ? '♂' : '♀'}
           </text>
-
-          {/* Year label */}
+          
+          <text
+            y={size + 14}
+            textAnchor="middle"
+            fill={isCenter ? '#fbbf24' : '#d6d3d1'}
+            fontSize={isCenter ? "11" : "10"}
+            fontWeight={isCenter ? "600" : "500"}
+          >
+            {node.name.length > 16 ? node.name.slice(0, 13) + '...' : node.name}
+          </text>
+          
           {(node.birthyear || node.deathyear) && !isCenter && (
             <text
-              y={radius + 32}
+              y={size + 26}
               textAnchor="middle"
-              fill="#94a3b8"
+              fill="#78716c"
               fontSize="9"
-              fontWeight="500"
             >
-              {node.birthyear || '?'}{node.birthyear && node.deathyear ? ' - ' : ''}{node.deathyear || ''}
+              {node.birthyear || '?'} – {node.deathyear || '?'}
             </text>
           )}
         </g>
@@ -370,346 +411,190 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     );
   };
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 0.1, scale: 1 }}
-            transition={{ duration: 1 }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 blur-3xl"
-          />
-        </div>
-
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0, rotate: -180 }}
-          animate={{ scale: 1, opacity: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 100 }}
-          className="relative z-10"
-        >
-          <div className="relative">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-              className="w-20 h-20 rounded-full border-2 border-transparent border-t-bible-accent/40 border-r-bible-accent/20"
-            />
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              className="absolute inset-3 w-14 h-14 rounded-full border-2 border-transparent border-b-bible-accent/60 border-l-bible-accent/30"
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Users className="w-7 h-7 text-bible-accent" />
-              </motion.div>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-6 text-center z-10"
-        >
-          <p className="text-sm font-semibold text-bible-text mb-1">
-            Construindo árvore genealógica...
-          </p>
-          <p className="text-xs text-bible-text-muted">
-            Mapeando linhagens bíblicas
-          </p>
-        </motion.div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#0a0a0f]" ref={containerRef}>
-      {/* Ambient background */}
+    <div className="flex flex-col h-full bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950" ref={containerRef}>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{ opacity: [0.03, 0.06, 0.03], scale: [1, 1.1, 1] }}
-          transition={{ duration: 8, repeat: Infinity }}
-          className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-gradient-to-br from-amber-600/20 to-orange-600/20 blur-3xl"
-        />
-        <motion.div
-          animate={{ opacity: [0.04, 0.07, 0.04], scale: [1, 1.15, 1] }}
-          transition={{ duration: 10, repeat: Infinity, delay: 2 }}
-          className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-gradient-to-br from-indigo-600/20 to-purple-600/20 blur-3xl"
-        />
+        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-amber-500/3 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-stone-500/3 blur-3xl" />
       </div>
 
-      {/* Header Premium */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="shrink-0 relative overflow-hidden"
+        className="shrink-0 relative px-4 py-4"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-transparent" />
-        <div className="absolute inset-0 border-b border-white/5" />
-
-        <div className="relative px-6 py-6">
-          <div className="flex items-start justify-between mb-5">
+        <div className="absolute inset-0 border-b border-stone-800/50" />
+        
+        <div className="relative">
+          <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="flex items-center gap-2.5 mb-3"
-              >
-                <div className="relative">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                  >
-                    <Crown className="w-4 h-4 text-amber-400" />
-                  </motion.div>
-                  <div className="absolute inset-0 w-4 h-4 bg-amber-400/30 rounded-full blur-md" />
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400/90">
+              <div className="flex items-center gap-2 mb-2">
+                <TreePine className="w-4 h-4 text-amber-500" />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-500/80">
                   Genealogy
                 </span>
-              </motion.div>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/80"
-              >
+              </div>
+              <h1 className="text-lg font-semibold text-stone-100">
                 Árvore Genealógica
-              </motion.h1>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="flex items-center gap-2 mt-2"
-              >
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
-                  <Users className="w-3 h-3 text-bible-accent" />
-                  <span className="text-xs font-semibold text-white/70">
-                    {people.length} {people.length === 1 ? 'pessoa' : 'pessoas'}
+              </h1>
+              <div className="flex items-center gap-2 mt-1.5">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-stone-800/50 border border-stone-700/50">
+                  <Users className="w-3 h-3 text-stone-400" />
+                  <span className="text-xs text-stone-400">
+                    {filteredPeople.length} pessoas
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
-                  <Zap className="w-3 h-3 text-amber-400" />
-                  <span className="text-xs font-semibold text-white/70">
-                    {expandedNodes.size} expandidos
-                  </span>
-                </div>
-              </motion.div>
+              </div>
             </div>
-
             {onClose && (
               <motion.button
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={onClose}
-                className="relative group p-2.5 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all"
+                className="p-2 rounded-lg bg-stone-800/50 border border-stone-700/50 hover:border-stone-600/50 transition-colors"
               >
-                <X className="w-4 h-4 text-white/60 group-hover:text-white transition-colors" />
+                <X className="w-4 h-4 text-stone-400" />
               </motion.button>
             )}
           </div>
 
-          {/* Search bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="relative mb-3"
-          >
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-white/40" />
-            </div>
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
             <input
               type="text"
-              placeholder="Buscar pessoa..."
+              placeholder="Buscar..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-bible-accent/50 focus:border-bible-accent/50 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-stone-800/50 border border-stone-700/50 text-sm text-stone-200 placeholder:text-stone-500 focus:outline-none focus:border-stone-600/50 transition-colors"
             />
-            <AnimatePresence>
-              {searchQuery && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  onClick={() => setSearchQuery('')}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                >
-                  <X className="w-4 h-4 text-white/40 hover:text-white/70" />
-                </motion.button>
-              )}
-            </AnimatePresence>
-          </motion.div>
+          </div>
 
-          {/* Controls */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex gap-2"
-          >
-            {/* Zoom controls */}
-            <div className="flex gap-1 p-1 rounded-xl bg-black/30 backdrop-blur-sm border border-white/5">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
-                className="p2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
-              >
-                <ZoomOut className="w-4 h-4" />
-              </motion.button>
-              <span className="px-2 py-1 text-xs font-medium text-white/60">
-                {Math.round(zoom * 100)}%
-              </span>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setZoom(z => Math.min(2, z + 0.1))}
-                className="p2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
-              >
-                <ZoomIn className="w-4 h-4" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
-                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
-              >
-                <Maximize2 className="w-4 h-4" />
-              </motion.button>
-            </div>
-
-            {/* Gender filter */}
-            <div className="flex gap-1 p-1 rounded-xl bg-black/30 backdrop-blur-sm border border-white/5">
+          <div className="flex gap-2">
+            <div className="flex gap-0.5 p-1 rounded-lg bg-stone-800/50 border border-stone-700/50">
               {[
-                { id: 'all' as const, label: 'Todos', icon: Users },
-                { id: 'M' as const, label: 'Homens', icon: Heart },
-                { id: 'F' as const, label: 'Mulheres', icon: Star },
+                { id: 'all' as const, icon: Users },
+                { id: 'M' as const, icon: Heart },
+                { id: 'F' as const, icon: Star },
               ].map((filter) => (
                 <motion.button
                   key={filter.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setFilterGender(filter.id)}
                   className={cn(
-                    'flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-bold transition-all relative overflow-hidden',
+                    'p-2 rounded-md transition-colors',
                     filterGender === filter.id
-                      ? 'text-white'
-                      : 'text-white/40 hover:text-white/70'
+                      ? 'bg-stone-700 text-stone-100'
+                      : 'text-stone-500 hover:text-stone-300'
                   )}
                 >
-                  {filterGender === filter.id && (
-                    <motion.div
-                      layoutId="genderFilter"
-                      className="absolute inset-0 bg-gradient-to-r from-indigo-500/90 to-purple-500/90 rounded-lg"
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  <filter.icon className="w-3.5 h-3.5 relative z-10" />
+                  <filter.icon className="w-3.5 h-3.5" />
                 </motion.button>
               ))}
             </div>
 
-            {/* View toggle */}
-            <div className="flex gap-1 p-1 rounded-xl bg-black/30 backdrop-blur-sm border border-white/5">
+            <div className="flex gap-0.5 p-1 rounded-lg bg-stone-800/50 border border-stone-700/50">
               {[
-                { id: 'tree' as const, label: 'Mapa', icon: TreePine },
-                { id: 'list' as const, label: 'Lista', icon: List },
+                { id: 'tree' as const, icon: TreePine, label: 'Mapa' },
+                { id: 'list' as const, icon: List, label: 'Lista' },
               ].map((mode) => (
                 <motion.button
                   key={mode.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setViewMode(mode.id)}
                   className={cn(
-                    'flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-bold transition-all relative overflow-hidden',
+                    'flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors',
                     viewMode === mode.id
-                      ? 'text-white'
-                      : 'text-white/40 hover:text-white/70'
+                      ? 'bg-stone-700 text-stone-100'
+                      : 'text-stone-500 hover:text-stone-300'
                   )}
                 >
-                  {viewMode === mode.id && (
-                    <motion.div
-                      layoutId="viewModeTab"
-                      className="absolute inset-0 bg-gradient-to-r from-amber-500/90 to-orange-500/90 rounded-lg"
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  <mode.icon className="w-4 h-4 relative z-10" />
-                  <span className="relative z-10">{mode.label}</span>
+                  <mode.icon className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{mode.label}</span>
                 </motion.button>
               ))}
             </div>
-          </motion.div>
+
+            <div className="flex gap-0.5 p-1 rounded-lg bg-stone-800/50 border border-stone-700/50">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
+                className="p-2 rounded-md text-stone-500 hover:text-stone-300 transition-colors"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </motion.button>
+              <span className="px-2 py-1.5 text-xs text-stone-400 font-medium">
+                {Math.round(zoom * 100)}%
+              </span>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setZoom(z => Math.min(2, z + 0.1))}
+                className="p-2 rounded-md text-stone-500 hover:text-stone-300 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setZoom(1)}
+                className="p-2 rounded-md text-stone-500 hover:text-stone-300 transition-colors"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </motion.button>
+            </div>
+          </div>
         </div>
       </motion.div>
 
-      {/* Content */}
       <div className="flex-1 overflow-hidden relative">
         <AnimatePresence mode="wait">
           {viewMode === 'tree' ? (
             <motion.div
               key="tree-view"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3 }}
-              className="w-full h-full overflow-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="w-full h-full"
               onClick={() => setSelectedPerson(null)}
             >
               <svg
                 width={dimensions.width}
                 height={dimensions.height}
-                style={{ 
-                  transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
+                style={{
+                  transform: `scale(${zoom})`,
                   transformOrigin: 'center center'
                 }}
-                className="min-w-full min-h-full"
+                className="w-full h-full"
               >
                 <defs>
-                  <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.3" />
+                  <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.15" />
                     <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
                   </radialGradient>
-                  <pattern id="gridRadial" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="1" />
-                  </pattern>
                 </defs>
-
-                {/* Background */}
-                <rect width="100%" height="100%" fill="url(#gridRadial)" />
                 
-                {/* Center glow */}
                 {centerNode && (
                   <circle
                     cx={dimensions.width / 2}
                     cy={dimensions.height / 2}
-                    r={200}
-                    fill="url(#centerGrad)"
+                    r={180}
+                    fill="url(#centerGlow)"
                   />
                 )}
-
-                {/* Tree nodes */}
-                {treeNodes.map(renderRadialNode)}
-
-                {/* Empty state */}
+                
+                {treeNodes.map(renderNode)}
+                
                 {!treeNodes.length && (
                   <text
                     x={dimensions.width / 2}
                     y={dimensions.height / 2}
                     textAnchor="middle"
-                    fill="rgba(255,255,255,0.3)"
-                    fontSize="16"
-                    fontWeight="500"
+                    fill="#78716c"
+                    fontSize="14"
                   >
                     Nenhuma genealogia encontrada
                   </text>
@@ -719,133 +604,65 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
           ) : (
             <motion.div
               key="list-view"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
               className="h-full overflow-y-auto p-4"
             >
               {filteredPeople.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center py-16 px-4"
-                >
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="inline-flex p-5 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10 mb-5"
-                  >
-                    <Users className="w-10 h-10 text-white/40" />
-                  </motion.div>
-                  <h3 className="text-base font-bold text-white/80 mb-2">
-                    {searchQuery ? 'Nenhuma pessoa encontrada' : 'Nenhuma pessoa ainda'}
-                  </h3>
-                </motion.div>
+                <div className="text-center py-12">
+                  <Users className="w-8 h-8 text-stone-600 mx-auto mb-3" />
+                  <p className="text-sm text-stone-500">
+                    {searchQuery ? 'Nenhuma pessoa encontrada' : 'Nenhuma pessoa'}
+                  </p>
+                </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <AnimatePresence>
                     {filteredPeople.map((person, idx) => {
                       const isMale = person.gender === 'M';
                       const isSelected = selectedPerson?.id === person.id;
+                      
                       return (
                         <motion.button
                           key={person.id || idx}
-                          initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                          transition={{ delay: idx * 0.04 }}
-                          whileHover={{ scale: 1.02, y: -3 }}
-                          whileTap={{ scale: 0.98 }}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ delay: idx * 0.03 }}
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
                           onMouseEnter={() => setIsHoveringCard(person.id)}
                           onMouseLeave={() => setIsHoveringCard(null)}
                           onClick={() => setSelectedPerson(person)}
                           className={cn(
-                            'relative overflow-hidden rounded-2xl p-4 text-left transition-all group',
-                            'backdrop-blur-sm border',
+                            'relative flex items-center gap-3 p-3 rounded-xl text-left transition-all',
+                            'border',
                             isSelected
-                              ? 'bg-gradient-to-br from-white/10 to-white/5 border-bible-accent/50 shadow-lg shadow-bible-accent/20'
-                              : 'bg-gradient-to-br from-white/5 to-white/3 border-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-white/5'
+                              ? 'bg-stone-800/60 border-stone-600/50'
+                              : 'bg-stone-800/30 border-stone-800/30 hover:border-stone-700/50'
                           )}
                         >
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: isHoveringCard === person.id ? 0.1 : 0 }}
-                            className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-500"
-                          />
-
-                          <div className="relative z-10">
-                            <div className="flex items-start gap-3.5">
-                              <motion.div
-                                whileHover={{ scale: 1.1, rotate: 5 }}
-                                className={cn(
-                                  'w-14 h-14 rounded-xl flex items-center justify-center shrink-0 relative overflow-hidden',
-                                  'border border-white/10',
-                                  isMale
-                                    ? 'bg-gradient-to-br from-indigo-500/25 to-blue-500/15'
-                                    : 'bg-gradient-to-br from-pink-500/25 to-rose-500/15'
-                                )}
-                              >
-                                <span className="text-2xl">
-                                  {isMale ? '👨‍🎓' : '👩‍🎓'}
-                                </span>
-                              </motion.div>
-
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-sm font-bold text-white/90 mb-1.5 truncate group-hover:text-white transition-colors">
-                                  {person.name}
-                                </h3>
-
-                                {(person.birthyear || person.deathyear) && (
-                                  <motion.div
-                                    className="flex items-center gap-1.5 text-xs text-white/50 mb-1.5"
-                                    whileHover={{ x: 3 }}
-                                  >
-                                    <Calendar className="w-3.5 h-3.5 text-white/40" />
-                                    <span>{person.birthyear || '?'} - {person.deathyear || '?'}</span>
-                                  </motion.div>
-                                )}
-
-                                {(person.birthplace || person.deathplace) && (
-                                  <motion.div
-                                    className="flex items-center gap-1.5 text-xs text-white/50"
-                                    whileHover={{ x: 3 }}
-                                  >
-                                    <MapPin className="w-3.5 h-3.5 text-white/40" />
-                                    <span className="truncate">
-                                      {person.birthplace || ''}{person.birthplace && person.deathplace ? ' → ' : ''}{person.deathplace || ''}
-                                    </span>
-                                  </motion.div>
-                                )}
-                              </div>
-
-                              <motion.div
-                                animate={{ x: isSelected ? 4 : 0 }}
-                                className="flex-shrink-0 mt-1"
-                              >
-                                <ChevronRight className={cn(
-                                  'w-4 h-4 transition-all',
-                                  'text-white/30 group-hover:text-bible-accent',
-                                  isSelected && 'text-bible-accent'
-                                )} />
-                              </motion.div>
-                            </div>
-
-                            {person.verses && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                className="mt-3 pt-3 border-t border-white/5"
-                              >
-                                <div className="flex items-center gap-1.5">
-                                  <Scroll className="w-3 h-3 text-bible-accent/70" />
-                                  <span className="text-[10px] font-medium text-white/40 truncate">
-                                    {person.verses.split(',').length} referências
-                                  </span>
-                                </div>
-                              </motion.div>
+                          <div className={cn(
+                            'w-10 h-10 rounded-lg flex items-center justify-center shrink-0',
+                            'bg-stone-800/50 border border-stone-700/50'
+                          )}>
+                            <span className="text-base">{isMale ? '♂' : '♀'}</span>
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-medium text-stone-200 truncate">
+                              {person.name}
+                            </h3>
+                            {(person.birthyear || person.deathyear) && (
+                              <p className="text-xs text-stone-500 mt-0.5">
+                                {person.birthyear || '?'} – {person.deathyear || '?'}
+                              </p>
                             )}
                           </div>
+                          
+                          <ChevronRight className="w-4 h-4 text-stone-600 shrink-0" />
                         </motion.button>
                       );
                     })}
@@ -857,175 +674,111 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
         </AnimatePresence>
       </div>
 
-      {/* Detail Panel */}
       <AnimatePresence>
         {selectedPerson && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedPerson(null)}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
-            />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-stone-950/80 backdrop-blur-sm z-40"
+            onClick={() => setSelectedPerson(null)}
+          />
+        )}
+      </AnimatePresence>
 
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="absolute bottom-0 left-0 right-0 z-50"
-              style={{ maxHeight: '65vh' }}
-            >
-              <div className="relative overflow-hidden">
-                <div className="absolute inset-0 rounded-t-3xl bg-gradient-to-t from-amber-500/20 via-transparent to-transparent" />
-
-                <div className="relative backdrop-blur-2xl bg-gradient-to-t from-[#0a0a0f] via-[#0f0f1a]/95 to-[#0f0f1a]/90 border-t border-white/10 rounded-t-3xl">
-                  <div className="flex justify-center pt-3 pb-2">
-                    <div className="w-12 h-1.5 rounded-full bg-white/20" />
+      <AnimatePresence>
+        {selectedPerson && (
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="absolute bottom-0 left-0 right-0 z-50"
+          >
+            <div className="bg-stone-900 border-t border-stone-800 rounded-t-2xl p-5 max-h-[60vh] overflow-y-auto">
+              <div className="flex justify-center mb-4">
+                <div className="w-10 h-1 rounded-full bg-stone-700" />
+              </div>
+              
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    'w-12 h-12 rounded-xl flex items-center justify-center',
+                    'bg-stone-800 border border-stone-700'
+                  )}>
+                    <span className="text-2xl">
+                      {selectedPerson.gender === 'M' ? '♂' : '♀'}
+                    </span>
                   </div>
-
-                  <div className="overflow-y-auto p-6" style={{ maxHeight: '60vh' }}>
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="flex items-start gap-4">
-                        <motion.div
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ type: 'spring', delay: 0.1 }}
-                          className={cn(
-                            'w-16 h-16 rounded-2xl flex items-center justify-center relative overflow-hidden',
-                            'border-2 border-white/20 shadow-lg',
-                            selectedPerson.gender === 'M'
-                              ? 'bg-gradient-to-br from-indigo-500 to-blue-600'
-                              : 'bg-gradient-to-br from-pink-500 to-rose-600'
-                          )}
-                        >
-                          <span className="text-3xl">
-                            {selectedPerson.gender === 'M' ? '👨‍🎓' : '👩‍🎓'}
-                          </span>
-                        </motion.div>
-
-                        <div>
-                          <motion.h3
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.15 }}
-                            className="text-xl font-black text-white mb-2"
-                          >
-                            {selectedPerson.name}
-                          </motion.h3>
-                          {selectedPerson.tree_id && (
-                            <motion.span
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: 0.2 }}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 border border-amber-500/30"
-                            >
-                              <Crown className="w-3 h-3" />
-                              Árvore #{selectedPerson.tree_id}
-                            </motion.span>
-                          )}
-                        </div>
-                      </div>
-
-                      <motion.button
-                        whileHover={{ scale: 1.15, rotate: 90 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setSelectedPerson(null)}
-                        className="p-2.5 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all"
-                      >
-                        <X className="w-4 h-4 text-white/60" />
-                      </motion.button>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 mb-5">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.25 }}
-                        className="relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-sm border border-white/10"
-                      >
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-full blur-xl" />
-                        <div className="relative">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="p-1.5 rounded-lg bg-indigo-500/20">
-                              <Calendar className="w-4 h-4 text-indigo-400" />
-                            </div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-white/40">Nascimento</p>
-                          </div>
-                          <p className="text-base font-bold text-white">
-                            {selectedPerson.birthyear || '?'}
-                            {selectedPerson.birthplace ? (
-                              <span className="block text-xs font-medium text-white/60 mt-1">
-                                {selectedPerson.birthplace}
-                              </span>
-                            ) : ''}
-                          </p>
-                        </div>
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-sm border border-white/10"
-                      >
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-pink-500/10 to-transparent rounded-full blur-xl" />
-                        <div className="relative">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="p-1.5 rounded-lg bg-pink-500/20">
-                              <MapPin className="w-4 h-4 text-pink-400" />
-                            </div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-white/40">Falecimento</p>
-                          </div>
-                          <p className="text-base font-bold text-white">
-                            {selectedPerson.deathyear || '?'}
-                            {selectedPerson.deathplace ? (
-                              <span className="block text-xs font-medium text-white/60 mt-1">
-                                {selectedPerson.deathplace}
-                              </span>
-                            ) : ''}
-                          </p>
-                        </div>
-                      </motion.div>
-                    </div>
-
-                    {selectedPerson.verses && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.35 }}
-                        className="relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-sm border border-white/10"
-                      >
-                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-bible-accent/10 to-transparent rounded-full blur-2xl" />
-                        <div className="relative">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="p-1.5 rounded-lg bg-bible-accent/20">
-                              <BookOpen className="w-4 h-4 text-bible-accent" />
-                            </div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-white/40">Referências Bíblicas</p>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {selectedPerson.verses.split(',').map((verse, idx) => (
-                              <motion.span
-                                key={idx}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.4 + idx * 0.05 }}
-                                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-all"
-                              >
-                                {verse.trim()}
-                              </motion.span>
-                            ))}
-                          </div>
-                        </div>
-                      </motion.div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-stone-100">
+                      {selectedPerson.name}
+                    </h2>
+                    {selectedPerson.tree_id && (
+                      <span className="text-xs text-amber-500/80">
+                        Árvore #{selectedPerson.tree_id}
+                      </span>
                     )}
                   </div>
                 </div>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setSelectedPerson(null)}
+                  className="p-2 rounded-lg bg-stone-800 border border-stone-700"
+                >
+                  <X className="w-4 h-4 text-stone-400" />
+                </motion.button>
               </div>
-            </motion.div>
-          </>
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="p-3 rounded-xl bg-stone-800/50 border border-stone-800">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar className="w-3.5 h-3.5 text-stone-500" />
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-stone-500">Nascimento</span>
+                  </div>
+                  <p className="text-sm font-medium text-stone-200">
+                    {selectedPerson.birthyear || '?'}
+                  </p>
+                  {selectedPerson.birthplace && (
+                    <p className="text-xs text-stone-500 mt-1">{selectedPerson.birthplace}</p>
+                  )}
+                </div>
+                
+                <div className="p-3 rounded-xl bg-stone-800/50 border border-stone-800">
+                  <div className="flex items-center gap-2 mb-1">
+                    <MapPin className="w-3.5 h-3.5 text-stone-500" />
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-stone-500">Falecimento</span>
+                  </div>
+                  <p className="text-sm font-medium text-stone-200">
+                    {selectedPerson.deathyear || '?'}
+                  </p>
+                  {selectedPerson.deathplace && (
+                    <p className="text-xs text-stone-500 mt-1">{selectedPerson.deathplace}</p>
+                  )}
+                </div>
+              </div>
+
+              {selectedPerson.verses && (
+                <div className="p-3 rounded-xl bg-stone-800/50 border border-stone-800">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-stone-500">Referências</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedPerson.verses.split(',').map((verse, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-1 rounded-md bg-stone-800 border border-stone-700 text-xs text-stone-400"
+                      >
+                        {verse.trim()}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
