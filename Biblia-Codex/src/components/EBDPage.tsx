@@ -68,8 +68,8 @@ const DynamicBook: React.FC<{ onBack: () => void; magazineUrl?: string; magazine
         }
       }
     } else {
-      // Carrega de URL (servidor local)
-      const url = magazineUrl || '/EBD/page.txt';
+// Carrega de URL (servidor local)
+       const url = magazineUrl || '/public/EBD/page.txt';
       fetch(url)
         .then(res => res.text())
         .then(html => {
@@ -420,13 +420,13 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 onClick={() => {
         // Para o 1º Trimestre de 2026, mostrar diretamente o conteúdo da página.txt
         if (quarter.id === '2026-q1') {
-          setMagazineUrl('/EBD/page.txt');
+          setMagazineUrl('/public/EBD/page.txt');
           setMagazineHTML(null);
           setShowDynamicBook(true);
         } 
         // Para o 2º Trimestre de 2026, mostrar diretamente o conteúdo da page2.txt
         else if (quarter.id === '2026-q2') {
-          setMagazineUrl('/EBD/page2.txt');
+          setMagazineUrl('/public/EBD/page2.txt');
           setMagazineHTML(null);
           setShowDynamicBook(true);
         } else {
