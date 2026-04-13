@@ -28,7 +28,8 @@
       "Bash(mv *)",
       "Bash(rmdir *)",
       "Bash(@echo *)",
-      "Bash(set *)"
+      "Bash(set *)",
+      "Bash(del *)"
     ]
   },
   "$version": 3
