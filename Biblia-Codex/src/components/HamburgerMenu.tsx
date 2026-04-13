@@ -28,29 +28,30 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
   const { user, login, handleLogout } = useAppContext();
 
   const menuItems = [
-    { id: 'home',         name: 'Início',               icon: Home,        section: 'principal' },
-    { id: 'bible',        name: 'Bíbia',               icon: BookOpen,    section: 'principal' },
-    { id: 'devocional',   name: 'Devocional',           icon: History,     section: 'principal' },
-    { id: 'notes',        name: 'Notas',         icon: FileText,    section: 'principal' },
-    { id: 'bookmarks',    name: 'Marcadores',           icon: Bookmark,    section: 'principal' },
-    { id: 'tags',         name: 'Destaques',            icon: Tag,         section: 'principal' },
-    { id: 'reading-plans',name: 'Planos',   icon: Calendar,    section: 'recursos' },
-    { id: 'dictionaries', name: 'Dicionários',          icon: Library,     section: 'recursos' },
-    { id: 'commentaries', name: 'Comentários',          icon: MessageSquare, section: 'recursos' },
-    { id: 'maps',         name: 'Mapas',                icon: Map,         section: 'recursos' },
-    { id: 'xrefs',        name: 'Refs. Cruzadas',        icon: Layers,      section: 'recursos' },
-    { id: 'epub',         name: 'Livros',        icon: Book,        section: 'recursos' },
-    { id: 'ai-assistant', name: 'Assistente IA', icon: Sparkles,    section: 'estudo' },
-    { id: 'settings',     name: 'Configurações',        icon: Settings,    section: 'sistema' },
-    { id: 'modules',      name: 'Módulos',              icon: Database,    section: 'sistema' },
-    { id: 'support',      name: 'Suporte',              icon: HelpIcon,    section: 'sistema' },
+    { id: 'home', name: 'Início', icon: Home, section: 'principal' },
+    { id: 'bible', name: 'Bíbia', icon: BookOpen, section: 'principal' },
+    { id: 'devocional', name: 'Devocional', icon: History, section: 'principal' },
+    { id: 'notes', name: 'Notas', icon: FileText, section: 'principal' },
+    { id: 'bookmarks', name: 'Marcadores', icon: Bookmark, section: 'principal' },
+    { id: 'tags', name: 'Destaques', icon: Tag, section: 'principal' },
+    { id: 'reading-plans', name: 'Planos', icon: Calendar, section: 'recursos' },
+    { id: 'dictionaries', name: 'Dicionários', icon: Library, section: 'recursos' },
+    { id: 'commentaries', name: 'Comentários', icon: MessageSquare, section: 'recursos' },
+    { id: 'maps', name: 'Mapas', icon: Map, section: 'recursos' },
+    { id: 'xrefs', name: 'Refs. Cruzadas', icon: Layers, section: 'recursos' },
+    { id: 'epub', name: 'Livros', icon: Book, section: 'recursos' },
+    { id: 'ebd', name: 'EBD', icon: BookOpen, section: 'recursos' },
+    { id: 'ai-assistant', name: 'Assistente IA', icon: Sparkles, section: 'estudo' },
+    { id: 'settings', name: 'Configurações', icon: Settings, section: 'sistema' },
+    { id: 'modules', name: 'Módulos', icon: Database, section: 'sistema' },
+    { id: 'support', name: 'Suporte', icon: HelpIcon, section: 'sistema' },
   ];
 
   const sections = [
     { id: 'principal', name: 'Explorar' },
-    { id: 'recursos',  name: 'Biblioteca' },
-    { id: 'estudo',    name: 'Estudo' },
-    { id: 'sistema',   name: 'Sistema' },
+    { id: 'recursos', name: 'Biblioteca' },
+    { id: 'estudo', name: 'Estudo' },
+    { id: 'sistema', name: 'Sistema' },
   ];
 
   return (

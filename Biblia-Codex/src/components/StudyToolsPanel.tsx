@@ -25,7 +25,7 @@ interface StudyToolsPanelProps {
   onClose: () => void;
   verse: Verse;
   book: Book;
-  type: 'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places';
+  type: 'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places' | 'footnotes';
   onNavigate: (bookId: string, chapter: number, verse?: number) => void;
 }
 
@@ -59,6 +59,9 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
       } else if (type === 'places') {
         const data = await BibleService.getPlacesData(book.id, verse.chapter, verse.verse);
         setContent(data);
+      } else if (type === 'footnotes') {
+        const data = await BibleService.getFootnotes(book.id, verse.chapter, verse.verse);
+        setContent(data);
       }
       setLoading(false);
     };
@@ -91,7 +94,8 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
     dictionary: 'Dicionário Teológico',
     xrefs: 'Referências Cruzadas',
     people: 'Pessoas Bíblicas',
-    places: 'Lugares Bíblicos'
+    places: 'Lugares Bíblicos',
+    footnotes: 'Notas de Rodapé'
   };
 
   const iconComponents = {
@@ -99,7 +103,8 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
     dictionary: Library,
     xrefs: Layers,
     people: Users,
-    places: MapPin
+    places: MapPin,
+    footnotes: Info
   };
 
   const IconComponent = iconComponents[type];

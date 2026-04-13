@@ -29,7 +29,7 @@ interface ReaderProps {
   onVerseSelect?: (verse: Verse) => void;
   onNavigate?: (bookId: string, chapter: number, verse?: number) => void;
   onStudyOpen: (selectedVerses: { verse: number, text: string }[]) => void;
-  onToolOpen: (verse: Verse, type: 'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places') => void;
+  onToolOpen: (verse: Verse, type: 'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places' | 'footnotes') => void;
 }
 
 export const Reader: React.FC<ReaderProps> = ({
@@ -607,6 +607,15 @@ export const Reader: React.FC<ReaderProps> = ({
                         >
                           <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📍</span>
                         </button>
+                        {settings.textDisplay.footnotes && (
+                          <button
+                            onClick={() => onToolOpen(v, 'footnotes')}
+                            className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool"
+                            title="Notas de Rodapé"
+                          >
+                            <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📝</span>
+                          </button>
+                        )}
                       </div>
                     </>
                   )}

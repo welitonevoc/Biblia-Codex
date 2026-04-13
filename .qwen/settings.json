@@ -17,7 +17,8 @@
       "Bash(git log *)",
       "Bash(git ls-remote *)",
       "Bash(dir *)",
-      "Bash(timeout *)"
+      "Bash(timeout *)",
+      "WebFetch(minise.com.br)"
     ]
   },
   "$version": 3

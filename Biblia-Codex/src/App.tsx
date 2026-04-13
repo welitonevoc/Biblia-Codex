@@ -27,6 +27,7 @@ import { ReadingPlans } from './components/ReadingPlans';
 import { MapsPage } from './components/MapsPage';
 import { XRefsPage } from './components/XRefsPage';
 import { SearchView } from './components/SearchView';
+import { EBDPage } from './components/EBDPage';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { Book, Verse } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -58,7 +59,7 @@ function AppContent() {
   const [isStudyOpen, setIsStudyOpen] = useState(false);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [selectedVersesForStudy, setSelectedVersesForStudy] = useState<{ verse: number, text: string }[]>([]);
-const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(true);
 
   useEffect(() => {
     const hasOnboarded = localStorage.getItem('codex-onboarded');
@@ -95,7 +96,7 @@ const [showOnboarding, setShowOnboarding] = useState(true);
   // Study Tools State
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [toolVerse, setToolVerse] = useState<Verse | null>(null);
-  const [toolType, setToolType] = useState<'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places'>('commentary');
+  const [toolType, setToolType] = useState<'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places' | 'footnotes'>('commentary');
 
   // Audio State
   const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
@@ -129,14 +130,14 @@ const [showOnboarding, setShowOnboarding] = useState(true);
   };
 
   return (
-    <div 
-      className="app-shell flex h-[100dvh] w-full overflow-hidden text-bible-text selection:bg-bible-accent/20" 
+    <div
+      className="app-shell flex h-[100dvh] w-full overflow-hidden text-bible-text selection:bg-bible-accent/20"
       style={{ minHeight: '100svh' }}
       role="application"
       aria-label="Bíblia Codex - Aplicativo de estudo bíblico"
     >
-      <a 
-        href="#main-content" 
+      <a
+        href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-bible-accent focus:text-white rounded"
       >
         Pular para conteúdo principal
@@ -349,8 +350,19 @@ const [showOnboarding, setShowOnboarding] = useState(true);
                 }} />
               </motion.div>
             )}
+            {activeTab === 'ebd' && (
+              <motion.div
+                key="ebd"
+                initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                animate={{ opacity: 1 }}
+                exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                className="h-full"
+              >
+                <EBDPage />
+              </motion.div>
+            )}
 
-            {!['home', 'bible', 'notes', 'settings', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional', 'search'].includes(activeTab) && (
+            {!['home', 'bible', 'notes', 'settings', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional', 'search', 'ebd'].includes(activeTab) && (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
                 <div className="opacity-20 flex flex-col items-center space-y-4">
                   <BookOpen className="w-16 h-16" />
