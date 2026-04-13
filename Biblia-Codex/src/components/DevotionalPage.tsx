@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { getSqlInstance } from '../BibleService';
+import { loadDevotionalModule } from '../services/devotionalModuleService';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
@@ -40,19 +40,6 @@ const AVAILABLE_DEVOTIONALS: DevotionalModule[] = [
   { id: 'spurgeon', name: 'Spurgeon', description: 'Charles Spurgeon Daily', language: 'en', path: 'Spurgeon365.devotions.zip' },
 ];
 
-async function extractSqlFromZip(zipData: Uint8Array): Promise<Uint8Array> {
-  const JSZip = (await import('jszip')).default;
-  const zip = await JSZip.loadAsync(zipData);
-  
-  const dbFile = Object.keys(zip.files).find(f => f.endsWith('.SQLite3'));
-  if (!dbFile) {
-    throw new Error('No database file found in archive');
-  }
-  
-  const dbData = await zip.file(dbFile).async('arraybuffer');
-  return new Uint8Array(dbData);
-}
-
 export function DevotionalPage({ onClose }: DevotionalPageProps) {
   const [modules] = useState<DevotionalModule[]>(AVAILABLE_DEVOTIONALS);
   const [selectedModule, setSelectedModule] = useState<DevotionalModule | null>(null);
@@ -75,36 +62,26 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
     setShowModuleSelector(false);
 
     try {
-      const response = await fetch(`/${module.path}`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const zipData = await response.arrayBuffer();
-      const dbData = await extractSqlFromZip(zipData);
+      const moduleData = await loadDevotionalModule(module.path);
       
-      const SQL = await getSqlInstance();
-      
-      const db = new SQL.Database(dbData);
-
-      const result = db.exec('SELECT day, devotion FROM devotions ORDER BY day');
-      if (result.length > 0) {
-        const parsedDevotions: Devotion[] = result[0].values.map((row: any[]) => {
-          const html = row[1] as string;
-          
-          const titleMatch = html.match(/<p class="cap1">([^<]+)<\/p>/);
-          const verseMatch = html.match(/<p class="Versiculo"><i>([^<]+)<\/i>/);
-          
-          return {
-            day: row[0] as number,
-            title: titleMatch ? titleMatch[1] : `Dia ${row[0]}`,
-            content: html,
-            verse: verseMatch ? verseMatch[1] : undefined
-          };
+      const parsedDevotions: Devotion[] = [];
+      moduleData.rawEntries.forEach((html, day) => {
+        const titleMatch = html.match(/<p class="cap1">([^<]+)<\/p>/);
+        const verseMatch = html.match(/<p class="Versiculo"><i>([^<]+)<\/i>/);
+        
+        parsedDevotions.push({
+          day,
+          title: titleMatch ? titleMatch[1] : `Dia ${day}`,
+          content: html,
+          verse: verseMatch ? verseMatch[1] : undefined
         });
-        setDevotions(parsedDevotions);
+      });
+      
+      if (parsedDevotions.length > 0) {
+        setDevotions(parsedDevotions.sort((a, b) => a.day - b.day));
       } else {
         setError('Nenhum devocional encontrado neste módulo');
       }
-
-      db.close();
     } catch (err: any) {
       console.error('Error loading devotional:', err);
       setError(err.message || 'Erro ao carregar devocional');
