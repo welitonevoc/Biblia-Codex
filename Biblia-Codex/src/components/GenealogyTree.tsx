@@ -322,6 +322,31 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     const centerX = dimensions.width / 2;
     positionNode(rootNode.id, centerX, startY);
 
+    // Calculate bounds and center the tree
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    nodes.forEach(node => {
+      if (node.x > 0) { // Only consider positioned nodes
+        minX = Math.min(minX, node.x - 75);
+        maxX = Math.max(maxX, node.x + 75);
+        minY = Math.min(minY, node.y - 30);
+        maxY = Math.max(maxY, node.y + 40);
+      }
+    });
+
+    if (minX !== Infinity) {
+      const treeContentWidth = maxX - minX;
+      const treeContentHeight = maxY - minY;
+      const offsetX = (dimensions.width - treeContentWidth) / 2 - minX;
+      const offsetY = Math.max(20, (dimensions.height - treeContentHeight) / 2 - minY + 50);
+      
+      nodes.forEach(node => {
+        if (node.x > 0) {
+          node.x += offsetX;
+          node.y += offsetY;
+        }
+      });
+    }
+
     setTreeNodes(nodes);
   }, [treeNodes, dimensions, centerNode, expandedNodes]);
 
