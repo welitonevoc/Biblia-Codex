@@ -20,7 +20,7 @@ import { SettingsPage } from './components/SettingsPage';
 import { HelpPage } from './components/HelpPage';
 import { DictionaryView } from './components/DictionaryView';
 import { ModuleManagement } from './components/ModuleManagement';
-import { TagsView } from './components/TagsView';
+import { BookmarksPage } from './components/BookmarksPage';
 import { StudyToolsPanel } from './components/StudyToolsPanel';
 import { DevotionalPage } from './components/DevotionalPage';
 import { ReadingPlans } from './components/ReadingPlans';
@@ -305,6 +305,20 @@ function AppContent() {
                   const book = BIBLE_BOOKS.find(b => b.id === bookId);
                   if (book) handleSelect(book, chapter, verse);
                 }} availableVersions={availableVersions.map(v => ({ id: v.id, name: v.name, abbreviation: v.abbreviation }))} />
+              </motion.div>
+            )}
+            {activeTab === 'bookmarks' && (
+              <motion.div
+                key="bookmarks"
+                initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                animate={{ opacity: 1 }}
+                exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                className="h-full"
+              >
+                <BookmarksPage onNavigate={(bookId, chapter, verse) => {
+                  const book = BIBLE_BOOKS.find(b => b.id === bookId);
+                  if (book) handleSelect(book, chapter, verse);
+                }} onBack={() => setActiveTab('home')} />
               </motion.div>
             )}
             {activeTab === 'search' && (
