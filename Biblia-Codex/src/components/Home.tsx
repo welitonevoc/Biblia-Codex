@@ -16,9 +16,10 @@ function cn(...inputs: (string | boolean | undefined)[]) {
 
 interface HomeProps {
   onNavigate: (book: Book, chapter: number) => void;
+  goToReadingPlans?: () => void;
 }
 
-export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
+export const Home: React.FC<HomeProps> = ({ onNavigate, goToReadingPlans }) => {
   const { user } = useAppContext();
   const [streak] = useState(7);
   const [planDay] = useState(4);
@@ -64,7 +65,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
       icon: BookMarked,
       title: 'Planos de Leitura',
       subtitle: 'Organize sua leitura',
-      action: () => { },
+      action: () => goToReadingPlans?.(),
       gradient: 'from-blue-500 to-indigo-600',
     },
     {

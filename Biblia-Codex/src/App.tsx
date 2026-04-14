@@ -183,7 +183,7 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0, y: -10 } : {}}
                 className="h-full w-full"
               >
-                <Home onNavigate={handleSelect} />
+                <Home onNavigate={handleSelect} goToReadingPlans={() => setActiveTab('reading-plans')} />
               </motion.div>
             )}
             {activeTab === 'bible' && (
