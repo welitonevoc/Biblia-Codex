@@ -49,7 +49,7 @@ function cn(...inputs: ClassValue[]) {
 function AppContent() {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const {
-    settings, activeTab, setActiveTab, config
+    settings, activeTab, setActiveTab, config, availableVersions
   } = useAppContext();
   const [currentBook, setCurrentBook] = useState<Book>(BIBLE_BOOKS[0]);
   const [currentChapter, setCurrentChapter] = useState(1);
@@ -183,7 +183,7 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0, y: -10 } : {}}
                 className="h-full w-full"
               >
-                <Home onNavigate={handleSelect} goToReadingPlans={() => setActiveTab('reading-plans')} />
+                <Home onNavigate={handleSelect} goToReadingPlans={() => setActiveTab('reading-plans')} goToDevocional={() => setActiveTab('devocional')} />
               </motion.div>
             )}
             {activeTab === 'bible' && (
@@ -304,7 +304,7 @@ function AppContent() {
                 <ReadingPlans onNavigate={(bookId, chapter, verse) => {
                   const book = BIBLE_BOOKS.find(b => b.id === bookId);
                   if (book) handleSelect(book, chapter, verse);
-                }} />
+                }} availableVersions={availableVersions.map(v => ({ id: v.id, name: v.name, abbreviation: v.abbreviation }))} />
               </motion.div>
             )}
             {activeTab === 'search' && (

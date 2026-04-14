@@ -17,9 +17,10 @@ function cn(...inputs: (string | boolean | undefined)[]) {
 interface HomeProps {
   onNavigate: (book: Book, chapter: number) => void;
   goToReadingPlans?: () => void;
+  goToDevocional?: () => void;
 }
 
-export const Home: React.FC<HomeProps> = ({ onNavigate, goToReadingPlans }) => {
+export const Home: React.FC<HomeProps> = ({ onNavigate, goToReadingPlans, goToDevocional }) => {
   const { user } = useAppContext();
   const [streak] = useState(7);
   const [planDay] = useState(4);
@@ -58,7 +59,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, goToReadingPlans }) => {
       icon: Flame,
       title: 'Devocional',
       subtitle: 'Dia a dia',
-      action: () => { },
+      action: () => goToDevocional?.(),
       gradient: 'from-rose-500 to-pink-600',
     },
     {

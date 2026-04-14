@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, ArrowLeft, Flame, Trophy, Star, Zap, Crown, ChevronDown, Settings, Users, Globe, Heart, Sun, Moon } from 'lucide-react';
+import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, ArrowLeft, Flame, Trophy, Star, Zap, Crown, ChevronDown, Settings, Users, Globe, Heart, Sun, Moon, BookText } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -211,11 +211,17 @@ const getXpForNextLevel = (currentLevel: number) => {
   return LEVELS[currentLevel].minXp;
 };
 
-export const ReadingPlans: React.FC<{ onNavigate: (bookId: string, chapter: number, verse?: number) => void }> = ({ onNavigate }) => {
-  const { settings } = useAppContext();
+export const ReadingPlans: React.FC<{ 
+  onNavigate: (bookId: string, chapter: number, verse?: number) => void;
+  availableVersions?: { id: string; name: string; abbreviation: string }[];
+}> = ({ onNavigate, availableVersions = [] }) => {
+  const { settings, currentVersion } = useAppContext();
   const [activeTab, setActiveTab] = useState<'home' | 'custom' | 'explore'>('home');
   const [selectedPlan, setSelectedPlan] = useState<ReadingPlan | null>(null);
   const [showPlanDetail, setShowPlanDetail] = useState(false);
+  const [showVersionPicker, setShowVersionPicker] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<string>(currentVersion?.id || 'ARC');
+  const [pendingPlan, setPendingPlan] = useState<typeof PRESET_PLANS[0] | null>(null);
   
   const [userPlans, setUserPlans] = useState<ReadingPlan[]>(() => {
     const saved = localStorage.getItem('codex-reading-plans');
@@ -234,9 +240,16 @@ export const ReadingPlans: React.FC<{ onNavigate: (bookId: string, chapter: numb
   }, [userPlans]);
 
   const startPlan = (preset: typeof PRESET_PLANS[0]) => {
+    setPendingPlan(preset);
+    setShowVersionPicker(true);
+  };
+
+  const confirmStartPlan = () => {
+    if (!pendingPlan) return;
+    
     const newPlan: ReadingPlan = {
-      ...preset,
-      id: `${preset.id}-${Date.now()}`,
+      ...pendingPlan,
+      id: `${pendingPlan.id}-${Date.now()}`,
       currentDay: 1,
       streak: 0,
       longestStreak: 0,
@@ -249,6 +262,8 @@ export const ReadingPlans: React.FC<{ onNavigate: (bookId: string, chapter: numb
     setUserPlans(prev => [...prev, newPlan]);
     setSelectedPlan(newPlan);
     setShowPlanDetail(true);
+    setShowVersionPicker(false);
+    setPendingPlan(null);
   };
 
   const markDayComplete = (planId: string) => {
@@ -332,10 +347,86 @@ export const ReadingPlans: React.FC<{ onNavigate: (bookId: string, chapter: numb
 
   const activePlan = userPlans[0];
 
+  const allVersions = availableVersions.length > 0 
+    ? availableVersions 
+    : [
+        { id: 'ARC', name: 'ARC 2009', abbreviation: 'ARC' },
+        { id: 'ARA', name: 'Almeida Revista e Atualizada', abbreviation: 'ARA' },
+        { id: 'NVI', name: 'Nova Versão Internacional', abbreviation: 'NVI' },
+      ];
+
   return (
     <div className="h-full overflow-y-auto scrollbar-thin">
-      <AnimatePresence>
-        {showPlanDetail && selectedPlan ? (
+      <AnimatePresence mode="wait">
+        {showVersionPicker && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+            onClick={() => setShowVersionPicker(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-md bg-[var(--surface-1)] rounded-2xl p-6 shadow-xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-[var(--text-bible)]">Escolha a Versão</h3>
+                <button
+                  onClick={() => setShowVersionPicker(false)}
+                  className="p-2 rounded-lg hover:bg-[var(--surface-2)] transition-colors"
+                >
+                  <X className="w-5 h-5 text-[var(--text-bible-muted)]" />
+                </button>
+              </div>
+              
+              <p className="text-sm text-[var(--text-bible-muted)] mb-4">
+                Selecione a tradução bíblica para este plano de leitura:
+              </p>
+
+              <div className="space-y-2 mb-6">
+                {allVersions.map((version) => (
+                  <button
+                    key={version.id}
+                    onClick={() => setSelectedVersion(version.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 p-3 rounded-xl transition-all",
+                      selectedVersion === version.id
+                        ? "bg-[var(--accent-bible)]/20 border-2 border-[var(--accent-bible)]"
+                        : "bg-[var(--surface-2)] border-2 border-transparent hover:border-[var(--border-bible)]"
+                    )}
+                  >
+                    <BookText className="w-5 h-5 text-[var(--accent-bible)]" />
+                    <div className="text-left">
+                      <div className="font-medium text-[var(--text-bible)]">{version.name}</div>
+                      <div className="text-xs text-[var(--text-bible-muted)]">{version.abbreviation}</div>
+                    </div>
+                    {selectedVersion === version.id && (
+                      <CheckCircle2 className="w-5 h-5 text-[var(--accent-bible)] ml-auto" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={confirmStartPlan}
+                className={cn(
+                  "w-full py-3 rounded-xl font-semibold",
+                  "bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)]",
+                  "shadow-lg hover:opacity-90 transition-opacity"
+                )}
+              >
+                Iniciar Plano
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+        {showPlanDetail && selectedPlan && (
           <motion.div
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
@@ -388,7 +479,7 @@ export const ReadingPlans: React.FC<{ onNavigate: (bookId: string, chapter: numb
 
               <div className="mb-6 p-4 rounded-xl bg-[var(--surface-1)] border border-[var(--border-bible)]">
                 <h3 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-3">
-                  Leitura de Hoje
+                  Leitura de Hoje ({selectedVersion})
                 </h3>
                 <div className="text-lg font-semibold text-[var(--text-bible)] mb-4">
                   {getTodayReading(selectedPlan)}
@@ -424,7 +515,7 @@ export const ReadingPlans: React.FC<{ onNavigate: (bookId: string, chapter: numb
                   Progresso por Livro
                 </h3>
                 <div className="grid grid-cols-8 gap-1">
-                  {BIBLE_BOOKS.slice(0, 40).map((book, idx) => {
+                  {BIBLE_BOOKS.slice(0, 40).map((book) => {
                     const isCompleted = selectedPlan.completedBooks.includes(book.abbrev);
                     return (
                       <div
@@ -441,7 +532,7 @@ export const ReadingPlans: React.FC<{ onNavigate: (bookId: string, chapter: numb
               </div>
             </div>
           </motion.div>
-        ) : null}
+        )}
       </AnimatePresence>
 
       <div className="max-w-4xl mx-auto px-4 py-6 pb-28 space-y-6">
