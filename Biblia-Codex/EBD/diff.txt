@@ -1,0 +1,3 @@
+Comparando os arquivos C:\PROJETOS\BIBLIA-CODEX\BIBLIA-CODEX\EBD\page2.txt e C:\PROJETOS\BIBLIA-CODEX\BIBLIA-CODEX\EBD\PAGE3.TXT
+FC: nenhuma diferença encontrada
+

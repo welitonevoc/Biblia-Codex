@@ -29,7 +29,9 @@
       "Bash(rmdir *)",
       "Bash(@echo *)",
       "Bash(set *)",
-      "Bash(del *)"
+      "Bash(del *)",
+      "Bash(fc *)",
+      "Bash(type *)"
     ]
   },
   "$version": 3

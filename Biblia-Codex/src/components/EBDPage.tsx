@@ -473,6 +473,12 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   setMagazineUrl('/public/EBD/page2.txt');
                   setMagazineHTML(null);
                   setShowDynamicBook(true);
+                }
+                // Para o 3º Trimestre de 2026, mostrar diretamente o conteúdo da page3.txt
+                else if (quarter.id === '2026-q3') {
+                  setMagazineUrl('/public/EBD/page3.txt');
+                  setMagazineHTML(null);
+                  setShowDynamicBook(true);
                 } else {
                   setSelectedQuarter(quarter);
                 }
@@ -581,9 +587,9 @@ const QuarterView: React.FC<QuarterViewProps> = ({ quarter, onBack, onSelectLess
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => {
-                // Para 1º e 2º trimestre 2026, abrir revista completa na página da lição
-                if (onOpenDynamicBook && (quarter.id === '2026-q1' || quarter.id === '2026-q2')) {
-                  const url = quarter.id === '2026-q1' ? '/public/EBD/page.txt' : '/public/EBD/page2.txt';
+                // Para 1º, 2º e 3º trimestre 2026, abrir revista completa na página da lição
+                if (onOpenDynamicBook && (quarter.id === '2026-q1' || quarter.id === '2026-q2' || quarter.id === '2026-q3')) {
+                  const url = quarter.id === '2026-q1' ? '/public/EBD/page.txt' : quarter.id === '2026-q2' ? '/public/EBD/page2.txt' : '/public/EBD/page3.txt';
                   // Calcular página: lição 1 = page 3, lição 2 = page 4, etc.
                   const pageIndex = lesson.number + 2; // +2 porque page 0=capa, page 1=editora, page 2=sumário
                   onOpenDynamicBook(url, pageIndex);
