@@ -240,6 +240,7 @@ export const ReadingPlans: React.FC<{
   }, [userPlans]);
 
   const startPlan = (preset: typeof PRESET_PLANS[0]) => {
+    console.log('startPlan called with:', preset.id);
     setPendingPlan(preset);
     setShowVersionPicker(true);
   };
@@ -775,6 +776,7 @@ export const ReadingPlans: React.FC<{
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
+              onClick={() => alert('Funcionalidade de criar plano personalizado em breve!')}
               className={cn(
                 "w-full flex items-center justify-center gap-3 p-6 rounded-xl",
                 "border-2 border-dashed border-[var(--border-bible)]",
@@ -800,17 +802,17 @@ export const ReadingPlans: React.FC<{
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + index * 0.05 }}
-                  whileHover={{ scale: 1.01, x: 4 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => !isActive && startPlan(preset)}
-                  disabled={isActive}
+                  onClick={() => {
+                    console.log('Button clicked, isActive:', isActive);
+                    if (!isActive) startPlan(preset);
+                  }}
                   className={cn(
                     "w-full flex items-center gap-4 p-4 rounded-xl",
                     "bg-[var(--surface-1)] border border-[var(--border-bible)]",
                     "text-left transition-all duration-200",
                     isActive 
                       ? "opacity-60 cursor-not-allowed" 
-                      : "hover:border-[var(--accent-bible)]/30 hover:shadow-md"
+                      : "hover:border-[var(--accent-bible)]/30 hover:shadow-md active:scale-[0.99]"
                   )}
                 >
                   <div className={cn(
