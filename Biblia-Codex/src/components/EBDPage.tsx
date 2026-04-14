@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { BookOpen, ChevronRight, Calendar, User, Book, X, Download, Loader2, Bookmark, Globe } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { MagazineReader } from './EBD/MagazineReader';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -233,8 +234,13 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   };
 
   // Se há dados extraídos e deve mostrar o livro dinâmico
-  if (showDynamicBook) {
-    return <DynamicBook onBack={clearExtractedData} magazineUrl={magazineUrl || undefined} magazineHTML={magazineHTML || undefined} initialPageIndex={initialPageIndex} />;
+  if (showDynamicBook && magazineUrl) {
+    return <MagazineReader onBack={clearExtractedData} magazineUrl={magazineUrl} initialPageIndex={initialPageIndex} />;
+  }
+
+  // Fallback para HTML direto (extração Vercel)
+  if (showDynamicBook && magazineHTML) {
+    return <DynamicBook onBack={clearExtractedData} magazineHTML={magazineHTML} />;
   }
 
   // Dados estáticos dos trimestres (1º Trimestre de 2026 com conteúdo real)

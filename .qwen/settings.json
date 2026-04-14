@@ -31,7 +31,8 @@
       "Bash(set *)",
       "Bash(del *)",
       "Bash(fc *)",
-      "Bash(type *)"
+      "Bash(type *)",
+      "Bash(git checkout *)"
     ]
   },
   "$version": 3
