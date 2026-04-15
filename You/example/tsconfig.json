@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@youversion/platform-sdk-reactnative": ["../src/index"],
+      "@youversion/platform-sdk-reactnative/*": ["../src/*"]
+    }
+  }
+}
