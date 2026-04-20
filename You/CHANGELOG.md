@@ -1,70 +1,53 @@
-# Changelog
+## [1.1.1](https://github.com/youversion/platform-sdk-kotlin/compare/1.1.0...1.1.1) (2026-04-12)
 
-All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## <small>0.11.1 (2026-04-13)</small>
+### Bug Fixes
 
-* fix(android): downgrade kotlin to 2.2.21 and upgrade Android SDK (#43) ([3c827d9](https://github.com/youversion/platform-sdk-reactnative/commit/3c827d9)), closes [#43](https://github.com/youversion/platform-sdk-reactnative/issues/43)
+* downgrade to kotlin version 2.2.21 ([24b1d2f](https://github.com/youversion/platform-sdk-kotlin/commit/24b1d2fc86f25936b5086387819fc797b938e10f))
 
-## 0.11.0 (2026-04-10)
+# [1.1.0](https://github.com/youversion/platform-sdk-kotlin/compare/1.0.3...1.1.0) (2026-04-06)
 
-* feat: Implement all Compose views (#42) ([526a207](https://github.com/youversion/platform-sdk-reactnative/commit/526a207)), closes [#42](https://github.com/youversion/platform-sdk-reactnative/issues/42)
-* chore: Upgrade Kotlin side to match YouVersion Kotlin SDK 1.0.1 (#41) ([8d79858](https://github.com/youversion/platform-sdk-reactnative/commit/8d79858)), closes [#41](https://github.com/youversion/platform-sdk-reactnative/issues/41)
-* chore: Upgrade to Expo SDK 55 (#40) ([ca5e59b](https://github.com/youversion/platform-sdk-reactnative/commit/ca5e59b)), closes [#40](https://github.com/youversion/platform-sdk-reactnative/issues/40)
 
-## 0.10.0 (2026-02-27)
+### Features
 
-* feat: implement Bible reader view for Android (#39) ([681b51b](https://github.com/youversion/platform-sdk-reactnative/commit/681b51b)), closes [#39](https://github.com/youversion/platform-sdk-reactnative/issues/39)
-* YPE-1178 Add IOS CI build test (#34) ([3ae7dad](https://github.com/youversion/platform-sdk-reactnative/commit/3ae7dad)), closes [#34](https://github.com/youversion/platform-sdk-reactnative/issues/34)
+* **tests:** test coverage for ReferencesScreen YPE-1677 ([#126](https://github.com/youversion/platform-sdk-kotlin/issues/126)) ([b0a4a85](https://github.com/youversion/platform-sdk-kotlin/commit/b0a4a85f8b8f4c9defd85dab8c9e828fc3477e84))
 
-## <small>0.9.1 (2026-02-03)</small>
+## [1.0.3](https://github.com/youversion/platform-sdk-kotlin/compare/1.0.2...1.0.3) (2026-03-25)
 
-* fix: ios builds (#38) ([54805de](https://github.com/youversion/platform-sdk-reactnative/commit/54805de)), closes [#38](https://github.com/youversion/platform-sdk-reactnative/issues/38)
 
-## 0.9.0 (2026-01-31)
+### Bug Fixes
 
-* feat: Update Kotlin SDK and fix all breaking changes (#36) ([0e03b0e](https://github.com/youversion/platform-sdk-reactnative/commit/0e03b0e)), closes [#36](https://github.com/youversion/platform-sdk-reactnative/issues/36)
-* feat (android): add view module stubs for RN bridging (#31) ([66cf642](https://github.com/youversion/platform-sdk-reactnative/commit/66cf642)), closes [#31](https://github.com/youversion/platform-sdk-reactnative/issues/31)
+* **test:** use UnconfinedTestDispatcher and remove resetMain to fix flaky test ([#118](https://github.com/youversion/platform-sdk-kotlin/issues/118)) ([d5b2564](https://github.com/youversion/platform-sdk-kotlin/commit/d5b256441b8c8a5d4e183a6cdacd83a0ac852c25))
 
-## 0.8.0 (2026-01-16)
+## [1.0.2](https://github.com/youversion/platform-sdk-kotlin/compare/1.0.1...1.0.2) (2026-03-25)
 
-* chore: Depend on most recent Swift SDK version and update breaking changes (#27) ([a042211](https://github.com/youversion/platform-sdk-reactnative/commit/a042211)), closes [#27](https://github.com/youversion/platform-sdk-reactnative/issues/27)
-* chore(ci): Disable NPM tokens in release workflow (#28) ([c63c21a](https://github.com/youversion/platform-sdk-reactnative/commit/c63c21a)), closes [#28](https://github.com/youversion/platform-sdk-reactnative/issues/28)
-* chore(ci): update semantic-release to support OIDC workflow (#29) ([de337dc](https://github.com/youversion/platform-sdk-reactnative/commit/de337dc)), closes [#29](https://github.com/youversion/platform-sdk-reactnative/issues/29)
-* chore(ci): YPE-1050 Modify release.yml for permissions and Node.js version ([2c86c6f](https://github.com/youversion/platform-sdk-reactnative/commit/2c86c6f))
-* Add NODE_AUTH_TOKEN to release workflow ([2bdc89c](https://github.com/youversion/platform-sdk-reactnative/commit/2bdc89c))
-* Add provenance option to npm release configuration ([d746acf](https://github.com/youversion/platform-sdk-reactnative/commit/d746acf))
-* Enable NPM_CONFIG_PROVENANCE in release workflow ([e027853](https://github.com/youversion/platform-sdk-reactnative/commit/e027853))
-* Update Node.js version and add NPM upgrade step ([ee94aa2](https://github.com/youversion/platform-sdk-reactnative/commit/ee94aa2))
-* feat: add support for `configure` in Kotlin (#16) ([d9bca2d](https://github.com/youversion/platform-sdk-reactnative/commit/d9bca2d)), closes [#16](https://github.com/youversion/platform-sdk-reactnative/issues/16)
-* feat: implement `setApiHost` and `getAccessToken` in Kotlin (#17) ([a4ee43c](https://github.com/youversion/platform-sdk-reactnative/commit/a4ee43c)), closes [#17](https://github.com/youversion/platform-sdk-reactnative/issues/17)
-* feat: Implement `SignInWithYouVersionButton` for Kotlin (#26) ([5072471](https://github.com/youversion/platform-sdk-reactnative/commit/5072471)), closes [#26](https://github.com/youversion/platform-sdk-reactnative/issues/26)
-* feat: Implement API utils for Kotlin/Android (#25) ([9a88926](https://github.com/youversion/platform-sdk-reactnative/commit/9a88926)), closes [#25](https://github.com/youversion/platform-sdk-reactnative/issues/25)
-* feat: implement votd API endpoint for Kotlin (#19) ([59e6874](https://github.com/youversion/platform-sdk-reactnative/commit/59e6874)), closes [#19](https://github.com/youversion/platform-sdk-reactnative/issues/19)
-* docs: add AI agent code review guidelines (#23) ([8218cec](https://github.com/youversion/platform-sdk-reactnative/commit/8218cec)), closes [#23](https://github.com/youversion/platform-sdk-reactnative/issues/23)
 
-## <small>0.7.2 (2025-11-24)</small>
+### Bug Fixes
 
-* fix(release): update package name to align to SDK naming (#24) ([9d4a1d7](https://github.com/youversion/platform-sdk-reactnative/commit/9d4a1d7)), closes [#24](https://github.com/youversion/platform-sdk-reactnative/issues/24)
-* ci(release): simplify manual release steps, align to ci (#20) ([b6ddda6](https://github.com/youversion/platform-sdk-reactnative/commit/b6ddda6)), closes [#20](https://github.com/youversion/platform-sdk-reactnative/issues/20)
+* **ci:** add production environment to release workflow ([#116](https://github.com/youversion/platform-sdk-kotlin/issues/116)) ([bdb97e9](https://github.com/youversion/platform-sdk-kotlin/commit/bdb97e9c81929d16b2816a4c72147c0d053220bc))
+* commitlint config for broken release action ([#110](https://github.com/youversion/platform-sdk-kotlin/issues/110)) ([6aae41c](https://github.com/youversion/platform-sdk-kotlin/commit/6aae41c034d8bba2929bb9c848f5f86ba8a6bb07))
+* **release:** sync SDK version with Maven Central ([#117](https://github.com/youversion/platform-sdk-kotlin/issues/117)) ([524e721](https://github.com/youversion/platform-sdk-kotlin/commit/524e7216a2788f2c6fd3f02f12fc4ed88be1ac20))
 
-## <small>0.7.1 (2025-11-20)</small>
+## [0.8.1](https://github.com/youversion/platform-sdk-kotlin/compare/0.8.0...0.8.1) (2026-03-25)
 
-* fix(release): aligning package name to standard (#22) ([e096edb](https://github.com/youversion/platform-sdk-reactnative/commit/e096edb)), closes [#22](https://github.com/youversion/platform-sdk-reactnative/issues/22)
 
-## 0.7.0 (2025-11-20)
+### Bug Fixes
 
-* feat(docs): update example app language for publishing release (#21) ([2abf72d](https://github.com/youversion/platform-sdk-reactnative/commit/2abf72d)), closes [#21](https://github.com/youversion/platform-sdk-reactnative/issues/21)
-* chore: Update to use new `signIn` function (#6) ([136578f](https://github.com/youversion/platform-sdk-reactnative/commit/136578f)), closes [#6](https://github.com/youversion/platform-sdk-reactnative/issues/6)
+* **ci:** add production environment to release workflow ([#116](https://github.com/youversion/platform-sdk-kotlin/issues/116)) ([bdb97e9](https://github.com/youversion/platform-sdk-kotlin/commit/bdb97e9c81929d16b2816a4c72147c0d053220bc))
 
-## 0.6.0 (2025-11-18)
+# [0.8.0](https://github.com/youversion/platform-sdk-kotlin/compare/0.7.0...0.8.0) (2026-03-20)
 
-* fix(ci): change releaserc url to ssh to use deploy keys (#18) ([08ea4fb](https://github.com/youversion/platform-sdk-reactnative/commit/08ea4fb)), closes [#18](https://github.com/youversion/platform-sdk-reactnative/issues/18)
-* fix(ci): disable husky commitlint hook in ci (#14) ([b08d88c](https://github.com/youversion/platform-sdk-reactnative/commit/b08d88c)), closes [#14](https://github.com/youversion/platform-sdk-reactnative/issues/14)
-* fix(ci): remove huksy output from prepare step (#15) ([ab5efcc](https://github.com/youversion/platform-sdk-reactnative/commit/ab5efcc)), closes [#15](https://github.com/youversion/platform-sdk-reactnative/issues/15)
-* feat: add link to platform in example app (#13) ([a5d37cf](https://github.com/youversion/platform-sdk-reactnative/commit/a5d37cf)), closes [#13](https://github.com/youversion/platform-sdk-reactnative/issues/13)
-* chore: adjust token and commitlint # (#12) ([e3ca175](https://github.com/youversion/platform-sdk-reactnative/commit/e3ca175)), closes [#12](https://github.com/youversion/platform-sdk-reactnative/issues/12) [#9](https://github.com/youversion/platform-sdk-reactnative/issues/9)
 
----
+### Bug Fixes
 
-**Note:** This changelog is automatically generated by [semantic-release](https://github.com/semantic-release/semantic-release) based on conventional commit messages. Manual edits to this file will be overwritten on the next release.
+* **bible-screen:** update attribution text color styling using BibleReaderTheme ([f534c90](https://github.com/youversion/platform-sdk-kotlin/commit/f534c9056800df48ea41517611fdc986308221f2))
+* commitlint config for broken release action ([#110](https://github.com/youversion/platform-sdk-kotlin/issues/110)) ([6aae41c](https://github.com/youversion/platform-sdk-kotlin/commit/6aae41c034d8bba2929bb9c848f5f86ba8a6bb07))
+* **reader:** remove the spacing above the reference text in footnotes… ([0d48347](https://github.com/youversion/platform-sdk-kotlin/commit/0d48347fdeae3852c3132add4ab5a1ae1f1e29d1))
+* Remove platform-foundation module in favor of InternalApi annotation ([#64](https://github.com/youversion/platform-sdk-kotlin/issues/64)) ([83cb040](https://github.com/youversion/platform-sdk-kotlin/commit/83cb0407e332834ed3ef054cea3f54d3c08076e2))
+* **versions-screen:** adjust padding for BibleVersionRow component ([#62](https://github.com/youversion/platform-sdk-kotlin/issues/62)) ([fd3bcf1](https://github.com/youversion/platform-sdk-kotlin/commit/fd3bcf11550b449150ed3da0e673f4f4f4cd3453))
+
+
+### Features
+
+* **bible-version:** use default version for references ([#52](https://github.com/youversion/platform-sdk-kotlin/issues/52)) ([ac7e459](https://github.com/youversion/platform-sdk-kotlin/commit/ac7e459c2670e818a102bb7f658b09d530050e5e))
+* **version-info:** Agreement UI and action buttons to match Figma ([8531551](https://github.com/youversion/platform-sdk-kotlin/commit/85315513e653fc8ad6c7e4d3820831c7804904e5))

@@ -1,0 +1,196 @@
+package com.youversion.platform.core.bibles.api
+
+import com.youversion.platform.core.bibles.domain.BibleReference
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class BiblesEndpointsTest {
+    @Test
+    fun `test versionsUrl`() {
+        assertEquals(
+            "https://api.youversion.com/v1/bibles?language_ranges%5B%5D=%2A",
+            BiblesEndpoints.versionsUrl(),
+        )
+
+        assertEquals(
+            "https://api.youversion.com/v1/bibles?language_ranges%5B%5D=eng",
+            BiblesEndpoints.versionsUrl(languageRanges = setOf("eng")),
+        )
+
+        assertEquals(
+            "https://api.youversion.com/v1/bibles?language_ranges%5B%5D=eng&page_size=99",
+            BiblesEndpoints.versionsUrl(languageRanges = setOf("eng"), pageSize = 99),
+        )
+
+        assertEquals(
+            "https://api.youversion.com/v1/bibles?language_ranges%5B%5D=eng&page_token=token",
+            BiblesEndpoints.versionsUrl(languageRanges = setOf("eng"), pageToken = "token"),
+        )
+
+        assertEquals(
+            "https://api.youversion.com/v1/bibles?language_ranges%5B%5D=%2A&fields%5B%5D=id&fields%5B%5D=language_tag&page_size=%2A",
+            BiblesEndpoints.versionsUrl(fields = listOf("id", "language_tag")),
+        )
+    }
+
+    @Test
+    fun `test versionsUrl fields and pageSize interaction`() {
+        // >3 fields with explicit pageSize — uses numeric pageSize, not *
+        assertEquals(
+            "https://api.youversion.com/v1/bibles?language_ranges%5B%5D=%2A" +
+                "&fields%5B%5D=id&fields%5B%5D=language_tag&fields%5B%5D=title&fields%5B%5D=abbreviation" +
+                "&page_size=50",
+            BiblesEndpoints.versionsUrl(
+                fields = listOf("id", "language_tag", "title", "abbreviation"),
+                pageSize = 50,
+            ),
+        )
+
+        // Exactly 3 fields — boundary of 1..3 range, uses *
+        assertEquals(
+            "https://api.youversion.com/v1/bibles?language_ranges%5B%5D=%2A" +
+                "&fields%5B%5D=id&fields%5B%5D=language_tag&fields%5B%5D=title" +
+                "&page_size=%2A",
+            BiblesEndpoints.versionsUrl(fields = listOf("id", "language_tag", "title")),
+        )
+
+        // Empty fields list — no fields[] params, no page_size
+        assertEquals(
+            "https://api.youversion.com/v1/bibles?language_ranges%5B%5D=%2A",
+            BiblesEndpoints.versionsUrl(fields = emptyList()),
+        )
+
+        // Exactly 1 field — lower boundary of 1..3 range, uses *
+        assertEquals(
+            "https://api.youversion.com/v1/bibles?language_ranges%5B%5D=%2A" +
+                "&fields%5B%5D=id&page_size=%2A",
+            BiblesEndpoints.versionsUrl(fields = listOf("id")),
+        )
+
+        // >3 fields with null pageSize — fields present, page_size omitted
+        assertEquals(
+            "https://api.youversion.com/v1/bibles?language_ranges%5B%5D=%2A" +
+                "&fields%5B%5D=id&fields%5B%5D=language_tag&fields%5B%5D=title&fields%5B%5D=abbreviation",
+            BiblesEndpoints.versionsUrl(
+                fields = listOf("id", "language_tag", "title", "abbreviation"),
+            ),
+        )
+
+        // Exactly 3 fields with explicit pageSize — * overrides numeric pageSize
+        assertEquals(
+            "https://api.youversion.com/v1/bibles?language_ranges%5B%5D=%2A" +
+                "&fields%5B%5D=id&fields%5B%5D=language_tag&fields%5B%5D=title" +
+                "&page_size=%2A",
+            BiblesEndpoints.versionsUrl(
+                fields = listOf("id", "language_tag", "title"),
+                pageSize = 25,
+            ),
+        )
+    }
+
+    @Test
+    fun `test versionUrl`() {
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1",
+            BiblesEndpoints.versionUrl(versionId = 1),
+        )
+    }
+
+    @Test
+    fun `test versionIndexUrl`() {
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1/index",
+            BiblesEndpoints.versionIndexUrl(versionId = 1),
+        )
+    }
+
+    @Test
+    fun `test versionBooksUrl`() {
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1/books",
+            BiblesEndpoints.versionBooksUrl(versionId = 1),
+        )
+    }
+
+    @Test
+    fun `test versionBookUrl`() {
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1/books/GEN",
+            BiblesEndpoints.versionBookUrl(versionId = 1, book = "GEN"),
+        )
+    }
+
+    @Test
+    fun `test versionBookChaptersUrl`() {
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1/books/GEN/chapters",
+            BiblesEndpoints.versionBookChaptersUrl(versionId = 1, book = "GEN"),
+        )
+    }
+
+    @Test
+    fun `test versionBookChapterUrl`() {
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1/books/GEN/chapters/1",
+            BiblesEndpoints.versionBookChapterUrl(versionId = 1, book = "GEN", chapterId = "1"),
+        )
+    }
+
+    @Test
+    fun `test versionBookChapterVersesUrl`() {
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1/books/GEN/chapters/1/verses",
+            BiblesEndpoints.versionBookChapterVersesUrl(versionId = 1, book = "GEN", chapterId = "1"),
+        )
+    }
+
+    @Test
+    fun `test versionBookChapterVerseUrl`() {
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1/books/GEN/chapters/1/verses/1",
+            BiblesEndpoints
+                .versionBookChapterVerseUrl(
+                    versionId = 1,
+                    book = "GEN",
+                    chapterId = "1",
+                    verseId = "1",
+                ),
+        )
+    }
+
+    @Test
+    fun `test passageUrl`() {
+        val reference = BibleReference(versionId = 1, bookUSFM = "GEN", chapter = 1)
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1/passages/GEN.1?format=html&include_notes=true&include_headings=true",
+            BiblesEndpoints.passageUrl(reference = reference),
+        )
+
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1/passages/GEN.1?format=json&include_notes=true&include_headings=true",
+            BiblesEndpoints.passageUrl(reference = reference, format = "json"),
+        )
+    }
+
+    @Test
+    fun `test passageUrl reference overload matches direct overload`() {
+        val reference = BibleReference(versionId = 1, bookUSFM = "GEN", chapter = 1)
+        assertEquals(
+            BiblesEndpoints.passageUrl(versionId = 1, passageId = reference.asUSFM),
+            BiblesEndpoints.passageUrl(reference = reference),
+        )
+    }
+
+    @Test
+    fun `test passageUrl with versionId and passageId`() {
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1/passages/GEN.1?format=html&include_notes=true&include_headings=true",
+            BiblesEndpoints.passageUrl(versionId = 1, passageId = "GEN.1"),
+        )
+
+        assertEquals(
+            "https://api.youversion.com/v1/bibles/1/passages/GEN.1?format=json&include_notes=true&include_headings=true",
+            BiblesEndpoints.passageUrl(versionId = 1, passageId = "GEN.1", format = "json"),
+        )
+    }
+}

@@ -1,0 +1,664 @@
+package com.youversion.platform.core.bibles.domain
+
+import com.youversion.platform.core.YouVersionPlatformConfiguration
+import com.youversion.platform.core.api.YouVersionNetworkException
+import com.youversion.platform.core.bibles.data.BibleVersionCache
+import com.youversion.platform.core.bibles.data.BibleVersionMemoryCache
+import com.youversion.platform.core.bibles.domain.BibleReference
+import com.youversion.platform.core.bibles.models.BibleVersion
+import com.youversion.platform.helpers.FixtureLoader
+import com.youversion.platform.helpers.YouVersionPlatformTest
+import com.youversion.platform.helpers.respondJson
+import com.youversion.platform.helpers.startYouVersionPlatformTest
+import com.youversion.platform.helpers.stopYouVersionPlatformTest
+import com.youversion.platform.helpers.testCannotDownload
+import com.youversion.platform.helpers.testForbiddenNotPermitted
+import com.youversion.platform.helpers.testInvalidResponse
+import com.youversion.platform.helpers.testUnauthorizedNotPermitted
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.incrementAndFetch
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+class BibleVersionRepositoryTests : YouVersionPlatformTest {
+    lateinit var memoryCache: BibleVersionCache
+    lateinit var temporaryCache: BibleVersionCache
+    lateinit var persistentCache: BibleVersionCache
+
+    lateinit var repository: BibleVersionRepository
+
+    @BeforeTest
+    fun setup() {
+        // Recreate caches each test to clear state
+        memoryCache = BibleVersionMemoryCache()
+        temporaryCache = BibleVersionMemoryCache()
+        persistentCache = BibleVersionMemoryCache()
+
+        repository =
+            BibleVersionRepository(
+                memoryCache = memoryCache,
+                temporaryCache = temporaryCache,
+                persistentCache = persistentCache,
+            )
+    }
+
+    @AfterTest
+    fun teardown() {
+        stopYouVersionPlatformTest()
+    }
+
+    // ----- versionIfCached
+
+    @Test
+    fun `test versionIfCached returns version from memory cache first`() =
+        runTest {
+            val memoryVersion = BibleVersion(id = 111, abbreviation = "MEM")
+            val tempVersion = BibleVersion(id = 111, abbreviation = "TEMP")
+            val persistentVersion = BibleVersion(id = 111, abbreviation = "PERS")
+
+            // Add version to all three caches with different abbreviations
+            memoryCache.addVersion(memoryVersion)
+            temporaryCache.addVersion(tempVersion)
+            persistentCache.addVersion(persistentVersion)
+
+            // Should return from memory cache first
+            val cached = repository.versionIfCached(111)
+            assertEquals("MEM", cached?.abbreviation)
+        }
+
+    @Test
+    fun `test versionIfCached returns version from temporary cache if not in memory`() =
+        runTest {
+            val tempVersion = BibleVersion(id = 111, abbreviation = "TEMP")
+            val persistentVersion = BibleVersion(id = 111, abbreviation = "PERS")
+
+            // Add version to temporary and persistent caches only
+            temporaryCache.addVersion(tempVersion)
+            persistentCache.addVersion(persistentVersion)
+
+            // Should return from temporary cache (memory cache is empty)
+            val cached = repository.versionIfCached(111)
+            assertEquals("TEMP", cached?.abbreviation)
+        }
+
+    @Test
+    fun `test versionIfCached returns version from persistent cache if not in memory or temporary`() =
+        runTest {
+            val persistentVersion = BibleVersion(id = 111, abbreviation = "PERS")
+
+            // Add version to persistent cache only
+            persistentCache.addVersion(persistentVersion)
+
+            // Should return from persistent cache (memory and temporary are empty)
+            val cached = repository.versionIfCached(111)
+            assertEquals("PERS", cached?.abbreviation)
+        }
+
+    @Test
+    fun `test versionIfCached returns null if version not in any cache`() =
+        runTest {
+            // Don't add version to any cache
+
+            // Should return null
+            val cached = repository.versionIfCached(111)
+            assertNull(cached)
+        }
+
+    // ----- version
+    @Test
+    fun `test version returns a cached version`() =
+        runTest {
+            val persistentVersion = BibleVersion(id = 111, abbreviation = "PERS")
+
+            // Add version to persistent cache only
+            persistentCache.addVersion(persistentVersion)
+
+            val version = repository.version(111)
+            assertEquals(111, version.id)
+            assertFalse(memoryCache.versionIsPresent(111))
+            assertFalse(temporaryCache.versionIsPresent(111))
+            assertTrue(persistentCache.versionIsPresent(111))
+        }
+
+    @Test
+    fun `test version fetches a version from the API if not in any cache and then caches it`() =
+        runTest {
+            MockEngine { request ->
+                val bible206Json = FixtureLoader().loadFixtureString("bible_206")
+                val bible206IndexJson = FixtureLoader().loadFixtureString("bible_206_index")
+
+                when (request.url.encodedPath) {
+                    "/v1/bibles/206" -> respondJson(bible206Json)
+                    "/v1/bibles/206/index" -> respondJson(bible206IndexJson)
+                    else -> throw IllegalArgumentException("Unexpected request path: ${request.url.encodedPath}")
+                }
+            }.also { engine -> startYouVersionPlatformTest(engine) }
+
+            val version = repository.version(206)
+            assertEquals(206, version.id)
+            assertTrue { memoryCache.versionIsPresent(206) }
+            assertTrue { temporaryCache.versionIsPresent(206) }
+            assertTrue { persistentCache.versionIsPresent(206) }
+        }
+
+    @OptIn(ExperimentalAtomicApi::class, ExperimentalCoroutinesApi::class)
+    @Test
+    fun `test version deduplicates API calls`() =
+        runTest {
+            val count = AtomicInt(0)
+
+            MockEngine { request ->
+                count.incrementAndFetch()
+                val bible206Json = FixtureLoader().loadFixtureString("bible_206")
+                val bible206IndexJson = FixtureLoader().loadFixtureString("bible_206_index")
+
+                when (request.url.encodedPath) {
+                    "/v1/bibles/206" -> respondJson(bible206Json)
+                    "/v1/bibles/206/index" -> respondJson(bible206IndexJson)
+                    else -> throw IllegalArgumentException("Unexpected request path: ${request.url.encodedPath}")
+                }
+            }.also { engine -> startYouVersionPlatformTest(engine) }
+
+            joinAll(
+                launch { repository.version(206) },
+                launch { repository.version(206) },
+                launch { repository.version(206) },
+                launch { repository.version(206) },
+                launch { repository.version(206) },
+                launch { repository.version(206) },
+            )
+
+            // Assert all other tasks waited on the first one to complete
+            assertEquals(2, count.load())
+
+            // Clear Cache
+            repository.removeVersion(206)
+
+            // Assert another call would trigger a new request, asserting the task was removed
+            repository.version(206)
+            assertEquals(4, count.load())
+        }
+
+    @OptIn(ExperimentalAtomicApi::class)
+    @Test
+    fun `test version propagates API error and allows retry`() =
+        runTest {
+            val requestCount = AtomicInt(0)
+
+            MockEngine { request ->
+                val count = requestCount.incrementAndFetch()
+                if (count <= 1) {
+                    respond("", HttpStatusCode.InternalServerError)
+                } else {
+                    val bible206Json = FixtureLoader().loadFixtureString("bible_206")
+                    val bible206IndexJson = FixtureLoader().loadFixtureString("bible_206_index")
+
+                    when (request.url.encodedPath) {
+                        "/v1/bibles/206" -> respondJson(bible206Json)
+                        "/v1/bibles/206/index" -> respondJson(bible206IndexJson)
+                        else -> throw IllegalArgumentException("Unexpected request path: ${request.url.encodedPath}")
+                    }
+                }
+            }.also { engine -> startYouVersionPlatformTest(engine) }
+
+            assertFailsWith<YouVersionNetworkException> {
+                repository.version(206)
+            }
+
+            val version = repository.version(206)
+            assertEquals(206, version.id)
+        }
+
+    // ----- versionIsPresent
+
+    @Test
+    fun `test versionIsPresent returns true when version is in persistent cache`() =
+        runTest {
+            val version = BibleVersion(id = 111, abbreviation = "NIV")
+            assertFalse(repository.versionIsPresent(111))
+
+            // Add version to persistent cache
+            persistentCache.addVersion(version)
+            assertTrue(repository.versionIsPresent(111))
+        }
+
+    @Test
+    fun `test versionIsPresent returns false when version only in memory or temporary cache`() =
+        runTest {
+            val version = BibleVersion(id = 111, abbreviation = "NIV")
+
+            // Add version only to memory and temporary cache
+            memoryCache.addVersion(version)
+            temporaryCache.addVersion(version)
+
+            // Check if version is present (only persistent cache matters)
+            assertFalse(repository.versionIsPresent(111))
+        }
+
+    // ----- downloadedVersions
+
+    @Test
+    fun `test downloadedVersions returns empty list when no versions downloaded`() =
+        runTest {
+            // Don't add any versions
+
+            // Check downloaded versions
+            val downloaded = repository.downloadedVersions
+            assertEquals(emptyList(), downloaded)
+        }
+
+    @Test
+    fun `test downloadedVersions returns list of version ids in persistent cache`() =
+        runTest {
+            val version1 = BibleVersion(id = 1, abbreviation = "KJV")
+            val version2 = BibleVersion(id = 111, abbreviation = "NIV")
+            val version3 = BibleVersion(id = 206, abbreviation = "WEBUS")
+
+            // Add versions to persistent cache
+            persistentCache.addVersion(version1)
+            persistentCache.addVersion(version2)
+            persistentCache.addVersion(version3)
+
+            // Check downloaded versions
+            val downloaded = repository.downloadedVersions
+            assertEquals(3, downloaded.size)
+            assertTrue(downloaded.contains(1))
+            assertTrue(downloaded.contains(111))
+            assertTrue(downloaded.contains(206))
+        }
+
+    @Test
+    fun `test downloadedVersions only returns persistent cache versions`() =
+        runTest {
+            val version1 = BibleVersion(id = 1, abbreviation = "KJV")
+            val version2 = BibleVersion(id = 111, abbreviation = "NIV")
+            val version3 = BibleVersion(id = 206, abbreviation = "WEBUS")
+
+            // Add version to persistent cache
+            persistentCache.addVersion(version1)
+
+            // Add versions to memory and temporary caches only
+            memoryCache.addVersion(version2)
+            temporaryCache.addVersion(version3)
+
+            // Check downloaded versions (only persistent cache matters)
+            val downloaded = repository.downloadedVersions
+            assertEquals(1, downloaded.size)
+            assertTrue(downloaded.contains(1))
+            assertFalse(downloaded.contains(111))
+            assertFalse(downloaded.contains(206))
+        }
+
+    // ----- downloadVersion
+
+    @Test
+    fun `test downloadVersion does nothing if version already in persistent cache`() =
+        runTest {
+            val version = BibleVersion(id = 111, abbreviation = "NIV")
+
+            // Add version to persistent cache
+            persistentCache.addVersion(version)
+
+            // Download should be a no-op
+            repository.downloadVersion(111)
+
+            // Verify version is still in persistent cache
+            assertTrue(persistentCache.versionIsPresent(111))
+        }
+
+    @Test
+    fun `test downloadVersion moves version from temporary to persistent cache`() =
+        runTest {
+            val version = BibleVersion(id = 111, abbreviation = "NIV")
+
+            // Add version to temporary cache (simulating it was fetched previously)
+            temporaryCache.addVersion(version)
+            memoryCache.addVersion(version)
+
+            // Verify version is in temporary cache
+            assertTrue(temporaryCache.versionIsPresent(111))
+            assertFalse(persistentCache.versionIsPresent(111))
+
+            // Download version
+            repository.downloadVersion(111)
+
+            // Verify version is moved to persistent cache
+            assertTrue(persistentCache.versionIsPresent(111))
+            // Verify version is removed from temporary cache
+            assertFalse(temporaryCache.versionIsPresent(111))
+            // Verify version remains in memory cache
+            assertTrue(memoryCache.versionIsPresent(111))
+        }
+
+    @Test
+    fun `test downloadVersion fetches from API when version not in any cache`() =
+        runTest {
+            MockEngine { request ->
+                val bible206Json = FixtureLoader().loadFixtureString("bible_206")
+                val bible206IndexJson = FixtureLoader().loadFixtureString("bible_206_index")
+
+                when (request.url.encodedPath) {
+                    "/v1/bibles/206" -> respondJson(bible206Json)
+                    "/v1/bibles/206/index" -> respondJson(bible206IndexJson)
+                    else -> throw IllegalArgumentException("Unexpected request path: ${request.url.encodedPath}")
+                }
+            }.also { engine -> startYouVersionPlatformTest(engine) }
+
+            assertFalse(persistentCache.versionIsPresent(206))
+
+            repository.downloadVersion(206)
+
+            assertTrue(persistentCache.versionIsPresent(206))
+            assertFalse(temporaryCache.versionIsPresent(206))
+        }
+
+    // ----- downloadStatus
+
+    @Test
+    fun `test downloadStatus returns DOWNLOADED when version is in persistent cache`() =
+        runTest {
+            val version = BibleVersion(id = 111, abbreviation = "NIV")
+
+            // Add version to persistent cache
+            persistentCache.addVersion(version)
+
+            // Check download status
+            val status = repository.downloadStatus(111)
+            assertEquals(BibleVersionDownloadStatus.DOWNLOADED, status)
+        }
+
+    @Test
+    fun `test downloadStatus returns NOT_DOWNLOADABLE when version is not in persistent cache`() =
+        runTest {
+            // Don't add version to any cache
+
+            // Check download status
+            val status = repository.downloadStatus(111)
+            assertEquals(BibleVersionDownloadStatus.NOT_DOWNLOADABLE, status)
+        }
+
+    @Test
+    fun `test downloadStatus returns NOT_DOWNLOADABLE when version only in memory cache`() =
+        runTest {
+            val version = BibleVersion(id = 111, abbreviation = "NIV")
+
+            // Add version only to memory cache
+            memoryCache.addVersion(version)
+
+            // Check download status (only persistent cache matters)
+            val status = repository.downloadStatus(111)
+            assertEquals(BibleVersionDownloadStatus.NOT_DOWNLOADABLE, status)
+        }
+
+    @Test
+    fun `test downloadStatus returns NOT_DOWNLOADABLE when version only in temporary cache`() =
+        runTest {
+            val version = BibleVersion(id = 111, abbreviation = "NIV")
+
+            // Add version only to temporary cache
+            temporaryCache.addVersion(version)
+
+            // Check download status (only persistent cache matters)
+            val status = repository.downloadStatus(111)
+            assertEquals(BibleVersionDownloadStatus.NOT_DOWNLOADABLE, status)
+        }
+
+    // ----- removeVersion
+    @Test
+    fun `test removeVersion removes from all caches`() =
+        runTest {
+            val version = BibleVersion(id = 111, abbreviation = "NIV")
+
+            // Add version to all three caches
+            memoryCache.addVersion(version)
+            temporaryCache.addVersion(version)
+            persistentCache.addVersion(version)
+
+            // Verify version is present in all caches
+            assertTrue(memoryCache.versionIsPresent(111))
+            assertTrue(temporaryCache.versionIsPresent(111))
+            assertTrue(persistentCache.versionIsPresent(111))
+
+            // Remove version
+            repository.removeVersion(111)
+
+            // Verify version is removed from all caches
+            assertFalse(memoryCache.versionIsPresent(111))
+            assertFalse(temporaryCache.versionIsPresent(111))
+            assertFalse(persistentCache.versionIsPresent(111))
+
+            // Verify version returns null from all caches
+            assertNull(memoryCache.version(111))
+            assertNull(temporaryCache.version(111))
+            assertNull(persistentCache.version(111))
+        }
+
+    // ----- removeUnpermittedVersions
+
+    @Test
+    fun `test removeUnpermittedVersions removes unpermitted versions from all caches`() =
+        runTest {
+            val version1 = BibleVersion(id = 1, abbreviation = "KJV")
+            val version2 = BibleVersion(id = 111, abbreviation = "NIV")
+            val version3 = BibleVersion(id = 206, abbreviation = "WEBUS")
+            val version4 = BibleVersion(id = 999, abbreviation = "ESV")
+
+            // Add all versions to all three caches
+            listOf(version1, version2, version3, version4).forEach { version ->
+                memoryCache.addVersion(version)
+                temporaryCache.addVersion(version)
+                persistentCache.addVersion(version)
+            }
+
+            // Verify all versions are present
+            assertTrue(memoryCache.versionIsPresent(1))
+            assertTrue(memoryCache.versionIsPresent(111))
+            assertTrue(memoryCache.versionIsPresent(206))
+            assertTrue(memoryCache.versionIsPresent(999))
+
+            // Remove unpermitted versions (only keep 111 and 206)
+            val permittedIds = setOf(111, 206)
+            repository.removeUnpermittedVersions(permittedIds)
+
+            // Verify permitted versions remain in all caches
+            assertTrue(memoryCache.versionIsPresent(111))
+            assertTrue(temporaryCache.versionIsPresent(111))
+            assertTrue(persistentCache.versionIsPresent(111))
+
+            assertTrue(memoryCache.versionIsPresent(206))
+            assertTrue(temporaryCache.versionIsPresent(206))
+            assertTrue(persistentCache.versionIsPresent(206))
+
+            // Verify unpermitted versions are removed from all caches
+            assertFalse(memoryCache.versionIsPresent(1))
+            assertFalse(temporaryCache.versionIsPresent(1))
+            assertFalse(persistentCache.versionIsPresent(1))
+
+            assertFalse(memoryCache.versionIsPresent(999))
+            assertFalse(temporaryCache.versionIsPresent(999))
+            assertFalse(persistentCache.versionIsPresent(999))
+        }
+
+    // ----- chaptersArePresent
+
+    @Test
+    fun `test chaptersArePresent returns true when chapters are cached for version`() =
+        runTest {
+            val ref = BibleReference(versionId = 111, bookUSFM = "GEN", chapter = 1)
+            memoryCache.addChapterContents("content", ref)
+
+            assertTrue(memoryCache.chaptersArePresent(111))
+        }
+
+    @Test
+    fun `test chaptersArePresent returns false when no chapters are cached`() =
+        runTest {
+            assertFalse(memoryCache.chaptersArePresent(111))
+        }
+
+    @Test
+    fun `test chaptersArePresent returns false when chapters are cached for a different version`() =
+        runTest {
+            val ref = BibleReference(versionId = 206, bookUSFM = "GEN", chapter = 1)
+            memoryCache.addChapterContents("content", ref)
+
+            assertFalse(memoryCache.chaptersArePresent(111))
+        }
+
+    @Test
+    fun `test removeUnpermittedVersions with empty permitted set removes all versions`() =
+        runTest {
+            val version1 = BibleVersion(id = 111, abbreviation = "NIV")
+            val version2 = BibleVersion(id = 206, abbreviation = "WEBUS")
+
+            // Add versions to all caches
+            memoryCache.addVersion(version1)
+            memoryCache.addVersion(version2)
+            temporaryCache.addVersion(version1)
+            temporaryCache.addVersion(version2)
+            persistentCache.addVersion(version1)
+            persistentCache.addVersion(version2)
+
+            // Remove all unpermitted versions (empty set means nothing is permitted)
+            repository.removeUnpermittedVersions(emptySet())
+
+            // Verify all versions are removed
+            assertFalse(memoryCache.versionIsPresent(111))
+            assertFalse(memoryCache.versionIsPresent(206))
+            assertFalse(temporaryCache.versionIsPresent(111))
+            assertFalse(temporaryCache.versionIsPresent(206))
+            assertFalse(persistentCache.versionIsPresent(111))
+            assertFalse(persistentCache.versionIsPresent(206))
+        }
+
+    // ----- permittedVersions
+
+    @Test
+    fun `test permittedVersions returns versions from API`() =
+        runTest {
+            MockEngine { request ->
+                assertEquals(HttpMethod.Get, request.method)
+                assertEquals("/v1/bibles", request.url.encodedPath)
+                respondJson(PERMITTED_VERSIONS_JSON)
+            }.also { engine -> startYouVersionPlatformTest(engine) }
+
+            YouVersionPlatformConfiguration.configure(appKey = "app")
+            val versions = repository.permittedVersions()
+
+            assertEquals(2, versions.size)
+            assertEquals(12, versions[0].id)
+            assertEquals("en", versions[0].languageTag)
+            assertEquals(206, versions[1].id)
+            assertEquals("en", versions[1].languageTag)
+        }
+
+    @Test
+    fun `test permittedVersions passes languageTag as languageCode`() =
+        runTest {
+            MockEngine { request ->
+                assertEquals("eng", request.url.parameters["language_ranges[]"])
+                respondJson(PERMITTED_VERSIONS_JSON)
+            }.also { engine -> startYouVersionPlatformTest(engine) }
+
+            YouVersionPlatformConfiguration.configure(appKey = "app")
+            repository.permittedVersions(languageTag = "eng")
+        }
+
+    @Test
+    fun `test permittedVersions passes null languageTag as wildcard`() =
+        runTest {
+            MockEngine { request ->
+                assertEquals("*", request.url.parameters["language_ranges[]"])
+                respondJson(PERMITTED_VERSIONS_JSON)
+            }.also { engine -> startYouVersionPlatformTest(engine) }
+
+            YouVersionPlatformConfiguration.configure(appKey = "app")
+            repository.permittedVersions()
+        }
+
+    @Test
+    fun `test permittedVersions sends correct fields`() =
+        runTest {
+            MockEngine { request ->
+                val fields = request.url.parameters.getAll("fields[]")
+                assertEquals(listOf("id", "language_tag"), fields)
+                respondJson(PERMITTED_VERSIONS_JSON)
+            }.also { engine -> startYouVersionPlatformTest(engine) }
+
+            YouVersionPlatformConfiguration.configure(appKey = "app")
+            repository.permittedVersions()
+        }
+
+    @Test
+    fun `test permittedVersions returns empty list when API returns no data`() =
+        runTest {
+            MockEngine { request ->
+                respondJson(
+                    """
+                    {
+                        "data": []
+                    }
+                    """.trimIndent(),
+                )
+            }.also { engine -> startYouVersionPlatformTest(engine) }
+
+            YouVersionPlatformConfiguration.configure(appKey = "app")
+            val versions = repository.permittedVersions()
+
+            assertTrue(versions.isEmpty())
+        }
+
+    @Test
+    fun `test permittedVersions throws not permitted if unauthorized`() =
+        testUnauthorizedNotPermitted {
+            repository.permittedVersions()
+        }
+
+    @Test
+    fun `test permittedVersions throws not permitted if forbidden`() =
+        testForbiddenNotPermitted {
+            repository.permittedVersions()
+        }
+
+    @Test
+    fun `test permittedVersions throws cannot download if request failed`() =
+        testCannotDownload {
+            repository.permittedVersions()
+        }
+
+    @Test
+    fun `test permittedVersions throws invalid response if cannot parse`() =
+        testInvalidResponse {
+            repository.permittedVersions()
+        }
+}
+
+private const val PERMITTED_VERSIONS_JSON = """
+{
+    "data": [
+        {
+            "id": 12,
+            "language_tag": "en"
+        },
+        {
+            "id": 206,
+            "language_tag": "en"
+        }
+    ]
+}
+"""

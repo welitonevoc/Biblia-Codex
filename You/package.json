@@ -1,64 +1,15 @@
 {
-  "name": "@youversion/platform-react-native",
-  "version": "0.11.1",
-  "description": "React Native SDK for YouVersion Platform",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "private": true,
   "scripts": {
-    "build": "expo-module build",
-    "clean": "expo-module clean",
-    "lint": "expo-module lint",
-    "test": "expo-module test",
-    "prepare": "expo-module prepare && rm .eslintrc.js && husky > /dev/null 2>&1 || true",
-    "prepublishOnly": "expo-module prepublishOnly",
-    "typecheck": "npx tsc --noEmit",
-    "expo-module": "expo-module",
-    "open:ios": "xed example/ios",
-    "open:android": "open -a \"Android Studio\" example/android",
-    "release": "semantic-release",
-    "release:dry-run": "semantic-release --dry-run"
-  },
-  "keywords": [
-    "react-native",
-    "expo",
-    "@youversion/platform-react-native",
-    "Bible",
-    "YouVersion"
-  ],
-  "repository": "git@github.com:youversion/platform-sdk-reactnative.git",
-  "bugs": {
-    "url": "https://github.com/youversion/platform-sdk-reactnative/issues"
-  },
-  "author": "YouVersion (https://github.com/youversion/platform-sdk-reactnative)",
-  "license": "Apache-2.0",
-  "homepage": "https://github.com/youversion/platform-sdk-reactnative#readme",
-  "jest": {
-    "preset": "expo-module-scripts",
-    "moduleNameMapper": {
-      "^@expo/ui/jetpack-compose$": "<rootDir>/src/__mocks__/@expo/ui/jetpack-compose.ts",
-      "^@expo/ui/swift-ui/modifiers$": "<rootDir>/src/__mocks__/@expo/ui/swift-ui/modifiers.ts",
-      "^@expo/ui/swift-ui$": "<rootDir>/src/__mocks__/@expo/ui/swift-ui.ts"
-    }
+    "prepare": "husky"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.6.0",
-    "@commitlint/config-conventional": "^19.6.0",
-    "@expo/ui": "~55.0.2",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/exec": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
-    "@types/invariant": "^2.2.37",
-    "@types/react": "~19.2.10",
-    "expo": "^55.0.0",
-    "expo-module-scripts": "^5.0.7",
-    "husky": "^9.1.7",
-    "react-native": "0.83.2",
-    "semantic-release": "^25.0.2"
-  },
-  "peerDependencies": {
-    "@expo/ui": ">=55.0.0",
-    "expo": ">=55.0.0",
-    "react": "*",
-    "react-native": "*"
+    "semantic-release": "^24.0.0",
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/exec": "^6.0.0",
+    "@semantic-release/git": "^10.0.0",
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "husky": "^9.0.0"
   }
 }
