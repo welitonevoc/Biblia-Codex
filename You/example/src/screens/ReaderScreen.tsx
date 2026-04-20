@@ -1,10 +1,69 @@
-import { BibleReaderView } from "@youversion/platform-sdk-reactnative";
+import { useMemo, useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+
+import { ChapterNavigator } from "../components/ChapterNavigator";
+import { TopBar } from "../components/TopBar";
+import { VerseCard } from "../components/VerseCard";
+import { getBooks, getChapterVerses } from "../data/bible";
+import { useTheme } from "../theme/ThemeContext";
+import { spacing } from "../theme/tokens";
 
 export function ReaderScreen() {
+  const { colors } = useTheme();
+  const books = useMemo(() => getBooks(), []);
+  const [selectedBookId, setSelectedBookId] = useState<string>(books[0].id);
+  const [selectedChapter, setSelectedChapter] = useState<number>(1);
+  const [showNavigator, setShowNavigator] = useState(false);
+
+  const book = books.find((candidate) => candidate.id === selectedBookId) ?? books[0];
+  const verses = getChapterVerses(selectedBookId, selectedChapter);
+
   return (
-    <BibleReaderView
-      appName="Example App"
-      signInMessage="Explore the example app!"
-    />
+    <View style={[styles.screen, { backgroundColor: colors.bgPrimary }]}>
+      <TopBar
+        title={`${book.name} ${selectedChapter}`}
+        subtitle="Biblia Codex Reader"
+        rightActionLabel="Chapters"
+        onRightActionPress={() => setShowNavigator(true)}
+      />
+
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {verses.map((verse) => (
+          <VerseCard
+            key={verse.number}
+            verseNumber={verse.number}
+            verseText={verse.text}
+            reference={`${book.name} ${selectedChapter}:${verse.number}`}
+          />
+        ))}
+      </ScrollView>
+
+      <ChapterNavigator
+        visible={showNavigator}
+        books={books}
+        selectedBookId={selectedBookId}
+        selectedChapter={selectedChapter}
+        onClose={() => setShowNavigator(false)}
+        onSelectBook={(bookId) => {
+          setSelectedBookId(bookId);
+          setSelectedChapter(1);
+        }}
+        onSelectChapter={(chapter) => {
+          setSelectedChapter(chapter);
+          setShowNavigator(false);
+        }}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    gap: spacing.md,
+  },
+});

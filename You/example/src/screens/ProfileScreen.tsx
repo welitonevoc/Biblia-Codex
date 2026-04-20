@@ -8,14 +8,21 @@ import { useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Button,
   Image,
+  Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 
+import { TopBar } from "../components/TopBar";
+import { allThemes } from "../theme/themes";
+import { useTheme } from "../theme/ThemeContext";
+import { borderRadius, spacing } from "../theme/tokens";
+
 export function ProfileScreen() {
+  const { colors, typography, fonts, theme, setTheme } = useTheme();
   const [currentUser, setCurrentUser] = useState<YouVersionUserInfo>();
   const [loading, setLoading] = useState<boolean>(
     () => !!YouVersionPlatform.getAccessToken(),
@@ -69,26 +76,79 @@ export function ProfileScreen() {
 
   if (loading) {
     return (
-      <View style={styles.screen}>
-        <ActivityIndicator />
+      <View style={[styles.screen, { backgroundColor: colors.bgPrimary }]}>
+        <ActivityIndicator color={colors.accent} />
       </View>
     );
   }
 
   return (
-    <View style={styles.screen}>
-      {currentUser && (
-        <>
-          <Image
-            source={{ uri: currentUser.profilePicture }}
-            style={styles.avatar}
-          />
-          <Text>You are signed in as {currentUser.name || "(no name)"}</Text>
-          <Text>{currentUser.email || "(no email)"}</Text>
-          <Button title="Sign Out" onPress={handleSignOut} />
-        </>
-      )}
-      {!currentUser && <SignInWithYouVersionButton onPress={handleSignIn} />}
+    <View style={[styles.screen, { backgroundColor: colors.bgPrimary }]}>
+      <TopBar title="Profile" subtitle="Account and appearance" />
+
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={[styles.panel, { backgroundColor: colors.bgSecondary, borderColor: colors.border }]}>
+          {currentUser ? (
+            <>
+              <Image source={{ uri: currentUser.profilePicture }} style={styles.avatar} />
+              <Text style={[styles.name, { color: colors.textPrimary, fontFamily: fonts.heading }]}>
+                {currentUser.name || "No name"}
+              </Text>
+              <Text style={[styles.email, { color: colors.textSecondary, fontFamily: fonts.ui }]}>
+                {currentUser.email || "No email"}
+              </Text>
+              <Pressable
+                onPress={handleSignOut}
+                style={[styles.button, { backgroundColor: colors.accentBg, borderColor: colors.accent }]}
+              >
+                <Text style={{ color: colors.accent, fontFamily: fonts.ui, fontWeight: "700" }}>
+                  Sign out
+                </Text>
+              </Pressable>
+            </>
+          ) : (
+            <SignInWithYouVersionButton onPress={handleSignIn} />
+          )}
+        </View>
+
+        <View style={[styles.panel, { backgroundColor: colors.bgSecondary, borderColor: colors.border }]}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              {
+                color: colors.textPrimary,
+                fontFamily: fonts.heading,
+                fontSize: typography.h4.fontSize,
+                lineHeight: typography.h4.lineHeight,
+              },
+            ]}
+          >
+            Themes
+          </Text>
+          <View style={styles.themeGrid}>
+            {allThemes.slice(0, 8).map((option) => {
+              const selected = theme.id === option.id;
+              return (
+                <Pressable
+                  key={option.id}
+                  onPress={() => setTheme(option)}
+                  style={[
+                    styles.themePill,
+                    {
+                      borderColor: selected ? colors.accent : colors.border,
+                      backgroundColor: selected ? colors.accentBg : colors.bgPrimary,
+                    },
+                  ]}
+                >
+                  <Text style={{ color: selected ? colors.accent : colors.textSecondary, fontFamily: fonts.ui }}>
+                    {option.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -96,15 +156,57 @@ export function ProfileScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+  },
+  content: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    gap: spacing.lg,
+  },
+  panel: {
+    borderWidth: 1,
+    borderRadius: borderRadius.xl,
+    padding: spacing.lg,
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "white",
   },
   avatar: {
     width: 70,
     height: 70,
-    borderRadius: 50,
-    marginBottom: 20,
+    borderRadius: 35,
+    marginBottom: spacing.md,
     backgroundColor: "#eee",
+  },
+  name: {
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: "600",
+  },
+  email: {
+    marginTop: spacing.xs,
+    marginBottom: spacing.md,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  button: {
+    borderWidth: 1,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  sectionTitle: {
+    alignSelf: "flex-start",
+    marginBottom: spacing.md,
+    fontWeight: "600",
+  },
+  themeGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    width: "100%",
+  },
+  themePill: {
+    borderWidth: 1,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
 });

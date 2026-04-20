@@ -1,82 +1,63 @@
-import { createNativeBottomTabNavigator } from "@react-navigation/bottom-tabs/unstable";
-import { NavigationContainer } from "@react-navigation/native";
 import { YouVersionPlatform } from "@youversion/platform-sdk-reactnative";
-import { useEffect } from "react";
-import { Platform } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { StatusBar, StyleSheet, View } from "react-native";
 
+import { AppTab, BottomNavBar } from "./src/components/BottomNavBar";
+import { LoadingScreen } from "./src/components/LoadingScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { ReaderScreen } from "./src/screens/ReaderScreen";
+import { SearchScreen } from "./src/screens/SearchScreen";
 import { VotdScreen } from "./src/screens/VotdScreen";
-import { WidgetScreen } from "./src/screens/WidgetScreen";
+import { ThemeProvider, useTheme } from "./src/theme/ThemeContext";
 
-const Tabs = createNativeBottomTabNavigator();
+function RootApp() {
+  const { colors, isDark } = useTheme();
+  const [activeTab, setActiveTab] = useState<AppTab>("reader");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 900);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const screen = useMemo(() => {
+    if (activeTab === "votd") return <VotdScreen />;
+    if (activeTab === "search") return <SearchScreen />;
+    if (activeTab === "profile") return <ProfileScreen />;
+    return <ReaderScreen />;
+  }, [activeTab]);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <View style={[styles.app, { backgroundColor: colors.bgPrimary }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <View style={styles.content}>{screen}</View>
+      <BottomNavBar activeTab={activeTab} onSelectTab={setActiveTab} />
+    </View>
+  );
+}
 
 export default function App() {
   useEffect(() => {
-    // Get an app key at https://platform.youversion.com/
+    // Set app key at https://platform.youversion.com/
     YouVersionPlatform.configure("");
   }, []);
 
   return (
-    <NavigationContainer>
-      <Tabs.Navigator screenOptions={{ headerShown: false }}>
-        <Tabs.Screen
-          name="Reader"
-          component={ReaderScreen}
-          options={{
-            tabBarLabel: "Bible",
-            tabBarIcon:
-              Platform.OS === "ios"
-                ? { type: "sfSymbol", name: "book.fill" }
-                : {
-                    type: "image",
-                    source: require("./assets/reader.png"),
-                  },
-          }}
-        />
-        <Tabs.Screen
-          name="VOTD"
-          component={VotdScreen}
-          options={{
-            tabBarLabel: "VOTD",
-            tabBarIcon:
-              Platform.OS === "ios"
-                ? { type: "sfSymbol", name: "sun.max.fill" }
-                : {
-                    type: "image",
-                    source: require("./assets/votd.png"),
-                  },
-          }}
-        />
-        <Tabs.Screen
-          name="Widget"
-          component={WidgetScreen}
-          options={{
-            tabBarLabel: "Widget",
-            tabBarIcon:
-              Platform.OS === "ios"
-                ? { type: "sfSymbol", name: "doc.plaintext.fill" }
-                : {
-                    type: "image",
-                    source: require("./assets/widget.png"),
-                  },
-          }}
-        />
-        <Tabs.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{
-            tabBarLabel: "Profile",
-            tabBarIcon:
-              Platform.OS === "ios"
-                ? { type: "sfSymbol", name: "person.fill" }
-                : {
-                    type: "image",
-                    source: require("./assets/profile.png"),
-                  },
-          }}
-        />
-      </Tabs.Navigator>
-    </NavigationContainer>
+    <ThemeProvider>
+      <RootApp />
+    </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  app: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+});

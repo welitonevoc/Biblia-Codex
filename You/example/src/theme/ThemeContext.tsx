@@ -16,9 +16,9 @@ import {
 } from 'react';
 import { Appearance, useColorScheme } from 'react-native';
 
-import type { ColorTokens, ThemeConfig } from './tokens';
+import type { ColorTokens } from './tokens';
 import { darkColors, fonts, lightColors, typography } from './tokens';
-import { defaultThemes } from './themes';
+import { defaultThemes, type ThemeConfig } from './themes';
 
 interface ThemeContextValue {
   theme: ThemeConfig;
