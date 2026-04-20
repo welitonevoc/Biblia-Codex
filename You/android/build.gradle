@@ -21,16 +21,16 @@ apply plugin: 'com.android.library'
 group = 'com.youversion.reactnativesdk'
 version = '0.11.1'
 
-def expoModulesCorePlugin = new File(
-  project.provider {
-    try {
-      return project(":expo-modules-core").projectDir.absolutePath
-    } catch (Exception e) {
-      return "${project.rootDir}/../node_modules/expo-modules-core/android"
-    }
-  }.get(),
-  "ExpoModulesCorePlugin.gradle"
-)
+repositories {
+  google()
+  mavenCentral()
+}
+
+// Search for ExpoModulesCorePlugin.gradle in common locations
+def expoModulesCoreProject = findProject(":expo-modules-core")
+def expoModulesCorePlugin = expoModulesCoreProject != null 
+  ? new File(expoModulesCoreProject.projectDir, "ExpoModulesCorePlugin.gradle")
+  : new File(project.rootDir, "../node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle")
 
 if (expoModulesCorePlugin.exists()) {
   apply from: expoModulesCorePlugin
@@ -39,38 +39,34 @@ if (expoModulesCorePlugin.exists()) {
   useCoreDependencies()
   useExpoPublishing()
 } else {
-  // Fallback case if expo-modules-core is not found
   apply plugin: 'org.jetbrains.kotlin.android'
   apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 }
 
-// If you want to use the managed Android SDK versions from expo-modules-core, set this to true.
-// The Android SDK versions will be bumped from time to time in SDK releases and may introduce breaking changes in your module code.
-// Most of the time, you may like to manage the Android SDK versions yourself.
-def useManagedAndroidSdkVersions = false
-if (useManagedAndroidSdkVersions) {
-  useDefaultAndroidSdkVersions()
-} else {
-  project.android {
-    compileSdkVersion safeExtGet("compileSdkVersion", 36)
-    defaultConfig {
-      minSdkVersion safeExtGet("minSdkVersion", 24)
-      targetSdkVersion safeExtGet("targetSdkVersion", 36)
-    }
-  }
-}
-
+// Android configuration
 android {
   namespace "com.youversion.reactnativesdk"
+  compileSdkVersion safeExtGet("compileSdkVersion", 35) // Fallback to 35 if 36 is not installed
+
   defaultConfig {
+    minSdkVersion safeExtGet("minSdkVersion", 24)
+    targetSdkVersion safeExtGet("targetSdkVersion", 35)
     versionCode 1
     versionName "0.11.1"
   }
+
   buildFeatures {
     compose true
   }
+
   lintOptions {
     abortOnError false
+  }
+
+  // Handle Expo-specific SDK versions if applied
+  def useManagedAndroidSdkVersions = false
+  if (useManagedAndroidSdkVersions && expoModulesCorePlugin.exists()) {
+    useDefaultAndroidSdkVersions()
   }
 }
 
