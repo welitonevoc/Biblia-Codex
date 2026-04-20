@@ -1,8 +1,17 @@
 buildscript {
+  // Simple helper that allows the root project to override versions declared by this library.
+  ext.safeExtGet = { prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+  }
+
   repositories {
+    google()
     mavenCentral()
   }
   dependencies {
+    def agpVersion = safeExtGet("agpVersion", "8.13.2")
+    classpath("com.android.tools.build:gradle:$agpVersion")
+    def kotlinVersion = safeExtGet("kotlinVersion", "2.0.21")
     classpath("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:${kotlinVersion}")
   }
 }
@@ -12,12 +21,28 @@ apply plugin: 'com.android.library'
 group = 'com.youversion.reactnativesdk'
 version = '0.11.1'
 
-def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
-apply from: expoModulesCorePlugin
-apply plugin: 'org.jetbrains.kotlin.plugin.compose'
-applyKotlinExpoModulesCorePlugin()
-useCoreDependencies()
-useExpoPublishing()
+def expoModulesCorePlugin = new File(
+  project.provider {
+    try {
+      return project(":expo-modules-core").projectDir.absolutePath
+    } catch (Exception e) {
+      return "${project.rootDir}/../node_modules/expo-modules-core/android"
+    }
+  }.get(),
+  "ExpoModulesCorePlugin.gradle"
+)
+
+if (expoModulesCorePlugin.exists()) {
+  apply from: expoModulesCorePlugin
+  apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+  applyKotlinExpoModulesCorePlugin()
+  useCoreDependencies()
+  useExpoPublishing()
+} else {
+  // Fallback case if expo-modules-core is not found
+  apply plugin: 'org.jetbrains.kotlin.android'
+  apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+}
 
 // If you want to use the managed Android SDK versions from expo-modules-core, set this to true.
 // The Android SDK versions will be bumped from time to time in SDK releases and may introduce breaking changes in your module code.
@@ -26,12 +51,6 @@ def useManagedAndroidSdkVersions = false
 if (useManagedAndroidSdkVersions) {
   useDefaultAndroidSdkVersions()
 } else {
-  buildscript {
-    // Simple helper that allows the root project to override versions declared by this library.
-    ext.safeExtGet = { prop, fallback ->
-      rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
-    }
-  }
   project.android {
     compileSdkVersion safeExtGet("compileSdkVersion", 36)
     defaultConfig {
