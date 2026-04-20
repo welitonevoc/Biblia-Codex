@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
-  build-and-test:
+  js-tests:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -45,3 +45,35 @@ jobs:
       - name: 🧪 Run JS unit tests
         run: |
           npm run test
+
+  android-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: 🛠️ Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 📦 Restore Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 🔨 Build Android
+        run: ./gradlew build

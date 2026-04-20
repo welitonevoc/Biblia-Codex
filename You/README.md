@@ -1,562 +1,342 @@
-![Platform React Native SDK](./assets/github-reactNative-sdk-banner.png)
 
-# YouVersion React Native SDK
+![Platform Kotlin SDK](./assets/github-kotlin-sdk-banner.png)
 
-[![npm version](https://badge.fury.io/js/@youversion%2Freact-native-sdk.svg)](https://www.npmjs.com/package/@youversion/platform-sdk-reactnative)
-[![CI Status](https://github.com/youversion/platform-sdk-reactnative/workflows/CI/badge.svg)](https://github.com/youversion/platform-sdk-reactnative/actions)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+![Platform](https://img.shields.io/badge/Platform-Android-green)
+[![License](https://img.shields.io/badge/license-Apache-blue.svg)](LICENSE)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/youversion/platform-sdk-kotlin/main/.github/badges/coverage.json)](./RELEASING.md)
 
-A lightweight React Native SDK for integrating YouVersion Platform features into React Native applications.
+# YouVersion Platform SDK for Kotlin
 
-## Documentation
+A Kotlin SDK for integrating with the YouVersion Platform, enabling developers to display Scripture 
+content and implement user authentication in any Android environment. Multiplatform support is 
+currently not available.
 
-- [Installation & Usage](#installation)
-- [API Reference](#api)
-- [Contributing Guide](CONTRIBUTING.md)
-- [Changelog](CHANGELOG.md)
+## Table of Contents
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+  - [Which Modules Do I Need?](#which-modules-do-i-need)
+  - [With Version Catalog](#with-version-catalog)
+  - [Without Version Catalog](#without-version-catalog)
+- [Getting Started](#getting-started)
+- [Usage](#usage)
+  - [Displaying Scripture](#displaying-scripture)
+  - [Displaying Verse of the Day](#displaying-verse-of-the-day)
+  - [Authentication](#authentication)
+- [Sample App](#sample-app)
+- [For Different Use Cases](#-for-different-use-cases)
+- [Development Setup](#development-setup)
+- [Contributing](#contributing-starting-early-2026)
+- [Documentation](#documentation)
+- [Support](#support)
+- [License](#license)
 
-> [!important]
-> The React Native SDK is currently **iOS-only**. Android support is under active development and not yet available for use.
+    
+
+## Features
+- 📖 **Scripture Display** - Easy-to-use Jetpack Compose components for displaying Bible verses, chapters, and passages with `BibleText`
+- 🔐 **User Authentication** - Seamless "Sign In with YouVersion" integration using `SignInWithYouVersionButton`
+- 🌅 **Verse of the Day** - Built-in `VerseOfTheDay` component and API access to VOTD data
+- 🚀 **Modern Kotlin** - Built with coroutines, Jetpack Compose, and Material Theming
+- 💾 **Smart Caching** - Automatic local caching for improved performance
+
+## Requirements
+
+- Android 5.0+
+- Android Studio Narwhal+
+- Kotlin 2.2.0+
+- A YouVersion Platform API key ([Register here](https://platform.youversion.com/))
+
 
 ## Installation
 
-**Prerequisites:**
-
-This project uses the underlying YouVersion SDKs for [Swift](https://github.com/youversion/platform-sdk-swift) and [Kotlin](https://github.com/youversion/platform-sdk-kotlin), with UI components written in SwiftUI and Jetpack Compose, respectively.
-
-Because support for Jetpack Compose and SwiftUI is a recent development in the React Native ecosystem, this SDK requires recent versions of iOS, Expo, and React Native to work.
-
-> The minimum supported version of iOS is 17.
-> The minimum supported version of Expo is SDK 55.
-
-**Using bare React Native?**
-Follow these instructions to [set up Expo modules in a bare React Native project](https://docs.expo.dev/bare/installing-expo-modules/) before installing this package.
-
-**Install the package:**
-
-Using npm:
-
-```sh
-npm install @youversion/platform-sdk-reactnative
-```
-
-Using Yarn:
-
-```sh
-yarn add @youversion/platform-sdk-reactnative
-```
-
-Using pnpm:
-
-```sh
-pnpm add @youversion/platform-sdk-reactnative
-```
-
-iOS (bare React Native):
-
-```sh
-npx pod-install
-```
-
-Expo managed workflow (requires a development build or prebuild):
-
-```sh
-npx expo install @youversion/platform-sdk-reactnative
-npx expo prebuild
-```
-
-Rebuild your app after installing the package.
-
-## Usage
-
-### Configure the SDK
-
-Configure the SDK with you app key once, typically in your app's entry point.
-
-```typescript
-// App.tsx
-import React, { useEffect } from 'react';
-import { YouVersionPlatform } from '@youversion/platform-sdk-reactnative';
-
-export default function App() {
-  useEffect(() => {
-    // Replace with your app key from YouVersion Platform
-    YouVersionPlatform.configure('YOUR_APP_KEY');
-  }, []);
-
-  return null; // ...your app UI...
+Be sure you have `mavenCentral()` in your `repositories` block.
+```kotlin
+// settings.gradle.kts
+repositories {
+    google()
+    mavenCentral()
 }
 ```
 
-## API Reference
+### Which Modules Do I Need?
 
-### UI Components
+The Platform SDK is broken into three main modules:
+- `platform-core`: Provides the core functionality for accessing the YouVersion Platform API.
+- `platform-ui`: Provides UI components for displaying Bible content.
+- `platform-reader`: Provides a full Bible Reader experience.
 
-### `<SignInWithYouVersionButton />`
+---
+**I want to only access the Bible API's and build my own integrations**
 
-A branded button view show the user to sign in with YouVersion. Provide an `onPress` handler to initiate the sign-in flow.
+You will only need `platform-core`.
 
-```tsx
-import { SignInWithYouVersionButton } from '@youversion/platform-sdk-reactnative';
+**I want to display Bible content or authenticate with YouVersion in my app but with my own styling**
 
-<SignInWithYouVersionButton
-  isStroked
-  mode="full"
-  shape="capsule"
-  onPress={handleSignIn}
-/>;
+You will need `platform-ui` and `platform-core`.
+
+**I want a full, batteries included, drop-in Bible Reader experience**
+
+You will need `platform-reader`, `platform-ui`, and `platform-core`.
+
+---
+
+Great! Now that you know which modules you need, you can proceed with installation.
+
+### With Version Catalog
+
+```toml
+# gradle/libs.versions.toml
+[versions]
+youVersionPlatform = "1.0.1"
+
+[libraries]
+youversion-platform-core = { module = "com.youversion.platform:platform-sdk-core", version.ref = "youVersionPlatform" }
+youversion-platform-ui = { module = "com.youversion.platform:platform-sdk-ui", version.ref = "youVersionPlatform" }
+youversion-platform-reader = { module = "com.youversion.platform:platform-sdk-reader", version.ref = "youVersionPlatform" }
 ```
 
-| Property      | Type                                    | Description                                                                      |
-| ------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
-| `isStroked`   | `boolean`                               | If true, give the button an outline/border                                       |
-| `mode`        | `"full"` or `"compact"` or `"iconOnly"` | Controls the length of the sign in text on the button                            |
-| `shape`       | `"rectangle"` or `"capsule"`            | Controls the button's border radius                                              |
-| `onPress`     | `() => void`                            | Handler called when the button is pressed                                        |
-| `colorScheme` | `"light"` or `"dark"` or `undefined`    | Controls the button's color scheme. Defaults to system color scheme if undefined |
-
-### `<BibleTextView />`
-
-A text view for displaying a Bible passage with customizable font settings. This component
-supports displaying an entire chapter, a specific verse or a range of verses. It also accepts
-an `onPress` handler when the user taps a verse.
-
-```tsx
-import { BibleTextView } from '@youversion/platform-sdk-reactnative';
-
-<BibleTextView
-  bibleReference={{
-    versionId: 1,
-    bookUSFM: 'JHN',
-    chapter: 3,
-    verse: 16,
-  }}
-  onPress={e => {
-    console.log('Verse pressed:', e.bibleReference);
-  }}
-/>;
+```kotlin
+// app/build.gradle.kts
+implementation(libs.youversion.platform.core)
+implementation(libs.youversion.platform.ui)
+implementation(libs.youversion.platform.reader)
 ```
 
-| Property             | Type                                 | Description                                                                             |
-| -------------------- | ------------------------------------ | --------------------------------------------------------------------------------------- |
-| `bibleReference`     | `BibleReference`                     | The Bible reference to display                                                          |
-| `onPress`            | `(e: BibleTextPressEvent) => void`   | Handler called when a verse is pressed                                                  |
-| `fontFamily`         | `string?`                            | Controls the font family of the text. The font family must be available on the platform |
-| `fontSize`           | `number?`                            | Controls the font size of the text                                                      |
-| `lineSpacing`        | `number?`                            | Controls the line spacing of the text                                                   |
-| `paragraphSpacing`   | `number?`                            | Controls the spacing between paragraphs in the text                                     |
-| `textColor`          | `ColorValue?`                        | Controls the text color of the text                                                     |
-| `wocColor`           | `ColorValue?`                        | Controls the color of the words of Christ (WOC) in the Bible text                       |
-| `renderVerseNumbers` | `boolean?`                           | Controls whether verse numbers are shown                                                |
-| `footnoteMode`       | `"none"` or `"inline"` or `"marker"` | Controls how footnotes are displayed in the Bible text                                  |
+### Without Version Catalog
 
-A `BibleReference` can look 1 of 3 ways to represent a single verse, a range of verses, or an entire chapter:
-
-```typescript
-// Single verse
-type BibleReferenceVerse = {
-  versionId: number;
-  bookUSFM: string;
-  chapter: number;
-  verse: number;
-  type: 'verse';
-};
-
-// Range of verses
-type BibleReferenceVerseRange = {
-  versionId: number;
-  bookUSFM: string;
-  chapter: number;
-  verseStart: number;
-  verseEnd: number;
-  type: 'range';
-};
-
-// Entire chapter
-type BibleReferenceChapter = {
-  versionId: number;
-  bookUSFM: string;
-  chapter: number;
-  type: 'chapter';
-};
+```kotlin
+val youVersionPlatform = "1.0.1"
+implementation("com.youversion.platform:platform-core:$youVersionPlatform")
+implementation("com.youversion.platform:platform-ui:$youVersionPlatform")
+implementation("com.youversion.platform:platform-reader:$youVersionPlatform")
 ```
 
-`BibleReference` properties:
+## Getting Started
 
-| Property     | Type                                  | Description                                     |
-| ------------ | ------------------------------------- | ----------------------------------------------- |
-| `versionId`  | `number`                              | The ID of the Bible version to use              |
-| `bookUSFM`   | `string`                              | The book identifier (e.g., "GEN", "JHN")        |
-| `chapter`    | `number`                              | The chapter number                              |
-| `verse`      | `number?`                             | The verse number (for `type: "verse"`)          |
-| `verseStart` | `number?`                             | The starting verse number (for `type: "range"`) |
-| `verseEnd`   | `number?`                             | The ending verse number (for `type: "range"`)   |
-| `type`       | `"verse"` or `"range"` or `"chapter"` | The type of reference being represented         |
+1. **Get Your API Key**: Register your app with [YouVersion Platform](https://platform.youversion.com/) to acquire an app key
+2. **Configure the SDK**: Add the following to your app's initialization:
 
-`BibleTextPressEvent` properties:
-| Property | Type | Description |
-| --------------- | --------------- | -------------------------------------------- |
-| `bibleReference` | `BibleReference` | The Bible reference that was pressed |
-| `point` | `{ x: number; y: number }` | The screen coordinates of the press event |
-
-### `<VotdView />`
-
-A view for displaying the verse of the day (VOTD) with Bible reference and text. It can be configured to fetch the VOTD from YouVersion, or passed a custom verse of the day object.
-
-```tsx
-import { VotdView } from '@youversion/platform-sdk-reactnative';
-
-<VotdView colorScheme="dark" bibleVersionId={111} />;
+```kotlin
+class MainApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        YouVersionPlatformConfiguration.configure(
+            context = this,
+            appKey = TODO("YOUR_APP_KEY_HERE"),
+        )
+    }
+}
 ```
 
-| Property         | Type                                 | Description                                                                     |
-| ---------------- | ------------------------------------ | ------------------------------------------------------------------------------- |
-| `colorScheme`    | `"light"` or `"dark"` or `undefined` | Controls the view's color scheme. Defaults to system color scheme if undefined. |
-| `bibleVersionId` | `number`                             | The ID of the Bible version to use for the verse of the day.                    |
+## Usage
 
-See `YouVersionVerseOfTheDay` properties under the `verseOfTheDay` API section above.
+### Displaying Scripture
 
-### `<BibleReaderView />`
-
-A full-featured Bible reader component that supports font customizations, version switching, offline downloads, verse highlights and more. It is designed to provide a similar experience to the YouVersion Bible reader found in the YouVersion app. It accepts an optional initial Bible reference to display.
-
-```tsx
-import { BibleReaderView } from '@youversion/platform-sdk-reactnative';
-
-<BibleReaderView
-  appName="YouVersion RN SDK"
-  signInMessage="Sign in to access your highlights"
-/>;
+Display a single verse:
+```kotlin
+@Composable
+fun Demo() {
+    BibleText(
+        reference = BibleReference(versionId = 3034, bookUSFM = "JHN", chapter = 3, verse = 16)
+    )
+}
 ```
 
-| Property        | Type              | Description                                                                                                |
-| --------------- | ----------------- | ---------------------------------------------------------------------------------------------------------- |
-| `reference`     | `BibleReference?` | Initial Bible reference to display when the view loads. This can be a single verse, verse range or chapter |
-| `appName`       | `string`          | Name of your app to display in the Bible reader UI when prompting the user to sign in                      |
-| `signInMessage` | `string`          | Custom message to display to the user from the sign-in sheet, letting them know why they should sign in    |
-
-See `BibleReference` properties under the `BibleTextView` component section above.
-
-### `<BibleWidgetView />`
-
-A more opinionated view for displaying a Bible passage. It also displays the book, chapter and version name above the passage. Below the passage text, it displays copyright information and the YouVersion logo.
-
-```tsx
-import { BibleWidgetView } from '@youversion/platform-sdk-reactnative';
-
-<BibleWidgetView
-  reference={{
-    bookUSFM: 'JHN',
-    chapter: 3,
-    type: 'chapter',
-    versionId: 206,
-  }}
-  colorScheme="light"
-/>;
+Display a verse range:
+```kotlin
+@Composable
+fun Demo() {
+    BibleText(
+        reference = BibleReference(versionId = 3034, bookUSFM = "JHN", chapter = 3, verseStart = 16, verseEnd = 20)
+    )
+}
 ```
 
-| Property      | Type                                 | Description                                                                    |
-| ------------- | ------------------------------------ | ------------------------------------------------------------------------------ |
-| `reference`   | `BibleReference`                     | The Bible reference to display                                                 |
-| `colorScheme` | `"light"` or `"dark"` or `undefined` | Controls the view's color scheme. Defaults to system color scheme if undefined |
-| `fontSize`    | `number?`                            | Controls the font size of the passage text                                     |
+Or display a full chapter:
+```kotlin
+@Composable
+fun Demo() {
+    BibleText(
+        reference = BibleReference(versionId = 3034, bookUSFM = "JHN", chapter = 3)
+    )
+}
+```
 
-See `BibleReference` properties under the `BibleTextView` component section above.
+> **Note**: For longer passages, wrap `BibleText` in a `verticalScroll`. The SDK automatically fetches Scripture from YouVersion servers and maintains a local cache for improved performance.
 
-## SDK Methods
+### Displaying Verse of the Day
+
+Use the built-in VOTD component:
+
+```kotlin
+@Composable
+fun Demo() {
+    CompactVerseOfTheDay()
+    // Or
+    VerseOfTheDay()
+}
+```
+
+Or fetch VOTD data for custom UI:
+
+```kotlin
+suspend fun fetchVotd(): YouVersionVerseOfTheDay {
+    val dayOfTheYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+    return YouVersionApi.votd.verseOfTheDay(dayOfTheYear)
+}
+```
 
 ### Authentication
 
-#### `signIn`
+Integrating "Sign In with YouVersion" is straightforward. The SDK handles the entire authentication flow, including launching the sign-in screen, handling the redirect, and managing tokens.
 
-Presents the YouVersion login flow to the user and resolves with the login result on completion.
+#### 1. Configure the Manifest
 
-**Parameters:**
-An array of permissions you're requesting from the user when they sign in.
+To handle the redirect from the YouVersion authentication, you need to add an intent filter to your main activity in your `AndroidManifest.xml` file. The SDK will use this to receive the authentication result.
 
-Enum values for `SignInWithYouVersionPermission`:
+```xml
+<!-- AndroidManifest.xml -->
+<activity
+    android:name=".MainActivity"
+    android:exported="true">
+    <!-- ... existing intent filters -->
 
-- `bibles`
-- `highlights`
-- `votd`
-- `demographics`
-- `bibleActivity`
+    <!-- Handle OAuth callback -->
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
 
-**Returns:**
-`Promise<SignInWithYouVersionResult>` - An object containing the following details:
-
-| Property         | Type                               | Description                                  |
-| ---------------- | ---------------------------------- | -------------------------------------------- |
-| `accessToken`    | `string`                           | Access token for the authenticated user.     |
-| `permissions`    | `SignInWithYouVersionPermission[]` | Permissions granted by the user.             |
-| `yvpUserId`      | `string`                           | YouVersion Platform user ID.                 |
-| `expiryDate`     | `string`                           | Expiration date of the access token.         |
-| `refreshToken`   | `string`                           | Refresh token for renewing the access token. |
-| `name`           | `string`                           | Name of the authenticated user.              |
-| `profilePicture` | `string`                           | URL to the user's profile picture.           |
-| `email`          | `string`                           | Email address of the authenticated user.     |
-
-#### `signOut`
-
-Deletes the user's access token from memory.
-
-```tsx
-import { YouVersionAPI } from '@youversion/platform-sdk-reactnative';
-
-YouVersionAPI.Users.signOut();
+        <data
+            android:scheme="youversionauth"
+            android:host="callback" />
+    </intent-filter>
+</activity>
 ```
 
-#### `userInfo`
+#### 2. Update Your Main Activity
 
-Retrieves user information for the authenticated user
+Your main activity must extend `SignInWithYouVersionActivity`. This allows the SDK to automatically handle the result from the sign-in process.
 
-```tsx
-import { YouVersionAPI } from '@youversion/platform-sdk-reactnative';
+```kotlin
+// MainActivity.kt
+import com.youversion.platform.ui.signin.SignInWithYouVersionActivity
 
-const userInfo = await YouVersionAPI.Users.userInfo();
+class MainActivity : SignInWithYouVersionActivity() {
+    // ...
+}
 ```
 
-**Parameters:**
+#### 3. Add the Sign-In Button to Your UI
 
-- `accessToken?: string` - The access token of the authenticated user. If not provided, the SDK will use the last authenticated user's token.
+Use the `SignInWithYouVersionButton` composable in your UI. You can use the `SignInViewModel` to check if the user is already signed in and conditionally display the button.
 
-**Returns:**
-`Promise<YouVersionUserInfo>` - An object containing the user's profile information:
+- `SignInWithYouVersionPermission.PROFILE`: To access the user's name and profile picture.
+- `SignInWithYouVersionPermission.EMAIL`: To access the user's email address.
 
-| Property    | Type     | Description                     |
-| ----------- | -------- | ------------------------------- |
-| `userId`    | `string` | The user's account ID.          |
-| `firstName` | `string` | The user's first name.          |
-| `lastName`  | `string` | The user's last name.           |
-| `avatarUrl` | `string` | URL to the user's avatar image. |
+```kotlin
+// ProfileScreen.kt
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.youversion.platform.core.users.model.SignInWithYouVersionPermission
+import com.youversion.platform.ui.signin.SignInViewModel
+import com.youversion.platform.ui.views.SignInWithYouVersionButton
 
-The SDK also provides utility functions to call the API manually. The documentation is broken up by feature area.
+@Composable
+fun ProfileScreen() {
+    val signInViewModel = viewModel<SignInViewModel>()
+    val state by signInViewModel.state.collectAsStateWithLifecycle()
 
-### Verse of the Day
-
-#### `verseOfTheDay`
-
-Retrieves the verse of the day passage id for a specified day of the year
-
-```tsx
-import { YouVersionAPI } from '@youversion/platform-sdk-reactnative';
-
-const votd = await YouVersionAPI.Verses.verseOfTheDay(150);
+    if (state.isSignedIn) {
+        Column {
+            Text("Welcome, ${state.userName ?: "User"}!")
+            Text("Your email is ${state.userEmail ?: "not available"}.")
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = { signInViewModel.onAction(SignInViewModel.Action.SignOut()) }) {
+                Text("Sign Out")
+            }
+        }
+    } else {
+        SignInWithYouVersionButton(
+            permissions = {
+                setOf(
+                    SignInWithYouVersionPermission.PROFILE,
+                    SignInWithYouVersionPermission.EMAIL
+                )
+            }
+        )
+    }
+}
 ```
 
-**Parameters:**
+The `SignInViewModel` automatically updates its state when authentication completes, and your UI will recompose to reflect the user's authentication status.
 
-- `dayOfYear: number` - The day of the year for which to retrieve the verse of the day.
+## Sample App
 
-**Returns:**
-`Promise<YouVersionVerseOfTheDay>` - A promise containing the verse of the day details. Use this with a `BibleTextView` to display the passage.
+Explore the [examples directory](./examples) for a complete sample app demonstrating:
+- Scripture display with various reference types
+- User authentication flows
+- VOTD integration
+- Best practices for token storage
 
-| Property    | Type     | Description                                    |
-| ----------- | -------- | ---------------------------------------------- |
-| `passageId` | `string` | The reference of the verse (e.g., "JHN.3.16"). |
-| `day`       | `number` | The day of the year for the verse.             |
+To run the sample app:
+1. Open the `platform-sdk-kotlin` directory in Android Studio
+2. Wait for Gradle sync to complete (File → Sync Project with Gradle Files if needed)
+3. Add your API key to `examples/sample-android/src/main/java/com/youversion/platform/MainApplication.kt`
+4. Select `sample-android` from the run configuration dropdown
+5. Create an emulator if needed (Tools → Device Manager → Create Device)
+6. Click Run
 
-### Languages
+## 🎯 For Different Use Cases
 
-#### `getLanguages`
+### 📱 Kotlin SDK
 
-Retrieves a list of available languages. It accepts an optional country code to filter the results.
+Building an Android application? This Kotlin SDK provides native Jetpack Compose components including `BibleText`, `VerseOfTheDay`, and `SignInWithYouVersionButton` using modern language features.
 
-```tsx
-import { YouVersionAPI } from '@youversion/platform-sdk-reactnative';
+### 🔧 API Integration
 
-const languages = await YouVersionAPI.Languages.getLanguages('US');
+Need direct access to YouVersion Platform APIs? See [our comprehensive API documentation](https://developers.youversion.com/overview) for advanced integration patterns and REST endpoints.
+
+### 🤖 LLM Integration
+
+Building AI applications with Bible content? Access YouVersion's LLM-optimized endpoints and structured data designed for language models. See [our LLM documentation](https://developers.youversion.com/for-llms) for details.
+
+## Development Setup
+
+After cloning the repo, install Node.js dependencies to enable git hooks (commit message linting):
+
+```bash
+npm install
 ```
 
-**Parameters:**
+This installs [husky](https://typicode.github.io/husky/) and [commitlint](https://commitlint.js.org/), which enforce [Conventional Commits](https://www.conventionalcommits.org/) on every commit. Without this step, commits with non-conforming messages will pass locally but fail in CI.
 
-- `countryCode?: string` - An optional alpha-2 country code to filter languages by country.
+## Contributing (Starting Early 2026)
 
-**Returns:**
-`Promise<LanguageOverview[]>` - An array of language objects.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to get started.
 
-| Property                | Type                     | Description                                                                            |
-| ----------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
-| `id`                    | `string`                 | Unique ID of the language (e.g., "en")                                                 |
-| `language`              | `string`                 | ISO 639 canonical language subtag (e.g., "sr")                                         |
-| `script`                | `string?`                | ISO 15924 script subtag (e.g., "Latn")                                                 |
-| `scriptName`            | `string?`                | Name of the script (e.g., "Latin")                                                     |
-| `aliases`               | `string[]`               | Array of deprecated or legacy subtags mapped during canonicalization for this language |
-| `displayName`           | `Record<string, string>` | Object whose keys are language ids and values are script names                         |
-| `scripts`               | `string[]`               | Array of all known scripts for this language                                           |
-| `variants`              | `string[]`               | Array of variants associated with this language                                        |
-| `countries`             | `string[]`               | Array of alpha-2 country codes where this language is used                             |
-| `textDirection`         | `string`                 | Text direction ("ltr" or "rtl") of the language                                        |
-| `defaultBibleVersionId` | `number?`                | The default Bible version ID for this language                                         |
+## Documentation
 
-### Bible
+- [API Documentation](https://developers.youversion.com/overview) - Complete API reference
+- [LLM Integration Guide](https://developers.youversion.com/for-llms) - AI/ML integration docs
+- [Release Process](./RELEASING.md) - Contribution and release guidelines
+- [Sample Code](./examples) - Working examples and best practices
 
-#### `getVersions`
+## Support
 
-Retrieves a list of available Bible versions. It accepts an optional language tag to filter the results.
+- **Issues**: [GitHub Issues](https://github.com/youversion/platform-sdk-kotlin/issues)
+- **Questions**: Open a [discussion](https://github.com/youversion/platform-sdk-kotlin/discussions)
+- **Platform Support**: [YouVersion Platform](https://platform.youversion.com/)
 
-```tsx
-import { YouVersionAPI } from '@youversion/platform-sdk-reactnative';
+## License
 
-const versions = await YouVersionAPI.Bible.getVersions('en');
-```
+This SDK is licensed under the Apache License 2.0. See [LICENSE](./LICENSE) for details.
 
-**Parameters:**
+---
 
-- `languageTag?: string` - An optional BCP 47 language tag to filter Bible versions by language.
+Made with ❤️ by [YouVersion](https://www.youversion.com)
 
-**Returns:**
-`Promise<BibleVersion[]>` - An array of Bible version objects.
 
-| Property                | Type       | Description                                      |
-| ----------------------- | ---------- | ------------------------------------------------ |
-| `id`                    | `number`   | Unique ID of the Bible version                   |
-| `abbreviation`          | `string`   | Abbreviation of the Bible version                |
-| `copyrightLong`         | `string`   | HTML string containing the copyright information |
-| `copyrightShort`        | `string`   | Short copyright string                           |
-| `languageTag`           | `string`   | BCP 47 language tag of the Bible version         |
-| `localizedAbbreviation` | `string`   | Localized abbreviation of the Bible version      |
-| `localizedTitle`        | `string`   | Localized title of the Bible version             |
-| `title`                 | `string`   | Title of the Bible version                       |
-| `bookCodes`             | `string[]` | Array of USFM book codes included in the version |
-| `textDirection`         | `string`   | Text direction ("ltr" or "rtl") of the version   |
-
-#### `getVersion`
-
-Retrieves details for a specific Bible version by its ID.
-
-```tsx
-import { YouVersionAPI } from '@youversion/platform-sdk-reactnative';
-
-const version = await YouVersionAPI.Bible.getVersion(111);
-```
-
-**Parameters:**
-
-- `versionId: number` - The unique ID of the Bible version to retrieve.
-
-**Returns:**
-`Promise<BibleVersion>` - A Bible version object. See `getVersions` for property details. This also includes an additional field called `books` containing an array of `BibleBook` objects.
-
-`BibleBook` properties:
-
-| Property       | Type             | Description                         |
-| -------------- | ---------------- | ----------------------------------- |
-| `usfm`         | `string`         | USFM book code (e.g., "GEN", "JHN") |
-| `abbreviation` | `string`         | Abbreviation of the book            |
-| `title`        | `string`         | Title of the book                   |
-| `titleLong`    | `string`         | Full title of the book              |
-| `chapters`     | `BibleChapter[]` | Array of chapters in the book       |
-
-`BibleChapter` properties:
-
-| Property      | Type      | Description                             |
-| ------------- | --------- | --------------------------------------- |
-| `bookUSFM`    | `string`  | USFM book code                          |
-| `isCanonical` | `boolean` | Whether the chapter is canonical        |
-| `passageId`   | `string`  | USFM passage identifier (e.g., "GEN.1") |
-| `title`       | `string`  | Title of the chapter (e.g., "1")        |
-
-### Highlights
-
-#### `getHighlights`
-
-Retrieves a list of highlights for the authenticated user.
-
-```tsx
-import { YouVersionAPI } from '@youversion/platform-sdk-reactnative';
-
-const highlights = await YouVersionAPI.Highlights.getHighlights({
-  bibleId: 111,
-  passageId: 'JHN.3.16',
-});
-```
-
-**Parameters:**
-
-An object with the following optional properties:
-
-- `bibleId?: number` - Bible version ID.
-- `passageId?: string` - Passage identifier (e.g., "JHN.3.16").
-
-**Returns:**
-
-`Promise<HighlightResponse[]>` - An array of highlight objects.
-
-| Property    | Type     | Description                                     |
-| ----------- | -------- | ----------------------------------------------- |
-| `id`        | `string` | Unique ID of the highlight                      |
-| `bibleId`   | `number` | Bible version ID                                |
-| `passageId` | `string` | Passage identifier (e.g., "JHN.3.16")           |
-| `color`     | `string` | Highlight color in hex format (e.g., "#FFFF00") |
-| `userId`    | `string` | User ID of the highlight owner                  |
-
-#### `createHighlight`
-
-Creates a new highlight for the authenticated user.
-
-```tsx
-import { YouVersionAPI } from '@youversion/platform-sdk-reactnative';
-
-const wasSuccess = await YouVersionAPI.Highlights.createHighlight({
-  bibleId: 111,
-  passageId: 'JHN.3.16',
-  color: '#FFFF00',
-});
-```
-
-**Parameters:**
-An object with the following properties:
-
-- `bibleId: number` - Bible version ID.
-- `passageId: string` - Passage identifier (e.g., "JHN.3.16").
-- `color: string` - Highlight color in hex format (e.g., "#FFFF00").
-
-**Returns:**
-`Promise<boolean>` - Boolean representing if the creation was successful.
-
-#### `deleteHighlight`
-
-Deletes a highlight for the authenticated user.
-
-```tsx
-import { YouVersionAPI } from '@youversion/platform-sdk-reactnative';
-
-const wasSuccess = await YouVersionAPI.Highlights.deleteHighlight({
-  bibleId: 111,
-  passageId: 'JHN.3.16',
-});
-```
-
-**Parameters:**
-An object with the following properties:
-
-- `bibleId: number` - Bible version ID.
-- `passageId: string` - Passage identifier (e.g., "JHN.3.16").
-
-**Returns:**
-`Promise<boolean>` - Boolean representing if the deletion was successful.
-
-#### `updateHighlight`
-
-Updates a highlight's color for the authenticated user.
-
-```tsx
-import { YouVersionAPI } from '@youversion/platform-sdk-reactnative';
-
-const wasSuccess = await YouVersionAPI.Highlights.updateHighlight({
-  bibleId: 111,
-  passageId: 'JHN.3.16',
-  color: '#FF0000',
-});
-```
-
-**Parameters:**
-An object with the following properties:
-
-- `bibleId: number` - Bible version ID.
-- `passageId: string` - Passage identifier (e.g., "JHN.3.16").
-- `color: string` - New highlight color in hex format (e.g., "#FF0000").
-
-**Returns:**
-`Promise<boolean>` - Boolean representing if the update was successful.
