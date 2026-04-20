@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import { ChapterNavigator } from "../components/ChapterNavigator";
+import { StudyPanel } from "../components/StudyPanel";
 import { TopBar } from "../components/TopBar";
 import { VerseCard } from "../components/VerseCard";
 import { getBooks, getChapterVerses } from "../data/bible";
@@ -14,15 +15,20 @@ export function ReaderScreen() {
   const [selectedBookId, setSelectedBookId] = useState<string>(books[0].id);
   const [selectedChapter, setSelectedChapter] = useState<number>(1);
   const [showNavigator, setShowNavigator] = useState(false);
+  const [showStudyPanel, setShowStudyPanel] = useState(false);
 
   const book = books.find((candidate) => candidate.id === selectedBookId) ?? books[0];
   const verses = getChapterVerses(selectedBookId, selectedChapter);
+  const focusVerse = verses[0];
+  const reference = `${book.name} ${selectedChapter}:${focusVerse?.number ?? 1}`;
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.bgPrimary }]}>
       <TopBar
         title={`${book.name} ${selectedChapter}`}
         subtitle="Biblia Codex Reader"
+        leftActionLabel="Study"
+        onLeftActionPress={() => setShowStudyPanel(true)}
         rightActionLabel="Chapters"
         onRightActionPress={() => setShowNavigator(true)}
       />
@@ -53,6 +59,15 @@ export function ReaderScreen() {
           setShowNavigator(false);
         }}
       />
+
+      {focusVerse ? (
+        <StudyPanel
+          visible={showStudyPanel}
+          verseReference={reference}
+          verseText={focusVerse.text}
+          onClose={() => setShowStudyPanel(false)}
+        />
+      ) : null}
     </View>
   );
 }

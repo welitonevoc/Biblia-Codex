@@ -21,7 +21,11 @@ import { allThemes } from "../theme/themes";
 import { useTheme } from "../theme/ThemeContext";
 import { borderRadius, spacing } from "../theme/tokens";
 
-export function ProfileScreen() {
+interface ProfileScreenProps {
+  onOpenSettings?: () => void;
+}
+
+export function ProfileScreen({ onOpenSettings }: ProfileScreenProps) {
   const { colors, typography, fonts, theme, setTheme } = useTheme();
   const [currentUser, setCurrentUser] = useState<YouVersionUserInfo>();
   const [loading, setLoading] = useState<boolean>(
@@ -84,7 +88,12 @@ export function ProfileScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.bgPrimary }]}>
-      <TopBar title="Profile" subtitle="Account and appearance" />
+      <TopBar
+        title="Profile"
+        subtitle="Account and appearance"
+        rightActionLabel="Settings"
+        onRightActionPress={onOpenSettings}
+      />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={[styles.panel, { backgroundColor: colors.bgSecondary, borderColor: colors.border }]}>

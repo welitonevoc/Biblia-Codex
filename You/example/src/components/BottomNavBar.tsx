@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTheme } from "../theme/ThemeContext";
 import { borderRadius, spacing } from "../theme/tokens";
 
-export type AppTab = "reader" | "votd" | "search" | "profile";
+export type AppTab = "home" | "reader" | "votd" | "search" | "profile";
 
 interface TabItem {
   id: AppTab;
@@ -11,6 +11,7 @@ interface TabItem {
 }
 
 const TAB_ITEMS: TabItem[] = [
+  { id: "home", label: "Home" },
   { id: "reader", label: "Reader" },
   { id: "votd", label: "Verse" },
   { id: "search", label: "Search" },
