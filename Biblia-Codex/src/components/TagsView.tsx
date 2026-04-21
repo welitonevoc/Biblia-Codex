@@ -98,12 +98,7 @@ export const TagsView: React.FC = () => {
 
   const filteredBookmarks = useMemo(() => {
     if (!selectedTagId) return bookmarks;
-    const userBookmarks = bookmarks.filter(b => b.tags?.includes(selectedTagId));
-    
-    const crossRefTags = getTagsForVerse('', 0, 0);
-    if (crossRefTags.length === 0) return userBookmarks;
-    
-    return userBookmarks;
+    return bookmarks.filter(b => b.tags?.includes(selectedTagId));
   }, [bookmarks, selectedTagId]);
 
   const activeTag = useMemo(() => tags.find(t => t.id === selectedTagId), [tags, selectedTagId]);

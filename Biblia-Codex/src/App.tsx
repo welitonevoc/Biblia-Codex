@@ -28,6 +28,7 @@ import { MapsPage } from './components/MapsPage';
 import { XRefsPage } from './components/XRefsPage';
 import { SearchView } from './components/SearchView';
 import { EBDPage } from './components/EBDPage';
+import { TagsView } from './components/TagsView';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { Book, Verse } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -288,7 +289,7 @@ function AppContent() {
                 className="h-full"
               >
                 <DevotionalPage onNavigate={(bookId, chapter, verse) => {
-                  const book = BIBLE_BOOKS.find(b => b.id === bookId);
+                  const book = BIBLE_BOOKS.find(b => b.id === String(bookId));
                   if (book) handleSelect(book, chapter, verse);
                 }} />
               </motion.div>

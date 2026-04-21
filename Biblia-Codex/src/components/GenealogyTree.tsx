@@ -24,6 +24,7 @@ interface Person {
   tree_id?: number;
   verses?: string;
   parent_id?: number;
+  parentId?: number;
   children?: Person[];
 }
 

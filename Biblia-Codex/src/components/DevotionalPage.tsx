@@ -30,6 +30,7 @@ interface Devotion {
 
 interface DevotionalPageProps {
   onClose?: () => void;
+  onNavigate?: (bookId: number, chapter: number, verse?: number) => void;
 }
 
 const AVAILABLE_DEVOTIONALS: DevotionalModule[] = [
