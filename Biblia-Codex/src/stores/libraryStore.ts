@@ -13,48 +13,44 @@ export interface LibraryModule {
 interface LibraryState {
   installedModules: LibraryModule[];
   selectedModuleKey: string | null;
-  availableOnline: LibraryModule[];
+  currentBook: number;
+  currentChapter: number;
   isLoading: boolean;
-  downloadProgress: Record<string, number>;
+  error: string | null;
   setInstalledModules: (modules: LibraryModule[]) => void;
   setSelectedModule: (key: string | null) => void;
-  setAvailableOnline: (modules: LibraryModule[]) => void;
+  setCurrentLocation: (book: number, chapter: number) => void;
   addModule: (module: LibraryModule) => void;
   removeModule: (key: string) => void;
-  setDownloadProgress: (key: string, progress: number) => void;
   setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
 }
 
 export const useLibraryStore = create<LibraryState>()((set) => ({
   installedModules: [],
   selectedModuleKey: null,
-  availableOnline: [],
+  currentBook: 1,
+  currentChapter: 1,
   isLoading: false,
-  downloadProgress: {},
+  error: null,
 
   setInstalledModules: (installedModules) => set({ installedModules }),
-
   setSelectedModule: (selectedModuleKey) => set({ selectedModuleKey }),
-
-  setAvailableOnline: (availableOnline) => set({ availableOnline }),
-
-  addModule: (module) =>
-    set((state) => ({
-      installedModules: [...state.installedModules, module],
+  setCurrentLocation: (currentBook, currentChapter) =>
+    set({ currentBook, currentChapter }),
+  addModule: (module_) =>
+    set((s) => ({
+      installedModules: [...s.installedModules, module_],
     })),
-
   removeModule: (key) =>
-    set((state) => ({
-      installedModules: state.installedModules.filter((m) => m.key !== key),
+    set((s) => ({
+      installedModules: s.installedModules.filter((m) => m.key !== key),
+      selectedModuleKey: s.selectedModuleKey === key ? null : s.selectedModuleKey,
     })),
-
-  setDownloadProgress: (key, progress) =>
-    set((state) => ({
-      downloadProgress: {
-        ...state.downloadProgress,
-        [key]: progress,
-      },
-    })),
-
   setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error }),
 }));
+
+// Selector for current module only
+export const useCurrentModule = () =>
+  useLibraryStore((s) => s.installedModules.find((m) => m.key === s.selectedModuleKey));

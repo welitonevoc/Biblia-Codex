@@ -1,5 +1,4 @@
-export { useReaderStore } from './readerStore';
-export { useSettingsStore } from './settingsStore';
-export { useLibraryStore, type LibraryModule } from './libraryStore';
-export { useNotesStore } from './notesStore';
-export { useSyncStore } from './syncStore';
+export { useReaderStore, useCurrentLocation, useReaderSettings } from './readerStore';
+export { useSettingsStore, useTheme, useDisplaySettings } from './settingsStore';
+export { useLibraryStore, useCurrentModule, type LibraryModule } from './libraryStore';
+export { useNotesStore, useBookmarkCount, useNoteCount } from './notesStore';
