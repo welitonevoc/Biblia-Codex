@@ -645,13 +645,13 @@ export const Reader: React.FC<ReaderProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 50, scale: 0.9 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed left-1/2 z-50 -translate-x-1/2"
+              className="fixed left-1/2 z-50 w-[min(calc(100vw-1.5rem),28rem)] -translate-x-1/2"
               style={{ bottom: 'calc(1rem + var(--sab))' }}
             >
-              <div className="glass-panel px-6 py-4 shadow-2xl">
+              <div className="glass-panel px-3 py-3 shadow-2xl sm:px-6 sm:py-4">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-3 pb-2 border-b border-bible-border/50">
-                  <span className="text-xs font-bold text-bible-text">
+                  <span className="pr-3 text-xs font-bold text-bible-text">
                     {selectedVerses.length} {selectedVerses.length === 1 ? 'versículo selecionado' : 'versículos selecionados'}
                   </span>
                   <button
@@ -663,19 +663,19 @@ export const Reader: React.FC<ReaderProps> = ({
                 </div>
 
                 {/* Action Buttons Grid */}
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid grid-cols-5 gap-1.5 sm:gap-3">
                   {/* Bookmark with Color */}
-                  <div className="relative">
+                  <div className="relative min-w-0">
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => setShowColorPicker(!showColorPicker)}
-                      className="flex flex-col items-center gap-1.5 group"
+                      className="flex w-full min-w-0 flex-col items-center gap-1.5 group"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-bible-accent/10 flex items-center justify-center group-hover:bg-bible-accent/20 transition-colors">
-                        <Bookmark className="w-5 h-5 text-bible-accent" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bible-accent/10 transition-colors group-hover:bg-bible-accent/20 sm:h-12 sm:w-12">
+                        <Bookmark className="h-4 w-4 text-bible-accent sm:h-5 sm:w-5" />
                       </div>
-                      <span className="text-[9px] font-bold text-bible-text-muted uppercase tracking-wider">Marcador</span>
+                      <span className="min-h-[2rem] text-center text-[8px] font-bold uppercase leading-tight tracking-wide text-bible-text-muted sm:text-[9px] sm:tracking-wider">Marcador</span>
                     </motion.button>
 
                     {/* Color Picker Dropdown */}
@@ -685,10 +685,10 @@ export const Reader: React.FC<ReaderProps> = ({
                           initial={{ opacity: 0, y: 10, scale: 0.9 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                          className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 glass-panel p-3 shadow-xl"
+                          className="absolute bottom-full left-1/2 mb-2 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 glass-panel p-3 shadow-xl"
                         >
                           <div className="text-[10px] font-bold text-bible-text-muted mb-2 text-center">Cor do Marcador</div>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap justify-center gap-2">
                             {[
                               { id: 'yellow', hex: '#fef08a', name: 'Amarelo' },
                               { id: 'green', hex: '#bbf7d0', name: 'Verde' },
@@ -726,12 +726,12 @@ export const Reader: React.FC<ReaderProps> = ({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setShowTagEditor(!showTagEditor)}
-                    className="flex flex-col items-center gap-1.5 group"
+                    className="flex min-w-0 flex-col items-center gap-1.5 group"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                      <Tag className="w-5 h-5 text-blue-500" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 transition-colors group-hover:bg-blue-500/20 sm:h-12 sm:w-12">
+                      <Tag className="h-4 w-4 text-blue-500 sm:h-5 sm:w-5" />
                     </div>
-                    <span className="text-[9px] font-bold text-bible-text-muted uppercase tracking-wider">Etiquetas</span>
+                    <span className="min-h-[2rem] text-center text-[8px] font-bold uppercase leading-tight tracking-wide text-bible-text-muted sm:text-[9px] sm:tracking-wider">Etiquetas</span>
                   </motion.button>
 
                   {/* Share */}
@@ -757,12 +757,12 @@ export const Reader: React.FC<ReaderProps> = ({
                         alert('Versículo(s) copiado(s)!');
                       }
                     }}
-                    className="flex flex-col items-center gap-1.5 group"
+                    className="flex min-w-0 flex-col items-center gap-1.5 group"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
-                      <Share2 className="w-5 h-5 text-green-500" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10 transition-colors group-hover:bg-green-500/20 sm:h-12 sm:w-12">
+                      <Share2 className="h-4 w-4 text-green-500 sm:h-5 sm:w-5" />
                     </div>
-                    <span className="text-[9px] font-bold text-bible-text-muted uppercase tracking-wider">Compartilhar</span>
+                    <span className="min-h-[2rem] text-center text-[8px] font-bold uppercase leading-tight tracking-wide text-bible-text-muted sm:text-[9px] sm:tracking-wider">Compartilhar</span>
                   </motion.button>
 
                   {/* Study */}
@@ -770,12 +770,12 @@ export const Reader: React.FC<ReaderProps> = ({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={handleStudy}
-                    className="flex flex-col items-center gap-1.5 group"
+                    className="flex min-w-0 flex-col items-center gap-1.5 group"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-                      <Sparkles className="w-5 h-5 text-purple-500" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 transition-colors group-hover:bg-purple-500/20 sm:h-12 sm:w-12">
+                      <Sparkles className="h-4 w-4 text-purple-500 sm:h-5 sm:w-5" />
                     </div>
-                    <span className="text-[9px] font-bold text-bible-text-muted uppercase tracking-wider">Estudar</span>
+                    <span className="min-h-[2rem] text-center text-[8px] font-bold uppercase leading-tight tracking-wide text-bible-text-muted sm:text-[9px] sm:tracking-wider">Estudar</span>
                   </motion.button>
 
                   {/* Delete Bookmarks */}
@@ -783,12 +783,12 @@ export const Reader: React.FC<ReaderProps> = ({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={handleDeleteBookmarks}
-                    className="flex flex-col items-center gap-1.5 group"
+                    className="flex min-w-0 flex-col items-center gap-1.5 group"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
-                      <Trash2 className="w-5 h-5 text-red-500" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 transition-colors group-hover:bg-red-500/20 sm:h-12 sm:w-12">
+                      <Trash2 className="h-4 w-4 text-red-500 sm:h-5 sm:w-5" />
                     </div>
-                    <span className="text-[9px] font-bold text-bible-text-muted uppercase tracking-wider">Remover</span>
+                    <span className="min-h-[2rem] text-center text-[8px] font-bold uppercase leading-tight tracking-wide text-bible-text-muted sm:text-[9px] sm:tracking-wider">Remover</span>
                   </motion.button>
                 </div>
 
