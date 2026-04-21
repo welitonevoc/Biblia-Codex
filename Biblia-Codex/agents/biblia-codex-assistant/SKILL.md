@@ -377,6 +377,12 @@ npm run cap:run        # Build + run no device
 - [x] `src/i18n/index.ts`
 - [x] `src/i18n/locales/`
 
+## Fase 5: Performance ✅
+- [x] Lazy loading: DevotionalPage, MapsPage, XRefsPage, EBDPage
+- [x] Suspense com PageLoader
+- [x] `@tanstack/react-virtual` instalado
+- [x] `src/components/Common/ChapterVirtual.tsx`- [x] Memoização de parsing (useMemo)
+
 ---
 
 # Referências
