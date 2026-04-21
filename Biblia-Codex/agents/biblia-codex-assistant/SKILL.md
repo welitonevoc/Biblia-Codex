@@ -348,12 +348,44 @@ npm run cap:run        # Build + run no device
 
 ---
 
+# Roadmap de Modernização
+
+## Fase 0: Estabilização ✅
+- [x] typecheck sem erros (`npm run lint`)
+- [x] Mapeamento localStorage
+- [x] Mapeamento IndexedDB
+
+## Fase 1: Offline-First ✅
+- [x] Service worker existente (`public/sw.js`)
+- [x] Estratégias: CacheFirst, NetworkFirst, StaleWhileRevalidate
+- [x] Módulos bíblicos offline
+
+## Fase 2: Zustand ✅
+- [x] `src/stores/readerStore.ts`
+- [x] `src/stores/settingsStore.ts`
+- [x] `src/stores/libraryStore.ts`
+- [x] `src/stores/notesStore.ts`
+- [x] Seletores pequenos
+
+## Fase 3: Acessibilidade WCAG ✅
+- [x] `src/components/Common/AccessibleButton.tsx`
+- [x] `src/hooks/useKeyboardNavigation.ts`
+- [x] `src/hooks/useA11y.ts`
+
+## Fase 4: i18n ✅
+- [x] `npm install i18next react-i18next`
+- [x] `src/i18n/index.ts`
+- [x] `src/i18n/locales/`
+
+---
+
 # Referências
 
 - Stack: React 19, Vite 8, Tailwind v4, TypeScript 5.8
 - Mobile: Capacitor 6
 - Testes: Vitest 4
 - State: Zustand 5
+- i18n: i18next
 - Ícones: lucide-react
 - Animações: motion
--Markdown: react-markdown
+- Markdown: react-markdown
