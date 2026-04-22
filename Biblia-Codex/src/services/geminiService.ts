@@ -171,6 +171,28 @@ const callAI = async (prompt: string, systemInstruction?: string, apiKey?: strin
 
     if (!response.ok) {
       console.error('AI API Error:', data);
+
+      // Tratamento específico para erros de quota
+      if (response.status === 429 || data.error?.message?.includes('Quota exceeded')) {
+        const quotaMessage = `Limite de uso excedido para ${configuredModel}. `;
+        const retryMatch = data.error?.message?.match(/retry in (\d+\.\d+)s/);
+        if (retryMatch) {
+          const retryTime = parseFloat(retryMatch[1]);
+          const minutes = Math.ceil(retryTime / 60);
+          return `${quotaMessage}Tente novamente em ${minutes} minuto(s). Ou considere usar OpenRouter para mais quota.`;
+        }
+        return `${quotaMessage}Tente novamente mais tarde ou configure uma chave OpenRouter para mais quota.`;
+      }
+
+      // Outros erros da API
+      if (response.status === 403) {
+        return `Erro 403: Acesso negado. Verifique se sua chave de API é válida para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`;
+      }
+
+      if (response.status === 401) {
+        return `Erro 401: Não autorizado. Verifique sua chave de API para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`;
+      }
+
       return `Erro ${response.status}: ${data.error?.message || 'Falha na requisição'}`;
     }
 
@@ -218,7 +240,7 @@ export interface AIExplanation {
 /**
  * Testa a configuração da IA
  */
-export const testAIConfiguration = async (): Promise<{ success: boolean; message: string; provider: string; model: string }> => {
+export const testAIConfiguration = async (): Promise<{ success: boolean; message: string; provider: string; model: string; quotaWarning?: boolean; suggestion?: string }> => {
   const provider = getConfiguredProvider();
   const model = getConfiguredModel();
   const apiKey = getApiKey();
@@ -237,7 +259,7 @@ export const testAIConfiguration = async (): Promise<{ success: boolean; message
   try {
     // Teste simples
     const testPrompt = "Olá, isso é um teste. Responda apenas 'OK'.";
-    await getAIResponse(testPrompt, undefined, apiKey, model);
+    const response = await getAIResponse(testPrompt, undefined, apiKey, model);
     return {
       success: true,
       message: `Configuração válida: ${provider} com modelo ${model}`,
@@ -246,11 +268,60 @@ export const testAIConfiguration = async (): Promise<{ success: boolean; message
     };
   } catch (error: any) {
     console.error('[geminiService] Erro no teste:', error);
+
+    // Detecta problemas específicos
+    let quotaWarning = false;
+    let message = `Erro na configuração: ${error.message}`;
+    let suggestion: string | undefined;
+
+    if (error.message?.includes('Quota exceeded')) {
+      quotaWarning = true;
+      message = `Limite de quota excedido para ${model}.`;
+      suggestion = 'Para mais quota gratuita, configure OpenRouter nas Configurações → IA. Modelos gratuitos disponíveis: MiniMax, Nemotron, Gemma, Qwen.';
+    } else if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+      message = `Chave de API inválida para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`;
+      suggestion = 'Verifique se a chave foi copiada corretamente das configurações do provedor.';
+    } else if (error.message?.includes('403') || error.message?.includes('Forbidden')) {
+      message = `Acesso negado. Verifique permissões da chave de API para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`;
+      suggestion = 'A chave pode não ter permissões suficientes ou ter expirado.';
+    }
+
     return {
       success: false,
-      message: `Erro na configuração: ${error.message}`,
+      message,
       provider,
-      model
+      model,
+      quotaWarning,
+      suggestion
     };
   }
+};
+
+/**
+ * Sugere automaticamente trocar para OpenRouter se houver problemas de quota
+ */
+export const suggestOpenRouterForQuota = (): boolean => {
+  const openRouterKey = localStorage.getItem('openrouter-api-key');
+  const currentProvider = getConfiguredProvider();
+
+  // Se já está usando OpenRouter, não sugere
+  if (currentProvider === 'openrouter') return false;
+
+  // Se tem chave OpenRouter disponível, sugere
+  return !!(openRouterKey && openRouterKey.trim());
+};
+
+/**
+ * Auto-configura para usar OpenRouter se disponível
+ */
+export const autoSwitchToOpenRouter = (): boolean => {
+  const openRouterKey = localStorage.getItem('openrouter-api-key');
+
+  if (openRouterKey && openRouterKey.trim()) {
+    localStorage.setItem('ai-api-provider', 'openrouter');
+    console.log('[geminiService] Auto-switched to OpenRouter for better quota');
+    return true;
+  }
+
+  return false;
 };

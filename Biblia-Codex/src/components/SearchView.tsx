@@ -8,7 +8,7 @@ import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getAudioTracksForChapter } from '../data/audioData';
-import { getAIResponse, getApiKey, getConfiguredProvider, testAIConfiguration } from '../services/geminiService';
+import { getAIResponse, getApiKey, getConfiguredProvider, testAIConfiguration, suggestOpenRouterForQuota, autoSwitchToOpenRouter } from '../services/geminiService';
 import { debugAIConfig } from '../debugAI';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
@@ -31,7 +31,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
   const [aiResults, setAiResults] = useState<Map<string, string>>(new Map());
   const [aiError, setAiError] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [configTest, setConfigTest] = useState<{ success: boolean; message: string } | null>(null);
+  const [configTest, setConfigTest] = useState<{ success: boolean; message: string; quotaWarning?: boolean; suggestion?: string } | null>(null);
 
   const toggleAI = useCallback(() => {
     const newValue = !aiEnabled;
@@ -95,8 +95,19 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
         } catch (err: any) {
           hadError = true;
           console.error('Erro na busca IA:', err);
-          const errorMsg = `Erro ao processar versículo ${verse.bookId} ${verse.chapter}:${verse.verse}`;
-          newResults.set(key, `❌ ${errorMsg}: ${err.message || 'Erro desconhecido'}`);
+
+          let errorMsg = `Erro ao processar versículo ${verse.bookId} ${verse.chapter}:${verse.verse}`;
+
+          // Tratamento específico de quota
+          if (err.message?.includes('Quota exceeded')) {
+            errorMsg = `Quota excedida para ${getConfiguredProvider() === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}`;
+          } else if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
+            errorMsg = 'Chave de API inválida';
+          } else if (err.message?.includes('403') || err.message?.includes('Forbidden')) {
+            errorMsg = 'Acesso negado à API';
+          }
+
+          newResults.set(key, `❌ ${errorMsg}`);
         }
       }
       setAiResults(newResults);
@@ -253,6 +264,14 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                 <span>Modo IA ativo: resultados terão explicações contextuais</span>
               </div>
 
+              {/* Aviso sobre plano gratuito */}
+              {getConfiguredProvider() === 'google' && (
+                <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>Usando plano gratuito do Gemini (limite baixo). Considere OpenRouter para mais quota.</span>
+                </div>
+              )}
+
               {/* Configuração de teste */}
               <div className="flex items-center gap-2">
                 <motion.button
@@ -286,13 +305,48 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className={`text-xs px-2 py-1 rounded-full ${
+                    className={`text-xs px-3 py-2 rounded-lg max-w-xs ${
                       configTest.success
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : configTest.quotaWarning
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                         : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                     }`}
                   >
-                    {configTest.message}
+                    <div className="font-medium mb-1">
+                      {configTest.success ? '✅' : configTest.quotaWarning ? '⚠️' : '❌'} Configuração IA
+                    </div>
+                    <div className="text-xs leading-tight">
+                      {configTest.message}
+                    </div>
+                    {configTest.suggestion && (
+                      <div className="text-xs mt-2 text-blue-600 dark:text-blue-400">
+                        💡 {configTest.suggestion}
+                      </div>
+                    )}
+                    {configTest.quotaWarning && suggestOpenRouterForQuota() && (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          const switched = autoSwitchToOpenRouter();
+                          if (switched) {
+                            setConfigTest({
+                              success: true,
+                              message: 'Switched to OpenRouter for better quota! Teste novamente.',
+                              provider: 'openrouter',
+                              model: 'openrouter/free'
+                            });
+                            // Refresh the AI state
+                            setAiEnabled(true);
+                            updateSettings({ ai: { ...settings.ai, searchWithAI: true } });
+                          }
+                        }}
+                        className="text-xs mt-2 px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                      >
+                        🔄 Switch to OpenRouter
+                      </motion.button>
+                    )}
                   </motion.div>
                 )}
               </div>

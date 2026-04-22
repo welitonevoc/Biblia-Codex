@@ -11,8 +11,9 @@ import DOMPurify from 'dompurify';
 import {
   Bookmark, Highlighter, Share2, Info, MessageSquare,
   Sparkles, Library, Layers, ChevronRight, ChevronLeft, Plus,
-  Check, X, Palette, Tag, Trash2, BookOpen, ChevronDown
+  Check, X, Palette, Tag, Trash2, BookOpen, ChevronDown, Volume2
 } from 'lucide-react';
+import { ttsService, speakText, stopSpeaking, isCurrentlySpeaking, isTTSSupported } from '../services/ttsService';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { DictionaryBottomSheet } from './DictionaryBottomSheet';
@@ -56,6 +57,7 @@ export const Reader: React.FC<ReaderProps> = ({
   const [selectedTerm, setSelectedTerm] = useState<string>('');
   const [selectedContext, setSelectedContext] = useState<string>('');
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
+  const [isSpeakingTTS, setIsSpeakingTTS] = useState(false);
   const { config, settings, currentVersion } = useAppContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -765,7 +767,7 @@ export const Reader: React.FC<ReaderProps> = ({
                     <span className="min-h-[2rem] text-center text-[8px] font-bold uppercase leading-tight tracking-wide text-bible-text-muted sm:text-[9px] sm:tracking-wider">Compartilhar</span>
                   </motion.button>
 
-                  {/* Study */}
+{/* Study */}
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -777,6 +779,51 @@ export const Reader: React.FC<ReaderProps> = ({
                     </div>
                     <span className="min-h-[2rem] text-center text-[8px] font-bold uppercase leading-tight tracking-wide text-bible-text-muted sm:text-[9px] sm:tracking-wider">Estudar</span>
                   </motion.button>
+
+                  {/* TTS - Audio Playback */}
+                  {isTTSSupported && (
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={async () => {
+                        if (isSpeakingTTS) {
+                          stopSpeaking();
+                          setIsSpeakingTTS(false);
+                        } else {
+                          setIsSpeakingTTS(true);
+                          try {
+                            const textToSpeak = selectedVerses.length > 0
+                              ? selectedVerses
+                                  .map(v => {
+                                    const verse = verses.find(vers => vers.verse === v);
+                                    return verse ? `${verse.verse}. ${verse.text}` : '';
+                                  })
+                                  .filter(Boolean)
+                                  .join('. ')
+                              : verses
+                                  .map(v => `${v.verse}. ${v.text}`)
+                                  .join('. ');
+                            
+                            if (textToSpeak) {
+                              await speakText(textToSpeak, { rate: 0.9, lang: 'pt-BR' });
+                              setIsSpeakingTTS(false);
+                            }
+                          } catch (e) {
+                            console.error('Erro TTS:', e);
+                            setIsSpeakingTTS(false);
+                          }
+                        }
+                      }}
+                      className="flex min-w-0 flex-col items-center gap-1.5 group"
+                    >
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors group-hover:bg-orange-500/20 sm:h-12 sm:w-12 ${isSpeakingTTS ? 'bg-orange-500/20' : 'bg-orange-500/10'}`}>
+                        <Volume2 className={`h-4 w-4 sm:h-5 sm:w-5 ${isSpeakingTTS ? 'text-orange-500 animate-pulse' : 'text-orange-500'}`} />
+                      </div>
+                      <span className="min-h-[2rem] text-center text-[8px] font-bold uppercase leading-tight tracking-wide text-bible-text-muted sm:text-[9px] sm:tracking-wider">
+                        {isSpeakingTTS ? 'Parar' : 'Ouvir'}
+                      </span>
+                    </motion.button>
+                  )}
 
                   {/* Delete Bookmarks */}
                   <motion.button
