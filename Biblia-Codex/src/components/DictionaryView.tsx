@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Sparkles, Book, History, Play, Loader2, AlertCircle, BookOpen } from 'lucide-react';
+import { Search, Sparkles, Book, History, Play, Loader2, AlertCircle, BookOpen, X } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { DictionaryEntry } from '../types';
 import { createAiModule, AI_MODULE_ID, getAIDefinition } from '../services/dictionaryService';
@@ -8,7 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import DOMPurify from 'dompurify';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { speakText, stopSpeaking, isCurrentlySpeaking, isTTSSupported } from '../services/ttsService';
+import { speakText, stopSpeaking, isTTSSupported } from '../services/ttsService';
+import { getConfiguredProvider, testAIConfiguration, diagnoseAIConfiguration } from '../services/geminiService';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
@@ -24,6 +25,8 @@ export const DictionaryView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPlayingTerm, setCurrentPlayingTerm] = useState<string | null>(null);
   const [aiEnabled, setAiEnabled] = useState(() => settings.ai.termDefinition ?? true);
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [configTest, setConfigTest] = useState<{ success: boolean; message: string; quotaWarning?: boolean; suggestion?: string } | null>(null);
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -61,8 +64,11 @@ export const DictionaryView: React.FC = () => {
     setError(null);
     setResults([]);
 
+    console.log('[DictionaryView] Pesquisando:', term, 'AI:', aiEnabled, 'Module:', selectedDictionaryModule?.id);
+
     try {
       const entries = await searchDictionary(term);
+      console.log('[DictionaryView] Resultados:', entries.length, entries[0]?.definition?.substring(0, 100));
       setResults(entries);
       
       if (entries.length > 0) {
@@ -73,6 +79,7 @@ export const DictionaryView: React.FC = () => {
       const updatedHistory = await storage.getDictionaryHistory();
       setHistory(updatedHistory);
     } catch (err: any) {
+      console.error('[DictionaryView] Erro:', err);
       setError(err.message || 'Erro ao Pesquisar');
     } finally {
       setIsLoading(false);
@@ -114,20 +121,18 @@ export const DictionaryView: React.FC = () => {
       <div className="p-4 border-b border-[var(--border-bible)] bg-[var(--surface-1)]">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-[var(--text-bible)]">Pesquisa Bíblica</h2>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleAI}
-              className={cn(
-                "flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold transition-all",
-                aiEnabled 
-                  ? "bg-[var(--accent-bible)] text-white" 
-                  : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] border border-[var(--border-bible)]"
-              )}
-            >
-              <Sparkles className="w-3 h-3" />
-              {aiEnabled ? 'IA On' : 'IA Off'}
-            </button>
-          </div>
+          <button
+            onClick={toggleAI}
+            className={cn(
+              "flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold transition-all",
+              aiEnabled 
+                ? "bg-[var(--accent-bible)] text-white" 
+                : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] border border-[var(--border-bible)]"
+            )}
+          >
+            <Sparkles className="w-3 h-3" />
+            {aiEnabled ? 'IA On' : 'IA Off'}
+          </button>
         </div>
 
         <form onSubmit={handleSearch} className="relative">
@@ -145,6 +150,105 @@ export const DictionaryView: React.FC = () => {
             </div>
           )}
         </form>
+
+        {/* AI Panel - Same as SearchView */}
+        {aiEnabled && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-3 space-y-2"
+          >
+            <div className="flex items-center gap-2 text-xs text-[var(--accent-bible)]">
+              <Sparkles className="w-3 h-3" />
+              <span>Modo IA ativo: resultados terão explicações contextuais</span>
+            </div>
+
+            {/* Aviso sobre plano gratuito */}
+            {getConfiguredProvider() === 'google' && (
+              <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
+                <AlertCircle className="w-3 h-3" />
+                <span>Usando plano gratuito do Gemini (limite baixo). Considere OpenRouter para mais quota.</span>
+              </div>
+            )}
+
+            {/* Botões de teste */}
+            <div className="flex flex-wrap items-center gap-2">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={async () => {
+                  const result = await testAIConfiguration();
+                  setConfigTest(result);
+                  console.log('Resultado do teste IA:', result);
+                  setTimeout(() => setConfigTest(null), 8000);
+                }}
+                className="text-xs px-3 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] transition-colors"
+              >
+                Testar Configuração IA
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  const diag = diagnoseAIConfiguration();
+                  console.log('Diagnóstico IA:', diag);
+                  alert(`Diagnóstico IA:\n\nProvider configurado: ${diag.configuredProvider}\nProvider detectado: ${diag.detectedProvider}\nModelo: ${diag.configuredModel}\n\nChave OpenCode: ${diag.hasOpenCodeKey ? 'Sim' : 'Não'}\nChave OpenRouter: ${diag.hasOpenRouterKey ? 'Sim' : 'Não'}\nChave Gemini: ${diag.hasGeminiKey ? 'Sim' : 'Não'}\n\nVerifique o console para mais detalhes.`);
+                }}
+                className="text-xs px-3 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] transition-colors"
+                title="Diagnóstico detalhado da configuração IA"
+              >
+                🔍 Diagnosticar IA
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  if (confirm('Isso irá resetar todas as configurações de IA e voltar para o padrão (Google). Você terá que reconfigurar as chaves. Continuar?')) {
+                    localStorage.removeItem('ai-api-provider');
+                    localStorage.removeItem('opencode-api-key');
+                    localStorage.removeItem('openrouter-api-key');
+                    localStorage.removeItem('gemini-api-key');
+                    alert('Configurações resetadas. A página será recarregada.');
+                    window.location.reload();
+                  }
+                }}
+                className="text-xs px-3 py-1 rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                title="Reset de emergência da configuração IA"
+              >
+                🔄 Reset IA
+              </motion.button>
+
+              {configTest && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className={cn(
+                    "text-xs px-3 py-2 rounded-lg max-w-xs",
+                    configTest.success
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                      : configTest.quotaWarning
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                  )}
+                >
+                  <div className="font-medium mb-1">
+                    {configTest.success ? '✅' : configTest.quotaWarning ? '⚠️' : '❌'} Configuração IA
+                  </div>
+                  <div className="text-xs leading-tight">
+                    {configTest.message}
+                  </div>
+                  {configTest.suggestion && (
+                    <div className="text-xs mt-1 text-blue-600 dark:text-blue-400">
+                      💡 {configTest.suggestion}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Error */}
@@ -175,6 +279,9 @@ export const DictionaryView: React.FC = () => {
               className="w-10 h-10 border-4 border-[var(--accent-bible)] border-t-transparent rounded-full"
             />
             <p className="mt-4 text-[var(--text-bible-muted)] text-sm">Pesquisando...</p>
+            {aiEnabled && (
+              <p className="mt-2 text-[var(--text-bible-muted)] text-xs">Preparando interpretações com IA...</p>
+            )}
           </motion.div>
         )}
 

@@ -283,11 +283,13 @@ export interface AIExplanation {
  */
 export const diagnoseAIConfiguration = () => {
   const configuredProvider = localStorage.getItem('ai-api-provider') || 'google';
+  const openCodeKey = localStorage.getItem('opencode-api-key');
   const openRouterKey = localStorage.getItem('openrouter-api-key');
   const geminiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
 
   console.log('=== DIAGNÓSTICO CONFIGURAÇÃO IA ===');
   console.log('Provider configurado:', configuredProvider);
+  console.log('Chave OpenCode presente:', !!openCodeKey, openCodeKey ? '(comprimento: ' + openCodeKey.length + ')' : '');
   console.log('Chave OpenRouter presente:', !!openRouterKey, openRouterKey ? '(comprimento: ' + openRouterKey.length + ')' : '');
   console.log('Chave Gemini presente:', !!geminiKey, geminiKey ? '(comprimento: ' + geminiKey.length + ')' : '');
   console.log('Provider detectado:', getConfiguredProvider());
@@ -297,6 +299,7 @@ export const diagnoseAIConfiguration = () => {
 
   return {
     configuredProvider,
+    hasOpenCodeKey: !!openCodeKey,
     hasOpenRouterKey: !!openRouterKey,
     hasGeminiKey: !!geminiKey,
     detectedProvider: getConfiguredProvider(),
