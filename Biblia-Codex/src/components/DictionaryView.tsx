@@ -163,11 +163,17 @@ export const DictionaryView: React.FC = () => {
               <span>Modo IA ativo: resultados terão explicações contextuais</span>
             </div>
 
-            {/* Aviso sobre plano gratuito */}
+            {/* Aviso sobre provedor */}
             {getConfiguredProvider() === 'google' && (
               <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
                 <AlertCircle className="w-3 h-3" />
                 <span>Usando plano gratuito do Gemini (limite baixo). Considere OpenRouter para mais quota.</span>
+              </div>
+            )}
+            {getConfiguredProvider() === 'opencode' && (
+              <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
+                <AlertCircle className="w-3 h-3" />
+                <span>OpenCode não funciona no browser (CORS). Use OpenRouter em替代.</span>
               </div>
             )}
 

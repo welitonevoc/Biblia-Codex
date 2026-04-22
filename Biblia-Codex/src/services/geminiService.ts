@@ -46,20 +46,21 @@ export const getApiKey = (): string => {
 
 /**
  * Detecta automaticamente o provider baseado nas chaves disponíveis
+ * OpenCode é ignorado por ter CORS bloqueado para browser
  */
-export const autoDetectProvider = (): 'google' | 'openrouter' | 'opencode' | 'groq' => {
-  const openCodeKey = localStorage.getItem('opencode-api-key');
+export const autoDetectProvider = (): 'google' | 'openrouter' | 'opencode' | 'groq' | 'huggingface' => {
   const openRouterKey = localStorage.getItem('openrouter-api-key');
+  const groqKey = localStorage.getItem('groq-api-key');
   const geminiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
-
-  if (openCodeKey && openCodeKey.trim()) {
-    console.log('[geminiService] OpenCode detectado automaticamente');
-    return 'opencode';
-  }
 
   if (openRouterKey && openRouterKey.trim()) {
     console.log('[geminiService] OpenRouter detectado automaticamente');
     return 'openrouter';
+  }
+
+  if (groqKey && groqKey.trim()) {
+    console.log('[geminiService] Groq detectado automaticamente');
+    return 'groq';
   }
 
   if (geminiKey && geminiKey.trim()) {
@@ -67,8 +68,8 @@ export const autoDetectProvider = (): 'google' | 'openrouter' | 'opencode' | 'gr
     return 'google';
   }
 
-  console.warn('[geminiService] Nenhuma chave de API encontrada, usando Google por padrão');
-  return 'google';
+  console.warn('[geminiService] Nenhuma chave de API encontrada, usando OpenRouter por padrão');
+  return 'openrouter';
 };
 
 /**
