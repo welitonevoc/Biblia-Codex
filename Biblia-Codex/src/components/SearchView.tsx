@@ -8,7 +8,7 @@ import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getAudioTracksForChapter } from '../data/audioData';
-import { getGeminiExplanation } from '../services/geminiService';
+import { getAIResponse } from '../services/geminiService';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
@@ -52,15 +52,18 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
 
   const handleAISearch = useCallback(async (term: string, searchResults: Verse[]) => {
     if (!aiEnabled || searchResults.length === 0) return;
-    
-    const apiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) return;
-    
+
     const newResults = new Map(aiResults);
-    for (constverse of searchResults.slice(0, 3)) {
+    for (const verse of searchResults.slice(0, 3)) {
       const key = `${verse.bookId}-${verse.chapter}:${verse.verse}`;
       try {
-        const explanation = await getGeminiExplanation(`Pesquise sobre "${term}" no contexto de ${verse.bookName} ${verse.chapter}:${verse.verse}. Texto: ${verse.text}`, undefined, apiKey);
+        const book = BIBLE_BOOKS.find(b => b.id === verse.bookId);
+        const bookName = book ? book.name : verse.bookId;
+        const prompt = `Pesquise sobre "${term}" no contexto de ${bookName} ${verse.chapter}:${verse.verse}. Texto: ${verse.text}`;
+        const explanation = await getAIResponse(
+          prompt,
+          'Você é um assistente de estudo bíblico. Forneça insights profundos sobre o texto, contextualização e aplicação prática.'
+        );
         newResults.set(key, explanation);
       } catch (e) {
         console.error('AI search error:', e);

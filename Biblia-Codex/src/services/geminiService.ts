@@ -20,14 +20,6 @@ DIRETRIZES DE RESPOSTA:
 6. Responda em Português do Brasil de forma organizada.
 `;
 
-export interface AIExplanation {
-  term: string;
-  definition: string;
-  originalMeaning?: string;
-  scripturalReference?: string;
-  spiritualApplication: string;
-}
-
 /**
  * Obtém a chave de API com base no provedor configurado
  */
@@ -45,8 +37,17 @@ export const getApiKey = (): string => {
  * Obtém o modelo configurado nas configurações
  */
 export const getConfiguredModel = (): string => {
-  const model = localStorage.getItem('ai-model') || 'gemini-2.0-flash';
-  return model;
+  const saved = localStorage.getItem('codex-settings');
+  if (saved) {
+    try {
+      const settings = JSON.parse(saved);
+      if (settings.ai?.model) return settings.ai.model;
+    } catch (e) {
+      // ignore
+    }
+  }
+  // Fallback para modelo padrão
+  return 'gemini-2.0-flash';
 };
 
 /**
@@ -57,24 +58,14 @@ export const getConfiguredProvider = (): 'google' | 'openrouter' => {
 };
 
 /**
- * Gera conteúdo usando a IA configurada
+ * Função interna para fazer requisição à IA
  */
-export const getGeminiExplanation = async (term: string, context?: string, apiKey?: string, model?: string): Promise<string> => {
-  // Usa a chave fornecida ou busca a configurada
+const callAI = async (prompt: string, systemInstruction?: string, apiKey?: string, model?: string): Promise<string> => {
   const key = apiKey || getApiKey();
   if (!key) return "API Key não configurada nas preferências.";
 
-  // Usa o modelo fornecado ou o configurado
   const configuredModel = model || getConfiguredModel();
   const provider = getConfiguredProvider();
-
-  const prompt = `
-    ${ASSEMBLEIANO_CLASSICO_PROMPT}
-
-    TAREFA: Defina e explique o termo bíblico ou palavra: "${term}" ${context ? `no contexto de ${context}` : ""}.
-    Forneça o significado original (hebraico/grego se aplicável), uso bíblico e aplicação espiritual segundo o perfil teológico citado acima.
-    Responda em Markdown.
-  `;
 
   try {
     let url: string;
@@ -91,18 +82,16 @@ export const getGeminiExplanation = async (term: string, context?: string, apiKe
       };
       body = {
         model: configuredModel,
-        messages: [
-          { role: 'system', content: 'Você é um assistente de estudo bíblico erudito.' },
-          { role: 'user', content: prompt }
-        ]
+        messages: systemInstruction
+          ? [{ role: 'system', content: systemInstruction }, { role: 'user', content: prompt }]
+          : [{ role: 'user', content: prompt }]
       };
     } else {
-      // Google Gemini
       url = `https://generativelanguage.googleapis.com/v1beta/models/${configuredModel}:generateContent?key=${key}`;
       headers = { 'Content-Type': 'application/json' };
       body = {
         contents: [{ parts: [{ text: prompt }] }],
-        system_instruction: { parts: [{ text: "Você é um assistente de estudo bíblico erudito." }] }
+        ...(systemInstruction && { system_instruction: { parts: [{ text: systemInstruction }] } })
       };
     }
 
@@ -115,11 +104,10 @@ export const getGeminiExplanation = async (term: string, context?: string, apiKe
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('API Error:', data);
+      console.error('AI API Error:', data);
       return `Erro ${response.status}: ${data.error?.message || 'Falha na requisição'}`;
     }
 
-    // Extrai resposta baseado no provider
     if (provider === 'openrouter') {
       return data.choices?.[0]?.message?.content || "Erro ao gerar resposta.";
     } else {
@@ -130,3 +118,33 @@ export const getGeminiExplanation = async (term: string, context?: string, apiKe
     return "Erro de conexão com o Assistente IA.";
   }
 };
+
+/**
+ * Obtém uma explicação detalhada via IA (compatibilidade - usa template de definição)
+ */
+export const getGeminiExplanation = async (term: string, context?: string, apiKey?: string, model?: string): Promise<string> => {
+  const prompt = `
+    ${ASSEMBLEIANO_CLASSICO_PROMPT}
+
+    TAREFA: Defina e explique o termo bíblico ou palavra: "${term}" ${context ? `no contexto de ${context}` : ""}.
+    Forneça o significado original (hebraico/grego se aplicável), uso bíblico e aplicação espiritual segundo o perfil teológico citado acima.
+    Responda em Markdown.
+  `;
+
+  return callAI(prompt, "Você é um assistente de estudo bíblico erudito.", apiKey, model);
+};
+
+/**
+ * Gera conteúdo usando IA com prompt personalizado
+ */
+export const getAIResponse = async (prompt: string, systemInstruction?: string, apiKey?: string, model?: string): Promise<string> => {
+  return callAI(prompt, systemInstruction, apiKey, model);
+};
+
+export interface AIExplanation {
+  term: string;
+  definition: string;
+  originalMeaning?: string;
+  scripturalReference?: string;
+  spiritualApplication: string;
+}

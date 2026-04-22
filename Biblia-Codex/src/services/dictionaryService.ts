@@ -1,4 +1,4 @@
-import { getGeminiExplanation } from './geminiService';
+import { getGeminiExplanation, getConfiguredModel } from './geminiService';
 import { BibleService } from '../BibleService';
 import { DictionaryEntry } from '../types';
 
@@ -12,8 +12,8 @@ export const searchLocalDictionary = async (term: string, modulePath: string): P
 /**
  * Obtém uma explicação detalhada via IA
  */
-export const getAIDefinition = async (term: string, context?: string, apiKey?: string): Promise<DictionaryEntry> => {
-  const definition = await getGeminiExplanation(term, context, apiKey);
+export const getAIDefinition = async (term: string, context?: string, apiKey?: string, model?: string): Promise<DictionaryEntry> => {
+  const definition = await getGeminiExplanation(term, context, apiKey, model);
   return {
     id: `ai-${term}-${Date.now()}`,
     term,
@@ -40,7 +40,9 @@ export const dictionaryService = {
   getEntries: async (term: string, module: any): Promise<DictionaryEntry[]> => {
     if (!module) return [];
     if (module.id === AI_MODULE_ID) {
-      const entry = await getAIDefinition(term);
+      // Usa o modelo configurado nas settings
+      const model = localStorage.getItem('ai-model') || 'gemini-2.0-flash';
+      const entry = await getAIDefinition(term, undefined, undefined, model);
       return [entry];
     }
     const local = await searchLocalDictionary(term, module.path || 'local');
