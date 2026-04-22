@@ -51,6 +51,12 @@ interface ReadingPlan {
   completedBooks: string[];
   startDate?: string;
   lastReadDate?: string;
+  dayReadings?: {
+    day: number;
+    title: string;
+    passages: string[];
+    completed: boolean;
+  }[];
 }
 
 const BIBLE_BOOKS = [
@@ -354,6 +360,10 @@ export const ReadingPlans: React.FC<{
       const newXp = plan.xp + xpGained;
       const newLevel = getLevel(newXp);
 
+      const newReadings = plan.dayReadings?.map(r => 
+        r.day === plan.currentDay ? { ...r, completed: true } : r
+      ) || [];
+
       return {
         ...plan,
         progress: plan.progress + 1,
@@ -363,6 +373,7 @@ export const ReadingPlans: React.FC<{
         xp: newXp,
         level: newLevel.level,
         lastReadDate: new Date().toISOString(),
+        dayReadings: newReadings,
       };
     }));
   };
@@ -545,9 +556,49 @@ export const ReadingPlans: React.FC<{
                 <h3 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-3">
                   Leitura de Hoje ({selectedVersion})
                 </h3>
-                <div className="text-lg font-semibold text-[var(--text-bible)] mb-4">
+                <div className="text-lg font-semibold text-[var(--text-bible)] mb-2">
                   {getTodayReading(selectedPlan)}
                 </div>
+                
+                <div className="space-y-2 mb-4">
+                  {selectedPlan.dayReadings?.filter(r => r.day === selectedPlan.currentDay).map((reading, idx) => (
+                    <div 
+                      key={idx}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer",
+                        reading.completed 
+                          ? "bg-green-500/10 border-green-500/30" 
+                          : "bg-[var(--surface-2)] border-[var(--border-bible)]"
+                      )}
+                      onClick={() => {
+                        const newReadings = selectedPlan.dayReadings?.map(r => 
+                          r.day === reading.day && r.title === reading.title ? { ...r, completed: !r.completed } : r
+                        ) || [];
+                        setUserPlans(prev => prev.map(p => 
+                          p.id === selectedPlan.id ? { ...p, dayReadings: newReadings } : p
+                        ));
+                      }}
+                    >
+                      <div className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0",
+                        reading.completed 
+                          ? "bg-green-500" 
+                          : "border-2 border-[var(--border-bible)]"
+                      )}>
+                        {reading.completed && <CheckCircle2 className="w-4 h-4 text-white" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-[var(--text-bible)]">{reading.title}</div>
+                        <div className="text-xs text-[var(--text-bible-muted)]">{reading.passages.join(', ')}</div>
+                      </div>
+                    </div>
+                  )) || (
+                    <div className="text-sm text-[var(--text-bible-muted)] p-2">
+                      {getTodayReading(selectedPlan)}
+                    </div>
+                  )}
+                </div>
+                
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex-1 h-2 rounded-full bg-[var(--surface-3)] overflow-hidden">
                     <div 
@@ -570,7 +621,7 @@ export const ReadingPlans: React.FC<{
                     "hover:opacity-90 transition-opacity"
                   )}
                 >
-                  Marcar como Lido
+                  Marcar Dia como Concluído
                 </motion.button>
               </div>
 
