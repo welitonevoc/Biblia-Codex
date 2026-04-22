@@ -586,16 +586,14 @@ export const ReadingPlans: React.FC<{
           r.day === targetDay ? { ...r, completed: false } : r
         ) || [];
         
-        const updatedPlan = {
+        const completedCount = newReadings.filter(r => r.completed).length;
+        
+        return {
           ...plan,
-          progress: Math.max(0, plan.progress - 1),
+          progress: completedCount,
           currentDay: targetDay,
           dayReadings: newReadings,
         };
-        
-        setUserPlans(prev => prev.map(p => p.id === planId ? updatedPlan : p));
-        setSelectedPlan(updatedPlan);
-        return updatedPlan;
       }
       
       const today = new Date().toDateString();
