@@ -384,7 +384,7 @@ export const ReadingPlans: React.FC<{
                 </button>
               </div>
               
-              <p className="text-sm text-[var(--text-bible-muted)] mb-4">
+              <p className="text-sm text-[var(--text-bible-muted)] mb-4 bg-[var(--surface-2)] p-3 rounded-lg">
                 Selecione a tradução bíblica para este plano de leitura:
               </p>
 
@@ -397,7 +397,7 @@ export const ReadingPlans: React.FC<{
                       "w-full flex items-center gap-3 p-3 rounded-xl transition-all",
                       selectedVersion === version.id
                         ? "bg-[var(--accent-bible)]/20 border-2 border-[var(--accent-bible)]"
-                        : "bg-[var(--surface-2)] border-2 border-transparent hover:border-[var(--border-bible)]"
+                        : "bg-[var(--surface-2)]/80 border-2 border-[var(--border-bible)] hover:bg-[var(--surface-2)] hover:border-[var(--border-bible)]"
                     )}
                   >
                     <BookText className="w-5 h-5 text-[var(--accent-bible)]" />
