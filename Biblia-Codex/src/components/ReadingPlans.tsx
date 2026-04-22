@@ -1,7 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, ArrowLeft, Flame, Trophy, Star, Zap, Crown, ChevronDown, Settings, Users, Globe, Heart, Sun, Moon, BookText } from 'lucide-react';
+import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, ArrowLeft, Flame, Trophy, Star, Zap, Crown, ChevronDown, Settings, Users, Globe, Heart, Sun, Moon, BookText, Wand2, Loader2, Sparkle, MessageSquare } from 'lucide-react';
 import { useAppContext } from '../AppContext';
+import { generateReadingPlan } from '../services/geminiService';
+
+interface ReadingPlanAI {
+  id: string;
+  title: string;
+  description: string;
+  totalDays: number;
+  readings: {
+    day: number;
+    title: string;
+    type: 'scripture' | 'devotional';
+    passages: string[];
+    devotionalContent?: string;
+  }[];
+}
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -255,6 +270,12 @@ export const ReadingPlans: React.FC<{
   const [showVersionPicker, setShowVersionPicker] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<string>(currentVersion?.id || 'ARC');
   const [pendingPlan, setPendingPlan] = useState<typeof PRESET_PLANS[0] | null>(null);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiDays, setAiDays] = useState<number | undefined>(undefined);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [generatedPlan, setGeneratedPlan] = useState<ReadingPlanAI | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   
   const [userPlans, setUserPlans] = useState<ReadingPlan[]>(() => {
     const saved = localStorage.getItem('codex-reading-plans');
@@ -480,7 +501,10 @@ export const ReadingPlans: React.FC<{
                   "bg-gradient-to-br", selectedPlan.gradient,
                   "text-white shadow-lg"
                 )}>
-                  <selectedPlan.icon className="w-6 h-6" />
+                  {(() => {
+                    const PlanIcon = selectedPlan.icon;
+                    return <PlanIcon className="w-6 h-6" />;
+                  })()}
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-[var(--text-bible)]">{selectedPlan.title}</h2>
@@ -682,7 +706,10 @@ export const ReadingPlans: React.FC<{
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-white/20 backdrop-blur">
-                  <activePlan.icon className="w-5 h-5" />
+                  {(() => {
+                    const ActiveIcon = activePlan.icon;
+                    return <ActiveIcon className="w-5 h-5" />;
+                  })()}
                 </div>
                 <div>
                   <h3 className="font-bold text-lg">{activePlan.title}</h3>
@@ -809,7 +836,22 @@ export const ReadingPlans: React.FC<{
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              onClick={() => alert('Funcionalidade de criar plano personalizado em breve!')}
+              onClick={() => setShowAIModal(true)}
+              className={cn(
+                "w-full flex items-center justify-center gap-3 p-6 rounded-xl",
+                "bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible-strong)]",
+                "text-white font-semibold",
+                "hover:shadow-lg hover:scale-[1.02] transition-all"
+              )}
+            >
+              <Wand2 className="w-6 h-6" />
+              <span>Criar Plano com IA</span>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => alert('Funcionalidade de criar plano manualmente em breve!')}
               className={cn(
                 "w-full flex items-center justify-center gap-3 p-6 rounded-xl",
                 "border-2 border-dashed border-[var(--border-bible)]",
@@ -818,7 +860,7 @@ export const ReadingPlans: React.FC<{
               )}
             >
               <Plus className="w-6 h-6" />
-              <span className="font-medium">Criar Plano Personalizado</span>
+              <span className="font-medium">Criar Plano Manual</span>
             </motion.button>
           </div>
         )}
@@ -890,6 +932,163 @@ export const ReadingPlans: React.FC<{
             })}
           </div>
         )}
+
+      <AnimatePresence>
+        {showAIModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={() => setShowAIModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-[var(--surface-0)] rounded-2xl border border-[var(--border-bible)] shadow-xl overflow-hidden"
+            >
+              <div className="p-5 border-b border-[var(--border-bible)]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible-strong)] text-white">
+                      <Wand2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-[var(--text-bible)]">Criar Plano com IA</h2>
+                      <p className="text-xs text-[var(--text-bible-muted)]">Descreva seu plano ideal</p>
+                    </div>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowAIModal(false)}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--surface-1)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-2)]"
+                  >
+                    <X className="h-4 w-4" />
+                  </motion.button>
+                </div>
+              </div>
+
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-[var(--text-bible-muted)] block mb-2">
+                    <MessageSquare className="w-3 h-3 inline mr-1" />
+                    Descrição do Plano
+                  </label>
+                  <textarea
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="Ex: Quero um plano de 7 dias sobre o loving kindness de Deus, misturando Salmos e Provérbios..."
+                    className="w-full h-28 px-4 py-3 rounded-xl bg-[var(--surface-1)] border border-[var(--border-bible)] text-[var(--text-bible)] text-sm resize-none placeholder:text-[var(--text-bible-muted)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-[var(--text-bible-muted)] block mb-2">
+                    <Calendar className="w-3 h-3 inline mr-1" />
+                    Duração (opcional)
+                  </label>
+                  <div className="flex gap-2">
+                    {[7, 14, 30, 60].map((days) => (
+                      <motion.button
+                        key={days}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setAiDays(aiDays === days ? undefined : days)}
+                        className={cn(
+                          "flex-1 py-2 rounded-lg text-sm font-medium transition-all",
+                          aiDays === days
+                            ? "bg-[var(--accent-bible)] text-white"
+                            : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-3)]"
+                        )}
+                      >
+                        {days} dias
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {aiError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 rounded-lg bg-red-500/10 text-red-500 text-sm"
+                  >
+                    {aiError}
+                  </motion.div>
+                )}
+
+                {generatedPlan && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 rounded-xl bg-green-500/10 border border-green-500/20"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkle className="w-4 h-4 text-green-500" />
+                      <span className="font-semibold text-green-500">Plano Criado!</span>
+                    </div>
+                    <h3 className="font-bold text-[var(--text-bible)]">{generatedPlan.title}</h3>
+                    <p className="text-sm text-[var(--text-bible-muted)]">{generatedPlan.description}</p>
+                    <p className="text-xs text-[var(--text-bible-subtle)] mt-1">{generatedPlan.readings.length} leituras</p>
+                  </motion.div>
+                )}
+              </div>
+
+              <div className="p-5 border-t border-[var(--border-bible)] flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowAIModal(false)}
+                  className="flex-1 py-3 rounded-xl font-medium bg-[var(--surface-2)] text-[var(--text-bible)] hover:bg-[var(--surface-3)] transition-all"
+                >
+                  Cancelar
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={!aiPrompt.trim() || isGeneratingPlan}
+                  onClick={async () => {
+                    if (!aiPrompt.trim()) return;
+                    setIsGeneratingPlan(true);
+                    setAiError(null);
+                    setGeneratedPlan(null);
+                    
+                    const result = await generateReadingPlan(aiPrompt, aiDays);
+                    
+                    setIsGeneratingPlan(false);
+                    if (result.success && result.plan) {
+                      setGeneratedPlan(result.plan);
+                    } else {
+                      setAiError(result.error || 'Erro ao gerar plano');
+                    }
+                  }}
+                  className={cn(
+                    "flex-1 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
+                    isGeneratingPlan
+                      ? "bg-[var(--surface-3)] text-[var(--text-bible-muted)] cursor-not-allowed"
+                      : "bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible-strong)] text-white hover:shadow-lg"
+                  )}
+                >
+                  {isGeneratingPlan ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Criando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkle className="w-4 h-4" />
+                      Gerar Plano
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       </div>
     </div>
