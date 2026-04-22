@@ -25,8 +25,15 @@ const SectionHeader: React.FC<{ icon: React.ElementType; title: string; descript
 );
 
 const API_PROVIDERS = [
-  { id: 'google', name: 'Google Gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta' },
-  { id: 'openrouter', name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1' },
+  { id: 'opencode', name: 'OpenCode.ai', baseUrl: 'https://opencode.ai/api/v1', description: 'Nossa IA - MiniMax M2.5 gratuito' },
+  { id: 'google', name: 'Google AI Studio (Gemini)', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', description: 'Generoso - até 1M tokens gratuitamente' },
+  { id: 'groq', name: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', description: 'Velocidade instantanea - Llama e Mixtral' },
+  { id: 'openrouter', name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', description: 'Agregador com varios modelos gratuitos' },
+  { id: 'huggingface', name: 'Hugging Face', baseUrl: 'https://api-inference.huggingface.co', description: 'Milhares de modelos open source' },
+];
+
+const OPENCODE_MODELS = [
+  { id: 'minimax-m2.5-free', name: 'MiniMax M2.5', provider: 'opencode', context: '197K', badge: 'Recomendado', speed: 'Rapido' },
 ];
 
 const FREE_MODELS = [
@@ -42,6 +49,14 @@ const FREE_MODELS = [
   { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash', provider: 'google', context: '1M', badge: 'Novo', speed: 'Muito Rapido' },
   { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', provider: 'google', context: '1M', badge: 'Economico', speed: 'Muito Rapido' },
   { id: 'gemini-pro', name: 'Gemini Pro', provider: 'google', context: '1M', badge: null, speed: 'Avancado' },
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', provider: 'groq', context: '128K', badge: 'Free', speed: 'Instantaneo' },
+  { id: 'llama-3.1-70b-versatile', name: 'Llama 3.1 70B', provider: 'groq', context: '128K', badge: 'Free', speed: 'Instantaneo' },
+  { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B', provider: 'groq', context: '32K', badge: 'Free', speed: 'Instantaneo' },
+  { id: 'qwen-qwen2-72b-instruct', name: 'Qwen2 72B', provider: 'groq', context: '32K', badge: 'Free', speed: 'Instantaneo' },
+  { id: 'deepseek-ai/DeepSeek-R1', name: 'DeepSeek R1', provider: 'huggingface', context: '64K', badge: 'Free', speed: 'Rapido', tier: 'inference' },
+  { id: 'meta-llama/Llama-3.1-70B-Instruct', name: 'Llama 3.1 70B', provider: 'huggingface', context: '128K', badge: 'Free', speed: 'Rapido', tier: 'inference' },
+  { id: 'mistralai/Mistral-7B-Instruct-v0.3', name: 'Mistral 7B', provider: 'huggingface', context: '32K', badge: 'Free', speed: 'Rapido', tier: 'inference' },
+  { id: 'Qwen/Qwen2.5-72B-Instruct', name: 'Qwen2.5 72B', provider: 'huggingface', context: '32K', badge: 'Free', speed: 'Rapido', tier: 'inference' },
 ];
 
 export const AISettingsPage: React.FC = () => {
@@ -51,6 +66,9 @@ export const AISettingsPage: React.FC = () => {
     return localStorage.getItem('ai-api-provider') || 'google';
   });
 
+  const [openCodeKey, setOpenCodeKey] = useState(() => {
+    return localStorage.getItem('opencode-api-key') || '';
+  });
   const [openRouterKey, setOpenRouterKey] = useState(() => {
     return localStorage.getItem('openrouter-api-key') || '';
   });
@@ -58,16 +76,20 @@ export const AISettingsPage: React.FC = () => {
     return localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY || '';
   });
 
+  const [openCodeKeyInput, setOpenCodeKeyInput] = useState(openCodeKey);
   const [openRouterKeyInput, setOpenRouterKeyInput] = useState(openRouterKey);
   const [geminiKeyInput, setGeminiKeyInput] = useState(geminiKey);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const currentApiKey = apiProvider === 'openrouter' ? openRouterKey : geminiKey;
+  const currentApiKey = apiProvider === 'opencode' ? openCodeKey : apiProvider === 'openrouter' ? openRouterKey : geminiKey;
 
   const handleSaveApiKey = useCallback(() => {
-    if (apiProvider === 'openrouter' && openRouterKeyInput.trim()) {
+    if (apiProvider === 'opencode' && openCodeKeyInput.trim()) {
+      localStorage.setItem('opencode-api-key', openCodeKeyInput.trim());
+      setOpenCodeKey(openCodeKeyInput.trim());
+    } else if (apiProvider === 'openrouter' && openRouterKeyInput.trim()) {
       localStorage.setItem('openrouter-api-key', openRouterKeyInput.trim());
       setOpenRouterKey(openRouterKeyInput.trim());
     } else if (geminiKeyInput.trim()) {
@@ -76,10 +98,10 @@ export const AISettingsPage: React.FC = () => {
     }
     localStorage.setItem('ai-api-provider', apiProvider);
     setTestResult({ success: true, message: 'Chave salva com sucesso!' });
-  }, [apiProvider, openRouterKeyInput, geminiKeyInput]);
+  }, [apiProvider, openCodeKeyInput, openRouterKeyInput, geminiKeyInput]);
 
   const handleTestConnection = useCallback(async () => {
-    const key = apiProvider === 'openrouter' ? openRouterKey : geminiKey;
+    const key = apiProvider === 'opencode' ? openCodeKey : apiProvider === 'openrouter' ? openRouterKey : geminiKey;
     if (!key) {
       setTestResult({ success: false, message: 'Insira uma chave de API primeiro.' });
       return;
@@ -90,7 +112,12 @@ export const AISettingsPage: React.FC = () => {
 
     try {
       let response;
-      if (apiProvider === 'openrouter') {
+      if (apiProvider === 'opencode') {
+        response = await fetch(
+          `https://opencode.ai/api/v1/models`,
+          { headers: { 'Authorization': `Bearer ${key}` } }
+        );
+      } else if (apiProvider === 'openrouter') {
         response = await fetch(
           `https://openrouter.ai/api/v1/models`,
           { headers: { 'Authorization': `Bearer ${key}` } }
@@ -112,7 +139,7 @@ export const AISettingsPage: React.FC = () => {
     } finally {
       setIsTesting(false);
     }
-  }, [apiProvider, openRouterKey, geminiKey]);
+  }, [apiProvider, openCodeKey, openRouterKey, geminiKey]);
 
   const aiFeatures = [
     { id: 'autoSuggest', label: 'Sugestoes Automaticas', description: 'Exibe sugestoes contextuais durante a leitura', icon: Lightbulb, enabled: settings.ai.autoSuggest },
@@ -178,7 +205,12 @@ export const AISettingsPage: React.FC = () => {
                   placeholder="sk-or-v1-..."
                   className={cn("w-full px-4 py-3 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text placeholder:text-bible-text-muted focus:outline-none focus:ring-2 focus:ring-bible-accent")}
                 />
-                <p className="text-xs text-bible-text-muted mt-2">Crie uma conta gratuita em <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-bible-accent hover:underline">OpenRouter</a> para acessar modelos gratuitos.</p>
+                <div className="text-xs text-bible-text-muted mt-2 space-y-1">
+                  <p>1. Crie uma conta gratuita em <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-bible-accent hover:underline">OpenRouter.ai</a></p>
+                  <p>2. Vá para "Keys" no menu lateral e clique "Create Key"</p>
+                  <p>3. Copie a chave gerada (começa com "sk-or-v1-...")</p>
+                  <p>4. Cole aqui para acessar modelos gratuitos ilimitados</p>
+                </div>
               </div>
               <div className="p-3 rounded-xl bg-amber-100 border border-bible-accent">
                 <div className="text-xs font-semibold text-bible-text mb-1">Modelos Gratuitos Disponiveis:</div>

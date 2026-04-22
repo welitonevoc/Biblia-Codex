@@ -8,7 +8,7 @@ import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getAudioTracksForChapter } from '../data/audioData';
-import { getAIResponse, getApiKey, getConfiguredProvider, testAIConfiguration, suggestOpenRouterForQuota, autoSwitchToOpenRouter } from '../services/geminiService';
+import { getAIResponse, getApiKey, getConfiguredProvider, testAIConfiguration, suggestOpenRouterForQuota, autoSwitchToOpenRouter, diagnoseAIConfiguration } from '../services/geminiService';
 import { debugAIConfig } from '../debugAI';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
@@ -281,7 +281,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                     const result = await testAIConfiguration();
                     setConfigTest(result);
                     console.log('Resultado do teste IA:', result);
-                    setTimeout(() => setConfigTest(null), 5000);
+                    setTimeout(() => setConfigTest(null), 8000);
                   }}
                   className="text-xs px-3 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] transition-colors"
                 >
@@ -291,14 +291,34 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={async () => {
-                    const result = await debugAIConfig();
-                    console.log('Debug detalhado IA:', result);
+                  onClick={() => {
+                    const diag = diagnoseAIConfiguration();
+                    console.log('Diagnóstico IA:', diag);
+                    alert(`Diagnóstico IA:\n\nProvider configurado: ${diag.configuredProvider}\nProvider detectado: ${diag.detectedProvider}\nModelo: ${diag.configuredModel}\n\nChave OpenRouter: ${diag.hasOpenRouterKey ? 'Sim' : 'Não'}\nChave Gemini: ${diag.hasGeminiKey ? 'Sim' : 'Não'}\n\nVerifique o console para mais detalhes.`);
                   }}
                   className="text-xs px-3 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] transition-colors"
-                  title="Logs detalhados no console"
+                  title="Diagnóstico detalhado da configuração IA"
                 >
-                  Debug IA
+                  🔍 Diagnosticar IA
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    if (confirm('Isso irá resetar todas as configurações de IA e voltar para o padrão (Google). Você terá que reconfigurar as chaves. Continuar?')) {
+                      localStorage.removeItem('ai-api-provider');
+                      localStorage.removeItem('opencode-api-key');
+                      localStorage.removeItem('openrouter-api-key');
+                      localStorage.removeItem('gemini-api-key');
+                      alert('Configurações resetadas. A página será recarregada.');
+                      window.location.reload();
+                    }
+                  }}
+                  className="text-xs px-3 py-1 rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                  title="Reset de emergência da configuração IA"
+                >
+                  🔄 Reset IA
                 </motion.button>
 
                 {configTest && (
@@ -329,8 +349,13 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => {
+                          console.log('Tentando fazer switch para OpenRouter...');
                           const switched = autoSwitchToOpenRouter();
+                          console.log('Switch result:', switched);
                           if (switched) {
+                            // Forçar refresh da configuração
+                            const newDiag = diagnoseAIConfiguration();
+                            console.log('Nova configuração após switch:', newDiag);
                             setConfigTest({
                               success: true,
                               message: 'Switched to OpenRouter for better quota! Teste novamente.',
@@ -340,6 +365,13 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                             // Refresh the AI state
                             setAiEnabled(true);
                             updateSettings({ ai: { ...settings.ai, searchWithAI: true } });
+                          } else {
+                            setConfigTest({
+                              success: false,
+                              message: 'Falha ao fazer switch - verifique se a chave OpenRouter está configurada.',
+                              provider: configTest.provider,
+                              model: configTest.model
+                            });
                           }
                         }}
                         className="text-xs mt-2 px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"

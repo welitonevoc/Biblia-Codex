@@ -27,6 +27,12 @@ export const getApiKey = (): string => {
   const provider = getConfiguredProvider();
   console.log('[geminiService] Provider final usado:', provider);
 
+  if (provider === 'opencode') {
+    const key = localStorage.getItem('opencode-api-key') || '';
+    console.log('[geminiService] Usando chave OpenCode:', key ? 'Presente' : 'Ausente');
+    return key;
+  }
+
   if (provider === 'openrouter') {
     const key = localStorage.getItem('openrouter-api-key') || '';
     console.log('[geminiService] Usando chave OpenRouter:', key ? 'Presente' : 'Ausente');
@@ -41,9 +47,15 @@ export const getApiKey = (): string => {
 /**
  * Detecta automaticamente o provider baseado nas chaves disponíveis
  */
-export const autoDetectProvider = (): 'google' | 'openrouter' => {
+export const autoDetectProvider = (): 'google' | 'openrouter' | 'opencode' | 'groq' => {
+  const openCodeKey = localStorage.getItem('opencode-api-key');
   const openRouterKey = localStorage.getItem('openrouter-api-key');
   const geminiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
+
+  if (openCodeKey && openCodeKey.trim()) {
+    console.log('[geminiService] OpenCode detectado automaticamente');
+    return 'opencode';
+  }
 
   if (openRouterKey && openRouterKey.trim()) {
     console.log('[geminiService] OpenRouter detectado automaticamente');
@@ -62,26 +74,37 @@ export const autoDetectProvider = (): 'google' | 'openrouter' => {
 /**
  * Obtém o provider configurado, com auto-detecção se necessário
  */
-export const getConfiguredProvider = (): 'google' | 'openrouter' => {
+export const getConfiguredProvider = (): 'google' | 'openrouter' | 'opencode' | 'groq' | 'huggingface' => {
   const configured = localStorage.getItem('ai-api-provider') || 'google';
-  console.log('[geminiService] Provider configurado:', configured);
+  const openCodeKey = localStorage.getItem('opencode-api-key');
+  const openRouterKey = localStorage.getItem('openrouter-api-key');
+  const geminiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
+
+  console.log('[geminiService] Provider configurado no localStorage:', configured);
+  console.log('[geminiService] Chave OpenCode presente:', !!openCodeKey);
+  console.log('[geminiService] Chave OpenRouter presente:', !!openRouterKey);
+  console.log('[geminiService] Chave Gemini presente:', !!geminiKey);
 
   // Verifica se a configuração faz sentido com as chaves disponíveis
-  if (configured === 'openrouter') {
-    const openRouterKey = localStorage.getItem('openrouter-api-key');
+  if (configured === 'opencode') {
+    if (!openCodeKey || !openCodeKey.trim()) {
+      console.warn('[geminiService] OpenCode configurado mas sem chave, auto-detectando...');
+      return autoDetectProvider();
+    }
+  } else if (configured === 'openrouter') {
     if (!openRouterKey || !openRouterKey.trim()) {
       console.warn('[geminiService] OpenRouter configurado mas sem chave, auto-detectando...');
       return autoDetectProvider();
     }
   } else if (configured === 'google') {
-    const geminiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
     if (!geminiKey || !geminiKey.trim()) {
       console.warn('[geminiService] Google configurado mas sem chave, auto-detectando...');
       return autoDetectProvider();
     }
   }
 
-  return configured as 'google' | 'openrouter';
+  console.log('[geminiService] Usando provider:', configured);
+  return configured as 'google' | 'openrouter' | 'opencode' | 'groq' | 'huggingface';
 };
 
 /**
@@ -128,10 +151,28 @@ const callAI = async (prompt: string, systemInstruction?: string, apiKey?: strin
 
   try {
     let url: string;
-    let headers: Record<string, string>;
+    let headers: Record<string, string> = {};
     let body: any;
 
-    if (provider === 'openrouter') {
+    if (provider === 'opencode') {
+      url = `https://opencode.ai/api/v1/chat/completions`;
+      headers = {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json'
+      };
+      body = {
+        model: 'minimax-m2.5-free',
+        messages: systemInstruction
+          ? [{ role: 'system', content: systemInstruction }, { role: 'user', content: prompt }]
+          : [{ role: 'user', content: prompt }]
+      };
+      console.log(`[geminiService] OpenCode request:`, {
+        model: 'minimax-m2.5-free',
+        url,
+        keyPrefix: key?.substring(0, 10) + '...',
+        hasKey: !!key
+      });
+    } else if (provider === 'openrouter') {
       url = `https://openrouter.ai/api/v1/chat/completions`;
       headers = {
         'Authorization': `Bearer ${key}`,
@@ -196,7 +237,7 @@ const callAI = async (prompt: string, systemInstruction?: string, apiKey?: strin
       return `Erro ${response.status}: ${data.error?.message || 'Falha na requisição'}`;
     }
 
-    if (provider === 'openrouter') {
+    if (provider === 'opencode' || provider === 'openrouter') {
       return data.choices?.[0]?.message?.content || "Erro ao gerar resposta.";
     } else {
       return data.candidates?.[0]?.content?.parts?.[0]?.text || "Erro ao gerar resposta.";
@@ -236,6 +277,33 @@ export interface AIExplanation {
   scripturalReference?: string;
   spiritualApplication: string;
 }
+
+/**
+ * Diagnóstico completo da configuração IA
+ */
+export const diagnoseAIConfiguration = () => {
+  const configuredProvider = localStorage.getItem('ai-api-provider') || 'google';
+  const openRouterKey = localStorage.getItem('openrouter-api-key');
+  const geminiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
+
+  console.log('=== DIAGNÓSTICO CONFIGURAÇÃO IA ===');
+  console.log('Provider configurado:', configuredProvider);
+  console.log('Chave OpenRouter presente:', !!openRouterKey, openRouterKey ? '(comprimento: ' + openRouterKey.length + ')' : '');
+  console.log('Chave Gemini presente:', !!geminiKey, geminiKey ? '(comprimento: ' + geminiKey.length + ')' : '');
+  console.log('Provider detectado:', getConfiguredProvider());
+  console.log('Modelo configurado:', getConfiguredModel());
+  console.log('Chave API usada:', getApiKey() ? 'Presente' : 'Ausente');
+  console.log('=====================================');
+
+  return {
+    configuredProvider,
+    hasOpenRouterKey: !!openRouterKey,
+    hasGeminiKey: !!geminiKey,
+    detectedProvider: getConfiguredProvider(),
+    configuredModel: getConfiguredModel(),
+    hasApiKey: !!getApiKey()
+  };
+};
 
 /**
  * Testa a configuração da IA
@@ -316,12 +384,15 @@ export const suggestOpenRouterForQuota = (): boolean => {
  */
 export const autoSwitchToOpenRouter = (): boolean => {
   const openRouterKey = localStorage.getItem('openrouter-api-key');
+  console.log('[geminiService] Tentando auto-switch, chave OpenRouter:', openRouterKey ? 'Presente' : 'Ausente');
 
   if (openRouterKey && openRouterKey.trim()) {
     localStorage.setItem('ai-api-provider', 'openrouter');
     console.log('[geminiService] Auto-switched to OpenRouter for better quota');
+    console.log('[geminiService] Provider após switch:', localStorage.getItem('ai-api-provider'));
     return true;
   }
 
+  console.log('[geminiService] Não foi possível fazer auto-switch - chave OpenRouter não encontrada');
   return false;
 };
