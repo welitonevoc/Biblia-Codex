@@ -4,7 +4,8 @@ import {
   Home, Book, BookOpen, Bookmark, FileText, Settings,
   LogIn, ChevronLeft, ChevronRight, Map, MessageSquare,
   Library, Sparkles, Layers, History, HelpCircle as HelpIcon,
-  Database, Globe, User, Tag, GraduationCap, FolderOpen
+  Database, Globe, User, Tag, GraduationCap, FolderOpen,
+  Volume2
 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { clsx, type ClassValue } from 'clsx';
@@ -56,6 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'notes', name: 'Minhas Notas', icon: FileText, section: 'estudo' },
 
     { id: 'settings', name: 'Configurações', icon: Settings, section: 'sistema' },
+    { id: 'tts', name: 'Leitura por Voz (TTS)', icon: Volume2, section: 'sistema' },
     { id: 'modules', name: 'Módulos Externos', icon: Database, section: 'sistema' },
     { id: 'sync', name: 'Sincronização', icon: Globe, section: 'sistema' },
     { id: 'support', name: 'Suporte & Ajuda', icon: HelpIcon, section: 'sistema' },

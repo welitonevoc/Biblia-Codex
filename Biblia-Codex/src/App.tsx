@@ -248,6 +248,17 @@ function AppContent() {
                 <SettingsPage />
               </motion.div>
             )}
+            {activeTab === 'tts' && (
+              <motion.div
+                key="tts"
+                initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                animate={{ opacity: 1 }}
+                exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                className="h-full"
+              >
+                <SettingsPage section="tts" />
+              </motion.div>
+            )}
             {activeTab === 'support' && (
               <motion.div
                 key="support"
@@ -409,7 +420,7 @@ function AppContent() {
               </motion.div>
             )}
 
-            {!['home', 'bible', 'notes', 'settings', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional', 'search', 'ebd'].includes(activeTab) && (
+            {!['home', 'bible', 'notes', 'settings', 'tts', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional', 'search', 'ebd'].includes(activeTab) && (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
                 <div className="opacity-20 flex flex-col items-center space-y-4">
                   <BookOpen className="w-16 h-16" />

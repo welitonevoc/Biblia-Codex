@@ -5,7 +5,7 @@ import { useAppContext } from '../AppContext';
 import { generateReadingPlan } from '../services/geminiService';
 import { BibleService } from '../BibleService';
 import { Verse } from '../types';
-import { LucideIcon } from 'lucide-react';
+import biblia365Data from '../../plano_biblia365.json';
 
 const renderIcon = (icon: React.ElementType | undefined, props: { className?: string }) => {
   if (!icon) return <BookOpen className={props.className} />;
@@ -229,21 +229,23 @@ const DAY_READINGS = {
 };
 
 const addReadingsToPreset = (plan: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'>): Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'> & { dayReadings: { day: number; title: string; passages: string[]; completed: boolean; }[] } => {
-  const readings = DAY_READINGS[plan.id] || [];
+  const readings = plan.id === biblia365Data.id 
+    ? biblia365Data.dayReadings 
+    : DAY_READINGS[plan.id] || [];
   return { ...plan, dayReadings: readings.map(r => ({ ...r, completed: false })) };
 };
 
 const PRESET_PLANS: (Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'> & { dayReadings: { day: number; title: string; passages: string[]; completed: boolean; }[] })[] = [
   addReadingsToPreset({
-    id: 'canonical-365',
-    title: 'Bíblia em 1 Ano',
-    description: 'Leia a Bíblia completa em 365 dias - ordem canônica',
-    totalDays: 365,
+    id: biblia365Data.id,
+    title: biblia365Data.title,
+    description: biblia365Data.description,
+    totalDays: biblia365Data.totalDays,
     progress: 0,
     icon: BookOpen,
-    gradient: 'from-blue-500 to-indigo-600',
-    type: 'canonical',
-    color: 'blue',
+    gradient: biblia365Data.gradient,
+    type: biblia365Data.type,
+    color: biblia365Data.color,
   }),
   addReadingsToPreset({
     id: 'chronological-365',
@@ -367,6 +369,17 @@ const LEVELS = [
   { name: 'Campeão', minXp: 20000, icon: '👑' },
 ];
 
+const QUIT_PHRASES = [
+  "O importante é recomeçar. Deus siempre te dá uma nova chance!",
+  "Cada jornada tem seus obstáculos. Volte quando estiver pronto!",
+  "Você não falhou - apenas fez uma pausa. A porta siempre está aberta!",
+  "O primeiro passo é o mais difícil. Você ja deu varios!",
+  "Nem sempre completamos, mas sempre aprendemos.下次会更好!",
+  "Sua história com Deus não terminó. Um novo capítulo awaits!",
+  "Desistir não é vergonha - mas tentar de novo é coragem!",
+  "O que importa não é a velocidade, mas a perseverança.",
+];
+
 const getLevel = (xp: number) => {
   for (let i = LEVELS.length - 1; i >= 0; i--) {
     if (xp >= LEVELS[i].minXp) return { ...LEVELS[i], level: i + 1 };
@@ -396,6 +409,8 @@ export const ReadingPlans: React.FC<{
   const [showAIModal, setShowAIModal] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [completedPlan, setCompletedPlan] = useState<ReadingPlan | null>(null);
+  const [showQuitModal, setShowQuitModal] = useState(false);
+  const [quittedPlan, setQuittedPlan] = useState<ReadingPlan | null>(null);
   const [showUnmarkOption, setShowUnmarkOption] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiDays, setAiDays] = useState<number | undefined>(undefined);
@@ -565,17 +580,22 @@ export const ReadingPlans: React.FC<{
     setUserPlans(prev => prev.map(plan => {
       if (plan.id !== planId) return plan;
       
-      if (forceUnmark && plan.currentDay > 1) {
+      const targetDay = plan.currentDay - 1;
+      if (forceUnmark && targetDay >= 1) {
         const newReadings = plan.dayReadings?.map(r => 
-          r.day === plan.currentDay - 1 ? { ...r, completed: false } : r
+          r.day === targetDay ? { ...r, completed: false } : r
         ) || [];
         
-        return {
+        const updatedPlan = {
           ...plan,
           progress: Math.max(0, plan.progress - 1),
-          currentDay: plan.currentDay - 1,
+          currentDay: targetDay,
           dayReadings: newReadings,
         };
+        
+        setUserPlans(prev => prev.map(p => p.id === planId ? updatedPlan : p));
+        setSelectedPlan(updatedPlan);
+        return updatedPlan;
       }
       
       const today = new Date().toDateString();
@@ -638,6 +658,34 @@ export const ReadingPlans: React.FC<{
   const handleCloseCompletionModal = () => {
     setShowCompletionModal(false);
     setCompletedPlan(null);
+    setSelectedPlan(null);
+    setShowPlanDetail(false);
+  };
+
+  const handleQuitPlan = (planId: string) => {
+    const plan = userPlans.find(p => p.id === planId);
+    if (!plan) return;
+
+    setQuittedPlan(plan);
+    
+    const newTrophies = [
+      ...userTrophies,
+      {
+        id: `quit-trophy-${plan.id}-${Date.now()}`,
+        name: plan.title,
+        icon: '💔',
+        date: new Date().toISOString(),
+      },
+    ];
+    setUserTrophies(newTrophies);
+
+    setUserPlans(prev => prev.filter(p => p.id !== planId));
+    setShowQuitModal(true);
+  };
+
+  const handleCloseQuitModal = () => {
+    setShowQuitModal(false);
+    setQuittedPlan(null);
     setSelectedPlan(null);
     setShowPlanDetail(false);
   };
@@ -729,6 +777,56 @@ export const ReadingPlans: React.FC<{
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleCloseCompletionModal}
+                className="w-full py-3 rounded-xl font-semibold bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)] shadow-lg hover:opacity-90 transition-opacity"
+              >
+                Voltar aos Planos
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {showQuitModal && quittedPlan && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="w-full max-w-sm bg-[var(--surface-0)] rounded-2xl p-6 shadow-xl border border-[var(--border-bible)]"
+          >
+            <div className="text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', delay: 0.2 }}
+                className="text-6xl mb-4"
+              >
+                💔
+              </motion.div>
+              <h2 className="text-2xl font-bold text-[var(--text-bible)] mb-2">Poxa...</h2>
+              <p className="text-[var(--text-bible-muted)] mb-4">Você começou mas não completou...</p>
+              <p className="text-lg font-semibold text-[var(--accent-bible)] mb-4">{quittedPlan.title}</p>
+              <div className="p-3 rounded-xl bg-red-500/10 mb-6">
+                <span className="text-xl font-bold text-red-500">+1 💔</span>
+                <p className="text-sm text-red-600">Tentar novamente é coragem!</p>
+              </div>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="text-sm text-[var(--text-bible-muted)] italic mb-6 px-4"
+              >
+                "{QUIT_PHRASES[Math.floor(Math.random() * QUIT_PHRASES.length)]}"
+              </motion.p>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleCloseQuitModal}
                 className="w-full py-3 rounded-xl font-semibold bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)] shadow-lg hover:opacity-90 transition-opacity"
               >
                 Voltar aos Planos
@@ -1052,18 +1150,45 @@ export const ReadingPlans: React.FC<{
                   </div>
                 )}
 
+                {selectedPlan.currentDay <= selectedPlan.totalDays && selectedPlan.progress > 0 && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => markDayComplete(selectedPlan.id)}
+                    className={cn(
+                      "w-full py-3 rounded-xl font-semibold mb-3",
+                      "bg-gradient-to-r", selectedPlan.gradient,
+                      "text-white shadow-lg",
+                      "hover:opacity-90 transition-opacity"
+                    )}
+                  >
+                    {selectedPlan.progress > 0 && selectedPlan.currentDay > 1 ? 'Recomeçar Leitura' : 'Continuar Leitura'}
+                  </motion.button>
+                )}
+
+                {selectedPlan.progress === 0 && selectedPlan.currentDay <= selectedPlan.totalDays && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => markDayComplete(selectedPlan.id)}
+                    className={cn(
+                      "w-full py-3 rounded-xl font-semibold mb-3",
+                      "bg-gradient-to-r", selectedPlan.gradient,
+                      "text-white shadow-lg",
+                      "hover:opacity-90 transition-opacity"
+                    )}
+                  >
+                    Começar Leitura
+                  </motion.button>
+                )}
+
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => markDayComplete(selectedPlan.id)}
-                  className={cn(
-                    "w-full py-3 rounded-xl font-semibold",
-                    "bg-gradient-to-r", selectedPlan.gradient,
-                    "text-white shadow-lg",
-                    "hover:opacity-90 transition-opacity"
-                  )}
+                  onClick={() => handleQuitPlan(selectedPlan.id)}
+                  className="w-full py-3 rounded-xl font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
                 >
-                  Marcar Dia como Concluído
+                  Desistir da Leitura
                 </motion.button>
               </div>
 
