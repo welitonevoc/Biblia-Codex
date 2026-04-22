@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { AppProvider, useAppContext } from './AppContext';
 import { TopBar } from './components/TopBar';
 import { Reader } from './components/Reader';
@@ -17,26 +17,39 @@ import { StudyPanel } from './components/StudyPanel';
 import { Home } from './components/Home';
 import { Notes } from './components/Notes';
 import { SettingsPage } from './components/SettingsPage';
+import { AISettingsPage } from './components/AISettingsPage';
 import { HelpPage } from './components/HelpPage';
 import { DictionaryView } from './components/DictionaryView';
 import { ModuleManagement } from './components/ModuleManagement';
 import { BookmarksPage } from './components/BookmarksPage';
 import { StudyToolsPanel } from './components/StudyToolsPanel';
-import { DevotionalPage } from './components/DevotionalPage';
 import { ReadingPlans } from './components/ReadingPlans';
-import { MapsPage } from './components/MapsPage';
-import { XRefsPage } from './components/XRefsPage';
 import { SearchView } from './components/SearchView';
-import { EBDPage } from './components/EBDPage';
+import { TagsView } from './components/TagsView';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { Book, Verse } from './types';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Loader } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import { Onboarding } from './components/Onboarding';
 import { PermissionScreen } from './components/PermissionScreen';
+
+// Lazy loading for heavy pages (Phase 5: Performance)
+const DevotionalPage = lazy(() => import('./components/DevotionalPage').then(m => ({ default: m.DevotionalPage })));
+const MapsPage = lazy(() => import('./components/MapsPage').then(m => ({ default: m.MapsPage })));
+const XRefsPage = lazy(() => import('./components/XRefsPage').then(m => ({ default: m.XRefsPage })));
+const EBDPage = lazy(() => import('./components/EBDPage').then(m => ({ default: m.EBDPage })));
+
+// Loading fallback
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center h-full">
+      <Loader className="w-8 h-8 animate-spin text-primary" />
+    </div>
+  );
+}
 import { ensureStoragePermission } from './services/permissionsService';
 import { Capacitor } from '@capacitor/core';
 import { FloatingDock } from './components/nav/FloatingDock';
@@ -235,6 +248,17 @@ function AppContent() {
                 <SettingsPage />
               </motion.div>
             )}
+            {activeTab === 'tts' && (
+              <motion.div
+                key="tts"
+                initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                animate={{ opacity: 1 }}
+                exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                className="h-full"
+              >
+                <SettingsPage section="tts" />
+              </motion.div>
+            )}
             {activeTab === 'support' && (
               <motion.div
                 key="support"
@@ -287,10 +311,12 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <DevotionalPage onNavigate={(bookId, chapter, verse) => {
-                  const book = BIBLE_BOOKS.find(b => b.id === bookId);
-                  if (book) handleSelect(book, chapter, verse);
-                }} />
+                <Suspense fallback={<PageLoader />}>
+                  <DevotionalPage onNavigate={(bookId, chapter, verse) => {
+                    const book = BIBLE_BOOKS.find(b => b.id === String(bookId));
+                    if (book) handleSelect(book, chapter, verse);
+                  }} />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'reading-plans' && (
@@ -344,10 +370,12 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <MapsPage onNavigate={(bookId, chapter, verse) => {
-                  const book = BIBLE_BOOKS.find(b => b.id === bookId);
-                  if (book) handleSelect(book, chapter, verse);
-                }} />
+                <Suspense fallback={<PageLoader />}>
+                  <MapsPage onNavigate={(bookId, chapter, verse) => {
+                    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+                    if (book) handleSelect(book, chapter, verse);
+                  }} />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'xrefs' && (
@@ -358,10 +386,12 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <XRefsPage onNavigate={(bookId, chapter, verse) => {
-                  const book = BIBLE_BOOKS.find(b => b.id === bookId);
-                  if (book) handleSelect(book, chapter, verse);
-                }} />
+                <Suspense fallback={<PageLoader />}>
+                  <XRefsPage onNavigate={(bookId, chapter, verse) => {
+                    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+                    if (book) handleSelect(book, chapter, verse);
+                  }} />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'ebd' && (
@@ -372,11 +402,25 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <EBDPage />
+                <Suspense fallback={<PageLoader />}>
+                  <EBDPage />
+                </Suspense>
               </motion.div>
             )}
 
-            {!['home', 'bible', 'notes', 'settings', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional', 'search', 'ebd'].includes(activeTab) && (
+            {activeTab === 'ai-assistant' && (
+              <motion.div
+                key="ai-assistant"
+                initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                animate={{ opacity: 1 }}
+                exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                className="h-full"
+              >
+                <AISettingsPage />
+              </motion.div>
+            )}
+
+            {!['home', 'bible', 'notes', 'settings', 'tts', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional', 'search', 'ebd'].includes(activeTab) && (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
                 <div className="opacity-20 flex flex-col items-center space-y-4">
                   <BookOpen className="w-16 h-16" />

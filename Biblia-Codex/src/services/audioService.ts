@@ -130,14 +130,14 @@ export class AudioService {
   }
 
   /**
-   * Define a velocidade de reprodução (0.5 a 2.0)
-   */
-  setPlaybackRate(rate: number): void {
-    if (this.audio) {
-      const clampedRate = Math.max(0.5, Math.min(2.0, rate));
-      this.audio.playbackRate = clampedRate;
-    }
-  }
+    * Define a velocidade de reprodução (0.25 a 2.0)
+    */
+   setPlaybackRate(rate: number): void {
+     if (!this.audio) return;
+     // Clamp rate between 0.25 and 2.0 for safety
+     const clampedRate = Math.max(0.25, Math.min(2.0, rate));
+     this.audio.playbackRate = clampedRate;
+   }
 
   /**
    * Define o volume (0 a 1)

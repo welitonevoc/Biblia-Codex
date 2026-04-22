@@ -1,7 +1,33 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, ArrowLeft, Flame, Trophy, Star, Zap, Crown, ChevronDown, Settings, Users, Globe, Heart, Sun, Moon, BookText } from 'lucide-react';
+import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, ChevronLeft, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, ArrowLeft, Flame, Trophy, Star, Zap, Crown, ChevronDown, Settings, Users, Globe, Heart, Sun, Moon, BookText, Wand2, Loader2, Sparkle, MessageSquare, Loader } from 'lucide-react';
 import { useAppContext } from '../AppContext';
+import { generateReadingPlan } from '../services/geminiService';
+import { BibleService } from '../BibleService';
+import { Verse } from '../types';
+import biblia365Data from '../../plano_biblia365.json';
+
+const renderIcon = (icon: React.ElementType | undefined, props: { className?: string }) => {
+  if (!icon) return <BookOpen className={props.className} />;
+  if (typeof icon === 'function') {
+    return React.createElement(icon, props);
+  }
+  return <BookOpen className={props.className} />;
+};
+
+interface ReadingPlanAI {
+  id: string;
+  title: string;
+  description: string;
+  totalDays: number;
+  readings: {
+    day: number;
+    title: string;
+    type: 'scripture' | 'devotional';
+    passages: string[];
+    devotionalContent?: string;
+  }[];
+}
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -27,6 +53,12 @@ interface ReadingPlan {
   completedBooks: string[];
   startDate?: string;
   lastReadDate?: string;
+  dayReadings?: {
+    day: number;
+    title: string;
+    passages: string[];
+    completed: boolean;
+  }[];
 }
 
 const BIBLE_BOOKS = [
@@ -98,19 +130,124 @@ const BIBLE_BOOKS = [
   { name: 'Apocalipse', abbrev: 'ap', chapters: 22 },
 ];
 
-const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'>[] = [
-  {
-    id: 'canonical-365',
-    title: 'Bíblia em 1 Ano',
-    description: 'Leia a Bíblia completa em 365 dias - ordem canônica',
-    totalDays: 365,
+const DAY_READINGS = {
+  'encontrando-deus': [
+    { day: 1, title: 'A Criação e o Jardim', passages: ['Gênesis 1:1-2', 'Gênesis 2:4-15'] },
+    { day: 2, title: 'O Pecado e a Queda', passages: ['Gênesis 3:1-24'] },
+    { day: 3, title: 'Abraão e a Promise', passages: ['Gênesis 12:1-9', 'Gênesis 15:1-6'] },
+    { day: 4, title: 'Moisés e o Exodo', passages: ['Êxodo 3:1-15', 'Êxodo 14:1-31'] },
+    { day: 5, title: 'A Terra Prometida', passages: ['Josué 1:1-9', 'Josué 6:1-20'] },
+    { day: 6, title: 'Exílio e Esperança', passages: ['Isaías 40:1-11', 'Isaías 55:1-13'] },
+    { day: 7, title: 'Jesus no Deserto', passages: ['Mateus 4:1-11', 'Hebreus 4:14-16'] },
+  ],
+  'salmos-oracao': [
+    { day: 1, title: 'Salmo 1', passages: ['Salmo 1'] },
+    { day: 2, title: 'Salmo 23', passages: ['Salmo 23'] },
+    { day: 3, title: 'Salmo 27', passages: ['Salmo 27'] },
+    { day: 4, title: 'Salmo 51', passages: ['Salmo 51'] },
+    { day: 5, title: 'Salmo 63', passages: ['Salmo 63'] },
+    { day: 6, title: 'Salmo 91', passages: ['Salmo 91'] },
+    { day: 7, title: 'Salmo 103', passages: ['Salmo 103'] },
+    { day: 8, title: 'Salmo 121', passages: ['Salmo 121'] },
+    { day: 9, title: 'Salmo 139', passages: ['Salmo 139'] },
+    { day: 10, title: 'Salmo 150', passages: ['Salmo 150'] },
+  ],
+  'vida-jesus': [
+    { day: 1, title: 'O Nascimento', passages: ['Lucas 2:1-20'] },
+    { day: 2, title: 'Jesus no Templo', passages: ['Lucas 2:41-52'] },
+    { day: 3, title: 'O Batismo', passages: ['Mateus 3:13-17'] },
+    { day: 4, title: 'As Tentações', passages: ['Mateus 4:1-11'] },
+    { day: 5, title: 'Chamando Discípulos', passages: ['Lucas 5:1-11'] },
+    { day: 6, title: 'Sermão do Monte', passages: ['Mateus 5:1-20'] },
+    { day: 7, title: 'O Bom Samaritano', passages: ['Lucas 10:25-37'] },
+    { day: 8, title: 'O Filho Pródigo', passages: ['Lucas 15:11-32'] },
+    { day: 9, title: 'Alimentando 5000', passages: ['João 6:1-15'] },
+    { day: 10, title: 'Lázaro Ressuscitado', passages: ['João 11:1-44'] },
+    { day: 11, title: 'A Última Ceia', passages: ['João 13:1-17'] },
+    { day: 12, title: 'A Crucificação', passages: ['João 19:16-30'] },
+    { day: 13, title: 'A Ressurreição', passages: ['João 20:1-18'] },
+    { day: 14, title: 'A Grande Comissão', passages: ['Mateus 28:16-20'] },
+  ],
+  'canonical-365': Array.from({ length: 365 }, (_, i) => {
+    const books = BIBLE_BOOKS.slice(0, 39);
+    let acc = 0;
+    for (const book of books) {
+      if (acc + book.chapters > i * 3) {
+        const start = Math.max(1, i * 3 - acc + 1);
+        const end = Math.min(book.chapters, (i + 1) * 3 - acc);
+        return { day: i + 1, title: `${book.name} ${start}${end > start ? '-' + end : ''}`, passages: [`${book.name} ${start}:${end}`] };
+      }
+      acc += book.chapters;
+    }
+    return { day: i + 1, title: 'Apocalipse 1', passages: ['Apocalipse 1'] };
+  }),
+  'devotional-90': Array.from({ length: 90 }, (_, i) => ({
+    day: i + 1,
+    title: `Devocional Dia ${i + 1}`,
+    passages: ['Salmo 1', 'Provérbios 3:5-6']
+  })),
+  'nt-180': Array.from({ length: 180 }, (_, i) => {
+    const books = BIBLE_BOOKS.slice(39);
+    let acc = 0;
+    for (const book of books) {
+      if (acc + book.chapters > i * 1.5) {
+        const start = Math.max(1, Math.ceil(i * 1.5 - acc + 1));
+        const end = Math.min(book.chapters, Math.ceil((i + 1) * 1.5 - acc));
+        return { day: i + 1, title: `${book.name} ${start}`, passages: [`${book.name} ${start}:${end}`] };
+      }
+      acc += book.chapters;
+    }
+    return { day: i + 1, title: 'Apocalipse 1', passages: ['Apocalipse 1'] };
+  }),
+  'psalms-proverbs-60': Array.from({ length: 60 }, (_, i) => {
+    const psalm = i % 150 + 1;
+    const prov = i % 31 + 1;
+    return { day: i + 1, title: `Salmo ${psalm} + Provérbios ${prov}`, passages: [`Salmo ${psalm}`, `Provérbios ${prov}`] };
+  }),
+  'gospels-40': Array.from({ length: 40 }, (_, i) => {
+    const gospelDays = [
+      { book: 'Mateus', chapters: 28, start: 0 },
+      { book: 'Marcos', chapters: 16, start: 28 },
+      { book: 'Lucas', chapters: 24, start: 44 },
+      { book: 'João', chapters: 21, start: 68 }
+    ];
+    let acc = 0;
+    for (const g of gospelDays) {
+      if (acc + g.chapters > i) {
+        const chapter = i - acc + 1;
+        return { day: i + 1, title: `${g.book} ${chapter}`, passages: [`${g.book} ${chapter}`] };
+      }
+      acc += g.chapters;
+    }
+    return { day: i + 1, title: 'João 1', passages: ['João 1'] };
+  }),
+  'pauls-letters-60': Array.from({ length: 60 }, (_, i) => {
+    const letters = ['Romanos', '1 Coríntios', '2 Coríntios', 'Gálatas', 'Efésios', 'Filipenses', 'Colossenses', '1 Tessalonicenses', '2 Tessalonicenses', '1 Timóteo', '2 Timóteo', 'Tito', 'Filemom', 'Hebreus'];
+    const letter = letters[i % letters.length];
+    return { day: i + 1, title: letter, passages: [letter] };
+  }),
+};
+
+const addReadingsToPreset = (plan: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'>): Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'> & { dayReadings: { day: number; title: string; passages: string[]; completed: boolean; }[] } => {
+  const readings = plan.id === biblia365Data.id 
+    ? biblia365Data.dayReadings 
+    : DAY_READINGS[plan.id] || [];
+  return { ...plan, dayReadings: readings.map(r => ({ ...r, completed: false })) };
+};
+
+const PRESET_PLANS: (Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'> & { dayReadings: { day: number; title: string; passages: string[]; completed: boolean; }[] })[] = [
+  addReadingsToPreset({
+    id: biblia365Data.id,
+    title: biblia365Data.title,
+    description: biblia365Data.description,
+    totalDays: biblia365Data.totalDays,
     progress: 0,
     icon: BookOpen,
-    gradient: 'from-blue-500 to-indigo-600',
-    type: 'canonical',
-    color: 'blue',
-  },
-  {
+    gradient: biblia365Data.gradient,
+    type: biblia365Data.type,
+    color: biblia365Data.color,
+  }),
+  addReadingsToPreset({
     id: 'chronological-365',
     title: 'Bíblia Cronológica',
     description: 'Leia na ordem histórica dos eventos',
@@ -120,8 +257,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-amber-500 to-orange-600',
     type: 'chronological',
     color: 'amber',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'thematic-365',
     title: 'Plano Temático',
     description: 'VT + NT + Salmosdiariamente - varietygarantido',
@@ -131,8 +268,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-emerald-500 to-teal-600',
     type: 'thematic',
     color: 'emerald',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'devotional-90',
     title: 'Devocionais 90 Dias',
     description: 'Reflexões diárias com aplicação prática',
@@ -142,8 +279,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-rose-500 to-pink-600',
     type: 'devotional',
     color: 'rose',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'nt-180',
     title: 'Novo Testamento 180 Dias',
     description: 'Foque nos evangelhos e epístolas',
@@ -153,8 +290,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-violet-500 to-purple-600',
     type: 'canonical',
     color: 'violet',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'psalms-proverbs-60',
     title: 'Salmos e Provérbios',
     description: 'Sabedoria e adoração diária em 60 dias',
@@ -164,8 +301,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-cyan-500 to-blue-600',
     type: 'thematic',
     color: 'cyan',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'gospels-40',
     title: '4 Evangelhos em 40 Dias',
     description: 'Mateus, Marcos, Lucas e João',
@@ -175,8 +312,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-yellow-500 to-orange-500',
     type: 'canonical',
     color: 'yellow',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'pauls-letters-60',
     title: 'Cartas de Paulo',
     description: 'Todas as epístolas de Paulo em 60 dias',
@@ -186,7 +323,40 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-indigo-500 to-violet-600',
     type: 'canonical',
     color: 'indigo',
-  },
+  }),
+  addReadingsToPreset({
+    id: 'encontrando-deus',
+    title: 'Encontrando Deus no Deserto',
+    description: 'Uma jornada de 7 dias explorando as experiências no deserto',
+    totalDays: 7,
+    progress: 0,
+    icon: Flame,
+    gradient: 'from-orange-500 to-amber-600',
+    type: 'devotional',
+    color: 'orange',
+  }),
+  addReadingsToPreset({
+    id: 'salmos-oracao',
+    title: 'Salmos de Oração',
+    description: 'Descubra a beleza da oração através dos Salmos',
+    totalDays: 10,
+    progress: 0,
+    icon: Heart,
+    gradient: 'from-slate-500 to-gray-600',
+    type: 'devotional',
+    color: 'slate',
+  }),
+  addReadingsToPreset({
+    id: 'vida-jesus',
+    title: 'A Vida de Jesus',
+    description: 'Conheça Jesus através dos quatro evangelhos',
+    totalDays: 14,
+    progress: 0,
+    icon: Sun,
+    gradient: 'from-amber-500 to-yellow-600',
+    type: 'canonical',
+    color: 'amber',
+  }),
 ];
 
 const LEVELS = [
@@ -197,6 +367,17 @@ const LEVELS = [
   { name: 'Mestre', minXp: 7000, icon: '⭐' },
   { name: 'Evangelista', minXp: 12000, icon: '🌟' },
   { name: 'Campeão', minXp: 20000, icon: '👑' },
+];
+
+const QUIT_PHRASES = [
+  "O importante é recomeçar. Deus siempre te dá uma nova chance!",
+  "Cada jornada tem seus obstáculos. Volte quando estiver pronto!",
+  "Você não falhou - apenas fez uma pausa. A porta siempre está aberta!",
+  "O primeiro passo é o mais difícil. Você ja deu varios!",
+  "Nem sempre completamos, mas sempre aprendemos.下次会更好!",
+  "Sua história com Deus não terminó. Um novo capítulo awaits!",
+  "Desistir não é vergonha - mas tentar de novo é coragem!",
+  "O que importa não é a velocidade, mas a perseverança.",
 ];
 
 const getLevel = (xp: number) => {
@@ -218,10 +399,85 @@ export const ReadingPlans: React.FC<{
   const { settings, currentVersion } = useAppContext();
   const [activeTab, setActiveTab] = useState<'home' | 'custom' | 'explore'>('home');
   const [selectedPlan, setSelectedPlan] = useState<ReadingPlan | null>(null);
+  const [viewingDay, setViewingDay] = useState<number | null>(null);
+  const [loadingVerses, setLoadingVerses] = useState(false);
+  const [dayVerses, setDayVerses] = useState<Record<string, Verse[]>>({});
   const [showPlanDetail, setShowPlanDetail] = useState(false);
   const [showVersionPicker, setShowVersionPicker] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<string>(currentVersion?.id || 'ARC');
   const [pendingPlan, setPendingPlan] = useState<typeof PRESET_PLANS[0] | null>(null);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [completedPlan, setCompletedPlan] = useState<ReadingPlan | null>(null);
+  const [showQuitModal, setShowQuitModal] = useState(false);
+  const [quittedPlan, setQuittedPlan] = useState<ReadingPlan | null>(null);
+  const [showUnmarkOption, setShowUnmarkOption] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiDays, setAiDays] = useState<number | undefined>(undefined);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [generatedPlan, setGeneratedPlan] = useState<ReadingPlanAI | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [userTrophies, setUserTrophies] = useState<{ id: string; name: string; icon: string; date: string }[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('codex-trophies');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return [];
+        }
+      }
+    }
+    return [];
+  });
+
+  const parseBookReference = (passage: string): { bookId: string; chapter: number; startVerse?: number; endVerse?: number } | null => {
+    const bookMapping: Record<string, string> = {
+      'genesis': 'GEN', 'gen': 'GEN', 'gn': 'GEN',
+      'exodo': 'EXO', 'ex': 'EXO',
+      'levitico': 'LEV', 'lv': 'LEV',
+      'numeros': 'NUM', 'nm': 'NUM',
+      'deuteronomio': 'DEU', 'dt': 'DEU',
+      'salmos': 'PSA', 'sl': 'PSA', 'salmo': 'PSA',
+      'proverbios': 'PRO', 'pv': 'PRO',
+      'mateus': 'MAT', 'mt': 'MAT',
+      'marcos': 'MRK', 'mc': 'MRK',
+      'lucas': 'LUK', 'lc': 'LUK',
+      'joao': 'JHN', 'jo': 'JHN',
+      'atos': 'ACT', 'at': 'ACT',
+      'romanos': 'ROM', 'rm': 'ROM',
+      '1corintios': '1CO', '2corintios': '2CO',
+      'galatas': 'GAL', 'gl': 'GAL',
+      'efesios': 'EPH', 'ef': 'EPH',
+      'filipenses': 'PHP', 'fp': 'PHP',
+      'colossenses': 'COL', 'cl': 'COL',
+      '1tssalonicenses': '1TH', '2tes': '2TH',
+      '1timoteo': '1TI', '2timoteo': '2TI',
+      'tito': 'TIT', 'filemon': 'PHM',
+      'hebreus': 'HEB', 'hb': 'HEB',
+      'tiago': 'JAS', 'tg': 'JAS',
+      '1pedro': '1PE', '2pedro': '2PE',
+      '1joao': '1JN', '2joao': '2JN', '3joao': '3JN',
+      'judas': 'JUD', 'jd': 'JUD',
+      'apocalipse': 'REV', 'ap': 'REV',
+    };
+    
+    const match = passage.match(/^([A-Za-zãéíóúâêôûáéíóú]+)\s*(\d+):?(\d+)?-?(\d+)?$/i);
+    if (!match) return null;
+    
+    const bookName = match[1].toLowerCase().replace(/ã/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/â/g, 'a').replace(/ê/g, 'e').replace(/ô/g, 'o').replace(/û/g, 'u');
+    const chapter = parseInt(match[2]);
+    const startVerse = match[3] ? parseInt(match[3]) : 1;
+    const endVerse = match[4] ? parseInt(match[4]) : startVerse;
+    
+    const bookId = bookMapping[bookName] || bookName.substring(0, 3).toUpperCase();
+    
+    return { bookId, chapter, startVerse, endVerse };
+  };
+
+  const cleanStrongCodes = (text: string): string => {
+    return text.replace(/<[A-Z]\d+>/g, '').replace(/<WH\d+>/g, '').trim();
+  };
   
   const [userPlans, setUserPlans] = useState<ReadingPlan[]>(() => {
     const saved = localStorage.getItem('codex-reading-plans');
@@ -238,6 +494,48 @@ export const ReadingPlans: React.FC<{
   useEffect(() => {
     localStorage.setItem('codex-reading-plans', JSON.stringify(userPlans));
   }, [userPlans]);
+
+  useEffect(() => {
+    localStorage.setItem('codex-trophies', JSON.stringify(userTrophies));
+  }, [userTrophies]);
+
+  useEffect(() => {
+    if (!selectedPlan || !currentVersion) return;
+    
+    const loadVersesForDay = async () => {
+      const readings = selectedPlan.dayReadings?.filter(r => r.day === selectedPlan.currentDay) || [];
+      if (readings.length === 0) return;
+      
+      const key = `day-${selectedPlan.currentDay}`;
+      if (dayVerses[key]) return;
+      
+      setLoadingVerses(true);
+      const versesMap: Record<string, Verse[]> = {};
+      
+      for (const reading of readings) {
+        for (const passage of reading.passages) {
+          const parsed = parseBookReference(passage);
+          if (parsed) {
+            try {
+              const verses = await BibleService.getVerses(parsed.bookId, parsed.chapter, currentVersion);
+              versesMap[passage] = verses
+                .filter(v => v.verse >= (parsed.startVerse || 1))
+                .filter(v => !parsed.endVerse || v.verse <= parsed.endVerse)
+                .map(v => ({ ...v, text: cleanStrongCodes(v.text) }));
+            } catch (e) {
+              console.error('Erro ao buscar versículos:', e);
+              versesMap[passage] = [];
+            }
+          }
+        }
+      }
+      
+      setDayVerses(prev => ({ ...prev, [key]: Object.values(versesMap).flat() }));
+      setLoadingVerses(false);
+    };
+    
+    loadVersesForDay();
+  }, [selectedPlan?.currentDay, currentVersion]);
 
   const startPlan = (preset: typeof PRESET_PLANS[0]) => {
     console.log('startPlan called with:', preset.id);
@@ -267,9 +565,36 @@ export const ReadingPlans: React.FC<{
     setPendingPlan(null);
   };
 
-  const markDayComplete = (planId: string) => {
+  const markDayComplete = (planId: string, forceUnmark: boolean = false) => {
+    const currentPlan = userPlans.find(p => p.id === planId);
+    if (!currentPlan) return;
+    
+    const dayReading = currentPlan.dayReadings?.find(r => r.day === currentPlan.currentDay);
+    const isAlreadyCompleted = dayReading?.completed === true;
+    
+    if (!forceUnmark && isAlreadyCompleted) {
+      setShowUnmarkOption(true);
+      return;
+    }
+    
     setUserPlans(prev => prev.map(plan => {
       if (plan.id !== planId) return plan;
+      
+      const targetDay = plan.currentDay - 1;
+      if (forceUnmark && targetDay >= 1) {
+        const newReadings = plan.dayReadings?.map(r => 
+          r.day === targetDay ? { ...r, completed: false } : r
+        ) || [];
+        
+        const completedCount = newReadings.filter(r => r.completed).length;
+        
+        return {
+          ...plan,
+          progress: completedCount,
+          currentDay: targetDay,
+          dayReadings: newReadings,
+        };
+      }
       
       const today = new Date().toDateString();
       const lastRead = plan.lastReadDate ? new Date(plan.lastReadDate).toDateString() : null;
@@ -291,17 +616,76 @@ export const ReadingPlans: React.FC<{
       const newXp = plan.xp + xpGained;
       const newLevel = getLevel(newXp);
 
+      const newReadings = plan.dayReadings?.map(r => 
+        r.day === plan.currentDay ? { ...r, completed: true } : r
+      ) || [];
+
+      const newCurrentDay = plan.currentDay + 1;
+      const newProgress = plan.progress + 1;
+      const isFinished = newCurrentDay > plan.totalDays;
+      
+      if (isFinished) {
+        setCompletedPlan(plan);
+        setShowCompletionModal(true);
+        const newTrophies = [
+          ...userTrophies,
+          {
+            id: `trophy-${plan.id}-${Date.now()}`,
+            name: plan.title,
+            icon: '🏆',
+            date: new Date().toISOString(),
+          },
+        ];
+        setUserTrophies(newTrophies);
+      }
+
       return {
         ...plan,
-        progress: plan.progress + 1,
-        currentDay: plan.currentDay + 1,
+        progress: newProgress,
+        currentDay: isFinished ? plan.currentDay : newCurrentDay,
         streak: newStreak,
         longestStreak: Math.max(plan.longestStreak, newStreak),
         xp: newXp,
         level: newLevel.level,
         lastReadDate: new Date().toISOString(),
+        dayReadings: newReadings,
       };
     }));
+  };
+
+  const handleCloseCompletionModal = () => {
+    setShowCompletionModal(false);
+    setCompletedPlan(null);
+    setSelectedPlan(null);
+    setShowPlanDetail(false);
+  };
+
+  const handleQuitPlan = (planId: string) => {
+    const plan = userPlans.find(p => p.id === planId);
+    if (!plan) return;
+
+    setQuittedPlan(plan);
+    
+    const newTrophies = [
+      ...userTrophies,
+      {
+        id: `quit-trophy-${plan.id}-${Date.now()}`,
+        name: plan.title,
+        icon: '💔',
+        date: new Date().toISOString(),
+      },
+    ];
+    setUserTrophies(newTrophies);
+
+    setUserPlans(prev => prev.filter(p => p.id !== planId));
+    setShowQuitModal(true);
+  };
+
+  const handleCloseQuitModal = () => {
+    setShowQuitModal(false);
+    setQuittedPlan(null);
+    setSelectedPlan(null);
+    setShowPlanDetail(false);
   };
 
   const getTodayReading = (plan: ReadingPlan) => {
@@ -357,6 +741,147 @@ export const ReadingPlans: React.FC<{
       ];
 
   return (
+    <>
+      {showCompletionModal && completedPlan && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="w-full max-w-sm bg-[var(--surface-0)] rounded-2xl p-6 shadow-xl border border-[var(--border-bible)]"
+          >
+            <div className="text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', delay: 0.2 }}
+                className="text-6xl mb-4"
+              >
+                🏆
+              </motion.div>
+              <h2 className="text-2xl font-bold text-[var(--text-bible)] mb-2">Parabéns!</h2>
+              <p className="text-[var(--text-bible-muted)] mb-4">Você completou o plano de leitura!</p>
+              <p className="text-lg font-semibold text-[var(--accent-bible)] mb-4">{completedPlan.title}</p>
+              <div className="p-3 rounded-xl bg-amber-500/10 mb-6">
+                <span className="text-xl font-bold text-amber-500">+1 🏆</span>
+                <p className="text-sm text-amber-600">Troféu conquistado!</p>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleCloseCompletionModal}
+                className="w-full py-3 rounded-xl font-semibold bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)] shadow-lg hover:opacity-90 transition-opacity"
+              >
+                Voltar aos Planos
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {showQuitModal && quittedPlan && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="w-full max-w-sm bg-[var(--surface-0)] rounded-2xl p-6 shadow-xl border border-[var(--border-bible)]"
+          >
+            <div className="text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', delay: 0.2 }}
+                className="text-6xl mb-4"
+              >
+                💔
+              </motion.div>
+              <h2 className="text-2xl font-bold text-[var(--text-bible)] mb-2">Poxa...</h2>
+              <p className="text-[var(--text-bible-muted)] mb-4">Você começou mas não completou...</p>
+              <p className="text-lg font-semibold text-[var(--accent-bible)] mb-4">{quittedPlan.title}</p>
+              <div className="p-3 rounded-xl bg-red-500/10 mb-6">
+                <span className="text-xl font-bold text-red-500">+1 💔</span>
+                <p className="text-sm text-red-600">Tentar novamente é coragem!</p>
+              </div>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="text-sm text-[var(--text-bible-muted)] italic mb-6 px-4"
+              >
+                "{QUIT_PHRASES[Math.floor(Math.random() * QUIT_PHRASES.length)]}"
+              </motion.p>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleCloseQuitModal}
+                className="w-full py-3 rounded-xl font-semibold bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)] shadow-lg hover:opacity-90 transition-opacity"
+              >
+                Voltar aos Planos
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {showUnmarkOption && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setShowUnmarkOption(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="w-full max-w-sm bg-[var(--surface-0)] rounded-2xl p-6 shadow-xl border border-[var(--border-bible)]"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold text-[var(--text-bible)]">Este dia já foi concluído</h2>
+              <p className="text-[var(--text-bible-muted)] mt-2">
+                Deseja desfazer a conclusão do dia {selectedPlan?.currentDay}?
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowUnmarkOption(false)}
+                className="flex-1 py-3 rounded-xl font-medium bg-[var(--surface-2)] text-[var(--text-bible)] hover:bg-[var(--surface-3)] transition-all"
+              >
+                Cancelar
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  if (selectedPlan) {
+                    markDayComplete(selectedPlan.id, true);
+                  }
+                  setShowUnmarkOption(false);
+                }}
+                className="flex-1 py-3 rounded-xl font-semibold bg-red-500 text-white hover:bg-red-600 transition-all"
+              >
+                Desfazer
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
     <div className="h-full overflow-y-auto scrollbar-thin">
       <AnimatePresence mode="wait">
         {showVersionPicker && (
@@ -447,12 +972,19 @@ export const ReadingPlans: React.FC<{
                   "bg-gradient-to-br", selectedPlan.gradient,
                   "text-white shadow-lg"
                 )}>
-                  <selectedPlan.icon className="w-6 h-6" />
+                  {renderIcon(selectedPlan.icon, { className: "w-6 h-6" })}
                 </div>
-                <div>
+                <div className="flex-1">
                   <h2 className="text-xl font-bold text-[var(--text-bible)]">{selectedPlan.title}</h2>
                   <p className="text-sm text-[var(--text-bible-muted)]">Dia {selectedPlan.currentDay} de {selectedPlan.totalDays}</p>
                 </div>
+                <button
+                  onClick={() => setShowVersionPicker(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--surface-2)] hover:bg-[var(--surface-3)] transition-colors"
+                >
+                  <BookText className="w-4 h-4 text-[var(--accent-bible)]" />
+                  <span className="text-sm font-medium text-[var(--text-bible)]">{selectedVersion}</span>
+                </button>
               </div>
 
               <div className="grid grid-cols-4 gap-3 mb-6">
@@ -479,12 +1011,108 @@ export const ReadingPlans: React.FC<{
               </div>
 
               <div className="mb-6 p-4 rounded-xl bg-[var(--surface-1)] border border-[var(--border-bible)]">
-                <h3 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-3">
-                  Leitura de Hoje ({selectedVersion})
-                </h3>
-                <div className="text-lg font-semibold text-[var(--text-bible)] mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider">
+                    Selecione o Dia
+                  </h3>
+                </div>
+                
+                <div className="flex gap-1 overflow-x-auto pb-3 mb-3">
+                  {Array.from({ length: Math.min(selectedPlan.totalDays, 60) }, (_, i) => i + 1).map(day => {
+                    const isCompleted = day <= selectedPlan.progress;
+                    const isCurrent = day === selectedPlan.currentDay;
+                    return (
+                      <button
+                        key={day}
+                        onClick={() => {
+                          setDayVerses(prev => { const n = {...prev}; delete n[`day-${selectedPlan.currentDay}`]; return n; });
+                          setUserPlans(prev => prev.map(p => p.id === selectedPlan.id ? { ...p, currentDay: day } : p));
+                          const updated = userPlans.map(p => p.id === selectedPlan.id ? { ...p, currentDay: day } : p);
+                          setSelectedPlan(updated.find(p => p.id === selectedPlan.id) || null);
+                        }}
+                        className={cn(
+                          "w-9 h-9 rounded-lg flex-shrink-0 text-sm font-medium transition-all",
+                          isCurrent 
+                            ? "bg-[var(--accent-bible)] text-white shadow-md" 
+                            : isCompleted 
+                              ? "bg-green-500 text-white" 
+                              : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-3)]"
+                        )}
+                        title={`Dia ${day}`}
+                      >
+                        {day}
+                      </button>
+                    );
+                  })}
+                  {selectedPlan.totalDays > 60 && (
+                    <span className="text-xs text-[var(--text-bible-muted)] self-center">
+                      +{selectedPlan.totalDays - 60}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="mb-6 p-4 rounded-xl bg-[var(--surface-1)] border border-[var(--border-bible)]">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider">
+                    Leitura de Hoje
+                  </h3>
+                  <button 
+                    onClick={() => {
+                      const nextVersion = allVersions.find(v => v.id === selectedVersion) 
+                        ? allVersions[(allVersions.findIndex(v => v.id === selectedVersion) + 1) % allVersions.length]
+                        : allVersions[0];
+                      if (nextVersion) setSelectedVersion(nextVersion.id);
+                    }}
+                    className="text-xs text-[var(--accent-bible)] hover:underline flex items-center gap-1"
+                  >
+                    <BookText className="w-3 h-3" />
+                    {selectedVersion}
+                  </button>
+                </div>
+                <div className="text-lg font-semibold text-[var(--text-bible)] mb-2">
                   {getTodayReading(selectedPlan)}
                 </div>
+                
+                <div className="space-y-2 mb-4">
+                  {selectedPlan.dayReadings?.filter(r => r.day === selectedPlan.currentDay).map((reading, idx) => (
+                    <div 
+                      key={idx}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer",
+                        reading.completed 
+                          ? "bg-green-500/10 border-green-500/30" 
+                          : "bg-[var(--surface-2)] border-[var(--border-bible)]"
+                      )}
+                      onClick={() => {
+                        const newReadings = selectedPlan.dayReadings?.map(r => 
+                          r.day === reading.day && r.title === reading.title ? { ...r, completed: !r.completed } : r
+                        ) || [];
+                        setUserPlans(prev => prev.map(p => 
+                          p.id === selectedPlan.id ? { ...p, dayReadings: newReadings } : p
+                        ));
+                      }}
+                    >
+                      <div className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0",
+                        reading.completed 
+                          ? "bg-green-500" 
+                          : "border-2 border-[var(--border-bible)]"
+                      )}>
+                        {reading.completed && <CheckCircle2 className="w-4 h-4 text-white" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-[var(--text-bible)]">{reading.title}</div>
+                        <div className="text-xs text-[var(--text-bible-muted)]">{reading.passages.join(', ')}</div>
+                      </div>
+                    </div>
+                  )) || (
+                    <div className="text-sm text-[var(--text-bible-muted)] p-2">
+                      {getTodayReading(selectedPlan)}
+                    </div>
+                  )}
+                </div>
+                
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex-1 h-2 rounded-full bg-[var(--surface-3)] overflow-hidden">
                     <div 
@@ -496,40 +1124,119 @@ export const ReadingPlans: React.FC<{
                     {Math.round((selectedPlan.progress / selectedPlan.totalDays) * 100)}%
                   </span>
                 </div>
+                {loadingVerses ? (
+                  <div className="flex items-center justify-center gap-2 p-4 text-[var(--text-bible-muted)]">
+                    <Loader className="w-5 h-5 animate-spin" />
+                    <span className="text-sm">Carregando texto...</span>
+                  </div>
+                ) : dayVerses[`day-${selectedPlan.currentDay}`]?.length > 0 ? (
+                  <div className="mb-4 p-4 rounded-xl bg-[var(--surface-0)] border border-[var(--border-bible)] max-h-64 overflow-y-auto">
+                    <h4 className="text-xs font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-2">
+                      Texto Bíblico
+                    </h4>
+                    {dayVerses[`day-${selectedPlan.currentDay}`].map((verse, idx) => (
+                      <p key={idx} className="text-sm text-[var(--text-bible)] leading-relaxed mb-2">
+                        <span className="text-[var(--accent-bible)] font-bold">{verse.verse}</span> {verse.text}
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mb-4 p-4 rounded-xl bg-[var(--surface-2)] border border-[var(--border-bible)]">
+                    <p className="text-sm text-[var(--text-bible-muted)]">
+                      Selecione uma passagem para ver o texto aqui
+                    </p>
+                  </div>
+                )}
+
+                {selectedPlan.currentDay <= selectedPlan.totalDays && selectedPlan.progress > 0 && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => markDayComplete(selectedPlan.id)}
+                    className={cn(
+                      "w-full py-3 rounded-xl font-semibold mb-3",
+                      "bg-gradient-to-r", selectedPlan.gradient,
+                      "text-white shadow-lg",
+                      "hover:opacity-90 transition-opacity"
+                    )}
+                  >
+                    {selectedPlan.progress > 0 && selectedPlan.currentDay > 1 ? 'Recomeçar Leitura' : 'Continuar Leitura'}
+                  </motion.button>
+                )}
+
+                {selectedPlan.progress === 0 && selectedPlan.currentDay <= selectedPlan.totalDays && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => markDayComplete(selectedPlan.id)}
+                    className={cn(
+                      "w-full py-3 rounded-xl font-semibold mb-3",
+                      "bg-gradient-to-r", selectedPlan.gradient,
+                      "text-white shadow-lg",
+                      "hover:opacity-90 transition-opacity"
+                    )}
+                  >
+                    Começar Leitura
+                  </motion.button>
+                )}
+
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => markDayComplete(selectedPlan.id)}
-                  className={cn(
-                    "w-full py-3 rounded-xl font-semibold",
-                    "bg-gradient-to-r", selectedPlan.gradient,
-                    "text-white shadow-lg",
-                    "hover:opacity-90 transition-opacity"
-                  )}
+                  onClick={() => handleQuitPlan(selectedPlan.id)}
+                  className="w-full py-3 rounded-xl font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
                 >
-                  Marcar como Lido
+                  Desistir da Leitura
                 </motion.button>
               </div>
 
-              <div className="mb-6">
-                <h3 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-3">
-                  Progresso por Livro
-                </h3>
-                <div className="grid grid-cols-8 gap-1">
-                  {BIBLE_BOOKS.slice(0, 40).map((book) => {
-                    const isCompleted = selectedPlan.completedBooks.includes(book.abbrev);
-                    return (
-                      <div
-                        key={book.abbrev}
-                        className={cn(
-                          "aspect-square rounded-sm",
-                          isCompleted ? "bg-[var(--accent-bible)]" : "bg-[var(--surface-2)]"
-                        )}
-                        title={book.name}
-                      />
-                    );
-                  })}
+              <div className="flex items-center justify-between gap-3 mb-6">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    const newDay = selectedPlan.currentDay - 1;
+                    setDayVerses(prev => { const n = {...prev}; delete n[`day-${selectedPlan.currentDay}`]; return n; });
+                    setUserPlans(prev => prev.map(p => p.id === selectedPlan.id ? { ...p, currentDay: newDay } : p));
+                    const updated = userPlans.map(p => p.id === selectedPlan.id ? { ...p, currentDay: newDay } : p);
+                    setSelectedPlan(updated.find(p => p.id === selectedPlan.id) || null);
+                  }}
+                  disabled={selectedPlan.currentDay <= 1}
+                  className={cn(
+                    "flex-1 py-3 rounded-xl font-medium flex items-center justify-center gap-2",
+                    "bg-[var(--surface-2)] hover:bg-[var(--surface-3)] transition-colors",
+                    selectedPlan.currentDay <= 1 && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Dia Anterior
+                </motion.button>
+                <div className="px-3 py-2 rounded-xl bg-[var(--surface-1)] border border-[var(--border-bible)]">
+                  <span className="text-sm font-semibold text-[var(--text-bible)]">
+                    {selectedPlan.currentDay} / {selectedPlan.totalDays}
+                  </span>
                 </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    if (selectedPlan.currentDay >= selectedPlan.totalDays) return;
+                    const newDay = selectedPlan.currentDay + 1;
+                    setDayVerses(prev => { const n = {...prev}; delete n[`day-${selectedPlan.currentDay}`]; return n; });
+                    setUserPlans(prev => prev.map(p => p.id === selectedPlan.id ? { ...p, currentDay: newDay } : p));
+                    const updated = userPlans.map(p => p.id === selectedPlan.id ? { ...p, currentDay: newDay } : p);
+                    setSelectedPlan(updated.find(p => p.id === selectedPlan.id) || null);
+                  }}
+                  disabled={selectedPlan.currentDay >= selectedPlan.totalDays}
+                  className={cn(
+                    "flex-1 py-3 rounded-xl font-medium flex items-center justify-center gap-2",
+                    "bg-[var(--surface-2)] hover:bg-[var(--surface-3)] transition-colors",
+                    selectedPlan.currentDay >= selectedPlan.totalDays && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  Próximo Dia
+                  <ChevronRight className="w-4 h-4" />
+                </motion.button>
               </div>
             </div>
           </motion.div>
@@ -620,7 +1327,7 @@ export const ReadingPlans: React.FC<{
                 )}
               >
                 <div className={cn("p-2 rounded-lg mb-2", colorClasses[stat.color])}>
-                  <Icon className="w-4 h-4" />
+                  {renderIcon(Icon, { className: "w-4 h-4" })}
                 </div>
                 <span className="text-xl font-bold text-[var(--text-bible)]">{stat.value}</span>
                 <span className="text-xs text-[var(--text-bible-muted)] text-center mt-1">{stat.label}</span>
@@ -649,7 +1356,7 @@ export const ReadingPlans: React.FC<{
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-white/20 backdrop-blur">
-                  <activePlan.icon className="w-5 h-5" />
+                  {renderIcon(activePlan.icon, { className: "w-5 h-5" })}
                 </div>
                 <div>
                   <h3 className="font-bold text-lg">{activePlan.title}</h3>
@@ -736,7 +1443,7 @@ export const ReadingPlans: React.FC<{
                       "bg-gradient-to-br", plan.gradient,
                       "text-white shadow-lg"
                     )}>
-                      <Icon className="w-6 h-6" />
+                      {renderIcon(Icon, { className: "w-6 h-6" })}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -776,7 +1483,22 @@ export const ReadingPlans: React.FC<{
             <motion.button
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              onClick={() => alert('Funcionalidade de criar plano personalizado em breve!')}
+              onClick={() => setShowAIModal(true)}
+              className={cn(
+                "w-full flex items-center justify-center gap-3 p-6 rounded-xl",
+                "bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible-strong)]",
+                "text-white font-semibold",
+                "hover:shadow-lg hover:scale-[1.02] transition-all"
+              )}
+            >
+              <Wand2 className="w-6 h-6" />
+              <span>Criar Plano com IA</span>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => alert('Funcionalidade de criar plano manualmente em breve!')}
               className={cn(
                 "w-full flex items-center justify-center gap-3 p-6 rounded-xl",
                 "border-2 border-dashed border-[var(--border-bible)]",
@@ -785,7 +1507,7 @@ export const ReadingPlans: React.FC<{
               )}
             >
               <Plus className="w-6 h-6" />
-              <span className="font-medium">Criar Plano Personalizado</span>
+              <span className="font-medium">Criar Plano Manual</span>
             </motion.button>
           </div>
         )}
@@ -820,7 +1542,7 @@ export const ReadingPlans: React.FC<{
                     "bg-gradient-to-br", preset.gradient,
                     "text-white shadow-lg"
                   )}>
-                    <Icon className="w-6 h-6" />
+                    {renderIcon(Icon, { className: "w-6 h-6" })}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -858,7 +1580,165 @@ export const ReadingPlans: React.FC<{
           </div>
         )}
 
+      <AnimatePresence>
+        {showAIModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={() => setShowAIModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-[var(--surface-0)] rounded-2xl border border-[var(--border-bible)] shadow-xl overflow-hidden"
+            >
+              <div className="p-5 border-b border-[var(--border-bible)]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible-strong)] text-white">
+                      <Wand2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-[var(--text-bible)]">Criar Plano com IA</h2>
+                      <p className="text-xs text-[var(--text-bible-muted)]">Descreva seu plano ideal</p>
+                    </div>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowAIModal(false)}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--surface-1)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-2)]"
+                  >
+                    <X className="h-4 w-4" />
+                  </motion.button>
+                </div>
+              </div>
+
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-[var(--text-bible-muted)] block mb-2">
+                    <MessageSquare className="w-3 h-3 inline mr-1" />
+                    Descrição do Plano
+                  </label>
+                  <textarea
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="Ex: Quero um plano de 7 dias sobre o loving kindness de Deus, misturando Salmos e Provérbios..."
+                    className="w-full h-28 px-4 py-3 rounded-xl bg-[var(--surface-1)] border border-[var(--border-bible)] text-[var(--text-bible)] text-sm resize-none placeholder:text-[var(--text-bible-muted)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-[var(--text-bible-muted)] block mb-2">
+                    <Calendar className="w-3 h-3 inline mr-1" />
+                    Duração (opcional)
+                  </label>
+                  <div className="flex gap-2">
+                    {[7, 14, 30, 60].map((days) => (
+                      <motion.button
+                        key={days}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setAiDays(aiDays === days ? undefined : days)}
+                        className={cn(
+                          "flex-1 py-2 rounded-lg text-sm font-medium transition-all",
+                          aiDays === days
+                            ? "bg-[var(--accent-bible)] text-white"
+                            : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-3)]"
+                        )}
+                      >
+                        {days} dias
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {aiError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 rounded-lg bg-red-500/10 text-red-500 text-sm"
+                  >
+                    {aiError}
+                  </motion.div>
+                )}
+
+                {generatedPlan && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 rounded-xl bg-green-500/10 border border-green-500/20"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkle className="w-4 h-4 text-green-500" />
+                      <span className="font-semibold text-green-500">Plano Criado!</span>
+                    </div>
+                    <h3 className="font-bold text-[var(--text-bible)]">{generatedPlan.title}</h3>
+                    <p className="text-sm text-[var(--text-bible-muted)]">{generatedPlan.description}</p>
+                    <p className="text-xs text-[var(--text-bible-subtle)] mt-1">{generatedPlan.readings.length} leituras</p>
+                  </motion.div>
+                )}
+              </div>
+
+              <div className="p-5 border-t border-[var(--border-bible)] flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowAIModal(false)}
+                  className="flex-1 py-3 rounded-xl font-medium bg-[var(--surface-2)] text-[var(--text-bible)] hover:bg-[var(--surface-3)] transition-all"
+                >
+                  Cancelar
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={!aiPrompt.trim() || isGeneratingPlan}
+                  onClick={async () => {
+                    if (!aiPrompt.trim()) return;
+                    setIsGeneratingPlan(true);
+                    setAiError(null);
+                    setGeneratedPlan(null);
+                    
+                    const result = await generateReadingPlan(aiPrompt, aiDays);
+                    
+                    setIsGeneratingPlan(false);
+                    if (result.success && result.plan) {
+                      setGeneratedPlan(result.plan);
+                    } else {
+                      setAiError(result.error || 'Erro ao gerar plano');
+                    }
+                  }}
+                  className={cn(
+                    "flex-1 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
+                    isGeneratingPlan
+                      ? "bg-[var(--surface-3)] text-[var(--text-bible-muted)] cursor-not-allowed"
+                      : "bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible-strong)] text-white hover:shadow-lg"
+                  )}
+                >
+                  {isGeneratingPlan ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Criando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkle className="w-4 h-4" />
+                      Gerar Plano
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       </div>
     </div>
+    </>
   );
 };

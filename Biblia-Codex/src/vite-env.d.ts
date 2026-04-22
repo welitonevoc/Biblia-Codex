@@ -14,3 +14,9 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+interface Window {
+  debugAIConfig: () => Promise<{ diagnosis: unknown; testResult: unknown }>;
+  diagnoseAI: () => unknown;
+  testAI: () => Promise<unknown>;
+}

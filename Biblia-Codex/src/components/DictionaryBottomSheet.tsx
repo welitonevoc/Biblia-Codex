@@ -76,7 +76,7 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
     setLoadingAI(true);
     setError(null);
     try {
-      const result = await getAIDefinition(term, context, settings.apiKeys?.gemini);
+      const result = await getAIDefinition(term, context);
       setAiEntry(result);
     } catch (err) {
       setError('Falha ao conectar com o Assistente IA.');

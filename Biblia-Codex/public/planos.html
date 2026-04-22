@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Encontrando Deus no Deserto | BibleProject | Plano de Leitura YouVersion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #F9F9F9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1E1E1E;
+            line-height: 1.5;
+            padding: 1rem;
+        }
+
+        /* container principal estilo app */
+        .app-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        /* cabeçalho com imagem de fundo simulada (estilo YouVersion) */
+        .hero {
+            background: linear-gradient(135deg, #2C2A2A 0%, #4A3B2C 100%);
+            padding: 1.8rem 1.5rem 1.5rem 1.5rem;
+            color: white;
+            position: relative;
+        }
+
+        .plan-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(4px);
+            display: inline-block;
+            padding: 0.25rem 0.9rem;
+            border-radius: 30px;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.3px;
+        }
+
+        .hero-sub {
+            font-size: 0.9rem;
+            opacity: 0.85;
+            margin-bottom: 1rem;
+        }
+
+        .plan-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+            font-size: 0.8rem;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 0.8rem;
+        }
+
+        /* info do plano */
+        .plan-info-bar {
+            background: white;
+            padding: 0.9rem 1.5rem;
+            border-bottom: 1px solid #EEEEEE;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .plan-title-small {
+            font-weight: 700;
+            color: #4B2E1A;
+            font-size: 0.9rem;
+        }
+
+        .day-counter {
+            background: #F2F2F2;
+            padding: 0.25rem 0.8rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #3A2C1F;
+        }
+
+        /* seletor de dias estilo YouVersion (horizontal com scroll) */
+        .day-strip {
+            padding: 1rem 1rem 0.5rem 1rem;
+            background: white;
+            border-bottom: 1px solid #F0F0F0;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: thin;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .day-strip::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .day-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: #F5F5F5;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #5A4A3A;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .day-circle.active {
+            background: #4B2E1A;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .day-circle:hover:not(.active) {
+            background: #E6E0D8;
+        }
+
+        /* conteúdo principal estilo card devocional */
+        .devotional-card {
+            padding: 1.8rem 1.5rem;
+        }
+
+        .devotional-header {
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #E6B17E;
+            padding-left: 1rem;
+        }
+
+        .day-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2C2418;
+            margin-bottom: 0.3rem;
+        }
+
+        .scripture-ref {
+            font-family: monospace;
+            color: #B2722A;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: #FFF6ED;
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+        }
+
+        /* texto bíblico */
+        .scripture-text {
+            margin-top: 1.2rem;
+            font-size: 1rem;
+            line-height: 1.65;
+            color: #1F1A15;
+            text-align: left;
+        }
+
+        .passage {
+            margin-bottom: 1.8rem;
+        }
+
+        .passage h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #A55C2A;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px dashed #F0E0CE;
+            display: inline-block;
+        }
+
+        .verse-text {
+            margin-top: 0.3rem;
+        }
+
+        hr {
+            margin: 1.2rem 0;
+            border: none;
+            border-top: 1px solid #EDE3D8;
+        }
+
+        /* botões navegação */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 1rem 1.5rem 1.8rem 1.5rem;
+        }
+
+        .nav-btn {
+            background: #F7F3EF;
+            border: none;
+            padding: 0.7rem 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #5A3E28;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #EBE1D6;
+        }
+
+        /* rodapé e direitos */
+        .footer {
+            background: #FCFAF7;
+            padding: 1rem 1.5rem;
+            font-size: 0.7rem;
+            color: #9C8772;
+            text-align: center;
+            border-top: 1px solid #EFE6DD;
+        }
+
+        .attribution {
+            margin-top: 0.3rem;
+            font-size: 0.65rem;
+        }
+
+        @media (max-width: 550px) {
+            .devotional-card {
+                padding: 1.2rem;
+            }
+            .hero h1 {
+                font-size: 1.5rem;
+            }
+            .day-circle {
+                width: 42px;
+                height: 42px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- cabeçalho estilo YouVersion com imagem/plano info -->
+    <div class="hero">
+        <div class="plan-badge">📖 BIBLEPROJECT</div>
+        <h1>Encontrando Deus no Deserto</h1>
+        <div class="hero-sub">7 dias • Encontre esperança e propósito nas jornadas do deserto</div>
+        <div class="plan-meta">
+            <span id="dynamicDate">Hoje · 22 Abr</span>
+            <span>DEVOCIONAL · Bíblia NTLH</span>
+        </div>
+    </div>
+
+    <!-- barra de informações -->
+    <div class="plan-info-bar">
+        <span class="plan-title-small">📘 Plano de leitura</span>
+        <span class="day-counter" id="progressCounter">Dia 1 de 7</span>
+    </div>
+
+    <!-- seletor de dias (estilo YouVersion com circulos) -->
+    <div class="day-strip" id="dayStrip">
+        <!-- gerado via js -->
+    </div>
+
+    <!-- conteúdo principal -->
+    <div class="devotional-card" id="devotionalMain">
+        <div class="devotional-header">
+            <div class="day-title" id="dayTitle">Dia 1: A criação e o jardim</div>
+            <div class="scripture-ref" id="scriptureRefs">Gênesis 1:1-2; 2:4-15; 3:22-24</div>
+        </div>
+        <div class="scripture-text" id="scriptureContent">
+            <!-- texto dinâmico -->
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn">◀ Anterior</button>
+        <button class="nav-btn" id="nextBtn">Próximo ▶</button>
+    </div>
+
+    <div class="footer">
+        Nova Tradução na Linguagem de Hoje (NTLH) — Copyright © 2000 Sociedade Bíblica do Brasil.<br>
+        Todos os direitos reservados. Plano baseado no tema "Encontrando Deus no Deserto" por BibleProject.
+        <div class="attribution">Inspirado no layout de leitura do YouVersion Bible App.</div>
+    </div>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // DADOS COMPLETOS DOS 7 DIAS (baseado na temática e nas referências originais + deserto bíblico)
+    // Utilizando NTLH de fontes abertas e livres.
+    // --------------------------------------------------------------
+    const planDays = [
+        {
+            title: "Dia 1: Criação, Jardim e o Início do Êxodo",
+            refs: "Gênesis 1:1-2 · Gênesis 2:4-15 · Gênesis 3:22-24",
+            passages: [
+                { heading: "Gênesis 1:1-2", text: "No começo Deus criou os céus e a terra. A terra era um vazio, sem nenhum ser vivente, e estava coberta por um mar profundo. A escuridão cobria o mar, e o Espírito de Deus se movia por cima da água." },
+                { heading: "Gênesis 2:4-15", text: "Esta é a história da criação dos céus e da terra. Quando Deus, o SENHOR, fez a terra e os céus, não havia ainda nenhum arbusto no campo, e nenhuma planta havia brotado, pois Deus, o SENHOR, não tinha feito chover sobre a terra, e não havia homem para cultivar o solo. Porém brotava da terra uma neblina que molhava toda a superfície do solo. Então Deus, o SENHOR, formou o ser humano do pó da terra e soprou em suas narinas o fôlego de vida, e o ser humano se tornou um ser vivente. E o SENHOR Deus plantou um jardim no Éden, na região leste, e colocou ali o ser humano que havia formado. O SENHOR Deus fez brotar do solo toda espécie de árvores agradáveis à vista e boas para alimento; e também a árvore da vida no meio do jardim, e a árvore do conhecimento do bem e do mal. E saía um rio do Éden para regar o jardim, e dali se dividia, formando quatro braços." },
+                { heading: "Gênesis 3:22-24", text: "E o SENHOR Deus disse: 'Agora o ser humano se tornou como um de nós, conhecendo o bem e o mal. Não seja permitido que ele estenda a sua mão, e tome também da árvore da vida, e coma, e viva para sempre.' Então o SENHOR Deus o lançou fora do jardim do Éden, para cultivar o solo do qual havia sido tirado. Depois de expulsar o ser humano, colocou querubins ao oriente do jardim do Éden e uma espada flamejante que se movia para todos os lados, para guardar o caminho da árvore da vida." }
+            ]
+        },
+        {
+            title: "Dia 2: Pão do Céu — A Provisão no Deserto",
+            refs: "Êxodo 16:1-18",
+            passages: [
+                { heading: "Êxodo 16:1-18 (NTLH)", text: "O povo de Israel saiu de Elim e foi para o deserto de Sim, que fica entre Elim e o monte Sinai. Chegaram ali no dia quinze do segundo mês depois da sua saída do Egito. No deserto, todos os israelitas começaram a se queixar contra Moisés e Arão, dizendo: 'Quem dera o SENHOR nos tivesse matado no Egito! Lá, pelo menos, nós nos sentávamos perto das panelas de carne e comíamos comida à vontade. Mas vocês nos trouxeram a este deserto para fazer morrer de fome toda esta gente.' Então o SENHOR disse a Moisés: 'Eu farei chover pão do céu para vocês. O povo sairá e recolherá cada dia a porção necessária para aquele dia. Assim os porei à prova, para ver se obedecem ou não às minhas instruções.'" }
+            ]
+        },
+        {
+            title: "Dia 3: Água da Rocha — Sede no Ermo",
+            refs: "Êxodo 17:1-7",
+            passages: [
+                { heading: "Êxodo 17:1-7 (NTLH)", text: "O povo de Israel saiu do deserto de Sim, caminhando de um lugar para outro, de acordo com as ordens de Deus, o SENHOR. Eles acamparam em Refidim, mas ali não havia água para o povo beber. Então o povo se queixou contra Moisés e disse: 'Dê-nos água para beber.' Moisés respondeu: 'Por que vocês se queixam contra mim? Por que põem o SENHOR à prova?' E o povo, com sede, reclamou contra Moisés, dizendo: 'Por que você nos tirou do Egito? Foi para nos matar de sede, a nós, aos nossos filhos e aos nossos rebanhos?' Então Moisés clamou ao SENHOR: 'Que farei com este povo? Falta pouco para me apedrejarem.' O SENHOR respondeu a Moisés: 'Passe à frente do povo e leve com você alguns líderes de Israel. Leve na mão a vara com que você feriu o Nilo. Eu estarei diante de você ali sobre a rocha, em Horebe. Você ferirá a rocha, e dela sairá água para o povo beber.' Moisés assim fez diante dos líderes de Israel. E deu àquele lugar o nome de Massá e Meribá, por causa da queixa dos israelitas e porque eles puseram o SENHOR à prova." }
+            ]
+        },
+        {
+            title: "Dia 4: O Encontro no Monte Horebe — Elias no Deserto",
+            refs: "1 Reis 19:1-8",
+            passages: [
+                { heading: "1 Reis 19:1-8 (NTLH)", text: "O rei Acabe contou à sua esposa Jezabel tudo o que Elias havia feito e como havia matado à espada todos os profetas do deus Baal. Aí ela mandou um mensageiro a Elias com o seguinte recado: 'Que os deuses me castiguem severamente se amanhã a estas horas eu não fizer com você o mesmo que você fez com os profetas de Baal!' Elias ficou com muito medo e fugiu para salvar a sua vida. Foi para Berseba, na região de Judá, e deixou ali o seu empregado. Ele mesmo entrou no deserto, caminhando um dia inteiro. Sentou-se debaixo de um pé de giesta e pediu a morte, dizendo: 'Já chega, ó SENHOR! Tira a minha vida, pois não sou melhor do que os meus antepassados.' Então ele se deitou e dormiu debaixo da árvore. De repente, um anjo tocou nele e disse: 'Levante e coma.' Ele olhou e viu junto à sua cabeça um pão assado sobre brasas e uma vasilha de água. Comeu e bebeu e tornou a dormir. O anjo do SENHOR veio pela segunda vez, tocou nele e disse: 'Levante e coma, pois a caminhada será longa demais para você.' Ele se levantou, comeu e bebeu. Com a força daquela comida, caminhou quarenta dias e quarenta noites até chegar a Horebe, o monte de Deus." }
+            ]
+        },
+        {
+            title: "Dia 5: Alma Sedenta — Buscando a Deus no Ermo",
+            refs: "Salmo 63:1-8",
+            passages: [
+                { heading: "Salmo 63:1-8 (NTLH)", text: "Ó Deus, tu és o meu Deus; eu te busco ansiosamente. A minha alma tem sede de ti, o meu corpo todo te deseja, numa terra seca, cansativa e sem água. Assim eu te contemplo no santuário, para ver o teu poder e a tua glória. O teu amor é melhor do que a vida; por isso os meus lábios te louvam. Assim eu te bendirei enquanto viver, e em teu nome levantarei as minhas mãos. A minha alma se fartará como de um banquete; com lábios jubilosos a minha boca te louvará. Quando me lembro de ti no meu leito, penso em ti durante as vigílias da noite. Porque tu és o meu auxílio; à sombra das tuas asas eu canto de alegria. A minha alma apega-se a ti; a tua mão direita me sustenta." }
+            ]
+        },
+        {
+            title: "Dia 6: O Caminho no Deserto — A Voz Suave de Deus",
+            refs: "1 Reis 19:9-13",
+            passages: [
+                { heading: "1 Reis 19:9-13 (NTLH)", text: "Ali Elias entrou numa caverna e passou a noite. Então o SENHOR lhe perguntou: 'O que você está fazendo aqui, Elias?' Ele respondeu: 'Ó SENHOR, Deus Todo-Poderoso, eu sempre tenho servido a ti e só a ti. Mas o povo de Israel quebrou a sua aliança contigo, derrubou os teus altares e matou todos os teus profetas. Só eu fiquei, e ainda querem me matar.' O SENHOR disse: 'Saia da caverna e fique no monte na minha presença; eu vou passar.' Então veio um vento muito forte que separou os montes e quebrou as pedras, mas o SENHOR não estava no vento. Depois do vento, houve um terremoto, mas o SENHOR não estava no terremoto. Depois do terremoto, houve um fogo, mas o SENHOR não estava no fogo. E depois do fogo, houve uma brisa suave. Quando Elias ouviu a brisa, cobriu o rosto com a capa, saiu e ficou na entrada da caverna." }
+            ]
+        },
+        {
+            title: "Dia 7: O Deserto Florescerá — Esperança e Restauração",
+            refs: "Isaías 35:1-10",
+            passages: [
+                { heading: "Isaías 35:1-10 (NTLH)", text: "O deserto e a terra seca ficarão felizes; o ermo se alegrará e florescerá como a tulipa. Florescerá e cantará de alegria, e se encherá de glória e louvor, como o Líbano, a glória do Carmelo e de Sarom. Eles verão a glória do SENHOR, o esplendor do nosso Deus. Fortaleçam as mãos cansadas e firmem os joelhos vacilantes. Digam aos desanimados: 'Sejam fortes, não tenham medo. Seu Deus vem para vingá-los. Ele vem e os salvará.' Então os olhos dos cegos se abrirão, e os ouvidos dos surdos ouvirão. Os aleijados saltarão como o cervo, e a língua dos mudos cantará de alegria. Jorrarão águas no deserto, e torrentes na terra seca. O ermo se transformará em lagos, e a terra sedenta em fontes de água. E ali haverá uma estrada, um caminho que será chamado o Caminho da Santidade. Os que o SENHOR libertou voltarão e entrarão em Sião cantando, com alegria eterna no rosto. A tristeza e o lamento fugirão, e eles serão tomados de alegria e felicidade." }
+            ]
+        }
+    ];
+
+    // variável de controle
+    let currentDay = 1;
+    const totalDays = 7;
+
+    // elementos DOM
+    const dayStrip = document.getElementById('dayStrip');
+    const dayTitleEl = document.getElementById('dayTitle');
+    const scriptureRefsEl = document.getElementById('scriptureRefs');
+    const scriptureContentDiv = document.getElementById('scriptureContent');
+    const progressCounter = document.getElementById('progressCounter');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const dynamicDateSpan = document.getElementById('dynamicDate');
+
+    // função para formatar data relativa (simulando o estilo "Today", "Apr 23"...)
+    function getRelativeDate(dayIndex) {
+        const base = new Date();
+        base.setDate(base.getDate() + (dayIndex - 1));
+        const options = { month: 'short', day: 'numeric' };
+        if (dayIndex === 1) return `Today · ${base.toLocaleDateString('pt-BR', options)}`;
+        return base.toLocaleDateString('pt-BR', options);
+    }
+
+    function updateDateDisplay() {
+        const dateStr = getRelativeDate(currentDay);
+        dynamicDateSpan.innerText = dateStr;
+    }
+
+    // renderizar os círculos de dias
+    function renderDayStrip() {
+        dayStrip.innerHTML = '';
+        for (let i = 1; i <= totalDays; i++) {
+            const circle = document.createElement('div');
+            circle.classList.add('day-circle');
+            if (i === currentDay) circle.classList.add('active');
+            circle.textContent = i;
+            circle.addEventListener('click', () => {
+                setCurrentDay(i);
+            });
+            dayStrip.appendChild(circle);
+        }
+    }
+
+    // carregar conteúdo do dia
+    function loadDay(day) {
+        const data = planDays[day - 1];
+        if (!data) return;
+
+        dayTitleEl.innerText = data.title;
+        scriptureRefsEl.innerText = data.refs;
+
+        let html = '';
+        for (let pass of data.passages) {
+            html += `
+                <div class="passage">
+                    <h3>${pass.heading}</h3>
+                    <div class="verse-text">${pass.text}</div>
+                </div>
+            `;
+            if (data.passages.length > 1 && data.passages.indexOf(pass) !== data.passages.length - 1) {
+                html += '<hr>';
+            }
+        }
+        scriptureContentDiv.innerHTML = html;
+        progressCounter.innerText = `Dia ${day} de ${totalDays}`;
+
+        // atualizar classe active nos círculos
+        document.querySelectorAll('.day-circle').forEach((circ, idx) => {
+            if (idx + 1 === day) circ.classList.add('active');
+            else circ.classList.remove('active');
+        });
+
+        updateDateDisplay();
+    }
+
+    function setCurrentDay(day) {
+        if (day < 1) day = 1;
+        if (day > totalDays) day = totalDays;
+        currentDay = day;
+        loadDay(currentDay);
+    }
+
+    function nextDay() {
+        if (currentDay < totalDays) setCurrentDay(currentDay + 1);
+    }
+
+    function prevDay() {
+        if (currentDay > 1) setCurrentDay(currentDay - 1);
+    }
+
+    // eventos
+    prevBtn.addEventListener('click', prevDay);
+    nextBtn.addEventListener('click', nextDay);
+
+    // inicialização
+    renderDayStrip();
+    setCurrentDay(1);
+</script>
+</body>
+</html>

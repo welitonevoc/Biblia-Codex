@@ -15,7 +15,8 @@ const PUBLIC_DICTIONARIES = [
 
 export const scanForBibleModules = async (): Promise<BibleModule[]> => {
   if (isWeb) {
-    return PUBLIC_MODULES.map(m => ({
+    // Inclui tanto bíblias quanto dicionários públicos no web
+    const bibleModules = PUBLIC_MODULES.map(m => ({
       id: m.file,
       name: m.name,
       abbreviation: m.name.substring(0, 4).toUpperCase(),
@@ -25,6 +26,17 @@ export const scanForBibleModules = async (): Promise<BibleModule[]> => {
       path: m.file,
       language: 'pt-BR'
     }));
+    const dictModules = PUBLIC_DICTIONARIES.map(m => ({
+      id: m.file,
+      name: m.name,
+      abbreviation: m.name.substring(0, 4).toUpperCase(),
+      type: 'dictionary' as const,
+      format: 'mybible' as any,
+      category: 'mybible' as any,
+      path: m.file,
+      language: 'pt-BR'
+    }));
+    return [...bibleModules, ...dictModules];
   }
 
   const BASE_PATH = 'Codex/modules/installed';

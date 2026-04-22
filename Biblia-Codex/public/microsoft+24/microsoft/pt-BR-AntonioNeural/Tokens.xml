@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Tokens>
+  <Category name="Voices" categoryBase="HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech Server\v11.0">
+    <Token name="TTS_MS_pt-BR_AntonioNeural_11.0">
+      <String name="" value="Microsoft Server Speech Text to Speech Voice (pt-BR, AntonioNeural)" />
+      <String name="416" value="Microsoft Server Speech Text to Speech Voice (pt-BR, AntonioNeural)" />
+      <String name="CLSID" value="{a12bdfa1-c3a1-48ea-8e3f-27945e16cf7e}" />
+      <String name="LangDataPath" value="[INSTALLDIR]MSTTSLocPtBR.dat" />
+      <String name="VoicePath" value="[INSTALLDIR]1046" />
+      <Attribute name="Age" value="Adult" />
+      <Attribute name="AudioFormats" value="18" />
+      <Attribute name="Gender" value="Male" />
+      <Attribute name="Language" value="416" />
+      <Attribute name="Name" value="Microsoft Server Speech Text to Speech Voice (pt-BR, AntonioNeural)" />
+      <Attribute name="Vendor" value="Microsoft" />
+      <Attribute name="Version" value="11.0" />
+      <Attribute name="VoiceType" value="Neural" />
+      <Attribute name="Project" value="/subscriptions/a59acaf9-e6bf-460b-919b-3bff7e2cc202/resourceGroups/rg-pender/providers/Microsoft.CognitiveServices/accounts/cs-pender-prod" />
+      <Attribute name="LicenseVersion" value="1" />
+    </Token>
+  </Category>
+</Tokens>

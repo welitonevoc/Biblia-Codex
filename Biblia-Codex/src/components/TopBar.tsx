@@ -91,10 +91,10 @@ export const TopBar: React.FC<TopBarProps> = ({
         background: 'linear-gradient(180deg, var(--bg-bible) 0%, var(--bg-bible) 60%, transparent 100%)'
       }}
     >
-      <div className="mx-auto flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-16 flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 md:h-16 md:flex-nowrap md:px-6 lg:px-8">
 
         {/* Left: Menu + Version Selector */}
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <motion.button
             whileHover={{ scale: 1.05, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
@@ -113,23 +113,23 @@ export const TopBar: React.FC<TopBarProps> = ({
           </motion.button>
 
           {/* Version Selector */}
-          <div className="relative" ref={versionMenuRef}>
+          <div className="relative min-w-0 max-w-[min(52vw,14rem)] sm:max-w-[18rem]" ref={versionMenuRef}>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowVersionMenu(!showVersionMenu)}
               className={cn(
-                "flex items-center gap-2 rounded-xl px-3 py-2",
+                "flex w-full min-w-0 items-center gap-2 rounded-xl px-3 py-2",
                 "bg-[var(--surface-1)] border border-[var(--border-bible)]",
                 "text-[var(--text-bible)] text-sm font-medium",
                 "hover:bg-[var(--surface-2)] hover:border-[var(--accent-bible)]/30",
                 "transition-all duration-200 cursor-pointer"
               )}
             >
-              <Globe className="h-4 w-4 text-[var(--accent-bible)]" />
+              <Globe className="h-4 w-4 shrink-0 text-[var(--accent-bible)]" />
               <span>{currentVersion?.name || 'Versão'}</span>
               <ChevronDown className={cn(
-                "h-3.5 w-3.5 text-[var(--text-bible-muted)] transition-transform duration-200",
+                "h-3.5 w-3.5 shrink-0 text-[var(--text-bible-muted)] transition-transform duration-200",
                 showVersionMenu && "rotate-180"
               )} />
             </motion.button>
@@ -176,7 +176,35 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         {/* Center: Navigation (only when reading) */}
         {onNavigate && (
-          <div className="hidden md:flex items-center gap-1">
+          <>
+            <div className="order-3 flex w-full md:hidden">
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={onNavOpen}
+                className={cn(
+                  "flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3",
+                  "bg-[var(--surface-1)] border border-[var(--border-bible)]",
+                  "hover:bg-[var(--surface-2)] hover:border-[var(--accent-bible)]/30",
+                  "transition-all duration-200 cursor-pointer"
+                )}
+                aria-label={`Selecionar livro e capítulo. Atual: ${currentBook.name} ${currentChapter}`}
+              >
+                <div className="min-w-0 text-left">
+                  <span className="block text-[10px] font-semibold uppercase tracking-wider text-[var(--accent-bible)]">
+                    Livro e capítulo
+                  </span>
+                  <span className="block truncate text-sm font-bold text-[var(--text-bible)]">
+                    {currentBook.name} {currentChapter}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-[var(--text-bible-muted)]">
+                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronRight className="h-4 w-4" />
+                </div>
+              </motion.button>
+            </div>
+
+            <div className="hidden md:flex items-center gap-1">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -241,11 +269,12 @@ export const TopBar: React.FC<TopBarProps> = ({
             >
               <ChevronRight className="h-5 w-5" />
             </motion.button>
-          </div>
+            </div>
+          </>
         )}
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
           {/* Reading Mode Toggle (if has audio) */}
           {hasAudio && onReadingModeChange && (
             <motion.button

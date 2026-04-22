@@ -264,6 +264,13 @@ export interface AppSettings {
     model: string;
     language: string;
     autoSuggest: boolean;
+    searchWithAI?: boolean;
+    verseExplanation?: boolean;
+    termDefinition?: boolean;
+    crossReferences?: boolean;
+    strongAnalysis?: boolean;
+    commentary?: boolean;
+    theologicalProfile?: string;
   };
   accentColor?: string;
   fontSize?: number;

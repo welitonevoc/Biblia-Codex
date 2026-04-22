@@ -5,8 +5,10 @@ import {
   X, Sun, Moon, Coffee, Smartphone, Minus, Plus, Book, Cpu,
   Check, AlertCircle, Upload, Loader2, Layout, Zap,
   Eye, GraduationCap, BookOpen, Type, PanelsTopLeft, Sparkles,
-  ZapOff, Flame, Lightbulb, CircleDot, Settings2, Palette
+  ZapOff, Flame, Lightbulb, CircleDot, Settings2, Palette, Volume2,
+  Play, Pause
 } from 'lucide-react';
+import { ttsService, getAvailableVoices, isTTSSupported } from '../services/ttsService';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { createAiModule } from '../services/dictionaryService';
@@ -202,6 +204,14 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const [isImporting, setIsImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [importError, setImportError] = useState<string>('');
+
+  const [selectedVoice, setSelectedVoice] = useState('');
+  const [ttsRate, setTtsRate] = useState(1);
+  const [ttsPitch, setTtsPitch] = useState(1);
+  const [ttsVolume, setTtsVolume] = useState(1);
+  const [isTTSPlaying, setIsTTSPlaying] = useState(false);
+  
+  const availableVoices = isTTSSupported ? getAvailableVoices() : [];
   const isAndroidNative = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
 
   const installedCount = availableVersions.length + availableDictionaries.length;
@@ -560,6 +570,126 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   <AlertCircle className="w-4 h-4" />
                   {importError || 'Erro ao importar'}
                 </motion.div>
+              )}
+            </div>
+          </SettingsSection>
+
+          {/* TTS Settings */}
+          <SettingsSection title="Text-to-Speech (TTS)" icon={Volume2}>
+            <div className="p-4 space-y-4">
+              {isTTSSupported ? (
+                <>
+                  <div>
+                    <label className="text-xs font-medium text-[var(--text-bible-muted)] block mb-2">Voz</label>
+                    <select
+                      value={selectedVoice}
+                      onChange={(e) => setSelectedVoice(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[var(--surface-2)] border border-[var(--border-bible)] text-sm text-[var(--text-bible)]"
+                    >
+                      <option value="">Selecione uma voz...</option>
+                      {availableVoices.map((voice, idx) => (
+                        <option key={idx} value={voice.name}>
+                          {voice.name} ({voice.lang})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs font-medium text-[var(--text-bible-muted)] block mb-2">
+                      Velocidade: {Math.round(ttsRate * 100)}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2"
+                      step="0.1"
+                      value={ttsRate}
+                      onChange={(e) => setTtsRate(parseFloat(e.target.value))}
+                      className="w-full accent-[var(--accent-bible)]"
+                    />
+                    <div className="flex justify-between text-xs text-[var(--text-bible-muted)] mt-1">
+                      <span>Lento</span>
+                      <span>Normal</span>
+                      <span>Rápido</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-[var(--text-bible-muted)] block mb-2">
+                      Tom: {Math.round(ttsPitch * 100)}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2"
+                      step="0.1"
+                      value={ttsPitch}
+                      onChange={(e) => setTtsPitch(parseFloat(e.target.value))}
+                      className="w-full accent-[var(--accent-bible)]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-[var(--text-bible-muted)] block mb-2">
+                      Volume: {Math.round(ttsVolume * 100)}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={ttsVolume}
+                      onChange={(e) => setTtsVolume(parseFloat(e.target.value))}
+                      className="w-full accent-[var(--accent-bible)]"
+                    />
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={async () => {
+                      if (isTTSPlaying) {
+                        ttsService.stop();
+                        setIsTTSPlaying(false);
+                      } else {
+                        setIsTTSPlaying(true);
+                        try {
+                          await ttsService.speak(
+                            'Olá! Esta é uma demonstração do Text-to-Speech. O texto será lido com as configurações que você ajustou.',
+                            { rate: ttsRate, pitch: ttsPitch, volume: ttsVolume }
+                          );
+                        } catch (e) {
+                          console.error('TTS erro:', e);
+                        } finally {
+                          setIsTTSPlaying(false);
+                        }
+                      }
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all",
+                      isTTSPlaying 
+                        ? "bg-red-500 text-white" 
+                        : "bg-[var(--accent-bible)] text-white"
+                    )}
+                  >
+                    {isTTSPlaying ? (
+                      <>
+                        <Pause className="w-4 h-4" />
+                        Parar
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4" />
+                        Testar Configurações
+                      </>
+                    )}
+                  </motion.button>
+                </>
+              ) : (
+                <div className="p-4 rounded-xl bg-amber-100 text-amber-800 text-sm">
+                  Text-to-Speech não está disponível neste navegador.
+                </div>
               )}
             </div>
           </SettingsSection>

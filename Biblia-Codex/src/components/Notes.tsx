@@ -47,6 +47,7 @@ import { getStoredGoogleAccessToken, loginWithGoogle } from '../firebase';
 import { exportNoteToGoogleDocs } from '../services/googleDocsService';
 import { exportNote, type ExportFormat } from '../services/ExportService';
 import { TagService, PALETTE } from '../services/TagService';
+import { NoteEditorModal } from './NoteEditorModal';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -215,6 +216,8 @@ export const Notes: React.FC = () => {
   const [googleDocsState, setGoogleDocsState] = useState<GoogleDocsState>('idle');
   const [googleDocsError, setGoogleDocsError] = useState<string | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [isEditorModalOpen, setIsEditorModalOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const autosaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dirtyRef = useRef(false);
@@ -321,9 +324,34 @@ export const Notes: React.FC = () => {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-    setDraftNote(newNote);
-    setNotes(prev => [newNote, ...prev]);
+    setEditingNote(newNote);
+    setIsEditorModalOpen(true);
     setTagInput('');
+  };
+
+  const handleEditNote = (note: Note) => {
+    setEditingNote(note);
+    setIsEditorModalOpen(true);
+  };
+
+  const handleModalSave = (note: Note) => {
+    // Update the note in the list
+    setNotes(prev => prev.map(n => n.id === note.id ? note : n));
+    // If it was a new note, add it to the list
+    if (!notes.find(n => n.id === note.id)) {
+      setNotes(prev => [note, ...prev]);
+    }
+  };
+
+  const handleModalDelete = (noteId: string) => {
+    setNotes(prev => prev.filter(n => n.id !== noteId));
+    setIsEditorModalOpen(false);
+    setEditingNote(null);
+  };
+
+  const handleModalClose = () => {
+    setIsEditorModalOpen(false);
+    setEditingNote(null);
   };
 
   const handleDeleteNote = async () => {
@@ -519,10 +547,7 @@ export const Notes: React.FC = () => {
                     transition={{ delay: i * 0.05 }}
                     whileHover={{ scale: 1.01, x: 2 }}
                     whileTap={{ scale: 0.99 }}
-                    onClick={() => {
-                      setDraftNote(note);
-                      setTagInput(note.tags.join(', '));
-                    }}
+                    onClick={() => handleEditNote(note)}
                     className={cn(
                       'w-full text-left p-4 rounded-xl transition-all group',
                       draftNote?.id === note.id
@@ -942,6 +967,17 @@ export const Notes: React.FC = () => {
           )}
         </section>
       </div>
-    </div>
+
+      {/* Note Editor Modal */}
+      <NoteEditorModal
+        note={editingNote}
+        isOpen={isEditorModalOpen}
+        onClose={handleModalClose}
+        onSave={handleModalSave}
+        onDelete={handleModalDelete}
+        availableTags={allTags}
+      />
+
+      </div>
   );
 };

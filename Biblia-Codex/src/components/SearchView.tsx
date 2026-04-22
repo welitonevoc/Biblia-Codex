@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search as SearchIcon, X, BookOpen, ChevronRight, Clock, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
+import { Search as SearchIcon, X, BookOpen, ChevronRight, Clock, TrendingUp, Sparkles, Loader2, Play, Pause, AlertCircle } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { BibleService } from '../BibleService';
 import { Verse } from '../types';
 import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { getAudioTracksForChapter } from '../data/audioData';
+import { getAIResponse, getApiKey, getConfiguredProvider, testAIConfiguration, suggestOpenRouterForQuota, autoSwitchToOpenRouter, diagnoseAIConfiguration } from '../services/geminiService';
+import { debugAIConfig } from '../debugAI';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
@@ -17,22 +20,112 @@ interface SearchViewProps {
 }
 
 export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
-  const { currentVersion } = useAppContext();
+  const { currentVersion, settings, updateSettings } = useAppContext();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Verse[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [aiEnabled, setAiEnabled] = useState(() => settings.ai.searchWithAI ?? false);
+  const [playingVerse, setPlayingVerse] = useState<string | null>(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [aiResults, setAiResults] = useState<Map<string, string>>(new Map());
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [configTest, setConfigTest] = useState<{ success: boolean; message: string; quotaWarning?: boolean; suggestion?: string; provider?: string; model?: string } | null>(null);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('kerygma-recent-searches');
-    if (saved) setRecentSearches(JSON.parse(saved));
-  }, []);
+  const toggleAI = useCallback(() => {
+    const newValue = !aiEnabled;
+    setAiEnabled(newValue);
+    updateSettings({ ai: { ...settings.ai, searchWithAI: newValue } });
+  }, [aiEnabled, settings.ai, updateSettings]);
 
-  const handleSearch = async (searchQuery: string) => {
+  const handlePlayAudio = useCallback((verse: Verse) => {
+    const trackId = `${verse.bookId}-${verse.chapter}-${verse.verse}`;
+    if (playingVerse === trackId) {
+      setPlayingVerse(null);
+      setAudioPlaying(false);
+      return;
+    }
+    setPlayingVerse(trackId);
+    setAudioPlaying(true);
+    setTimeout(() => {
+      setPlayingVerse(null);
+      setAudioPlaying(false);
+    }, 3000);
+  }, [playingVerse]);
+
+  const handleAISearch = useCallback(async (term: string, searchResults: Verse[]) => {
+    if (!aiEnabled || searchResults.length === 0) {
+      if (!aiEnabled) {
+        setAiError('Busca com IA desativada. Ative o interruptor para usar.');
+      }
+      return;
+    }
+
+    // Verificar se há chave de API configurada
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      const provider = getConfiguredProvider();
+      setAiError(`Chave de API não configurada. Vá em Configurações → IA e adicione sua chave para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`);
+      setAiEnabled(false);
+      updateSettings({ ai: { ...settings.ai, searchWithAI: false } });
+      return;
+    }
+
+    setAiError(null);
+    setIsAiLoading(true);
+    const newResults = new Map(aiResults);
+    let hadError = false;
+
+    try {
+      // Processar até 3 resultados com IA
+      for (const verse of searchResults.slice(0, 3)) {
+        const key = `${verse.bookId}-${verse.chapter}:${verse.verse}`;
+        try {
+          const book = BIBLE_BOOKS.find(b => b.id === verse.bookId);
+          const bookName = book ? book.name : verse.bookId;
+
+          // Usar skills do agente-IA se disponível, caso contrário usar geminiService
+          const prompt = `Pesquise sobre "${term}" no contexto de ${bookName} ${verse.chapter}:${verse.verse}. Texto: ${verse.text}`;
+          const explanation = await getAIResponse(
+            prompt,
+            'Você é um assistente de estudo bíblico. Forneça insights profundos sobre o texto, contextualização e aplicação prática. Se houver palavras-chave como "safe" ou "warning" mencione aspectos de segurança espiritual.'
+          );
+          newResults.set(key, explanation);
+        } catch (err: any) {
+          hadError = true;
+          console.error('Erro na busca IA:', err);
+
+          let errorMsg = `Erro ao processar versículo ${verse.bookId} ${verse.chapter}:${verse.verse}`;
+
+          // Tratamento específico de quota
+          if (err.message?.includes('Quota exceeded')) {
+            errorMsg = `Quota excedida para ${getConfiguredProvider() === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}`;
+          } else if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
+            errorMsg = 'Chave de API inválida';
+          } else if (err.message?.includes('403') || err.message?.includes('Forbidden')) {
+            errorMsg = 'Acesso negado à API';
+          }
+
+          newResults.set(key, `❌ ${errorMsg}`);
+        }
+      }
+      setAiResults(newResults);
+      if (hadError) {
+        setAiError('Algumas interpretações não puderam ser geradas. Verifique sua chave de API e conexão.');
+      }
+    } finally {
+      setIsAiLoading(false);
+    }
+  }, [aiEnabled, aiResults, settings.ai, updateSettings]);
+
+  const handleSearch = useCallback(async (searchQuery: string) => {
     const term = searchQuery.trim();
     if (term.length < 2) return;
 
     setIsSearching(true);
+    setAiResults(new Map());
+    setAiError(null);
     try {
       const found = await BibleService.search(term, currentVersion || undefined);
       setResults(found);
@@ -40,12 +133,17 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
       const nextRecent = [term, ...recentSearches.filter(s => s !== term)].slice(0, 5);
       setRecentSearches(nextRecent);
       localStorage.setItem('kerygma-recent-searches', JSON.stringify(nextRecent));
+
+      if (aiEnabled && found.length > 0) {
+        await handleAISearch(term, found);
+      }
     } catch (error) {
       console.error('Search error:', error);
+      setAiError('Erro na busca. Tente novamente.');
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [currentVersion, aiEnabled, handleAISearch]);
 
   const handleRecentSearch = (term: string) => {
     setQuery(term);
@@ -100,24 +198,20 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
               </p>
             </div>
           </div>
-        </motion.div>
-
-        {/* Search Input Premium */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <div className="relative">
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--text-bible-muted)]" />
+          
+          <div className="mt-4 relative">
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
-              placeholder="Pesquise na Bíblia..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch(query);
+                }
+              }}
+              placeholder="Digite um versículo, palavra ou tema..."
               className={cn(
-                "w-full h-14 pl-12 pr-12 rounded-xl",
+                "w-full pl-12 pr-20 py-4 rounded-2xl",
                 "bg-[var(--surface-1)] border border-[var(--border-bible)]",
                 "text-[var(--text-bible)] text-base font-medium",
                 "placeholder:text-[var(--text-bible-subtle)]",
@@ -125,26 +219,368 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                 "transition-all duration-200"
               )}
             />
-            {query && (
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--accent-bible)]/40" />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
               <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                onClick={() => { setQuery(''); setResults([]); }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={toggleAI}
                 className={cn(
-                  "absolute right-4 top-1/2 -translate-y-1/2",
-                  "flex h-8 w-8 items-center justify-center rounded-lg",
-                  "bg-[var(--surface-2)] text-[var(--text-bible-muted)]",
-                  "hover:bg-[var(--surface-3)] hover:text-[var(--text-bible)]",
-                  "transition-all duration-200"
+                  "flex items-center justify-center w-8 h-8 rounded-lg transition-all",
+                  aiEnabled 
+                    ? "bg-[var(--accent-bible)] text-white" 
+                    : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]"
                 )}
+                aria-label={aiEnabled ? "Desativar IA" : "Ativar busca com IA"}
               >
-                <X className="h-4 w-4" />
+                <Sparkles className="w-4 h-4" />
               </motion.button>
-            )}
+              {query && (
+                <motion.button
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  onClick={() => { setQuery(''); setResults([]); setAiResults(new Map()); }}
+                  className={cn(
+                    "flex items-center justify-center w-8 h-8 rounded-lg",
+                    "bg-[var(--surface-2)] text-[var(--text-bible-muted)]",
+                    "hover:bg-[var(--surface-3)] hover:text-[var(--text-bible)]",
+                    "transition-all duration-200"
+                  )}
+                >
+                  <X className="h-4 w-4" />
+                </motion.button>
+              )}
+            </div>
           </div>
+          
+          {aiEnabled && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-3 space-y-2"
+            >
+              <div className="flex items-center gap-2 text-xs text-[var(--accent-bible)]">
+                <Sparkles className="w-3 h-3" />
+                <span>Modo IA ativo: resultados terão explicações contextuais</span>
+              </div>
+
+              {/* Aviso sobre plano gratuito */}
+              {getConfiguredProvider() === 'google' && (
+                <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>Usando plano gratuito do Gemini (limite baixo). Considere OpenRouter para mais quota.</span>
+                </div>
+              )}
+
+              {/* Configuração de teste */}
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={async () => {
+                    const result = await testAIConfiguration();
+                    setConfigTest(result);
+                    console.log('Resultado do teste IA:', result);
+                    setTimeout(() => setConfigTest(null), 8000);
+                  }}
+                  className="text-xs px-3 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] transition-colors"
+                >
+                  Testar Configuração IA
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    const diag = diagnoseAIConfiguration();
+                    console.log('Diagnóstico IA:', diag);
+                    alert(`Diagnóstico IA:\n\nProvider configurado: ${diag.configuredProvider}\nProvider detectado: ${diag.detectedProvider}\nModelo: ${diag.configuredModel}\n\nChave OpenRouter: ${diag.hasOpenRouterKey ? 'Sim' : 'Não'}\nChave Gemini: ${diag.hasGeminiKey ? 'Sim' : 'Não'}\n\nVerifique o console para mais detalhes.`);
+                  }}
+                  className="text-xs px-3 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] transition-colors"
+                  title="Diagnóstico detalhado da configuração IA"
+                >
+                  🔍 Diagnosticar IA
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    if (confirm('Isso irá resetar todas as configurações de IA e voltar para o padrão (Google). Você terá que reconfigurar as chaves. Continuar?')) {
+                      localStorage.removeItem('ai-api-provider');
+                      localStorage.removeItem('opencode-api-key');
+                      localStorage.removeItem('openrouter-api-key');
+                      localStorage.removeItem('gemini-api-key');
+                      alert('Configurações resetadas. A página será recarregada.');
+                      window.location.reload();
+                    }
+                  }}
+                  className="text-xs px-3 py-1 rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                  title="Reset de emergência da configuração IA"
+                >
+                  🔄 Reset IA
+                </motion.button>
+
+                {configTest && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={`text-xs px-3 py-2 rounded-lg max-w-xs ${
+                      configTest.success
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : configTest.quotaWarning
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}
+                  >
+                    <div className="font-medium mb-1">
+                      {configTest.success ? '✅' : configTest.quotaWarning ? '⚠️' : '❌'} Configuração IA
+                    </div>
+                    <div className="text-xs leading-tight">
+                      {configTest.message}
+                    </div>
+                    {configTest.suggestion && (
+                      <div className="text-xs mt-2 text-blue-600 dark:text-blue-400">
+                        💡 {configTest.suggestion}
+                      </div>
+                    )}
+                    {configTest.quotaWarning && suggestOpenRouterForQuota() && (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          console.log('Tentando fazer switch para OpenRouter...');
+                          const switched = autoSwitchToOpenRouter();
+                          console.log('Switch result:', switched);
+                          if (switched) {
+                            // Forçar refresh da configuração
+                            const newDiag = diagnoseAIConfiguration();
+                            console.log('Nova configuração após switch:', newDiag);
+                            setConfigTest({
+                              success: true,
+                              message: 'Switched to OpenRouter for better quota! Teste novamente.',
+                              provider: 'openrouter',
+                              model: 'openrouter/free'
+                            });
+                            // Refresh the AI state
+                            setAiEnabled(true);
+                            updateSettings({ ai: { ...settings.ai, searchWithAI: true } });
+                          } else {
+                            setConfigTest({
+                              success: false,
+                              message: 'Falha ao fazer switch - verifique se a chave OpenRouter está configurada.',
+                              provider: configTest.provider,
+                              model: configTest.model
+                            });
+                          }
+                        }}
+                        className="text-xs mt-2 px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                      >
+                        🔄 Switch to OpenRouter
+                      </motion.button>
+                    )}
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          )}
+          
+          {/* Error message */}
+          {aiError && results.length <= 3 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-4 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800"
+            >
+              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                <AlertCircle className="w-4 h-4" aria-hidden="true" />
+                <span className="text-sm font-medium">Nota sobre a busca com IA</span>
+              </div>
+              <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">
+                {aiError}
+              </p>
+            </motion.div>
+          )}
         </motion.div>
 
-        {/* Recent Searches */}
+        {/* Results */}
+        {isSearching && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-12"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="w-10 h-10 border-4 border-[var(--accent-bible)] border-t-transparent rounded-full"
+            />
+            <p className="mt-4 text-[var(--text-bible-muted)] text-sm">Buscando...</p>
+            {aiEnabled && (
+              <p className="mt-2 text-[var(--text-bible-muted)] text-xs">Preparando interpretações com IA...</p>
+            )}
+          </motion.div>
+        )}
+
+        {!isSearching && results.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-[var(--text-bible)]">
+                {results.length} resultado{results.length !== 1 ? 's' : ''} para "{query}"
+              </h2>
+              {aiEnabled && (
+                <span className="text-xs text-[var(--accent-bible)] flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />
+                  IA ativa
+                </span>
+              )}
+            </div>
+            
+            <div className="space-y-3">
+              {results.slice(0, 20).map((verse, index) => {
+                const book = BIBLE_BOOKS.find(b => b.id === verse.bookId);
+                const hasAiResult = aiResults.has(`${verse.bookId}-${verse.chapter}:${verse.verse}`);
+                const aiLoading = isAiLoading && !hasAiResult && aiEnabled;
+                
+                return (
+                  <motion.div
+                    key={`${verse.bookId}-${verse.chapter}-${verse.verse}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                  >
+                    <div
+                      onClick={() => onNavigate(verse.bookId, verse.chapter, verse.verse)}
+                      className={cn(
+                        "relative rounded-xl p-4 cursor-pointer transition-all",
+                        "bg-[var(--surface-1)] border border-[var(--border-bible)]",
+                        "hover:border-[var(--accent-bible)]/30 hover:shadow-md",
+                      )}
+                      tabIndex={0}
+                      role="button"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          onNavigate(verse.bookId, verse.chapter, verse.verse);
+                        }
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-[var(--accent-bible)]" />
+                          <span className="text-xs font-bold text-[var(--accent-bible)] uppercase tracking-wide">
+                            {book?.abbreviation} {verse.chapter}:{verse.verse}
+                          </span>
+                        </div>
+                        <div
+                          onClick={(e) => { e.stopPropagation(); handlePlayAudio(verse); }}
+                          className={cn(
+                            "flex items-center justify-center w-8 h-8 rounded-full transition-all",
+                            playingVerse === `${verse.bookId}-${verse.chapter}-${verse.verse}`
+                              ? "bg-[var(--accent-bible)] text-white scale-105"
+                              : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--accent-bible)] hover:scale-105"
+                          )}
+                          role="button"
+                          tabIndex={0}
+                          aria-label="Ouvir versículo"
+                        >
+                          {playingVerse === `${verse.bookId}-${verse.chapter}-${verse.verse}` && audioPlaying ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Play className="w-4 h-4" />
+                          )}
+                        </div>
+                      </div>
+                      
+                      <p className="text-sm text-[var(--text-bible)] leading-relaxed mb-3">
+                        {verse.text}
+                      </p>
+                      
+                      {/* AI Result */}
+                      {aiEnabled && (
+                        <AnimatePresence>
+                          {aiLoading && !hasAiResult && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              className="flex items-center gap-2 text-xs text-[var(--accent-bible)]/60 py-2"
+                            >
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>Processando com IA...</span>
+                            </motion.div>
+                          )}
+                          
+                          {hasAiResult && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className={cn(
+                                "mt-3 p-3 rounded-lg border-l-2",
+                                "bg-[var(--accent-bible)]/5 border-[var(--accent-bible)]/20"
+                              )}
+                            >
+                               <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-bible)] mb-2">
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>Interpretação IA</span>
+                              </div>
+                              <p className="text-xs text-[var(--text-bible)] leading-relaxed prose prose-sm dark:prose-invert max-w-none"
+                                 dangerouslySetInnerHTML={{ 
+                                   __html: aiResults.get(`${verse.bookId}-${verse.chapter}:${verse.verse}`)?.replace(/\n/g, '<br/>') || '' 
+                                 }}
+                              />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Show AI error if exists */}
+            {aiError && results.length <= 3 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-4 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800"
+              >
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Nota sobre a busca com IA</span>
+                </div>
+                <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">
+                  A funcionalidade de IA requer uma chave de API configurada em Configurações → IA.
+                  Se você comprou o app ou tem uma assinatura, acesse as configurações para ativar.
+                </p>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Empty State */}
+        {!isSearching && results.length === 0 && query.length >= 2 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center py-16 text-center"
+          >
+            <div className="p-4 rounded-full bg-[var(--surface-2)] mb-4">
+              <SearchIcon className="w-8 h-8 text-[var(--text-bible-muted)]" />
+            </div>
+            <h3 className="text-lg font-semibold text-[var(--text-bible)] mb-2">
+              Nenhum resultado encontrado
+            </h3>
+            <p className="text-sm text-[var(--text-bible-muted)] max-w-xs">
+              Tente buscar com palavras diferentes, verifique a ortografia ou use termos mais genéricos.
+            </p>
+          </motion.div>
+        )}
+
+        {/* Recent Searches (shown when no query) */}
         {!isSearching && results.length === 0 && query.length < 2 && recentSearches.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -185,102 +621,9 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
           </motion.div>
         )}
 
-        {/* Loading State */}
-        {isSearching && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-16"
-          >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className={cn(
-                "w-12 h-12 rounded-full border-4",
-                "border-[var(--accent-bible)]/20 border-t-[var(--accent-bible)]"
-              )}
-            />
-            <p className="text-sm text-[var(--text-bible-muted)] mt-4 font-medium">Buscando...</p>
-          </motion.div>
-        )}
-
-        {/* Results */}
-        {!isSearching && results.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider">
-                {results.length} resultados
-              </h3>
-              <button 
-                onClick={() => { setQuery(''); setResults([]); }}
-                className="text-xs font-medium text-[var(--accent-bible)]"
-              >
-                Limpar
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {results.slice(0, 20).map((verse, index) => {
-                const book = BIBLE_BOOKS.find(b => b.id === verse.bookId);
-                return (
-                  <motion.button
-                    key={`${verse.bookId}-${verse.chapter}-${verse.verse}`}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                    whileHover={{ scale: 1.01, x: 4 }}
-                    onClick={() => onNavigate(verse.bookId, verse.chapter, verse.verse)}
-                    className={cn(
-                      "w-full text-left p-4 rounded-xl",
-                      "bg-[var(--surface-1)] border border-[var(--border-bible)]",
-                      "hover:border-[var(--accent-bible)]/30 hover:shadow-sm",
-                      "transition-all duration-200"
-                    )}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <BookOpen className="w-4 h-4 text-[var(--accent-bible)]" />
-                      <span className="text-xs font-bold text-[var(--accent-bible)] uppercase tracking-wide">
-                        {book?.abbreviation} {verse.chapter}:{verse.verse}
-                      </span>
-                    </div>
-                    <p className="text-sm text-[var(--text-bible)] line-clamp-2">
-                      {verse.text}
-                    </p>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Empty State */}
-        {!isSearching && results.length === 0 && query.length >= 2 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className={cn(
-              "flex flex-col items-center justify-center py-16 text-center"
-            )}
-          >
-            <div className={cn(
-              "w-16 h-16 rounded-2xl mb-4 flex items-center justify-center",
-              "bg-[var(--surface-1)] border border-[var(--border-bible)]"
-            )}>
-              <SearchIcon className="w-8 h-8 text-[var(--text-bible-muted)]" />
-            </div>
-            <h3 className="text-lg font-bold text-[var(--text-bible)] mb-2">
-              Nenhum resultado encontrado
-            </h3>
-            <p className="text-sm text-[var(--text-bible-muted)] max-w-xs">
-              Tente buscar com outras palavras ou verifique a ortografia
-            </p>
-          </motion.div>
-        )}
       </div>
     </div>
   );
 };
+
+export default SearchView;

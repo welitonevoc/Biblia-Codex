@@ -1,12 +1,11 @@
 import { Verse, BibleModule, DictionaryEntry, Footnote, FootnoteType } from './types';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
-import { GoogleGenAI } from "@google/genai";
 import { readModuleBinary } from './services/moduleService';
 import { BookNumberConverter } from './services/BookNumberConverter';
 import { footnoteService } from './services/FootnoteService';
 import initSqlJs from 'sql.js';
+import { getGeminiExplanation, getAIResponse } from './services/geminiService';
 
-const getAI = () => new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
 const isWeb = typeof window !== 'undefined' && !(window as any).Capacitor?.isNativePlatform?.();
 
@@ -169,17 +168,16 @@ export const BibleService = {
     return [];
   },
 
-  getCommentary: async (bookId: string, chapter: number, verse: number, model = 'gemini-2.0-flash'): Promise<string> => {
+  getCommentary: async (bookId: string, chapter: number, verse: number, model?: string): Promise<string> => {
     try {
-      const ai = getAI();
-      const response = await ai.models.generateContent({
-        model,
-        contents: `Para o versículo bíblico ${bookId} ${chapter}:${verse}, forneça um comentário teológico profundo, contexto histórico e aplicação prática. Use um tom erudito, mas acessível. Responda em Português (PT-BR).`,
-        config: {
-          systemInstruction: 'Você é um estudioso bíblico e teólogo de classe mundial. Seus comentários são perspicazes, equilibrados e profundamente enraizados no contexto histórico e linguístico.',
-        },
-      });
-      return response.text || 'Não foi possível gerar o comentário.';
+      const prompt = `Para o versículo bíblico ${bookId} ${chapter}:${verse}, forneça um comentário teológico profundo, contexto histórico e aplicação prática. Use um tom erudito, mas acessível. Responda em Português (PT-BR).`;
+      const response = await getAIResponse(
+        prompt,
+        'Você é um estudioso bíblico e teólogo de classe mundial. Seus comentários são perspicazes, equilibrados e profundamente enraizados no contexto histórico e linguístico.',
+        undefined,
+        model
+      );
+      return response || 'Não foi possível gerar o comentário.';
     } catch (error) {
       console.error('Erro ao buscar comentário:', error);
       return 'Erro ao conectar com o serviço de comentários. Verifique sua conexão.';
@@ -248,13 +246,17 @@ export const BibleService = {
     return `Definição simulada para ${word}`;
   },
 
-  getCrossReferences: async (bookId: string, chapter: number, verse: number, model = 'gemini-2.0-flash'): Promise<any[]> => {
+  getCrossReferences: async (bookId: string, chapter: number, verse: number, model?: string): Promise<any[]> => {
     const validIds = ['GEN', 'EXO', 'LEV', 'NUM', 'DEU', 'JOS', 'JDG', 'RUT', '1SA', '2SA', '1KI', '2KI', '1CH', '2CH', 'EZR', 'NEH', 'EST', 'JOB', 'PSA', 'PRO', 'ECC', 'SNG', 'ISA', 'JER', 'LAM', 'EZK', 'DAN', 'HOS', 'JOE', 'AMO', 'OBA', 'JON', 'MIC', 'NAM', 'HAB', 'ZEP', 'HAG', 'ZEC', 'MAL', 'MAT', 'MRK', 'LUK', 'JHN', 'ACT', 'ROM', '1CO', '2CO', 'GAL', 'EPH', 'PHP', 'COL', '1TH', '2TH', '1TI', '2TI', 'TIT', 'PHM', 'HEB', 'JAS', '1PE', '2PE', '1JN', '2JN', '3JN', 'JUD', 'REV'];
-    const prompt = `Encontre 10 referências cruzadas para ${bookId} ${chapter}:${verse}. JSON: [{"bookId":"GEN","chapter":1,"verse":1,"text":"...","reason":"..."}]`;
+    const prompt = `Encontre 10 referências cruzadas para ${bookId} ${chapter}:${verse}. Responda APENAS com um array JSON no formato: [{"bookId":"GEN","chapter":1,"verse":1,"text":"...","reason":"..."}]. Não inclua texto fora do JSON.`;
     try {
-      const ai = getAI();
-      const response = await ai.models.generateContent({ model, contents: prompt, config: { responseMimeType: 'application/json' } });
-      const xrefs = JSON.parse(response.text || '[]');
+      const response = await getAIResponse(
+        prompt,
+        'Você é um assistente de estudo bíblico. Retorne apenas JSON válido sem texto adicional.',
+        undefined,
+        model
+      );
+      const xrefs = JSON.parse(response || '[]');
       return xrefs.map((ref: any) => ({ ...ref, bookName: BIBLE_BOOKS.find(b => b.id === ref.bookId)?.name || ref.bookId }));
     } catch (error) { return []; }
   },

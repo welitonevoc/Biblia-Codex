@@ -1,0 +1,3663 @@
+{
+  "id": "biblia-365",
+  "title": "Bíblia 365",
+  "description": "Leia a Bíblia completa em um ano com passagens do Antigo Testamento, Novo Testamento, Salmos e Provérbios.",
+  "totalDays": 365,
+  "progress": 0,
+  "icon": "BookOpen",
+  "gradient": "from-blue-600 to-cyan-600",
+  "type": "canonical",
+  "color": "blue",
+  "dayReadings": [
+    {
+      "day": 1,
+      "title": "Dia 1",
+      "passages": [
+        "Gênesis 1-2",
+        "Mateus 1",
+        "Salmos 1",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 2,
+      "title": "Dia 2",
+      "passages": [
+        "Gênesis 3-4",
+        "Mateus 2",
+        "Salmos 2",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 3,
+      "title": "Dia 3",
+      "passages": [
+        "Gênesis 5-6",
+        "Mateus 3",
+        "Salmos 3",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 4,
+      "title": "Dia 4",
+      "passages": [
+        "Gênesis 7-8",
+        "Mateus 4",
+        "Salmos 4",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 5,
+      "title": "Dia 5",
+      "passages": [
+        "Gênesis 9-10",
+        "Mateus 5",
+        "Salmos 5",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 6,
+      "title": "Dia 6",
+      "passages": [
+        "Gênesis 11-12",
+        "Mateus 6",
+        "Salmos 6",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 7,
+      "title": "Dia 7",
+      "passages": [
+        "Gênesis 13-14",
+        "Mateus 7",
+        "Salmos 7",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 8,
+      "title": "Dia 8",
+      "passages": [
+        "Gênesis 15-16",
+        "Mateus 8",
+        "Salmos 8",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 9,
+      "title": "Dia 9",
+      "passages": [
+        "Gênesis 17-18",
+        "Mateus 9",
+        "Salmos 9",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 10,
+      "title": "Dia 10",
+      "passages": [
+        "Gênesis 19-20",
+        "Mateus 10",
+        "Salmos 10",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 11,
+      "title": "Dia 11",
+      "passages": [
+        "Gênesis 21-22",
+        "Mateus 11",
+        "Salmos 11",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 12,
+      "title": "Dia 12",
+      "passages": [
+        "Gênesis 23-24",
+        "Mateus 12",
+        "Salmos 12",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 13,
+      "title": "Dia 13",
+      "passages": [
+        "Gênesis 25-26",
+        "Mateus 13",
+        "Salmos 13",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 14,
+      "title": "Dia 14",
+      "passages": [
+        "Gênesis 27-28",
+        "Mateus 14",
+        "Salmos 14",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 15,
+      "title": "Dia 15",
+      "passages": [
+        "Gênesis 29-30",
+        "Mateus 15",
+        "Salmos 15",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 16,
+      "title": "Dia 16",
+      "passages": [
+        "Gênesis 31-32",
+        "Mateus 16",
+        "Salmos 16",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 17,
+      "title": "Dia 17",
+      "passages": [
+        "Gênesis 33-34",
+        "Mateus 17",
+        "Salmos 17",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 18,
+      "title": "Dia 18",
+      "passages": [
+        "Gênesis 35-36",
+        "Mateus 18",
+        "Salmos 18",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 19,
+      "title": "Dia 19",
+      "passages": [
+        "Gênesis 37-38",
+        "Mateus 19",
+        "Salmos 19",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 20,
+      "title": "Dia 20",
+      "passages": [
+        "Gênesis 39-40",
+        "Mateus 20",
+        "Salmos 20",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 21,
+      "title": "Dia 21",
+      "passages": [
+        "Gênesis 41-42",
+        "Mateus 21",
+        "Salmos 21",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 22,
+      "title": "Dia 22",
+      "passages": [
+        "Gênesis 43-44",
+        "Mateus 22",
+        "Salmos 22",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 23,
+      "title": "Dia 23",
+      "passages": [
+        "Gênesis 45-46",
+        "Mateus 23",
+        "Salmos 23",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 24,
+      "title": "Dia 24",
+      "passages": [
+        "Gênesis 47-48",
+        "Mateus 24",
+        "Salmos 24",
+        "Provérbios 24"
+      ]
+    },
+    {
+      "day": 25,
+      "title": "Dia 25",
+      "passages": [
+        "Gênesis 49-50",
+        "Mateus 25",
+        "Salmos 25",
+        "Provérbios 25"
+      ]
+    },
+    {
+      "day": 26,
+      "title": "Dia 26",
+      "passages": [
+        "Êxodo 1-2",
+        "Mateus 26",
+        "Salmos 26",
+        "Provérbios 26"
+      ]
+    },
+    {
+      "day": 27,
+      "title": "Dia 27",
+      "passages": [
+        "Êxodo 3-4",
+        "Mateus 27",
+        "Salmos 27",
+        "Provérbios 27"
+      ]
+    },
+    {
+      "day": 28,
+      "title": "Dia 28",
+      "passages": [
+        "Êxodo 5-6",
+        "Mateus 28",
+        "Salmos 28",
+        "Provérbios 28"
+      ]
+    },
+    {
+      "day": 29,
+      "title": "Dia 29",
+      "passages": [
+        "Êxodo 7-8",
+        "Marcos 1",
+        "Salmos 29",
+        "Provérbios 29"
+      ]
+    },
+    {
+      "day": 30,
+      "title": "Dia 30",
+      "passages": [
+        "Êxodo 9-10",
+        "Marcos 2",
+        "Salmos 30",
+        "Provérbios 30"
+      ]
+    },
+    {
+      "day": 31,
+      "title": "Dia 31",
+      "passages": [
+        "Êxodo 11-12",
+        "Marcos 3",
+        "Salmos 31",
+        "Provérbios 31"
+      ]
+    },
+    {
+      "day": 32,
+      "title": "Dia 32",
+      "passages": [
+        "Êxodo 13-14",
+        "Marcos 4",
+        "Salmos 32",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 33,
+      "title": "Dia 33",
+      "passages": [
+        "Êxodo 15-16",
+        "Marcos 5",
+        "Salmos 33",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 34,
+      "title": "Dia 34",
+      "passages": [
+        "Êxodo 17-18",
+        "Marcos 6",
+        "Salmos 34",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 35,
+      "title": "Dia 35",
+      "passages": [
+        "Êxodo 19-20",
+        "Marcos 7",
+        "Salmos 35",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 36,
+      "title": "Dia 36",
+      "passages": [
+        "Êxodo 21-22",
+        "Marcos 8",
+        "Salmos 36",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 37,
+      "title": "Dia 37",
+      "passages": [
+        "Êxodo 23-24",
+        "Marcos 9",
+        "Salmos 37",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 38,
+      "title": "Dia 38",
+      "passages": [
+        "Êxodo 25-26",
+        "Marcos 10",
+        "Salmos 38",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 39,
+      "title": "Dia 39",
+      "passages": [
+        "Êxodo 27-28",
+        "Marcos 11",
+        "Salmos 39",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 40,
+      "title": "Dia 40",
+      "passages": [
+        "Êxodo 29-30",
+        "Marcos 12",
+        "Salmos 40",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 41,
+      "title": "Dia 41",
+      "passages": [
+        "Êxodo 31-32",
+        "Marcos 13",
+        "Salmos 41",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 42,
+      "title": "Dia 42",
+      "passages": [
+        "Êxodo 33-34",
+        "Marcos 14",
+        "Salmos 42",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 43,
+      "title": "Dia 43",
+      "passages": [
+        "Êxodo 35-36",
+        "Marcos 15",
+        "Salmos 43",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 44,
+      "title": "Dia 44",
+      "passages": [
+        "Êxodo 37-38",
+        "Marcos 16",
+        "Salmos 44",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 45,
+      "title": "Dia 45",
+      "passages": [
+        "Êxodo 39-40",
+        "Lucas 1",
+        "Salmos 45",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 46,
+      "title": "Dia 46",
+      "passages": [
+        "Levítico 1-2",
+        "Lucas 2",
+        "Salmos 46",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 47,
+      "title": "Dia 47",
+      "passages": [
+        "Levítico 3-4",
+        "Lucas 3",
+        "Salmos 47",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 48,
+      "title": "Dia 48",
+      "passages": [
+        "Levítico 5-6",
+        "Lucas 4",
+        "Salmos 48",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 49,
+      "title": "Dia 49",
+      "passages": [
+        "Levítico 7-8",
+        "Lucas 5",
+        "Salmos 49",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 50,
+      "title": "Dia 50",
+      "passages": [
+        "Levítico 9-10",
+        "Lucas 6",
+        "Salmos 50",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 51,
+      "title": "Dia 51",
+      "passages": [
+        "Levítico 11-12",
+        "Lucas 7",
+        "Salmos 51",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 52,
+      "title": "Dia 52",
+      "passages": [
+        "Levítico 13-14",
+        "Lucas 8",
+        "Salmos 52",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 53,
+      "title": "Dia 53",
+      "passages": [
+        "Levítico 15-16",
+        "Lucas 9",
+        "Salmos 53",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 54,
+      "title": "Dia 54",
+      "passages": [
+        "Levítico 17-18",
+        "Lucas 10",
+        "Salmos 54",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 55,
+      "title": "Dia 55",
+      "passages": [
+        "Levítico 19-20",
+        "Lucas 11",
+        "Salmos 55",
+        "Provérbios 24"
+      ]
+    },
+    {
+      "day": 56,
+      "title": "Dia 56",
+      "passages": [
+        "Levítico 21-22",
+        "Lucas 12",
+        "Salmos 56",
+        "Provérbios 25"
+      ]
+    },
+    {
+      "day": 57,
+      "title": "Dia 57",
+      "passages": [
+        "Levítico 23-24",
+        "Lucas 13",
+        "Salmos 57",
+        "Provérbios 26"
+      ]
+    },
+    {
+      "day": 58,
+      "title": "Dia 58",
+      "passages": [
+        "Levítico 25-26",
+        "Lucas 14",
+        "Salmos 58",
+        "Provérbios 27"
+      ]
+    },
+    {
+      "day": 59,
+      "title": "Dia 59",
+      "passages": [
+        "Levítico 27",
+        "Lucas 15",
+        "Salmos 59",
+        "Provérbios 28"
+      ]
+    },
+    {
+      "day": 60,
+      "title": "Dia 60",
+      "passages": [
+        "Números 1-2",
+        "Lucas 16",
+        "Salmos 60",
+        "Provérbios 29"
+      ]
+    },
+    {
+      "day": 61,
+      "title": "Dia 61",
+      "passages": [
+        "Números 3-4",
+        "Lucas 17",
+        "Salmos 61",
+        "Provérbios 30"
+      ]
+    },
+    {
+      "day": 62,
+      "title": "Dia 62",
+      "passages": [
+        "Números 5-6",
+        "Lucas 18",
+        "Salmos 62",
+        "Provérbios 31"
+      ]
+    },
+    {
+      "day": 63,
+      "title": "Dia 63",
+      "passages": [
+        "Números 7-8",
+        "Lucas 19",
+        "Salmos 63",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 64,
+      "title": "Dia 64",
+      "passages": [
+        "Números 9-10",
+        "Lucas 20",
+        "Salmos 64",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 65,
+      "title": "Dia 65",
+      "passages": [
+        "Números 11-12",
+        "Lucas 21",
+        "Salmos 65",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 66,
+      "title": "Dia 66",
+      "passages": [
+        "Números 13-14",
+        "Lucas 22",
+        "Salmos 66",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 67,
+      "title": "Dia 67",
+      "passages": [
+        "Números 15-16",
+        "Lucas 23",
+        "Salmos 67",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 68,
+      "title": "Dia 68",
+      "passages": [
+        "Números 17-18",
+        "Lucas 24",
+        "Salmos 68",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 69,
+      "title": "Dia 69",
+      "passages": [
+        "Números 19-20",
+        "João 1",
+        "Salmos 69",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 70,
+      "title": "Dia 70",
+      "passages": [
+        "Números 21-22",
+        "João 2",
+        "Salmos 70",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 71,
+      "title": "Dia 71",
+      "passages": [
+        "Números 23-24",
+        "João 3",
+        "Salmos 71",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 72,
+      "title": "Dia 72",
+      "passages": [
+        "Números 25-26",
+        "João 4",
+        "Salmos 72",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 73,
+      "title": "Dia 73",
+      "passages": [
+        "Números 27-28",
+        "João 5",
+        "Salmos 73",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 74,
+      "title": "Dia 74",
+      "passages": [
+        "Números 29-30",
+        "João 6",
+        "Salmos 74",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 75,
+      "title": "Dia 75",
+      "passages": [
+        "Números 31-32",
+        "João 7",
+        "Salmos 75",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 76,
+      "title": "Dia 76",
+      "passages": [
+        "Números 33-34",
+        "João 8",
+        "Salmos 76",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 77,
+      "title": "Dia 77",
+      "passages": [
+        "Números 35-36",
+        "João 9",
+        "Salmos 77",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 78,
+      "title": "Dia 78",
+      "passages": [
+        "Deuteronômio 1-2",
+        "João 10",
+        "Salmos 78",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 79,
+      "title": "Dia 79",
+      "passages": [
+        "Deuteronômio 3-4",
+        "João 11",
+        "Salmos 79",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 80,
+      "title": "Dia 80",
+      "passages": [
+        "Deuteronômio 5-6",
+        "João 12",
+        "Salmos 80",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 81,
+      "title": "Dia 81",
+      "passages": [
+        "Deuteronômio 7-8",
+        "João 13",
+        "Salmos 81",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 82,
+      "title": "Dia 82",
+      "passages": [
+        "Deuteronômio 9-10",
+        "João 14",
+        "Salmos 82",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 83,
+      "title": "Dia 83",
+      "passages": [
+        "Deuteronômio 11-12",
+        "João 15",
+        "Salmos 83",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 84,
+      "title": "Dia 84",
+      "passages": [
+        "Deuteronômio 13-14",
+        "João 16",
+        "Salmos 84",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 85,
+      "title": "Dia 85",
+      "passages": [
+        "Deuteronômio 15-16",
+        "João 17",
+        "Salmos 85",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 86,
+      "title": "Dia 86",
+      "passages": [
+        "Deuteronômio 17-18",
+        "João 18",
+        "Salmos 86",
+        "Provérbios 24"
+      ]
+    },
+    {
+      "day": 87,
+      "title": "Dia 87",
+      "passages": [
+        "Deuteronômio 19-20",
+        "João 19",
+        "Salmos 87",
+        "Provérbios 25"
+      ]
+    },
+    {
+      "day": 88,
+      "title": "Dia 88",
+      "passages": [
+        "Deuteronômio 21-22",
+        "João 20",
+        "Salmos 88",
+        "Provérbios 26"
+      ]
+    },
+    {
+      "day": 89,
+      "title": "Dia 89",
+      "passages": [
+        "Deuteronômio 23-24",
+        "João 21",
+        "Salmos 89",
+        "Provérbios 27"
+      ]
+    },
+    {
+      "day": 90,
+      "title": "Dia 90",
+      "passages": [
+        "Deuteronômio 25-26",
+        "Atos 1",
+        "Salmos 90",
+        "Provérbios 28"
+      ]
+    },
+    {
+      "day": 91,
+      "title": "Dia 91",
+      "passages": [
+        "Deuteronômio 27-28",
+        "Atos 2",
+        "Salmos 91",
+        "Provérbios 29"
+      ]
+    },
+    {
+      "day": 92,
+      "title": "Dia 92",
+      "passages": [
+        "Deuteronômio 29-30",
+        "Atos 3",
+        "Salmos 92",
+        "Provérbios 30"
+      ]
+    },
+    {
+      "day": 93,
+      "title": "Dia 93",
+      "passages": [
+        "Deuteronômio 31-32",
+        "Atos 4",
+        "Salmos 93",
+        "Provérbios 31"
+      ]
+    },
+    {
+      "day": 94,
+      "title": "Dia 94",
+      "passages": [
+        "Deuteronômio 33-34",
+        "Atos 5",
+        "Salmos 94",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 95,
+      "title": "Dia 95",
+      "passages": [
+        "Josué 1-2",
+        "Atos 6",
+        "Salmos 95",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 96,
+      "title": "Dia 96",
+      "passages": [
+        "Josué 3-4",
+        "Atos 7",
+        "Salmos 96",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 97,
+      "title": "Dia 97",
+      "passages": [
+        "Josué 5-6",
+        "Atos 8",
+        "Salmos 97",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 98,
+      "title": "Dia 98",
+      "passages": [
+        "Josué 7-8",
+        "Atos 9",
+        "Salmos 98",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 99,
+      "title": "Dia 99",
+      "passages": [
+        "Josué 9-10",
+        "Atos 10",
+        "Salmos 99",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 100,
+      "title": "Dia 100",
+      "passages": [
+        "Josué 11-12",
+        "Atos 11",
+        "Salmos 100",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 101,
+      "title": "Dia 101",
+      "passages": [
+        "Josué 13-14",
+        "Atos 12",
+        "Salmos 101",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 102,
+      "title": "Dia 102",
+      "passages": [
+        "Josué 15-16",
+        "Atos 13",
+        "Salmos 102",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 103,
+      "title": "Dia 103",
+      "passages": [
+        "Josué 17-18",
+        "Atos 14",
+        "Salmos 103",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 104,
+      "title": "Dia 104",
+      "passages": [
+        "Josué 19-20",
+        "Atos 15",
+        "Salmos 104",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 105,
+      "title": "Dia 105",
+      "passages": [
+        "Josué 21-22",
+        "Atos 16",
+        "Salmos 105",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 106,
+      "title": "Dia 106",
+      "passages": [
+        "Josué 23-24",
+        "Atos 17",
+        "Salmos 106",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 107,
+      "title": "Dia 107",
+      "passages": [
+        "Juízes 1-2",
+        "Atos 18",
+        "Salmos 107",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 108,
+      "title": "Dia 108",
+      "passages": [
+        "Juízes 3-4",
+        "Atos 19",
+        "Salmos 108",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 109,
+      "title": "Dia 109",
+      "passages": [
+        "Juízes 5-6",
+        "Atos 20",
+        "Salmos 109",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 110,
+      "title": "Dia 110",
+      "passages": [
+        "Juízes 7-8",
+        "Atos 21",
+        "Salmos 110",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 111,
+      "title": "Dia 111",
+      "passages": [
+        "Juízes 9-10",
+        "Atos 22",
+        "Salmos 111",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 112,
+      "title": "Dia 112",
+      "passages": [
+        "Juízes 11-12",
+        "Atos 23",
+        "Salmos 112",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 113,
+      "title": "Dia 113",
+      "passages": [
+        "Juízes 13-14",
+        "Atos 24",
+        "Salmos 113",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 114,
+      "title": "Dia 114",
+      "passages": [
+        "Juízes 15-16",
+        "Atos 25",
+        "Salmos 114",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 115,
+      "title": "Dia 115",
+      "passages": [
+        "Juízes 17-18",
+        "Atos 26",
+        "Salmos 115",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 116,
+      "title": "Dia 116",
+      "passages": [
+        "Juízes 19-20",
+        "Atos 27",
+        "Salmos 116",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 117,
+      "title": "Dia 117",
+      "passages": [
+        "Juízes 21",
+        "Atos 28",
+        "Salmos 117",
+        "Provérbios 24"
+      ]
+    },
+    {
+      "day": 118,
+      "title": "Dia 118",
+      "passages": [
+        "Rute 1-2",
+        "Romanos 1",
+        "Salmos 118",
+        "Provérbios 25"
+      ]
+    },
+    {
+      "day": 119,
+      "title": "Dia 119",
+      "passages": [
+        "Rute 3-4",
+        "Romanos 2",
+        "Salmos 119",
+        "Provérbios 26"
+      ]
+    },
+    {
+      "day": 120,
+      "title": "Dia 120",
+      "passages": [
+        "1 Samuel 1-2",
+        "Romanos 3",
+        "Salmos 120",
+        "Provérbios 27"
+      ]
+    },
+    {
+      "day": 121,
+      "title": "Dia 121",
+      "passages": [
+        "1 Samuel 3-4",
+        "Romanos 4",
+        "Salmos 121",
+        "Provérbios 28"
+      ]
+    },
+    {
+      "day": 122,
+      "title": "Dia 122",
+      "passages": [
+        "1 Samuel 5-6",
+        "Romanos 5",
+        "Salmos 122",
+        "Provérbios 29"
+      ]
+    },
+    {
+      "day": 123,
+      "title": "Dia 123",
+      "passages": [
+        "1 Samuel 7-8",
+        "Romanos 6",
+        "Salmos 123",
+        "Provérbios 30"
+      ]
+    },
+    {
+      "day": 124,
+      "title": "Dia 124",
+      "passages": [
+        "1 Samuel 9-10",
+        "Romanos 7",
+        "Salmos 124",
+        "Provérbios 31"
+      ]
+    },
+    {
+      "day": 125,
+      "title": "Dia 125",
+      "passages": [
+        "1 Samuel 11-12",
+        "Romanos 8",
+        "Salmos 125",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 126,
+      "title": "Dia 126",
+      "passages": [
+        "1 Samuel 13-14",
+        "Romanos 9",
+        "Salmos 126",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 127,
+      "title": "Dia 127",
+      "passages": [
+        "1 Samuel 15-16",
+        "Romanos 10",
+        "Salmos 127",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 128,
+      "title": "Dia 128",
+      "passages": [
+        "1 Samuel 17-18",
+        "Romanos 11",
+        "Salmos 128",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 129,
+      "title": "Dia 129",
+      "passages": [
+        "1 Samuel 19-20",
+        "Romanos 12",
+        "Salmos 129",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 130,
+      "title": "Dia 130",
+      "passages": [
+        "1 Samuel 21-22",
+        "Romanos 13",
+        "Salmos 130",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 131,
+      "title": "Dia 131",
+      "passages": [
+        "1 Samuel 23-24",
+        "Romanos 14",
+        "Salmos 131",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 132,
+      "title": "Dia 132",
+      "passages": [
+        "1 Samuel 25-26",
+        "Romanos 15",
+        "Salmos 132",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 133,
+      "title": "Dia 133",
+      "passages": [
+        "1 Samuel 27-28",
+        "Romanos 16",
+        "Salmos 133",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 134,
+      "title": "Dia 134",
+      "passages": [
+        "1 Samuel 29-30",
+        "1 Coríntios 1",
+        "Salmos 134",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 135,
+      "title": "Dia 135",
+      "passages": [
+        "1 Samuel 31",
+        "1 Coríntios 2",
+        "Salmos 135",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 136,
+      "title": "Dia 136",
+      "passages": [
+        "2 Samuel 1-2",
+        "1 Coríntios 3",
+        "Salmos 136",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 137,
+      "title": "Dia 137",
+      "passages": [
+        "2 Samuel 3-4",
+        "1 Coríntios 4",
+        "Salmos 137",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 138,
+      "title": "Dia 138",
+      "passages": [
+        "2 Samuel 5-6",
+        "1 Coríntios 5",
+        "Salmos 138",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 139,
+      "title": "Dia 139",
+      "passages": [
+        "2 Samuel 7-8",
+        "1 Coríntios 6",
+        "Salmos 139",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 140,
+      "title": "Dia 140",
+      "passages": [
+        "2 Samuel 9-10",
+        "1 Coríntios 7",
+        "Salmos 140",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 141,
+      "title": "Dia 141",
+      "passages": [
+        "2 Samuel 11-12",
+        "1 Coríntios 8",
+        "Salmos 141",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 142,
+      "title": "Dia 142",
+      "passages": [
+        "2 Samuel 13-14",
+        "1 Coríntios 9",
+        "Salmos 142",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 143,
+      "title": "Dia 143",
+      "passages": [
+        "2 Samuel 15-16",
+        "1 Coríntios 10",
+        "Salmos 143",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 144,
+      "title": "Dia 144",
+      "passages": [
+        "2 Samuel 17-18",
+        "1 Coríntios 11",
+        "Salmos 144",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 145,
+      "title": "Dia 145",
+      "passages": [
+        "2 Samuel 19-20",
+        "1 Coríntios 12",
+        "Salmos 145",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 146,
+      "title": "Dia 146",
+      "passages": [
+        "2 Samuel 21-22",
+        "1 Coríntios 13",
+        "Salmos 146",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 147,
+      "title": "Dia 147",
+      "passages": [
+        "2 Samuel 23-24",
+        "1 Coríntios 14",
+        "Salmos 147",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 148,
+      "title": "Dia 148",
+      "passages": [
+        "1 Reis 1-2",
+        "1 Coríntios 15",
+        "Salmos 148",
+        "Provérbios 24"
+      ]
+    },
+    {
+      "day": 149,
+      "title": "Dia 149",
+      "passages": [
+        "1 Reis 3-4",
+        "1 Coríntios 16",
+        "Salmos 149",
+        "Provérbios 25"
+      ]
+    },
+    {
+      "day": 150,
+      "title": "Dia 150",
+      "passages": [
+        "1 Reis 5-6",
+        "2 Coríntios 1",
+        "Salmos 150",
+        "Provérbios 26"
+      ]
+    },
+    {
+      "day": 151,
+      "title": "Dia 151",
+      "passages": [
+        "1 Reis 7-8",
+        "2 Coríntios 2",
+        "Salmos 1",
+        "Provérbios 27"
+      ]
+    },
+    {
+      "day": 152,
+      "title": "Dia 152",
+      "passages": [
+        "1 Reis 9-10",
+        "2 Coríntios 3",
+        "Salmos 2",
+        "Provérbios 28"
+      ]
+    },
+    {
+      "day": 153,
+      "title": "Dia 153",
+      "passages": [
+        "1 Reis 11-12",
+        "2 Coríntios 4",
+        "Salmos 3",
+        "Provérbios 29"
+      ]
+    },
+    {
+      "day": 154,
+      "title": "Dia 154",
+      "passages": [
+        "1 Reis 13-14",
+        "2 Coríntios 5",
+        "Salmos 4",
+        "Provérbios 30"
+      ]
+    },
+    {
+      "day": 155,
+      "title": "Dia 155",
+      "passages": [
+        "1 Reis 15-16",
+        "2 Coríntios 6",
+        "Salmos 5",
+        "Provérbios 31"
+      ]
+    },
+    {
+      "day": 156,
+      "title": "Dia 156",
+      "passages": [
+        "1 Reis 17-18",
+        "2 Coríntios 7",
+        "Salmos 6",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 157,
+      "title": "Dia 157",
+      "passages": [
+        "1 Reis 19-20",
+        "2 Coríntios 8",
+        "Salmos 7",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 158,
+      "title": "Dia 158",
+      "passages": [
+        "1 Reis 21-22",
+        "2 Coríntios 9",
+        "Salmos 8",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 159,
+      "title": "Dia 159",
+      "passages": [
+        "2 Reis 1-2",
+        "2 Coríntios 10",
+        "Salmos 9",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 160,
+      "title": "Dia 160",
+      "passages": [
+        "2 Reis 3-4",
+        "2 Coríntios 11",
+        "Salmos 10",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 161,
+      "title": "Dia 161",
+      "passages": [
+        "2 Reis 5-6",
+        "2 Coríntios 12",
+        "Salmos 11",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 162,
+      "title": "Dia 162",
+      "passages": [
+        "2 Reis 7-8",
+        "2 Coríntios 13",
+        "Salmos 12",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 163,
+      "title": "Dia 163",
+      "passages": [
+        "2 Reis 9-10",
+        "Gálatas 1",
+        "Salmos 13",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 164,
+      "title": "Dia 164",
+      "passages": [
+        "2 Reis 11-12",
+        "Gálatas 2",
+        "Salmos 14",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 165,
+      "title": "Dia 165",
+      "passages": [
+        "2 Reis 13-14",
+        "Gálatas 3",
+        "Salmos 15",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 166,
+      "title": "Dia 166",
+      "passages": [
+        "2 Reis 15-16",
+        "Gálatas 4",
+        "Salmos 16",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 167,
+      "title": "Dia 167",
+      "passages": [
+        "2 Reis 17-18",
+        "Gálatas 5",
+        "Salmos 17",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 168,
+      "title": "Dia 168",
+      "passages": [
+        "2 Reis 19-20",
+        "Gálatas 6",
+        "Salmos 18",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 169,
+      "title": "Dia 169",
+      "passages": [
+        "2 Reis 21-22",
+        "Efésios 1",
+        "Salmos 19",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 170,
+      "title": "Dia 170",
+      "passages": [
+        "2 Reis 23-24",
+        "Efésios 2",
+        "Salmos 20",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 171,
+      "title": "Dia 171",
+      "passages": [
+        "2 Reis 25",
+        "Efésios 3",
+        "Salmos 21",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 172,
+      "title": "Dia 172",
+      "passages": [
+        "1 Crônicas 1-2",
+        "Efésios 4",
+        "Salmos 22",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 173,
+      "title": "Dia 173",
+      "passages": [
+        "1 Crônicas 3-4",
+        "Efésios 5",
+        "Salmos 23",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 174,
+      "title": "Dia 174",
+      "passages": [
+        "1 Crônicas 5-6",
+        "Efésios 6",
+        "Salmos 24",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 175,
+      "title": "Dia 175",
+      "passages": [
+        "1 Crônicas 7-8",
+        "Filipenses 1",
+        "Salmos 25",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 176,
+      "title": "Dia 176",
+      "passages": [
+        "1 Crônicas 9-10",
+        "Filipenses 2",
+        "Salmos 26",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 177,
+      "title": "Dia 177",
+      "passages": [
+        "1 Crônicas 11-12",
+        "Filipenses 3",
+        "Salmos 27",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 178,
+      "title": "Dia 178",
+      "passages": [
+        "1 Crônicas 13-14",
+        "Filipenses 4",
+        "Salmos 28",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 179,
+      "title": "Dia 179",
+      "passages": [
+        "1 Crônicas 15-16",
+        "Colossenses 1",
+        "Salmos 29",
+        "Provérbios 24"
+      ]
+    },
+    {
+      "day": 180,
+      "title": "Dia 180",
+      "passages": [
+        "1 Crônicas 17-18",
+        "Colossenses 2",
+        "Salmos 30",
+        "Provérbios 25"
+      ]
+    },
+    {
+      "day": 181,
+      "title": "Dia 181",
+      "passages": [
+        "1 Crônicas 19-20",
+        "Colossenses 3",
+        "Salmos 31",
+        "Provérbios 26"
+      ]
+    },
+    {
+      "day": 182,
+      "title": "Dia 182",
+      "passages": [
+        "1 Crônicas 21-22",
+        "Colossenses 4",
+        "Salmos 32",
+        "Provérbios 27"
+      ]
+    },
+    {
+      "day": 183,
+      "title": "Dia 183",
+      "passages": [
+        "1 Crônicas 23-24",
+        "1 Tessalonicenses 1",
+        "Salmos 33",
+        "Provérbios 28"
+      ]
+    },
+    {
+      "day": 184,
+      "title": "Dia 184",
+      "passages": [
+        "1 Crônicas 25-26",
+        "1 Tessalonicenses 2",
+        "Salmos 34",
+        "Provérbios 29"
+      ]
+    },
+    {
+      "day": 185,
+      "title": "Dia 185",
+      "passages": [
+        "1 Crônicas 27-28",
+        "1 Tessalonicenses 3",
+        "Salmos 35",
+        "Provérbios 30"
+      ]
+    },
+    {
+      "day": 186,
+      "title": "Dia 186",
+      "passages": [
+        "1 Crônicas 29",
+        "1 Tessalonicenses 4",
+        "Salmos 36",
+        "Provérbios 31"
+      ]
+    },
+    {
+      "day": 187,
+      "title": "Dia 187",
+      "passages": [
+        "2 Crônicas 1-2",
+        "1 Tessalonicenses 5",
+        "Salmos 37",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 188,
+      "title": "Dia 188",
+      "passages": [
+        "2 Crônicas 3-4",
+        "2 Tessalonicenses 1",
+        "Salmos 38",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 189,
+      "title": "Dia 189",
+      "passages": [
+        "2 Crônicas 5-6",
+        "2 Tessalonicenses 2",
+        "Salmos 39",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 190,
+      "title": "Dia 190",
+      "passages": [
+        "2 Crônicas 7-8",
+        "2 Tessalonicenses 3",
+        "Salmos 40",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 191,
+      "title": "Dia 191",
+      "passages": [
+        "2 Crônicas 9-10",
+        "1 Timóteo 1",
+        "Salmos 41",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 192,
+      "title": "Dia 192",
+      "passages": [
+        "2 Crônicas 11-12",
+        "1 Timóteo 2",
+        "Salmos 42",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 193,
+      "title": "Dia 193",
+      "passages": [
+        "2 Crônicas 13-14",
+        "1 Timóteo 3",
+        "Salmos 43",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 194,
+      "title": "Dia 194",
+      "passages": [
+        "2 Crônicas 15-16",
+        "1 Timóteo 4",
+        "Salmos 44",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 195,
+      "title": "Dia 195",
+      "passages": [
+        "2 Crônicas 17-18",
+        "1 Timóteo 5",
+        "Salmos 45",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 196,
+      "title": "Dia 196",
+      "passages": [
+        "2 Crônicas 19-20",
+        "1 Timóteo 6",
+        "Salmos 46",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 197,
+      "title": "Dia 197",
+      "passages": [
+        "2 Crônicas 21-22",
+        "2 Timóteo 1",
+        "Salmos 47",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 198,
+      "title": "Dia 198",
+      "passages": [
+        "2 Crônicas 23-24",
+        "2 Timóteo 2",
+        "Salmos 48",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 199,
+      "title": "Dia 199",
+      "passages": [
+        "2 Crônicas 25-26",
+        "2 Timóteo 3",
+        "Salmos 49",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 200,
+      "title": "Dia 200",
+      "passages": [
+        "2 Crônicas 27-28",
+        "2 Timóteo 4",
+        "Salmos 50",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 201,
+      "title": "Dia 201",
+      "passages": [
+        "2 Crônicas 29-30",
+        "Tito 1",
+        "Salmos 51",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 202,
+      "title": "Dia 202",
+      "passages": [
+        "2 Crônicas 31-32",
+        "Tito 2",
+        "Salmos 52",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 203,
+      "title": "Dia 203",
+      "passages": [
+        "2 Crônicas 33-34",
+        "Tito 3",
+        "Salmos 53",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 204,
+      "title": "Dia 204",
+      "passages": [
+        "2 Crônicas 35-36",
+        "Filemom 1",
+        "Salmos 54",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 205,
+      "title": "Dia 205",
+      "passages": [
+        "Esdras 1-2",
+        "Hebreus 1",
+        "Salmos 55",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 206,
+      "title": "Dia 206",
+      "passages": [
+        "Esdras 3-4",
+        "Hebreus 2",
+        "Salmos 56",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 207,
+      "title": "Dia 207",
+      "passages": [
+        "Esdras 5-6",
+        "Hebreus 3",
+        "Salmos 57",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 208,
+      "title": "Dia 208",
+      "passages": [
+        "Esdras 7-8",
+        "Hebreus 4",
+        "Salmos 58",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 209,
+      "title": "Dia 209",
+      "passages": [
+        "Esdras 9-10",
+        "Hebreus 5",
+        "Salmos 59",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 210,
+      "title": "Dia 210",
+      "passages": [
+        "Neemias 1-2",
+        "Hebreus 6",
+        "Salmos 60",
+        "Provérbios 24"
+      ]
+    },
+    {
+      "day": 211,
+      "title": "Dia 211",
+      "passages": [
+        "Neemias 3-4",
+        "Hebreus 7",
+        "Salmos 61",
+        "Provérbios 25"
+      ]
+    },
+    {
+      "day": 212,
+      "title": "Dia 212",
+      "passages": [
+        "Neemias 5-6",
+        "Hebreus 8",
+        "Salmos 62",
+        "Provérbios 26"
+      ]
+    },
+    {
+      "day": 213,
+      "title": "Dia 213",
+      "passages": [
+        "Neemias 7-8",
+        "Hebreus 9",
+        "Salmos 63",
+        "Provérbios 27"
+      ]
+    },
+    {
+      "day": 214,
+      "title": "Dia 214",
+      "passages": [
+        "Neemias 9-10",
+        "Hebreus 10",
+        "Salmos 64",
+        "Provérbios 28"
+      ]
+    },
+    {
+      "day": 215,
+      "title": "Dia 215",
+      "passages": [
+        "Neemias 11-12",
+        "Hebreus 11",
+        "Salmos 65",
+        "Provérbios 29"
+      ]
+    },
+    {
+      "day": 216,
+      "title": "Dia 216",
+      "passages": [
+        "Neemias 13",
+        "Hebreus 12",
+        "Salmos 66",
+        "Provérbios 30"
+      ]
+    },
+    {
+      "day": 217,
+      "title": "Dia 217",
+      "passages": [
+        "Ester 1-2",
+        "Hebreus 13",
+        "Salmos 67",
+        "Provérbios 31"
+      ]
+    },
+    {
+      "day": 218,
+      "title": "Dia 218",
+      "passages": [
+        "Ester 3-4",
+        "Tiago 1",
+        "Salmos 68",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 219,
+      "title": "Dia 219",
+      "passages": [
+        "Ester 5-6",
+        "Tiago 2",
+        "Salmos 69",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 220,
+      "title": "Dia 220",
+      "passages": [
+        "Ester 7-8",
+        "Tiago 3",
+        "Salmos 70",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 221,
+      "title": "Dia 221",
+      "passages": [
+        "Ester 9-10",
+        "Tiago 4",
+        "Salmos 71",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 222,
+      "title": "Dia 222",
+      "passages": [
+        "Jó 1-2",
+        "Tiago 5",
+        "Salmos 72",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 223,
+      "title": "Dia 223",
+      "passages": [
+        "Jó 3-4",
+        "1 Pedro 1",
+        "Salmos 73",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 224,
+      "title": "Dia 224",
+      "passages": [
+        "Jó 5-6",
+        "1 Pedro 2",
+        "Salmos 74",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 225,
+      "title": "Dia 225",
+      "passages": [
+        "Jó 7-8",
+        "1 Pedro 3",
+        "Salmos 75",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 226,
+      "title": "Dia 226",
+      "passages": [
+        "Jó 9-10",
+        "1 Pedro 4",
+        "Salmos 76",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 227,
+      "title": "Dia 227",
+      "passages": [
+        "Jó 11-12",
+        "1 Pedro 5",
+        "Salmos 77",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 228,
+      "title": "Dia 228",
+      "passages": [
+        "Jó 13-14",
+        "2 Pedro 1",
+        "Salmos 78",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 229,
+      "title": "Dia 229",
+      "passages": [
+        "Jó 15-16",
+        "2 Pedro 2",
+        "Salmos 79",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 230,
+      "title": "Dia 230",
+      "passages": [
+        "Jó 17-18",
+        "2 Pedro 3",
+        "Salmos 80",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 231,
+      "title": "Dia 231",
+      "passages": [
+        "Jó 19-20",
+        "1 João 1",
+        "Salmos 81",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 232,
+      "title": "Dia 232",
+      "passages": [
+        "Jó 21-22",
+        "1 João 2",
+        "Salmos 82",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 233,
+      "title": "Dia 233",
+      "passages": [
+        "Jó 23-24",
+        "1 João 3",
+        "Salmos 83",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 234,
+      "title": "Dia 234",
+      "passages": [
+        "Jó 25-26",
+        "1 João 4",
+        "Salmos 84",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 235,
+      "title": "Dia 235",
+      "passages": [
+        "Jó 27-28",
+        "1 João 5",
+        "Salmos 85",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 236,
+      "title": "Dia 236",
+      "passages": [
+        "Jó 29-30",
+        "2 João 1",
+        "Salmos 86",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 237,
+      "title": "Dia 237",
+      "passages": [
+        "Jó 31-32",
+        "3 João 1",
+        "Salmos 87",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 238,
+      "title": "Dia 238",
+      "passages": [
+        "Jó 33-34",
+        "Judas 1",
+        "Salmos 88",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 239,
+      "title": "Dia 239",
+      "passages": [
+        "Jó 35-36",
+        "Apocalipse 1",
+        "Salmos 89",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 240,
+      "title": "Dia 240",
+      "passages": [
+        "Jó 37-38",
+        "Apocalipse 2",
+        "Salmos 90",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 241,
+      "title": "Dia 241",
+      "passages": [
+        "Jó 39-40",
+        "Apocalipse 3",
+        "Salmos 91",
+        "Provérbios 24"
+      ]
+    },
+    {
+      "day": 242,
+      "title": "Dia 242",
+      "passages": [
+        "Jó 41-42",
+        "Apocalipse 4",
+        "Salmos 92",
+        "Provérbios 25"
+      ]
+    },
+    {
+      "day": 243,
+      "title": "Dia 243",
+      "passages": [
+        "Isaías 1-2",
+        "Apocalipse 5",
+        "Salmos 93",
+        "Provérbios 26"
+      ]
+    },
+    {
+      "day": 244,
+      "title": "Dia 244",
+      "passages": [
+        "Isaías 3-4",
+        "Apocalipse 6",
+        "Salmos 94",
+        "Provérbios 27"
+      ]
+    },
+    {
+      "day": 245,
+      "title": "Dia 245",
+      "passages": [
+        "Isaías 5-6",
+        "Apocalipse 7",
+        "Salmos 95",
+        "Provérbios 28"
+      ]
+    },
+    {
+      "day": 246,
+      "title": "Dia 246",
+      "passages": [
+        "Isaías 7-8",
+        "Apocalipse 8",
+        "Salmos 96",
+        "Provérbios 29"
+      ]
+    },
+    {
+      "day": 247,
+      "title": "Dia 247",
+      "passages": [
+        "Isaías 9-10",
+        "Apocalipse 9",
+        "Salmos 97",
+        "Provérbios 30"
+      ]
+    },
+    {
+      "day": 248,
+      "title": "Dia 248",
+      "passages": [
+        "Isaías 11-12",
+        "Apocalipse 10",
+        "Salmos 98",
+        "Provérbios 31"
+      ]
+    },
+    {
+      "day": 249,
+      "title": "Dia 249",
+      "passages": [
+        "Isaías 13-14",
+        "Apocalipse 11",
+        "Salmos 99",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 250,
+      "title": "Dia 250",
+      "passages": [
+        "Isaías 15-16",
+        "Apocalipse 12",
+        "Salmos 100",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 251,
+      "title": "Dia 251",
+      "passages": [
+        "Isaías 17-18",
+        "Apocalipse 13",
+        "Salmos 101",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 252,
+      "title": "Dia 252",
+      "passages": [
+        "Isaías 19-20",
+        "Apocalipse 14",
+        "Salmos 102",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 253,
+      "title": "Dia 253",
+      "passages": [
+        "Isaías 21-22",
+        "Apocalipse 15",
+        "Salmos 103",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 254,
+      "title": "Dia 254",
+      "passages": [
+        "Isaías 23-24",
+        "Apocalipse 16",
+        "Salmos 104",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 255,
+      "title": "Dia 255",
+      "passages": [
+        "Isaías 25-26",
+        "Apocalipse 17",
+        "Salmos 105",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 256,
+      "title": "Dia 256",
+      "passages": [
+        "Isaías 27-28",
+        "Apocalipse 18",
+        "Salmos 106",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 257,
+      "title": "Dia 257",
+      "passages": [
+        "Isaías 29-30",
+        "Apocalipse 19",
+        "Salmos 107",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 258,
+      "title": "Dia 258",
+      "passages": [
+        "Isaías 31-32",
+        "Apocalipse 20",
+        "Salmos 108",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 259,
+      "title": "Dia 259",
+      "passages": [
+        "Isaías 33-34",
+        "Apocalipse 21",
+        "Salmos 109",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 260,
+      "title": "Dia 260",
+      "passages": [
+        "Isaías 35-36",
+        "Apocalipse 22",
+        "Salmos 110",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 261,
+      "title": "Dia 261",
+      "passages": [
+        "Isaías 37-38",
+        "Mateus 1",
+        "Salmos 111",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 262,
+      "title": "Dia 262",
+      "passages": [
+        "Isaías 39-40",
+        "Mateus 2",
+        "Salmos 112",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 263,
+      "title": "Dia 263",
+      "passages": [
+        "Isaías 41-42",
+        "Mateus 3",
+        "Salmos 113",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 264,
+      "title": "Dia 264",
+      "passages": [
+        "Isaías 43-44",
+        "Mateus 4",
+        "Salmos 114",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 265,
+      "title": "Dia 265",
+      "passages": [
+        "Isaías 45-46",
+        "Mateus 5",
+        "Salmos 115",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 266,
+      "title": "Dia 266",
+      "passages": [
+        "Isaías 47-48",
+        "Mateus 6",
+        "Salmos 116",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 267,
+      "title": "Dia 267",
+      "passages": [
+        "Isaías 49-50",
+        "Mateus 7",
+        "Salmos 117",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 268,
+      "title": "Dia 268",
+      "passages": [
+        "Isaías 51-52",
+        "Mateus 8",
+        "Salmos 118",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 269,
+      "title": "Dia 269",
+      "passages": [
+        "Isaías 53-54",
+        "Mateus 9",
+        "Salmos 119",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 270,
+      "title": "Dia 270",
+      "passages": [
+        "Isaías 55-56",
+        "Mateus 10",
+        "Salmos 120",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 271,
+      "title": "Dia 271",
+      "passages": [
+        "Isaías 57-58",
+        "Mateus 11",
+        "Salmos 121",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 272,
+      "title": "Dia 272",
+      "passages": [
+        "Isaías 59-60",
+        "Mateus 12",
+        "Salmos 122",
+        "Provérbios 24"
+      ]
+    },
+    {
+      "day": 273,
+      "title": "Dia 273",
+      "passages": [
+        "Isaías 61-62",
+        "Mateus 13",
+        "Salmos 123",
+        "Provérbios 25"
+      ]
+    },
+    {
+      "day": 274,
+      "title": "Dia 274",
+      "passages": [
+        "Isaías 63-64",
+        "Mateus 14",
+        "Salmos 124",
+        "Provérbios 26"
+      ]
+    },
+    {
+      "day": 275,
+      "title": "Dia 275",
+      "passages": [
+        "Isaías 65-66",
+        "Mateus 15",
+        "Salmos 125",
+        "Provérbios 27"
+      ]
+    },
+    {
+      "day": 276,
+      "title": "Dia 276",
+      "passages": [
+        "Jeremias 1-2",
+        "Mateus 16",
+        "Salmos 126",
+        "Provérbios 28"
+      ]
+    },
+    {
+      "day": 277,
+      "title": "Dia 277",
+      "passages": [
+        "Jeremias 3-4",
+        "Mateus 17",
+        "Salmos 127",
+        "Provérbios 29"
+      ]
+    },
+    {
+      "day": 278,
+      "title": "Dia 278",
+      "passages": [
+        "Jeremias 5-6",
+        "Mateus 18",
+        "Salmos 128",
+        "Provérbios 30"
+      ]
+    },
+    {
+      "day": 279,
+      "title": "Dia 279",
+      "passages": [
+        "Jeremias 7-8",
+        "Mateus 19",
+        "Salmos 129",
+        "Provérbios 31"
+      ]
+    },
+    {
+      "day": 280,
+      "title": "Dia 280",
+      "passages": [
+        "Jeremias 9-10",
+        "Mateus 20",
+        "Salmos 130",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 281,
+      "title": "Dia 281",
+      "passages": [
+        "Jeremias 11-12",
+        "Mateus 21",
+        "Salmos 131",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 282,
+      "title": "Dia 282",
+      "passages": [
+        "Jeremias 13-14",
+        "Mateus 22",
+        "Salmos 132",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 283,
+      "title": "Dia 283",
+      "passages": [
+        "Jeremias 15-16",
+        "Mateus 23",
+        "Salmos 133",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 284,
+      "title": "Dia 284",
+      "passages": [
+        "Jeremias 17-18",
+        "Mateus 24",
+        "Salmos 134",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 285,
+      "title": "Dia 285",
+      "passages": [
+        "Jeremias 19-20",
+        "Mateus 25",
+        "Salmos 135",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 286,
+      "title": "Dia 286",
+      "passages": [
+        "Jeremias 21-22",
+        "Mateus 26",
+        "Salmos 136",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 287,
+      "title": "Dia 287",
+      "passages": [
+        "Jeremias 23-24",
+        "Mateus 27",
+        "Salmos 137",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 288,
+      "title": "Dia 288",
+      "passages": [
+        "Jeremias 25-26",
+        "Mateus 28",
+        "Salmos 138",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 289,
+      "title": "Dia 289",
+      "passages": [
+        "Jeremias 27-28",
+        "Marcos 1",
+        "Salmos 139",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 290,
+      "title": "Dia 290",
+      "passages": [
+        "Jeremias 29-30",
+        "Marcos 2",
+        "Salmos 140",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 291,
+      "title": "Dia 291",
+      "passages": [
+        "Jeremias 31-32",
+        "Marcos 3",
+        "Salmos 141",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 292,
+      "title": "Dia 292",
+      "passages": [
+        "Jeremias 33-34",
+        "Marcos 4",
+        "Salmos 142",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 293,
+      "title": "Dia 293",
+      "passages": [
+        "Jeremias 35-36",
+        "Marcos 5",
+        "Salmos 143",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 294,
+      "title": "Dia 294",
+      "passages": [
+        "Jeremias 37-38",
+        "Marcos 6",
+        "Salmos 144",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 295,
+      "title": "Dia 295",
+      "passages": [
+        "Jeremias 39-40",
+        "Marcos 7",
+        "Salmos 145",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 296,
+      "title": "Dia 296",
+      "passages": [
+        "Jeremias 41-42",
+        "Marcos 8",
+        "Salmos 146",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 297,
+      "title": "Dia 297",
+      "passages": [
+        "Jeremias 43-44",
+        "Marcos 9",
+        "Salmos 147",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 298,
+      "title": "Dia 298",
+      "passages": [
+        "Jeremias 45-46",
+        "Marcos 10",
+        "Salmos 148",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 299,
+      "title": "Dia 299",
+      "passages": [
+        "Jeremias 47-48",
+        "Marcos 11",
+        "Salmos 149",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 300,
+      "title": "Dia 300",
+      "passages": [
+        "Jeremias 49-50",
+        "Marcos 12",
+        "Salmos 150",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 301,
+      "title": "Dia 301",
+      "passages": [
+        "Jeremias 51-52",
+        "Marcos 13",
+        "Salmos 1",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 302,
+      "title": "Dia 302",
+      "passages": [
+        "Lamentações 1-2",
+        "Marcos 14",
+        "Salmos 2",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 303,
+      "title": "Dia 303",
+      "passages": [
+        "Lamentações 3-4",
+        "Marcos 15",
+        "Salmos 3",
+        "Provérbios 24"
+      ]
+    },
+    {
+      "day": 304,
+      "title": "Dia 304",
+      "passages": [
+        "Lamentações 5",
+        "Marcos 16",
+        "Salmos 4",
+        "Provérbios 25"
+      ]
+    },
+    {
+      "day": 305,
+      "title": "Dia 305",
+      "passages": [
+        "Ezequiel 1-2",
+        "Lucas 1",
+        "Salmos 5",
+        "Provérbios 26"
+      ]
+    },
+    {
+      "day": 306,
+      "title": "Dia 306",
+      "passages": [
+        "Ezequiel 3-4",
+        "Lucas 2",
+        "Salmos 6",
+        "Provérbios 27"
+      ]
+    },
+    {
+      "day": 307,
+      "title": "Dia 307",
+      "passages": [
+        "Ezequiel 5-6",
+        "Lucas 3",
+        "Salmos 7",
+        "Provérbios 28"
+      ]
+    },
+    {
+      "day": 308,
+      "title": "Dia 308",
+      "passages": [
+        "Ezequiel 7-8",
+        "Lucas 4",
+        "Salmos 8",
+        "Provérbios 29"
+      ]
+    },
+    {
+      "day": 309,
+      "title": "Dia 309",
+      "passages": [
+        "Ezequiel 9-10",
+        "Lucas 5",
+        "Salmos 9",
+        "Provérbios 30"
+      ]
+    },
+    {
+      "day": 310,
+      "title": "Dia 310",
+      "passages": [
+        "Ezequiel 11-12",
+        "Lucas 6",
+        "Salmos 10",
+        "Provérbios 31"
+      ]
+    },
+    {
+      "day": 311,
+      "title": "Dia 311",
+      "passages": [
+        "Ezequiel 13-14",
+        "Lucas 7",
+        "Salmos 11",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 312,
+      "title": "Dia 312",
+      "passages": [
+        "Ezequiel 15-16",
+        "Lucas 8",
+        "Salmos 12",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 313,
+      "title": "Dia 313",
+      "passages": [
+        "Ezequiel 17-18",
+        "Lucas 9",
+        "Salmos 13",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 314,
+      "title": "Dia 314",
+      "passages": [
+        "Ezequiel 19-20",
+        "Lucas 10",
+        "Salmos 14",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 315,
+      "title": "Dia 315",
+      "passages": [
+        "Ezequiel 21-22",
+        "Lucas 11",
+        "Salmos 15",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 316,
+      "title": "Dia 316",
+      "passages": [
+        "Ezequiel 23-24",
+        "Lucas 12",
+        "Salmos 16",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 317,
+      "title": "Dia 317",
+      "passages": [
+        "Ezequiel 25-26",
+        "Lucas 13",
+        "Salmos 17",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 318,
+      "title": "Dia 318",
+      "passages": [
+        "Ezequiel 27-28",
+        "Lucas 14",
+        "Salmos 18",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 319,
+      "title": "Dia 319",
+      "passages": [
+        "Ezequiel 29-30",
+        "Lucas 15",
+        "Salmos 19",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 320,
+      "title": "Dia 320",
+      "passages": [
+        "Ezequiel 31-32",
+        "Lucas 16",
+        "Salmos 20",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 321,
+      "title": "Dia 321",
+      "passages": [
+        "Ezequiel 33-34",
+        "Lucas 17",
+        "Salmos 21",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 322,
+      "title": "Dia 322",
+      "passages": [
+        "Ezequiel 35-36",
+        "Lucas 18",
+        "Salmos 22",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 323,
+      "title": "Dia 323",
+      "passages": [
+        "Ezequiel 37-38",
+        "Lucas 19",
+        "Salmos 23",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 324,
+      "title": "Dia 324",
+      "passages": [
+        "Ezequiel 39-40",
+        "Lucas 20",
+        "Salmos 24",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 325,
+      "title": "Dia 325",
+      "passages": [
+        "Ezequiel 41-42",
+        "Lucas 21",
+        "Salmos 25",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 326,
+      "title": "Dia 326",
+      "passages": [
+        "Ezequiel 43-44",
+        "Lucas 22",
+        "Salmos 26",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 327,
+      "title": "Dia 327",
+      "passages": [
+        "Ezequiel 45-46",
+        "Lucas 23",
+        "Salmos 27",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 328,
+      "title": "Dia 328",
+      "passages": [
+        "Ezequiel 47-48",
+        "Lucas 24",
+        "Salmos 28",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 329,
+      "title": "Dia 329",
+      "passages": [
+        "Daniel 1-2",
+        "João 1",
+        "Salmos 29",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 330,
+      "title": "Dia 330",
+      "passages": [
+        "Daniel 3-4",
+        "João 2",
+        "Salmos 30",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 331,
+      "title": "Dia 331",
+      "passages": [
+        "Daniel 5-6",
+        "João 3",
+        "Salmos 31",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 332,
+      "title": "Dia 332",
+      "passages": [
+        "Daniel 7-8",
+        "João 4",
+        "Salmos 32",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 333,
+      "title": "Dia 333",
+      "passages": [
+        "Daniel 9-10",
+        "João 5",
+        "Salmos 33",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 334,
+      "title": "Dia 334",
+      "passages": [
+        "Daniel 11-12",
+        "João 6",
+        "Salmos 34",
+        "Provérbios 24"
+      ]
+    },
+    {
+      "day": 335,
+      "title": "Dia 335",
+      "passages": [
+        "Oséias 1-2",
+        "João 7",
+        "Salmos 35",
+        "Provérbios 25"
+      ]
+    },
+    {
+      "day": 336,
+      "title": "Dia 336",
+      "passages": [
+        "Oséias 3-4",
+        "João 8",
+        "Salmos 36",
+        "Provérbios 26"
+      ]
+    },
+    {
+      "day": 337,
+      "title": "Dia 337",
+      "passages": [
+        "Oséias 5-6",
+        "João 9",
+        "Salmos 37",
+        "Provérbios 27"
+      ]
+    },
+    {
+      "day": 338,
+      "title": "Dia 338",
+      "passages": [
+        "Oséias 7-8",
+        "João 10",
+        "Salmos 38",
+        "Provérbios 28"
+      ]
+    },
+    {
+      "day": 339,
+      "title": "Dia 339",
+      "passages": [
+        "Oséias 9-10",
+        "João 11",
+        "Salmos 39",
+        "Provérbios 29"
+      ]
+    },
+    {
+      "day": 340,
+      "title": "Dia 340",
+      "passages": [
+        "Oséias 11-12",
+        "João 12",
+        "Salmos 40",
+        "Provérbios 30"
+      ]
+    },
+    {
+      "day": 341,
+      "title": "Dia 341",
+      "passages": [
+        "Oséias 13-14",
+        "João 13",
+        "Salmos 41",
+        "Provérbios 31"
+      ]
+    },
+    {
+      "day": 342,
+      "title": "Dia 342",
+      "passages": [
+        "Joel 1-2",
+        "João 14",
+        "Salmos 42",
+        "Provérbios 1"
+      ]
+    },
+    {
+      "day": 343,
+      "title": "Dia 343",
+      "passages": [
+        "Joel 3",
+        "João 15",
+        "Salmos 43",
+        "Provérbios 2"
+      ]
+    },
+    {
+      "day": 344,
+      "title": "Dia 344",
+      "passages": [
+        "Amós 1-2",
+        "João 16",
+        "Salmos 44",
+        "Provérbios 3"
+      ]
+    },
+    {
+      "day": 345,
+      "title": "Dia 345",
+      "passages": [
+        "Amós 3-4",
+        "João 17",
+        "Salmos 45",
+        "Provérbios 4"
+      ]
+    },
+    {
+      "day": 346,
+      "title": "Dia 346",
+      "passages": [
+        "Amós 5-6",
+        "João 18",
+        "Salmos 46",
+        "Provérbios 5"
+      ]
+    },
+    {
+      "day": 347,
+      "title": "Dia 347",
+      "passages": [
+        "Amós 7-8",
+        "João 19",
+        "Salmos 47",
+        "Provérbios 6"
+      ]
+    },
+    {
+      "day": 348,
+      "title": "Dia 348",
+      "passages": [
+        "Amós 9",
+        "João 20",
+        "Salmos 48",
+        "Provérbios 7"
+      ]
+    },
+    {
+      "day": 349,
+      "title": "Dia 349",
+      "passages": [
+        "Obadias 1",
+        "João 21",
+        "Salmos 49",
+        "Provérbios 8"
+      ]
+    },
+    {
+      "day": 350,
+      "title": "Dia 350",
+      "passages": [
+        "Jonas 1-2",
+        "Atos 1",
+        "Salmos 50",
+        "Provérbios 9"
+      ]
+    },
+    {
+      "day": 351,
+      "title": "Dia 351",
+      "passages": [
+        "Jonas 3-4",
+        "Atos 2",
+        "Salmos 51",
+        "Provérbios 10"
+      ]
+    },
+    {
+      "day": 352,
+      "title": "Dia 352",
+      "passages": [
+        "Miqueias 1-2",
+        "Atos 3",
+        "Salmos 52",
+        "Provérbios 11"
+      ]
+    },
+    {
+      "day": 353,
+      "title": "Dia 353",
+      "passages": [
+        "Miqueias 3-4",
+        "Atos 4",
+        "Salmos 53",
+        "Provérbios 12"
+      ]
+    },
+    {
+      "day": 354,
+      "title": "Dia 354",
+      "passages": [
+        "Miqueias 5-6",
+        "Atos 5",
+        "Salmos 54",
+        "Provérbios 13"
+      ]
+    },
+    {
+      "day": 355,
+      "title": "Dia 355",
+      "passages": [
+        "Miqueias 7",
+        "Atos 6",
+        "Salmos 55",
+        "Provérbios 14"
+      ]
+    },
+    {
+      "day": 356,
+      "title": "Dia 356",
+      "passages": [
+        "Naum 1-2",
+        "Atos 7",
+        "Salmos 56",
+        "Provérbios 15"
+      ]
+    },
+    {
+      "day": 357,
+      "title": "Dia 357",
+      "passages": [
+        "Naum 3",
+        "Atos 8",
+        "Salmos 57",
+        "Provérbios 16"
+      ]
+    },
+    {
+      "day": 358,
+      "title": "Dia 358",
+      "passages": [
+        "Habacuque 1-2",
+        "Atos 9",
+        "Salmos 58",
+        "Provérbios 17"
+      ]
+    },
+    {
+      "day": 359,
+      "title": "Dia 359",
+      "passages": [
+        "Habacuque 3",
+        "Atos 10",
+        "Salmos 59",
+        "Provérbios 18"
+      ]
+    },
+    {
+      "day": 360,
+      "title": "Dia 360",
+      "passages": [
+        "Sofonias 1-2",
+        "Atos 11",
+        "Salmos 60",
+        "Provérbios 19"
+      ]
+    },
+    {
+      "day": 361,
+      "title": "Dia 361",
+      "passages": [
+        "Sofonias 3",
+        "Atos 12",
+        "Salmos 61",
+        "Provérbios 20"
+      ]
+    },
+    {
+      "day": 362,
+      "title": "Dia 362",
+      "passages": [
+        "Ageu 1-2",
+        "Atos 13",
+        "Salmos 62",
+        "Provérbios 21"
+      ]
+    },
+    {
+      "day": 363,
+      "title": "Dia 363",
+      "passages": [
+        "Zacarias 1-2",
+        "Atos 14",
+        "Salmos 63",
+        "Provérbios 22"
+      ]
+    },
+    {
+      "day": 364,
+      "title": "Dia 364",
+      "passages": [
+        "Zacarias 3-4",
+        "Atos 15",
+        "Salmos 64",
+        "Provérbios 23"
+      ]
+    },
+    {
+      "day": 365,
+      "title": "Dia 365",
+      "passages": [
+        "Zacarias 5-6",
+        "Atos 16",
+        "Salmos 65",
+        "Provérbios 24"
+      ]
+    }
+  ]
+}
