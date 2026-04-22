@@ -909,7 +909,7 @@ export const ReadingPlans: React.FC<{
                 </button>
               </div>
               
-              <p className="text-sm text-[var(--text-bible-muted)] mb-4 bg-[var(--surface-2)] p-3 rounded-lg">
+              <p className="text-sm text-[var(--text-bible)] mb-4 bg-[var(--surface-2)] p-3 rounded-lg">
                 Selecione a tradução bíblica para este plano de leitura:
               </p>
 
