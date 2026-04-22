@@ -47,7 +47,6 @@ import { getStoredGoogleAccessToken, loginWithGoogle } from '../firebase';
 import { exportNoteToGoogleDocs } from '../services/googleDocsService';
 import { exportNote, type ExportFormat } from '../services/ExportService';
 import { TagService, PALETTE } from '../services/TagService';
-import { NoteEditorModal } from './NoteEditorModal';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -968,15 +967,6 @@ export const Notes: React.FC = () => {
         </section>
       </div>
 
-      {/* Note Editor Modal */}
-      <NoteEditorModal
-        note={editingNote}
-        isOpen={isEditorModalOpen}
-        onClose={handleModalClose}
-        onSave={handleModalSave}
-        onDelete={handleModalDelete}
-        availableTags={allTags}
-      />
-    </div>
+      </div>
   );
 };

@@ -171,9 +171,9 @@ export const DictionaryView: React.FC = () => {
               </div>
             )}
             {getConfiguredProvider() === 'opencode' && (
-              <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
+              <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
                 <AlertCircle className="w-3 h-3" />
-                <span>OpenCode não funciona no browser (CORS). Use OpenRouter em替代.</span>
+                <span>OpenCode está com CORS bloqueado. Use OpenRouter替代.</span>
               </div>
             )}
 

@@ -25,11 +25,11 @@ const SectionHeader: React.FC<{ icon: React.ElementType; title: string; descript
 );
 
 const API_PROVIDERS = [
-  { id: 'opencode', name: 'OpenCode.ai', baseUrl: 'https://opencode.ai/api/v1', description: 'Nossa IA - MiniMax M2.5 gratuito' },
-  { id: 'google', name: 'Google AI Studio (Gemini)', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', description: 'Generoso - até 1M tokens gratuitamente' },
+  { id: 'openrouter', name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', description: 'MiniMax, Nemotron, Gemma, Qwen - gratuitito com CORS' },
   { id: 'groq', name: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', description: 'Velocidade instantanea - Llama e Mixtral' },
-  { id: 'openrouter', name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', description: 'Agregador com varios modelos gratuitos' },
+  { id: 'google', name: 'Google AI Studio (Gemini)', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', description: 'Generoso - até 1M tokens gratuitamente' },
   { id: 'huggingface', name: 'Hugging Face', baseUrl: 'https://api-inference.huggingface.co', description: 'Milhares de modelos open source' },
+  { id: 'opencode', name: 'OpenCode.ai ⛔', baseUrl: 'https://opencode.ai/api/v1', description: 'CORS bloqueado - use OpenRouter' },
 ];
 
 const OPENCODE_MODELS = [
@@ -63,7 +63,7 @@ export const AISettingsPage: React.FC = () => {
   const { settings, updateSettings } = useAppContext();
 
   const [apiProvider, setApiProvider] = useState(() => {
-    return localStorage.getItem('ai-api-provider') || 'google';
+    return localStorage.getItem('ai-api-provider') || 'openrouter';
   });
 
   const [openCodeKey, setOpenCodeKey] = useState(() => {
