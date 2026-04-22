@@ -400,3 +400,97 @@ export const autoSwitchToOpenRouter = (): boolean => {
   console.log('[geminiService] Não foi possível fazer auto-switch - chave OpenRouter não encontrada');
   return false;
 };
+
+export interface ReadingPlanAI {
+  id: string;
+  title: string;
+  description: string;
+  totalDays: number;
+  readings: {
+    day: number;
+    title: string;
+    type: 'scripture' | 'devotional';
+    passages: string[];
+    devotionalContent?: string;
+  }[];
+}
+
+const READING_PLAN_SYSTEM_PROMPT = `
+Você é um assistente especializado em criar planos de leitura bíblica personalizados.
+Seu trabalho é criar planos de leitura baseados em descrições do usuário.
+
+DIRETRIZES:
+1. Crie planos que sejam teologicamente ricos e espiritualmente edificantes.
+2. Inclua uma mistura de leituras bíblicas e, opcionalmente, devocionais.
+3. Use referências bíblicas precisas (formato: Livro Capítulo:Versículos).
+4. Para devocionais, escreva conteúdo original e reflexivo de aproximadamente 200-300 palavras.
+5. Responda sempre em JSON válido, sem texto adicional.
+
+FORMATO DE RESPOSTA (JSON):
+{
+  "title": "Nome do plano",
+  "description": "Breve descrição do plano",
+  "totalDays": número de dias,
+  "readings": [
+    {
+      "day": número do dia,
+      "title": "Título da leitura",
+      "type": "scripture" ou "devotional",
+      "passages": ["Referência bíblica"],
+      "devotionalContent": "Conteúdo do devocional (apenas se type for devotional)"
+    }
+  ]
+}
+`;
+
+export const generateReadingPlan = async (
+  userDescription: string,
+  preferredDays?: number
+): Promise<{ success: boolean; plan?: ReadingPlanAI; error?: string }> => {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    return { success: false, error: 'Chave de API não configurada. Vá em Configurações → IA e adicione sua chave.' };
+  }
+
+  const provider = getConfiguredProvider();
+  const daysText = preferredDays ? `com aproximadamente ${preferredDays} dias` : 'com duração adequada';
+  
+  const userPrompt = `
+Por favor, crie um plano de leitura bíblica personalizado ${daysText}.
+
+Descrição do usuário: ${userDescription}
+
+Responda apenas com o JSON, sem texto adicional.
+`;
+
+  try {
+    const response = await callAI(READING_PLAN_SYSTEM_PROMPT, userPrompt, provider);
+    
+    if (response.startsWith('Erro') || response.includes('não configurada') || response.includes('Tente novamente')) {
+      return { success: false, error: response };
+    }
+
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return { success: false, error: 'Não foi possível entender a resposta da IA. Tente novamente.' };
+    }
+
+    const plan = JSON.parse(jsonMatch[0]);
+    
+    const planId = `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    return {
+      success: true,
+      plan: {
+        id: planId,
+        title: plan.title || 'Plano Personalizado',
+        description: plan.description || '',
+        totalDays: plan.totalDays || plan.readings?.length || 1,
+        readings: plan.readings || []
+      }
+    };
+  } catch (error) {
+    console.error('[geminiService] Erro ao gerar plano:', error);
+    return { success: false, error: 'Erro ao gerar plano. Tente novamente.' };
+  }
+};
