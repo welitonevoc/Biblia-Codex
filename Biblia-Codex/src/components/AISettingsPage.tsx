@@ -90,6 +90,10 @@ export const AISettingsPage: React.FC = () => {
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [availableModels, setAvailableModels] = useState<{ id: string; name: string; context_length?: number; free?: boolean }[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [modelsError, setModelsError] = useState<string | null>(null);
 
   const currentApiKey = apiProvider === 'opencode' ? openCodeKey : apiProvider === 'openrouter' ? openRouterKey : apiProvider === 'groq' ? groqKey : apiProvider === 'huggingface' ? huggingfaceKey : geminiKey;
 
@@ -111,8 +115,11 @@ export const AISettingsPage: React.FC = () => {
       setGeminiKey(geminiKeyInput.trim());
     }
     localStorage.setItem('ai-api-provider', apiProvider);
+    if (selectedModel) {
+      localStorage.setItem('ai-model', selectedModel);
+    }
     setTestResult({ success: true, message: 'Chave salva com sucesso!' });
-  }, [apiProvider, openCodeKeyInput, openRouterKeyInput, geminiKeyInput, groqKeyInput, huggingfaceKeyInput]);
+  }, [apiProvider, openCodeKeyInput, openRouterKeyInput, geminiKeyInput, groqKeyInput, huggingfaceKeyInput, selectedModel]);
 
   const handleTestConnection = useCallback(async () => {
     const key = apiProvider === 'opencode' ? openCodeKey : apiProvider === 'openrouter' ? openRouterKey : apiProvider === 'groq' ? groqKey : apiProvider === 'huggingface' ? huggingfaceKey : geminiKey;
@@ -126,14 +133,33 @@ export const AISettingsPage: React.FC = () => {
 
     try {
       let response;
-      if (apiProvider === 'opencode') {
+      if (apiProvider === 'openrouter') {
+        // OpenRouter - try to get user info or do a simple chat
+        response = await fetch(
+          `https://openrouter.ai/api/v1/chat/completions`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${key}`,
+              'Content-Type': 'application/json',
+              'HTTP-Referer': 'https://biblia-codex.vercel.app',
+              'X-Title': 'Biblia Codex'
+            },
+            body: JSON.stringify({
+              model: 'openrouter/free',
+              messages: [{ role: 'user', content: 'Hi' }],
+              max_tokens: 10
+            })
+          }
+        );
+      } else if (apiProvider === 'opencode') {
         response = await fetch(
           `https://opencode.ai/api/v1/models`,
           { headers: { 'Authorization': `Bearer ${key}` } }
         );
-      } else if (apiProvider === 'openrouter') {
+      } else if (apiProvider === 'groq') {
         response = await fetch(
-          `https://openrouter.ai/api/v1/models`,
+          `https://api.groq.com/openai/v1/models`,
           { headers: { 'Authorization': `Bearer ${key}` } }
         );
       } else {
@@ -154,6 +180,76 @@ export const AISettingsPage: React.FC = () => {
       setIsTesting(false);
     }
   }, [apiProvider, openCodeKey, openRouterKey, geminiKey, groqKey, huggingfaceKey]);
+
+  const loadAvailableModels = useCallback(async () => {
+    const key = currentApiKey;
+    if (!key) {
+      setModelsError('Insira uma chave primeiro');
+      return;
+    }
+
+    setIsLoadingModels(true);
+    setModelsError(null);
+    setAvailableModels([]);
+
+    try {
+      let modelsUrl = '';
+      let data: any;
+
+      if (apiProvider === 'openrouter') {
+        modelsUrl = `https://openrouter.ai/api/v1/models`;
+      } else if (apiProvider === 'groq') {
+        modelsUrl = `https://api.groq.com/openai/v1/models`;
+      } else if (apiProvider === 'google') {
+        modelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
+      }
+
+      const response = await fetch(modelsUrl, {
+        headers: apiProvider === 'openrouter' 
+          ? { 'Authorization': `Bearer ${key}`, 'HTTP-Referer': 'https://biblia-codex.vercel.app' }
+          : { 'Authorization': `Bearer ${key}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao carregar modelos');
+      }
+
+      data = await response.json();
+
+      let models: { id: string; name: string; context_length?: number; free?: boolean }[] = [];
+
+      if (apiProvider === 'openrouter') {
+        models = (data.data || []).map((m: any) => ({
+          id: m.id,
+          name: m.name || m.id,
+          context_length: m.context_length,
+          free: m.pricing?.prompt === '0'
+        })).slice(0, 50);
+      } else if (apiProvider === 'groq') {
+        models = (data.data || []).map((m: any) => ({
+          id: m.id,
+          name: m.id,
+          context_length: m.context_window_tokens,
+          free: true
+        }));
+      } else if (apiProvider === 'google') {
+        models = (data.models || []).map((m: any) => ({
+          id: m.name.replace('models/', ''),
+          name: m.title || m.name,
+          context_length: m.inputTokenLimit
+        }));
+      }
+
+      setAvailableModels(models);
+      if (models.length > 0) {
+        setSelectedModel(models[0].id);
+      }
+    } catch (err: any) {
+      setModelsError(err.message || 'Erro ao carregar modelos');
+    } finally {
+      setIsLoadingModels(false);
+    }
+  }, [currentApiKey, apiProvider]);
 
   const aiFeatures = [
     { id: 'autoSuggest', label: 'Sugestoes Automaticas', description: 'Exibe sugestoes contextuais durante a leitura', icon: Lightbulb, enabled: settings.ai.autoSuggest },
@@ -223,19 +319,46 @@ export const AISettingsPage: React.FC = () => {
                   <p>1. Crie uma conta gratuita em <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-bible-accent hover:underline">OpenRouter.ai</a></p>
                   <p>2. Vá para "Keys" no menu lateral e clique "Create Key"</p>
                   <p>3. Copie a chave gerada (começa com "sk-or-v1-...")</p>
-                  <p>4. Cole aqui para acessar modelos gratuitos ilimitados</p>
+                  <p>4. Cole aqui e clique em "Carregar Modelos"</p>
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-amber-100 border border-bible-accent">
-                <div className="text-xs font-semibold text-bible-text mb-1">Modelos Gratuitos Disponiveis:</div>
-                <ul className="text-xs text-bible-text-muted space-y-0.5">
-                  <li>- MiniMax M2.5 (197K contexto)</li>
-                  <li>- NVIDIA Nemotron 3 Super (262K contexto)</li>
-                  <li>- NVIDIA Nemotron 3 Nano 30B (256K contexto)</li>
-                  <li>- Google Gemma 4 31B/26B (262K contexto)</li>
-                  <li>- Qwen3 Next 80B e Qwen3 Coder (262K contexto)</li>
-                </ul>
-              </div>
+              
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={loadAvailableModels}
+                disabled={!openRouterKeyInput.trim() || isLoadingModels}
+                className={cn("w-full px-4 py-3 rounded-xl font-semibold text-sm transition-all",
+                  !openRouterKeyInput.trim() 
+                    ? "bg-bible-surface border border-bible-border text-bible-text-muted cursor-not-allowed"
+                    : "bg-[var(--accent-bible)] text-white hover:bg-[var(--accent-bible-strong)]"
+                )}
+              >
+                {isLoadingModels ? 'Carregando modelos...' : 'Carregar Modelos Disponíveis'}
+              </motion.button>
+
+              {modelsError && (
+                <div className="p-3 rounded-xl bg-red-100 text-red-700 text-xs">
+                  {modelsError}
+                </div>
+              )}
+
+              {availableModels.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-bible-text">Selecione o Modelo:</div>
+                  <select
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text focus:outline-none focus:ring-2 focus:ring-bible-accent"
+                  >
+                    {availableModels.map((model) => (
+                      <option key={model.id} value={model.id}>
+                        {model.name} {model.free ? '(Gratuito)' : ''} {model.context_length ? `(${model.context_length?.toLocaleString()} tokens)` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           )}
 
@@ -249,6 +372,37 @@ export const AISettingsPage: React.FC = () => {
                 className={cn("w-full px-4 py-3 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text placeholder:text-bible-text-muted focus:outline-none focus:ring-2 focus:ring-bible-accent")}
               />
               <p className="text-xs text-bible-text-muted">Obtenha uma chave gratuita em <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-bible-accent hover:underline">Google AI Studio</a></p>
+              
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={loadAvailableModels}
+                disabled={!geminiKeyInput.trim() || isLoadingModels}
+                className={cn("w-full px-4 py-3 rounded-xl font-semibold text-sm transition-all",
+                  !geminiKeyInput.trim() 
+                    ? "bg-bible-surface border border-bible-border text-bible-text-muted cursor-not-allowed"
+                    : "bg-[var(--accent-bible)] text-white hover:bg-[var(--accent-bible-strong)]"
+                )}
+              >
+                {isLoadingModels ? 'Carregando modelos...' : 'Carregar Modelos Disponíveis'}
+              </motion.button>
+
+              {availableModels.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-bible-text">Selecione o Modelo:</div>
+                  <select
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text focus:outline-none focus:ring-2 focus:ring-bible-accent"
+                  >
+                    {availableModels.map((model) => (
+                      <option key={model.id} value={model.id}>
+                        {model.name} {model.context_length ? `(${model.context_length?.toLocaleString()} tokens)` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           )}
 
@@ -275,6 +429,37 @@ export const AISettingsPage: React.FC = () => {
                 className={cn("w-full px-4 py-3 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text placeholder:text-bible-text-muted focus:outline-none focus:ring-2 focus:ring-bible-accent")}
               />
               <p className="text-xs text-bible-text-muted">Obtenha uma chave gratuita em <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-bible-accent hover:underline">Groq Console</a></p>
+              
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={loadAvailableModels}
+                disabled={!groqKeyInput.trim() || isLoadingModels}
+                className={cn("w-full px-4 py-3 rounded-xl font-semibold text-sm transition-all",
+                  !groqKeyInput.trim() 
+                    ? "bg-bible-surface border border-bible-border text-bible-text-muted cursor-not-allowed"
+                    : "bg-[var(--accent-bible)] text-white hover:bg-[var(--accent-bible-strong)]"
+                )}
+              >
+                {isLoadingModels ? 'Carregando modelos...' : 'Carregar Modelos Disponíveis'}
+              </motion.button>
+
+              {availableModels.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-bible-text">Selecione o Modelo:</div>
+                  <select
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text focus:outline-none focus:ring-2 focus:ring-bible-accent"
+                  >
+                    {availableModels.map((model) => (
+                      <option key={model.id} value={model.id}>
+                        {model.name} {model.free ? '(Gratuito)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           )}
 
