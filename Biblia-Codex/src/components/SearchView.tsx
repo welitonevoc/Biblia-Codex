@@ -9,6 +9,7 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getAudioTracksForChapter } from '../data/audioData';
 import { getAIResponse, getApiKey, getConfiguredProvider, testAIConfiguration } from '../services/geminiService';
+import { debugAIConfig } from '../debugAI';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
@@ -260,11 +261,25 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                   onClick={async () => {
                     const result = await testAIConfiguration();
                     setConfigTest(result);
+                    console.log('Resultado do teste IA:', result);
                     setTimeout(() => setConfigTest(null), 5000);
                   }}
                   className="text-xs px-3 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] transition-colors"
                 >
                   Testar Configuração IA
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={async () => {
+                    const result = await debugAIConfig();
+                    console.log('Debug detalhado IA:', result);
+                  }}
+                  className="text-xs px-3 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] transition-colors"
+                  title="Logs detalhados no console"
+                >
+                  Debug IA
                 </motion.button>
 
                 {configTest && (

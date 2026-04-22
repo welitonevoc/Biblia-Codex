@@ -1,0 +1,409 @@
+microsoft:
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: zh-TW-HsiaoChenNeural
+  desc: zh-CN, HisaoChen
+  extendUI: null
+  gender: 0
+  locale: zh-TW
+  name: 曉臻
+  note: v11.0
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (zh-TW, HsiaoChenNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: zh-TW-YunJheNeural
+  desc: zh-CN, YunJhe
+  extendUI: null
+  gender: 1
+  locale: zh-TW
+  name: 雲哲
+  note: v11.0
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (zh-TW, YunJheNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: de-DE-ConradNeural
+  desc: de-DE, Conrad
+  extendUI: null
+  gender: 1
+  locale: de-DE
+  name: Conrad
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (de-DE, ConradNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: de-DE-KatjaNeural
+  desc: de-DE, Katja
+  extendUI: null
+  gender: 0
+  locale: de-DE
+  name: Katja
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (de-DE, KatjaNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: en-US-EricNeural
+  desc: en-US, Eric
+  extendUI: null
+  gender: 1
+  locale: en-US
+  name: Eric
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (en-US, EricNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: en-US-MichelleNeural
+  desc: en-US, Michelle
+  extendUI: null
+  gender: 0
+  locale: en-US
+  name: Michelle
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (en-US, MichelleNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: es-ES-AbrilNeural
+  desc: es-ES, Abril
+  extendUI: null
+  gender: 0
+  locale: es-ES
+  name: Abril
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (es-ES, AbrilNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: es-ES-ArnauNeural
+  desc: es-ES, Arnau
+  extendUI: null
+  gender: 1
+  locale: es-ES
+  name: Arnau
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (es-ES, ArnauNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: es-MX-DaliaNeural
+  desc: es-MX, Dalia
+  extendUI: null
+  gender: 0
+  locale: es-MX
+  name: Dalia
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (es-MX, DaliaNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: es-MX-JorgeNeural
+  desc: es-MX, Jorge
+  extendUI: null
+  gender: 1
+  locale: es-MX
+  name: Jorge
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (es-MX, JorgeNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: fr-FR-DeniseNeural
+  desc: fr-FR, Denise
+  extendUI: null
+  gender: 0
+  locale: fr-FR
+  name: Denise
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (fr-FR, DeniseNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: fr-FR-HenriNeural
+  desc: fr-FR, Henri
+  extendUI: null
+  gender: 1
+  locale: fr-FR
+  name: Henri
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (fr-FR, HenriNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: it-IT-BenignoNeural
+  desc: it-IT, Benigno
+  extendUI: null
+  gender: 1
+  locale: it-IT
+  name: Benigno
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (it-IT, BenignoNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: it-IT-IsabellaNeural
+  desc: it-IT, Isabella
+  extendUI: null
+  gender: 0
+  locale: it-IT
+  name: Isabella
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (it-IT, IsabellaNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: ja-JP-KeitaNeural
+  desc: ja-JP, Keita
+  extendUI: null
+  gender: 1
+  locale: ja-JP
+  name: Keita
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (ja-JP, KeitaNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: ja-JP-NanamiNeural
+  desc: ja-JP, Nanami
+  extendUI: null
+  gender: 0
+  locale: ja-JP
+  name: Nanami
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (ja-JP, NanamiNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: ko-KR-InJoonNeural
+  desc: ko-KR, InJoon
+  extendUI: null
+  gender: 1
+  locale: ko-KR
+  name: InJoon
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (ko-KR, InJoonNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: ko-KR-SunHiNeural
+  desc: ko-KR, SunHi
+  extendUI: null
+  gender: 0
+  locale: ko-KR
+  name: SunHi
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (ko-KR, SunHiNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: pl-PL-AgnieszkaNeural
+  desc: pl-PL, Agnieszka
+  extendUI: null
+  gender: 0
+  locale: pl-PL
+  name: Agnieszka
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (pl-PL, AgnieszkaNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: pl-PL-MarekNeural
+  desc: pl-PL, Marek
+  extendUI: null
+  gender: 1
+  locale: pl-PL
+  name: Marek
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (pl-PL, MarekNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: pt-BR-AntonioNeural
+  desc: pt-BR, Antonio
+  extendUI: null
+  gender: 1
+  locale: pt-BR
+  name: Antonio
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (pt-BR, AntonioNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: pt-BR-FranciscaNeural
+  desc: pt-BR, Francisca
+  extendUI: null
+  gender: 0
+  locale: pt-BR
+  name: Francisca
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (pt-BR, FranciscaNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: ru-RU-DmitryNeural
+  desc: ru-RU, Dmitry
+  extendUI: null
+  gender: 1
+  locale: ru-RU
+  name: Dmitry
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (ru-RU, DmitryNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0
+- !!org.nobody.multitts.tts.speaker.Speaker
+  avatar: null
+  code: ru-RU-SvetlanaNeural
+  desc: ru-RU, Svetlana
+  extendUI: null
+  gender: 0
+  locale: ru-RU
+  name: Svetlana
+  note: null
+  param: |-
+    Microsoft Server Speech Text to Speech Voice (ru-RU, SvetlanaNeural)
+    M$LICENSE2
+  pitch: 1.0
+  sampleRate: 24000
+  speed: 1.0
+  type: 0
+  volume: 1.0

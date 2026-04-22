@@ -1,0 +1,6 @@
+!!org.nobody.multitts.tts.engine.EngineConfig
+engines:
+- code: microsoft
+  name: 微软语音
+  note: null
+  type: inner

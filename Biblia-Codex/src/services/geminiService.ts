@@ -119,8 +119,6 @@ export const getConfiguredModel = (): string => {
 /**
  * Função interna para fazer requisição à IA
  */
- * Função interna para fazer requisição à IA
- */
 const callAI = async (prompt: string, systemInstruction?: string, apiKey?: string, model?: string): Promise<string> => {
   const key = apiKey || getApiKey();
   if (!key) return "API Key não configurada nas preferências.";
@@ -147,7 +145,13 @@ const callAI = async (prompt: string, systemInstruction?: string, apiKey?: strin
           ? [{ role: 'system', content: systemInstruction }, { role: 'user', content: prompt }]
           : [{ role: 'user', content: prompt }]
       };
-      console.log(`[geminiService] OpenRouter request:`, { model: configuredModel, url, keyPrefix: key?.substring(0, 10) + '...' });
+      console.log(`[geminiService] OpenRouter request:`, {
+        model: configuredModel,
+        url,
+        keyPrefix: key?.substring(0, 10) + '...',
+        hasKey: !!key,
+        keyLength: key?.length || 0
+      });
     } else {
       url = `https://generativelanguage.googleapis.com/v1beta/models/${configuredModel}:generateContent?key=${key}`;
       headers = { 'Content-Type': 'application/json' };
