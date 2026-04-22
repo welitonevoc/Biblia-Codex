@@ -31,7 +31,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
   const [aiResults, setAiResults] = useState<Map<string, string>>(new Map());
   const [aiError, setAiError] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [configTest, setConfigTest] = useState<{ success: boolean; message: string; quotaWarning?: boolean; suggestion?: string } | null>(null);
+  const [configTest, setConfigTest] = useState<{ success: boolean; message: string; quotaWarning?: boolean; suggestion?: string; provider?: string; model?: string } | null>(null);
 
   const toggleAI = useCallback(() => {
     const newValue = !aiEnabled;
