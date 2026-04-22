@@ -27,27 +27,50 @@ export const getApiKey = (): string => {
   const provider = localStorage.getItem('ai-api-provider') || 'google';
   
   if (provider === 'openrouter') {
-    return localStorage.getItem('openrouter-api-key') || '';
+    const key = localStorage.getItem('openrouter-api-key') || '';
+    if (!key) {
+      console.warn('[geminiService] OpenRouter selecionado mas chave não configurada');
+    }
+    return key;
   }
   
-  return localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY || '';
+  const key = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY || '';
+  if (!key) {
+    console.warn('[geminiService] Gemini selecionado mas chave não configurada');
+  }
+  return key;
 };
 
 /**
  * Obtém o modelo configurado nas configurações
  */
 export const getConfiguredModel = (): string => {
+  const provider = getConfiguredProvider();
   const saved = localStorage.getItem('codex-settings');
+  
   if (saved) {
     try {
       const settings = JSON.parse(saved);
-      if (settings.ai?.model) return settings.ai.model;
+      if (settings.ai?.model) {
+        // Valida se o modelo é compatível com o provider
+        const model = settings.ai.model;
+        if (provider === 'openrouter') {
+          // Para OpenRouter, modelos devem ter formato "author/model" ou ser da lista de free models
+          // Se o modelo for um modelo Google (sem /), usa o openrouter auto
+          if (!model.includes('/')) {
+            console.warn('[geminiService] Modelo Google não compatível com OpenRouter, usando openrouter/free');
+            return 'openrouter/free';
+          }
+        }
+        return model;
+      }
     } catch (e) {
-      // ignore
+      console.error('[geminiService] Erro ao ler settings:', e);
     }
   }
-  // Fallback para modelo padrão
-  return 'gemini-2.0-flash';
+  
+  // Fallback baseado no provider
+  return provider === 'openrouter' ? 'openrouter/free' : 'gemini-2.0-flash';
 };
 
 /**
@@ -86,6 +109,7 @@ const callAI = async (prompt: string, systemInstruction?: string, apiKey?: strin
           ? [{ role: 'system', content: systemInstruction }, { role: 'user', content: prompt }]
           : [{ role: 'user', content: prompt }]
       };
+      console.log(`[geminiService] OpenRouter request:`, { model: configuredModel, url, keyPrefix: key?.substring(0, 10) + '...' });
     } else {
       url = `https://generativelanguage.googleapis.com/v1beta/models/${configuredModel}:generateContent?key=${key}`;
       headers = { 'Content-Type': 'application/json' };

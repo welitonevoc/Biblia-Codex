@@ -327,23 +327,23 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                           {book?.abbreviation} {verse.chapter}:{verse.verse}
                         </span>
                       </div>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                      <div
                         onClick={(e) => { e.stopPropagation(); handlePlayAudio(verse); }}
                         className={cn(
-                          "flex items-center justify-center w-8 h-8 rounded-full",
+                          "flex items-center justify-center w-8 h-8 rounded-full cursor-pointer",
                           playingVerse === `${verse.bookId}-${verse.chapter}-${verse.verse}`
                             ? "bg-[var(--accent-bible)] text-white"
                             : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--accent-bible)]"
                         )}
+                        role="button"
+                        tabIndex={0}
                       >
                         {playingVerse === `${verse.bookId}-${verse.chapter}-${verse.verse}` && audioPlaying ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <Play className="w-4 h-4" />
                         )}
-                      </motion.button>
+                      </div>
                     </div>
                     <p className="text-sm text-[var(--text-bible)] line-clamp-2">
                       {verse.text}
