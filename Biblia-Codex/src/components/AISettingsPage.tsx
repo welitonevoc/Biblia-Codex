@@ -75,15 +75,23 @@ export const AISettingsPage: React.FC = () => {
   const [geminiKey, setGeminiKey] = useState(() => {
     return localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY || '';
   });
+  const [groqKey, setGroqKey] = useState(() => {
+    return localStorage.getItem('groq-api-key') || '';
+  });
+  const [huggingfaceKey, setHuggingfaceKey] = useState(() => {
+    return localStorage.getItem('huggingface-api-key') || '';
+  });
 
   const [openCodeKeyInput, setOpenCodeKeyInput] = useState(openCodeKey);
   const [openRouterKeyInput, setOpenRouterKeyInput] = useState(openRouterKey);
+  const [groqKeyInput, setGroqKeyInput] = useState(groqKey);
+  const [huggingfaceKeyInput, setHuggingfaceKeyInput] = useState(huggingfaceKey);
   const [geminiKeyInput, setGeminiKeyInput] = useState(geminiKey);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const currentApiKey = apiProvider === 'opencode' ? openCodeKey : apiProvider === 'openrouter' ? openRouterKey : geminiKey;
+  const currentApiKey = apiProvider === 'opencode' ? openCodeKey : apiProvider === 'openrouter' ? openRouterKey : apiProvider === 'groq' ? groqKey : apiProvider === 'huggingface' ? huggingfaceKey : geminiKey;
 
   const handleSaveApiKey = useCallback(() => {
     if (apiProvider === 'opencode' && openCodeKeyInput.trim()) {
@@ -92,16 +100,22 @@ export const AISettingsPage: React.FC = () => {
     } else if (apiProvider === 'openrouter' && openRouterKeyInput.trim()) {
       localStorage.setItem('openrouter-api-key', openRouterKeyInput.trim());
       setOpenRouterKey(openRouterKeyInput.trim());
-    } else if (geminiKeyInput.trim()) {
+    } else if (apiProvider === 'groq' && groqKeyInput.trim()) {
+      localStorage.setItem('groq-api-key', groqKeyInput.trim());
+      setGroqKey(groqKeyInput.trim());
+    } else if (apiProvider === 'huggingface' && huggingfaceKeyInput.trim()) {
+      localStorage.setItem('huggingface-api-key', huggingfaceKeyInput.trim());
+      setHuggingfaceKey(huggingfaceKeyInput.trim());
+    } else if (apiProvider === 'google' && geminiKeyInput.trim()) {
       localStorage.setItem('gemini-api-key', geminiKeyInput.trim());
       setGeminiKey(geminiKeyInput.trim());
     }
     localStorage.setItem('ai-api-provider', apiProvider);
     setTestResult({ success: true, message: 'Chave salva com sucesso!' });
-  }, [apiProvider, openCodeKeyInput, openRouterKeyInput, geminiKeyInput]);
+  }, [apiProvider, openCodeKeyInput, openRouterKeyInput, geminiKeyInput, groqKeyInput, huggingfaceKeyInput]);
 
   const handleTestConnection = useCallback(async () => {
-    const key = apiProvider === 'opencode' ? openCodeKey : apiProvider === 'openrouter' ? openRouterKey : geminiKey;
+    const key = apiProvider === 'opencode' ? openCodeKey : apiProvider === 'openrouter' ? openRouterKey : apiProvider === 'groq' ? groqKey : apiProvider === 'huggingface' ? huggingfaceKey : geminiKey;
     if (!key) {
       setTestResult({ success: false, message: 'Insira uma chave de API primeiro.' });
       return;
@@ -139,7 +153,7 @@ export const AISettingsPage: React.FC = () => {
     } finally {
       setIsTesting(false);
     }
-  }, [apiProvider, openCodeKey, openRouterKey, geminiKey]);
+  }, [apiProvider, openCodeKey, openRouterKey, geminiKey, groqKey, huggingfaceKey]);
 
   const aiFeatures = [
     { id: 'autoSuggest', label: 'Sugestoes Automaticas', description: 'Exibe sugestoes contextuais durante a leitura', icon: Lightbulb, enabled: settings.ai.autoSuggest },
@@ -189,7 +203,7 @@ export const AISettingsPage: React.FC = () => {
                   className={cn("p-3 rounded-xl border-2 text-left transition-all", apiProvider === provider.id ? "border-bible-accent bg-amber-100" : "border-bible-border bg-bible-surface hover:border-bible-accent")}
                 >
                   <div className="font-semibold text-sm text-bible-text">{provider.name}</div>
-                  <div className="text-xs text-bible-text-muted mt-0.5">{provider.id === 'google' ? 'Gratuito com $300/ano' : 'Modelos gratuitos via OpenRouter'}</div>
+                  <div className="text-xs text-bible-text-muted mt-0.5">{provider.description}</div>
                 </motion.button>
               ))}
             </div>
@@ -238,12 +252,58 @@ export const AISettingsPage: React.FC = () => {
             </div>
           )}
 
+          {apiProvider === 'opencode' && (
+            <div className="space-y-3">
+              <input
+                type="password"
+                value={openCodeKeyInput}
+                onChange={(e) => setOpenCodeKeyInput(e.target.value)}
+                placeholder="Cole sua chave de API OpenCode.ai aqui..."
+                className={cn("w-full px-4 py-3 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text placeholder:text-bible-text-muted focus:outline-none focus:ring-2 focus:ring-bible-accent")}
+              />
+              <p className="text-xs text-bible-text-muted">Obtenha uma chave gratuita em <a href="https://opencode.ai/workspace" target="_blank" rel="noopener noreferrer" className="text-bible-accent hover:underline">OpenCode.ai</a></p>
+            </div>
+          )}
+
+          {apiProvider === 'groq' && (
+            <div className="space-y-3">
+              <input
+                type="password"
+                value={groqKeyInput}
+                onChange={(e) => setGroqKeyInput(e.target.value)}
+                placeholder="Cole sua chave de API Groq aqui..."
+                className={cn("w-full px-4 py-3 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text placeholder:text-bible-text-muted focus:outline-none focus:ring-2 focus:ring-bible-accent")}
+              />
+              <p className="text-xs text-bible-text-muted">Obtenha uma chave gratuita em <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-bible-accent hover:underline">Groq Console</a></p>
+            </div>
+          )}
+
+          {apiProvider === 'huggingface' && (
+            <div className="space-y-3">
+              <input
+                type="password"
+                value={huggingfaceKeyInput}
+                onChange={(e) => setHuggingfaceKeyInput(e.target.value)}
+                placeholder="Cole sua chave de API Hugging Face aqui..."
+                className={cn("w-full px-4 py-3 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text placeholder:text-bible-text-muted focus:outline-none focus:ring-2 focus:ring-bible-accent")}
+              />
+              <p className="text-xs text-bible-text-muted">Obtenha uma chave gratuita em <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="text-bible-accent hover:underline">Hugging Face</a></p>
+            </div>
+          )}
+
           <div className="flex gap-2 mt-4">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleSaveApiKey}
-              className={cn("px-4 py-3 rounded-xl font-bold text-sm bg-bible-accent text-white hover:bg-bible-accent-strong transition-colors", (apiProvider === 'openrouter' ? !openRouterKeyInput.trim() : !geminiKeyInput.trim()) && "opacity-50 cursor-not-allowed")}
+              className={cn("px-4 py-3 rounded-xl font-bold text-sm bg-bible-accent text-white hover:bg-bible-accent-strong transition-colors", 
+                (apiProvider === 'opencode' && !openCodeKeyInput.trim()) ||
+                (apiProvider === 'openrouter' && !openRouterKeyInput.trim()) ||
+                (apiProvider === 'groq' && !groqKeyInput.trim()) ||
+                (apiProvider === 'huggingface' && !huggingfaceKeyInput.trim()) ||
+                (apiProvider === 'google' && !geminiKeyInput.trim())
+                ? "opacity-50 cursor-not-allowed" : ""
+              )}
             >Salvar</motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
