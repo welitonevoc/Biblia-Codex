@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search as SearchIcon, X, BookOpen, ChevronRight, Clock, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
+import { Search as SearchIcon, X, BookOpen, ChevronRight, Clock, TrendingUp, Sparkles, Loader2, Play, Pause } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { BibleService } from '../BibleService';
 import { Verse } from '../types';
 import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { getAudioTracksForChapter } from '../data/audioData';
+import { getGeminiExplanation } from '../services/geminiService';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
@@ -17,11 +19,55 @@ interface SearchViewProps {
 }
 
 export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
-  const { currentVersion } = useAppContext();
+  const { currentVersion, settings, updateSettings } = useAppContext();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Verse[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [aiEnabled, setAiEnabled] = useState(() => settings.ai.searchWithAI ?? false);
+  const [playingVerse, setPlayingVerse] = useState<string | null>(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [aiResults, setAiResults] = useState<Map<string, string>>(new Map());
+
+  const toggleAI = useCallback(() => {
+    const newValue = !aiEnabled;
+    setAiEnabled(newValue);
+    updateSettings({ ai: { ...settings.ai, searchWithAI: newValue } });
+  }, [aiEnabled, settings.ai, updateSettings]);
+
+  const handlePlayAudio = useCallback((verse: Verse) => {
+    const trackId = `${verse.bookId}-${verse.chapter}-${verse.verse}`;
+    if (playingVerse === trackId) {
+      setPlayingVerse(null);
+      setAudioPlaying(false);
+      return;
+    }
+    setPlayingVerse(trackId);
+    setAudioPlaying(true);
+    setTimeout(() => {
+      setPlayingVerse(null);
+      setAudioPlaying(false);
+    }, 3000);
+  }, [playingVerse]);
+
+  const handleAISearch = useCallback(async (term: string, searchResults: Verse[]) => {
+    if (!aiEnabled || searchResults.length === 0) return;
+    
+    const apiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) return;
+    
+    const newResults = new Map(aiResults);
+    for (constverse of searchResults.slice(0, 3)) {
+      const key = `${verse.bookId}-${verse.chapter}:${verse.verse}`;
+      try {
+        const explanation = await getGeminiExplanation(`Pesquise sobre "${term}" no contexto de ${verse.bookName} ${verse.chapter}:${verse.verse}. Texto: ${verse.text}`, undefined, apiKey);
+        newResults.set(key, explanation);
+      } catch (e) {
+        console.error('AI search error:', e);
+      }
+    }
+    setAiResults(newResults);
+  }, [aiEnabled, aiResults]);
 
   useEffect(() => {
     const saved = localStorage.getItem('kerygma-recent-searches');
@@ -33,6 +79,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
     if (term.length < 2) return;
 
     setIsSearching(true);
+    setAiResults(new Map());
     try {
       const found = await BibleService.search(term, currentVersion || undefined);
       setResults(found);
@@ -40,6 +87,10 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
       const nextRecent = [term, ...recentSearches.filter(s => s !== term)].slice(0, 5);
       setRecentSearches(nextRecent);
       localStorage.setItem('kerygma-recent-searches', JSON.stringify(nextRecent));
+
+      if (aiEnabled && found.length > 0) {
+        handleAISearch(term, found);
+      }
     } catch (error) {
       console.error('Search error:', error);
     } finally {
@@ -102,7 +153,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
           </div>
         </motion.div>
 
-        {/* Search Input Premium */}
+{/* Search Input Premium */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -115,9 +166,9 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
-              placeholder="Pesquise na Bíblia..."
+              placeholder="Pesquise na Biblia..."
               className={cn(
-                "w-full h-14 pl-12 pr-12 rounded-xl",
+                "w-full h-14 pl-12 pr-24 rounded-xl",
                 "bg-[var(--surface-1)] border border-[var(--border-bible)]",
                 "text-[var(--text-bible)] text-base font-medium",
                 "placeholder:text-[var(--text-bible-subtle)]",
@@ -125,23 +176,48 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                 "transition-all duration-200"
               )}
             />
-            {query && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
               <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                onClick={() => { setQuery(''); setResults([]); }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={toggleAI}
                 className={cn(
-                  "absolute right-4 top-1/2 -translate-y-1/2",
-                  "flex h-8 w-8 items-center justify-center rounded-lg",
-                  "bg-[var(--surface-2)] text-[var(--text-bible-muted)]",
-                  "hover:bg-[var(--surface-3)] hover:text-[var(--text-bible)]",
-                  "transition-all duration-200"
+                  "flex items-center justify-center w-8 h-8 rounded-lg transition-all",
+                  aiEnabled 
+                    ? "bg-[var(--accent-bible)] text-white" 
+                    : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]"
                 )}
+                title={aiEnabled ? "IA ativa - clique para desativar" : "Ativar busca com IA"}
               >
-                <X className="h-4 w-4" />
+                <Sparkles className="w-4 h-4" />
               </motion.button>
-            )}
+              {query && (
+                <motion.button
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  onClick={() => { setQuery(''); setResults([]); }}
+                  className={cn(
+                    "flex items-center justify-center w-8 h-8 rounded-lg",
+                    "bg-[var(--surface-2)] text-[var(--text-bible-muted)]",
+                    "hover:bg-[var(--surface-3)] hover:text-[var(--text-bible)]",
+                    "transition-all duration-200"
+                  )}
+                >
+                  <X className="h-4 w-4" />
+                </motion.button>
+              )}
+            </div>
           </div>
+          {aiEnabled && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 mt-2 text-xs text-[var(--accent-bible)]"
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>Busca com IA ativada - resultados serao enhanced com explicacoes</span>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Recent Searches */}
@@ -241,15 +317,49 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                       "transition-all duration-200"
                     )}
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <BookOpen className="w-4 h-4 text-[var(--accent-bible)]" />
-                      <span className="text-xs font-bold text-[var(--accent-bible)] uppercase tracking-wide">
-                        {book?.abbreviation} {verse.chapter}:{verse.verse}
-                      </span>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-[var(--accent-bible)]" />
+                        <span className="text-xs font-bold text-[var(--accent-bible)] uppercase tracking-wide">
+                          {book?.abbreviation} {verse.chapter}:{verse.verse}
+                        </span>
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => { e.stopPropagation(); handlePlayAudio(verse); }}
+                        className={cn(
+                          "flex items-center justify-center w-8 h-8 rounded-full",
+                          playingVerse === `${verse.bookId}-${verse.chapter}-${verse.verse}`
+                            ? "bg-[var(--accent-bible)] text-white"
+                            : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--accent-bible)]"
+                        )}
+                      >
+                        {playingVerse === `${verse.bookId}-${verse.chapter}-${verse.verse}` && audioPlaying ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Play className="w-4 h-4" />
+                        )}
+                      </motion.button>
                     </div>
                     <p className="text-sm text-[var(--text-bible)] line-clamp-2">
                       {verse.text}
                     </p>
+                    {aiEnabled && aiResults.has(`${verse.bookId}:${verse.chapter}:${verse.verse}`) && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="mt-2 p-2 rounded-lg bg-[var(--accent-bible)]/10 border border-[var(--accent-bible)]/20"
+                      >
+                        <div className="flex items-center gap-1 text-xs text-[var(--accent-bible)] font-medium mb-1">
+                          <Sparkles className="w-3 h-3" />
+                          <span>Interpretacao IA</span>
+                        </div>
+                        <p className="text-xs text-[var(--text-bible)] line-clamp-3">
+                          {aiResults.get(`${verse.bookId}:${verse.chapter}:${verse.verse}`)}
+                        </p>
+                      </motion.div>
+                    )}
                   </motion.button>
                 );
               })}

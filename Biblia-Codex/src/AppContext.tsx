@@ -170,6 +170,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         model: 'gemini-3-flash-latest',
         language: 'pt-BR',
         autoSuggest: true,
+        searchWithAI: false,
       },
       syncConfig: {
         enabled: false,

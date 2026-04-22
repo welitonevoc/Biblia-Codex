@@ -264,6 +264,7 @@ export interface AppSettings {
     model: string;
     language: string;
     autoSuggest: boolean;
+    searchWithAI?: boolean;
     verseExplanation?: boolean;
     termDefinition?: boolean;
     crossReferences?: boolean;

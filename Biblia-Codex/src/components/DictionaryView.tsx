@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import DOMPurify from 'dompurify';
 
 export const DictionaryView: React.FC = () => {
-  const { searchDictionary, selectedDictionaryModule, setSelectedDictionaryModule, user, login } = useAppContext();
+  const { searchDictionary, selectedDictionaryModule, setSelectedDictionaryModule, availableDictionaries, user, login } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<DictionaryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -95,15 +95,14 @@ export const DictionaryView: React.FC = () => {
 
   const toggleAiModule = () => {
     if (selectedDictionaryModule?.id === AI_MODULE_ID) {
-      // Switch to a mock local module
-      setSelectedDictionaryModule({
-        id: 'local-strong',
-        name: 'Léxico Strong (Offline)',
-        type: 'dictionary',
-        abbreviation: 'STR',
-        isVirtual: false,
-        path: 'local-strong'
-      });
+      // Switch to first available local dictionary
+      const firstDict = availableDictionaries[0];
+      if (firstDict) {
+        setSelectedDictionaryModule(firstDict as any);
+      } else {
+        // Fallback: keep AI if no local dicts available
+        console.warn('Nenhum dicionário local disponível');
+      }
     } else {
       setSelectedDictionaryModule(createAiModule('dictionary'));
     }
