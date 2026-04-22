@@ -394,11 +394,75 @@ export const ReadingPlans: React.FC<{
   const [selectedVersion, setSelectedVersion] = useState<string>(currentVersion?.id || 'ARC');
   const [pendingPlan, setPendingPlan] = useState<typeof PRESET_PLANS[0] | null>(null);
   const [showAIModal, setShowAIModal] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [completedPlan, setCompletedPlan] = useState<ReadingPlan | null>(null);
+  const [showUnmarkOption, setShowUnmarkOption] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiDays, setAiDays] = useState<number | undefined>(undefined);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<ReadingPlanAI | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [userTrophies, setUserTrophies] = useState<{ id: string; name: string; icon: string; date: string }[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('codex-trophies');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return [];
+        }
+      }
+    }
+    return [];
+  });
+
+  const parseBookReference = (passage: string): { bookId: string; chapter: number; startVerse?: number; endVerse?: number } | null => {
+    const bookMapping: Record<string, string> = {
+      'genesis': 'GEN', 'gen': 'GEN', 'gn': 'GEN',
+      'exodo': 'EXO', 'ex': 'EXO',
+      'levitico': 'LEV', 'lv': 'LEV',
+      'numeros': 'NUM', 'nm': 'NUM',
+      'deuteronomio': 'DEU', 'dt': 'DEU',
+      'salmos': 'PSA', 'sl': 'PSA', 'salmo': 'PSA',
+      'proverbios': 'PRO', 'pv': 'PRO',
+      'mateus': 'MAT', 'mt': 'MAT',
+      'marcos': 'MRK', 'mc': 'MRK',
+      'lucas': 'LUK', 'lc': 'LUK',
+      'joao': 'JHN', 'jo': 'JHN',
+      'atos': 'ACT', 'at': 'ACT',
+      'romanos': 'ROM', 'rm': 'ROM',
+      '1corintios': '1CO', '2corintios': '2CO',
+      'galatas': 'GAL', 'gl': 'GAL',
+      'efesios': 'EPH', 'ef': 'EPH',
+      'filipenses': 'PHP', 'fp': 'PHP',
+      'colossenses': 'COL', 'cl': 'COL',
+      '1tssalonicenses': '1TH', '2tes': '2TH',
+      '1timoteo': '1TI', '2timoteo': '2TI',
+      'tito': 'TIT', 'filemon': 'PHM',
+      'hebreus': 'HEB', 'hb': 'HEB',
+      'tiago': 'JAS', 'tg': 'JAS',
+      '1pedro': '1PE', '2pedro': '2PE',
+      '1joao': '1JN', '2joao': '2JN', '3joao': '3JN',
+      'judas': 'JUD', 'jd': 'JUD',
+      'apocalipse': 'REV', 'ap': 'REV',
+    };
+    
+    const match = passage.match(/^([A-Za-zãéíóúâêôûáéíóú]+)\s*(\d+):?(\d+)?-?(\d+)?$/i);
+    if (!match) return null;
+    
+    const bookName = match[1].toLowerCase().replace(/ã/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/â/g, 'a').replace(/ê/g, 'e').replace(/ô/g, 'o').replace(/û/g, 'u');
+    const chapter = parseInt(match[2]);
+    const startVerse = match[3] ? parseInt(match[3]) : 1;
+    const endVerse = match[4] ? parseInt(match[4]) : startVerse;
+    
+    const bookId = bookMapping[bookName] || bookName.substring(0, 3).toUpperCase();
+    
+    return { bookId, chapter, startVerse, endVerse };
+  };
+
+  const cleanStrongCodes = (text: string): string => {
+    return text.replace(/<[A-Z]\d+>/g, '').replace(/<WH\d+>/g, '').trim();
+  };
   
   const [userPlans, setUserPlans] = useState<ReadingPlan[]>(() => {
     const saved = localStorage.getItem('codex-reading-plans');
@@ -417,6 +481,10 @@ export const ReadingPlans: React.FC<{
   }, [userPlans]);
 
   useEffect(() => {
+    localStorage.setItem('codex-trophies', JSON.stringify(userTrophies));
+  }, [userTrophies]);
+
+  useEffect(() => {
     if (!selectedPlan || !currentVersion) return;
     
     const loadVersesForDay = async () => {
@@ -431,16 +499,14 @@ export const ReadingPlans: React.FC<{
       
       for (const reading of readings) {
         for (const passage of reading.passages) {
-          const match = passage.match(/^([A-Za-zãéíóúâêôûáéíóú]+)\s*(\d+):?(\d+)?-?(\d+)?$/i);
-          if (match) {
-            const bookName = match[1].toLowerCase();
-            const chapter = parseInt(match[2]);
-            const verseNum = match[3] ? parseInt(match[3]) : 1;
-            const bookId = bookName.substring(0, 3).toUpperCase();
-            
+          const parsed = parseBookReference(passage);
+          if (parsed) {
             try {
-              const verses = await BibleService.getVerses(bookId, chapter, currentVersion);
-              versesMap[passage] = verses.filter(v => !verseNum || (v.verse >= verseNum));
+              const verses = await BibleService.getVerses(parsed.bookId, parsed.chapter, currentVersion);
+              versesMap[passage] = verses
+                .filter(v => v.verse >= (parsed.startVerse || 1))
+                .filter(v => !parsed.endVerse || v.verse <= parsed.endVerse)
+                .map(v => ({ ...v, text: cleanStrongCodes(v.text) }));
             } catch (e) {
               console.error('Erro ao buscar versículos:', e);
               versesMap[passage] = [];
@@ -484,9 +550,33 @@ export const ReadingPlans: React.FC<{
     setPendingPlan(null);
   };
 
-  const markDayComplete = (planId: string) => {
+  const markDayComplete = (planId: string, forceUnmark: boolean = false) => {
+    const currentPlan = userPlans.find(p => p.id === planId);
+    if (!currentPlan) return;
+    
+    const dayReading = currentPlan.dayReadings?.find(r => r.day === currentPlan.currentDay);
+    const isAlreadyCompleted = dayReading?.completed === true;
+    
+    if (!forceUnmark && isAlreadyCompleted) {
+      setShowUnmarkOption(true);
+      return;
+    }
+    
     setUserPlans(prev => prev.map(plan => {
       if (plan.id !== planId) return plan;
+      
+      if (forceUnmark && plan.currentDay > 1) {
+        const newReadings = plan.dayReadings?.map(r => 
+          r.day === plan.currentDay - 1 ? { ...r, completed: false } : r
+        ) || [];
+        
+        return {
+          ...plan,
+          progress: Math.max(0, plan.progress - 1),
+          currentDay: plan.currentDay - 1,
+          dayReadings: newReadings,
+        };
+      }
       
       const today = new Date().toDateString();
       const lastRead = plan.lastReadDate ? new Date(plan.lastReadDate).toDateString() : null;
@@ -512,10 +602,29 @@ export const ReadingPlans: React.FC<{
         r.day === plan.currentDay ? { ...r, completed: true } : r
       ) || [];
 
+      const newCurrentDay = plan.currentDay + 1;
+      const newProgress = plan.progress + 1;
+      const isFinished = newCurrentDay > plan.totalDays;
+      
+      if (isFinished) {
+        setCompletedPlan(plan);
+        setShowCompletionModal(true);
+        const newTrophies = [
+          ...userTrophies,
+          {
+            id: `trophy-${plan.id}-${Date.now()}`,
+            name: plan.title,
+            icon: '🏆',
+            date: new Date().toISOString(),
+          },
+        ];
+        setUserTrophies(newTrophies);
+      }
+
       return {
         ...plan,
-        progress: plan.progress + 1,
-        currentDay: plan.currentDay + 1,
+        progress: newProgress,
+        currentDay: isFinished ? plan.currentDay : newCurrentDay,
         streak: newStreak,
         longestStreak: Math.max(plan.longestStreak, newStreak),
         xp: newXp,
@@ -524,6 +633,13 @@ export const ReadingPlans: React.FC<{
         dayReadings: newReadings,
       };
     }));
+  };
+
+  const handleCloseCompletionModal = () => {
+    setShowCompletionModal(false);
+    setCompletedPlan(null);
+    setSelectedPlan(null);
+    setShowPlanDetail(false);
   };
 
   const getTodayReading = (plan: ReadingPlan) => {
@@ -579,6 +695,97 @@ export const ReadingPlans: React.FC<{
       ];
 
   return (
+    <>
+      {showCompletionModal && completedPlan && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="w-full max-w-sm bg-[var(--surface-0)] rounded-2xl p-6 shadow-xl border border-[var(--border-bible)]"
+          >
+            <div className="text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', delay: 0.2 }}
+                className="text-6xl mb-4"
+              >
+                🏆
+              </motion.div>
+              <h2 className="text-2xl font-bold text-[var(--text-bible)] mb-2">Parabéns!</h2>
+              <p className="text-[var(--text-bible-muted)] mb-4">Você completou o plano de leitura!</p>
+              <p className="text-lg font-semibold text-[var(--accent-bible)] mb-4">{completedPlan.title}</p>
+              <div className="p-3 rounded-xl bg-amber-500/10 mb-6">
+                <span className="text-xl font-bold text-amber-500">+1 🏆</span>
+                <p className="text-sm text-amber-600">Troféu conquistado!</p>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleCloseCompletionModal}
+                className="w-full py-3 rounded-xl font-semibold bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)] shadow-lg hover:opacity-90 transition-opacity"
+              >
+                Voltar aos Planos
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {showUnmarkOption && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setShowUnmarkOption(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="w-full max-w-sm bg-[var(--surface-0)] rounded-2xl p-6 shadow-xl border border-[var(--border-bible)]"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold text-[var(--text-bible)]">Este dia já foi concluído</h2>
+              <p className="text-[var(--text-bible-muted)] mt-2">
+                Deseja desfazer a conclusão do dia {selectedPlan?.currentDay}?
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowUnmarkOption(false)}
+                className="flex-1 py-3 rounded-xl font-medium bg-[var(--surface-2)] text-[var(--text-bible)] hover:bg-[var(--surface-3)] transition-all"
+              >
+                Cancelar
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  if (selectedPlan) {
+                    markDayComplete(selectedPlan.id, true);
+                  }
+                  setShowUnmarkOption(false);
+                }}
+                className="flex-1 py-3 rounded-xl font-semibold bg-red-500 text-white hover:bg-red-600 transition-all"
+              >
+                Desfazer
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
     <div className="h-full overflow-y-auto scrollbar-thin">
       <AnimatePresence mode="wait">
         {showVersionPicker && (
@@ -721,7 +928,12 @@ export const ReadingPlans: React.FC<{
                     return (
                       <button
                         key={day}
-                        onClick={() => setUserPlans(prev => prev.map(p => p.id === selectedPlan.id ? { ...p, currentDay: day } : p))}
+                        onClick={() => {
+                          setDayVerses(prev => { const n = {...prev}; delete n[`day-${selectedPlan.currentDay}`]; return n; });
+                          setUserPlans(prev => prev.map(p => p.id === selectedPlan.id ? { ...p, currentDay: day } : p));
+                          const updated = userPlans.map(p => p.id === selectedPlan.id ? { ...p, currentDay: day } : p);
+                          setSelectedPlan(updated.find(p => p.id === selectedPlan.id) || null);
+                        }}
                         className={cn(
                           "w-9 h-9 rounded-lg flex-shrink-0 text-sm font-medium transition-all",
                           isCurrent 
@@ -859,7 +1071,13 @@ export const ReadingPlans: React.FC<{
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setUserPlans(prev => prev.map(p => p.id === selectedPlan.id && p.currentDay > 1 ? { ...p, currentDay: p.currentDay - 1 } : p))}
+                  onClick={() => {
+                    const newDay = selectedPlan.currentDay - 1;
+                    setDayVerses(prev => { const n = {...prev}; delete n[`day-${selectedPlan.currentDay}`]; return n; });
+                    setUserPlans(prev => prev.map(p => p.id === selectedPlan.id ? { ...p, currentDay: newDay } : p));
+                    const updated = userPlans.map(p => p.id === selectedPlan.id ? { ...p, currentDay: newDay } : p);
+                    setSelectedPlan(updated.find(p => p.id === selectedPlan.id) || null);
+                  }}
                   disabled={selectedPlan.currentDay <= 1}
                   className={cn(
                     "flex-1 py-3 rounded-xl font-medium flex items-center justify-center gap-2",
@@ -878,7 +1096,14 @@ export const ReadingPlans: React.FC<{
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setUserPlans(prev => prev.map(p => p.id === selectedPlan.id && p.currentDay < p.totalDays ? { ...p, currentDay: p.currentDay + 1 } : p))}
+                  onClick={() => {
+                    if (selectedPlan.currentDay >= selectedPlan.totalDays) return;
+                    const newDay = selectedPlan.currentDay + 1;
+                    setDayVerses(prev => { const n = {...prev}; delete n[`day-${selectedPlan.currentDay}`]; return n; });
+                    setUserPlans(prev => prev.map(p => p.id === selectedPlan.id ? { ...p, currentDay: newDay } : p));
+                    const updated = userPlans.map(p => p.id === selectedPlan.id ? { ...p, currentDay: newDay } : p);
+                    setSelectedPlan(updated.find(p => p.id === selectedPlan.id) || null);
+                  }}
                   disabled={selectedPlan.currentDay >= selectedPlan.totalDays}
                   className={cn(
                     "flex-1 py-3 rounded-xl font-medium flex items-center justify-center gap-2",
@@ -1391,5 +1616,6 @@ export const ReadingPlans: React.FC<{
 
       </div>
     </div>
+    </>
   );
 };
