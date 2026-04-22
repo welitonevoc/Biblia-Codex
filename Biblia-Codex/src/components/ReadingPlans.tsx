@@ -3,6 +3,15 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, ArrowLeft, Flame, Trophy, Star, Zap, Crown, ChevronDown, Settings, Users, Globe, Heart, Sun, Moon, BookText, Wand2, Loader2, Sparkle, MessageSquare } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { generateReadingPlan } from '../services/geminiService';
+import { LucideIcon } from 'lucide-react';
+
+const renderIcon = (icon: React.ElementType | undefined, props: { className?: string }) => {
+  if (!icon) return <BookOpen className={props.className} />;
+  if (typeof icon === 'function') {
+    return React.createElement(icon, props);
+  }
+  return <BookOpen className={props.className} />;
+};
 
 interface ReadingPlanAI {
   id: string;
@@ -706,10 +715,7 @@ export const ReadingPlans: React.FC<{
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-white/20 backdrop-blur">
-                  {(() => {
-                    const ActiveIcon = activePlan.icon;
-                    return <ActiveIcon className="w-5 h-5" />;
-                  })()}
+                  {renderIcon(activePlan.icon, { className: "w-5 h-5" })}
                 </div>
                 <div>
                   <h3 className="font-bold text-lg">{activePlan.title}</h3>
