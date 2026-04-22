@@ -21,26 +21,20 @@ DIRETRIZES DE RESPOSTA:
 `;
 
 /**
- * Obtém a chave de API com base no provedor configurado
+ * Obtém a chave de API com base no provedor configurado, com auto-detecção
  */
 export const getApiKey = (): string => {
-  const provider = localStorage.getItem('ai-api-provider') || 'google';
-  console.log('[geminiService] Provider configurado:', provider);
+  const provider = getConfiguredProvider();
+  console.log('[geminiService] Provider final usado:', provider);
 
   if (provider === 'openrouter') {
     const key = localStorage.getItem('openrouter-api-key') || '';
-    console.log('[geminiService] Chave OpenRouter encontrada:', key ? 'Sim' : 'Não');
-    if (!key) {
-      console.warn('[geminiService] OpenRouter selecionado mas chave não configurada');
-    }
+    console.log('[geminiService] Usando chave OpenRouter:', key ? 'Presente' : 'Ausente');
     return key;
   }
 
   const key = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY || '';
-  console.log('[geminiService] Chave Gemini encontrada:', key ? 'Sim' : 'Não');
-  if (!key) {
-    console.warn('[geminiService] Gemini selecionado mas chave não configurada');
-  }
+  console.log('[geminiService] Usando chave Gemini:', key ? 'Presente' : 'Ausente');
   return key;
 };
 
@@ -123,15 +117,8 @@ export const getConfiguredModel = (): string => {
 };
 
 /**
- * Obtém o provider configurado
+ * Função interna para fazer requisição à IA
  */
-export const getConfiguredProvider = (): 'google' | 'openrouter' => {
-  const provider = localStorage.getItem('ai-api-provider') || 'google';
-  console.log('[geminiService] Provider de localStorage:', provider);
-  return provider as 'google' | 'openrouter';
-};
-
-/**
  * Função interna para fazer requisição à IA
  */
 const callAI = async (prompt: string, systemInstruction?: string, apiKey?: string, model?: string): Promise<string> => {
@@ -223,3 +210,43 @@ export interface AIExplanation {
   scripturalReference?: string;
   spiritualApplication: string;
 }
+
+/**
+ * Testa a configuração da IA
+ */
+export const testAIConfiguration = async (): Promise<{ success: boolean; message: string; provider: string; model: string }> => {
+  const provider = getConfiguredProvider();
+  const model = getConfiguredModel();
+  const apiKey = getApiKey();
+
+  console.log('[geminiService] Testando configuração:', { provider, model, hasKey: !!apiKey });
+
+  if (!apiKey) {
+    return {
+      success: false,
+      message: `Nenhuma chave de API configurada para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}`,
+      provider,
+      model
+    };
+  }
+
+  try {
+    // Teste simples
+    const testPrompt = "Olá, isso é um teste. Responda apenas 'OK'.";
+    await getAIResponse(testPrompt, undefined, apiKey, model);
+    return {
+      success: true,
+      message: `Configuração válida: ${provider} com modelo ${model}`,
+      provider,
+      model
+    };
+  } catch (error: any) {
+    console.error('[geminiService] Erro no teste:', error);
+    return {
+      success: false,
+      message: `Erro na configuração: ${error.message}`,
+      provider,
+      model
+    };
+  }
+};

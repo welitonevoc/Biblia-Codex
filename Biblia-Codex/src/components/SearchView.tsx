@@ -8,7 +8,7 @@ import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getAudioTracksForChapter } from '../data/audioData';
-import { getAIResponse, getApiKey, getConfiguredProvider } from '../services/geminiService';
+import { getAIResponse, getApiKey, getConfiguredProvider, testAIConfiguration } from '../services/geminiService';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
@@ -30,6 +30,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
   const [aiResults, setAiResults] = useState<Map<string, string>>(new Map());
   const [aiError, setAiError] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [configTest, setConfigTest] = useState<{ success: boolean; message: string } | null>(null);
 
   const toggleAI = useCallback(() => {
     const newValue = !aiEnabled;
@@ -64,8 +65,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
     const apiKey = getApiKey();
     if (!apiKey) {
       const provider = getConfiguredProvider();
-      const message = `Chave de API não configurada. Vá em Configurações → IA e adicione sua chave para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`;
-      setAiError(message);
+      setAiError(`Chave de API não configurada. Vá em Configurações → IA e adicione sua chave para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`);
       setAiEnabled(false);
       updateSettings({ ai: { ...settings.ai, searchWithAI: false } });
       return;
@@ -83,7 +83,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
         try {
           const book = BIBLE_BOOKS.find(b => b.id === verse.bookId);
           const bookName = book ? book.name : verse.bookId;
-          
+
           // Usar skills do agente-IA se disponível, caso contrário usar geminiService
           const prompt = `Pesquise sobre "${term}" no contexto de ${bookName} ${verse.chapter}:${verse.verse}. Texto: ${verse.text}`;
           const explanation = await getAIResponse(
@@ -93,6 +93,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
           newResults.set(key, explanation);
         } catch (err: any) {
           hadError = true;
+          console.error('Erro na busca IA:', err);
           const errorMsg = `Erro ao processar versículo ${verse.bookId} ${verse.chapter}:${verse.verse}`;
           newResults.set(key, `❌ ${errorMsg}: ${err.message || 'Erro desconhecido'}`);
         }
@@ -244,10 +245,42 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 mt-3 text-xs text-[var(--accent-bible)]"
+              className="mt-3 space-y-2"
             >
-              <Sparkles className="w-3 h-3" />
-              <span>Modo IA ativo: resultados terão explicações contextuais</span>
+              <div className="flex items-center gap-2 text-xs text-[var(--accent-bible)]">
+                <Sparkles className="w-3 h-3" />
+                <span>Modo IA ativo: resultados terão explicações contextuais</span>
+              </div>
+
+              {/* Configuração de teste */}
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={async () => {
+                    const result = await testAIConfiguration();
+                    setConfigTest(result);
+                    setTimeout(() => setConfigTest(null), 5000);
+                  }}
+                  className="text-xs px-3 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] transition-colors"
+                >
+                  Testar Configuração IA
+                </motion.button>
+
+                {configTest && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      configTest.success
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}
+                  >
+                    {configTest.message}
+                  </motion.div>
+                )}
+              </div>
             </motion.div>
           )}
           
@@ -282,6 +315,9 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
               className="w-10 h-10 border-4 border-[var(--accent-bible)] border-t-transparent rounded-full"
             />
             <p className="mt-4 text-[var(--text-bible-muted)] text-sm">Buscando...</p>
+            {aiEnabled && (
+              <p className="mt-2 text-[var(--text-bible-muted)] text-xs">Preparando interpretações com IA...</p>
+            )}
           </motion.div>
         )}
 
