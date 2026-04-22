@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search as SearchIcon, X, BookOpen, ChevronRight, Clock, TrendingUp, Sparkles, Loader2, Play, Pause, AlertCircle, Wrench } from 'lucide-react';
+import { Search as SearchIcon, X, BookOpen, ChevronRight, Clock, TrendingUp, Sparkles, Loader2, Play, Pause, AlertCircle } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { BibleService } from '../BibleService';
 import { Verse } from '../types';
@@ -218,7 +218,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                     ? "bg-[var(--accent-bible)] text-white" 
                     : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]"
                 )}
-                title={aiEnabled ? "IA ativa - clique para desativar" : "Ativar busca com IA"}
+                aria-label={aiEnabled ? "Desativar IA" : "Ativar busca com IA"}
               >
                 <Sparkles className="w-4 h-4" />
               </motion.button>
@@ -252,21 +252,19 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
           )}
           
           {/* Error message */}
-          {aiError && (
+          {aiError && results.length <= 3 && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-start gap-2 mt-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-4 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800"
             >
-              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm text-red-700 dark:text-red-300">
-                  {aiError}
-                </p>
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                  Configure em Configurações → IA ou desative o modo IA.
-                </p>
+              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                <AlertCircle className="w-4 h-4" aria-hidden="true" />
+                <span className="text-sm font-medium">Nota sobre a busca com IA</span>
               </div>
+              <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">
+                {aiError}
+              </p>
             </motion.div>
           )}
         </motion.div>
@@ -387,10 +385,9 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                                 "bg-[var(--accent-bible)]/5 border-[var(--accent-bible)]/20"
                               )}
                             >
-                              <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-bible)] mb-2">
+                               <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-bible)] mb-2">
                                 <Sparkles className="w-3.5 h-3.5" />
                                 <span>Interpretação IA</span>
-                                <Wrench className="w-3 h-3 ml-auto" title="Processado com agente-IA skills" />
                               </div>
                               <p className="text-xs text-[var(--text-bible)] leading-relaxed prose prose-sm dark:prose-invert max-w-none"
                                  dangerouslySetInnerHTML={{ 
