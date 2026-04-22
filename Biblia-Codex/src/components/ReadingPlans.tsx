@@ -510,10 +510,7 @@ export const ReadingPlans: React.FC<{
                   "bg-gradient-to-br", selectedPlan.gradient,
                   "text-white shadow-lg"
                 )}>
-                  {(() => {
-                    const PlanIcon = selectedPlan.icon;
-                    return <PlanIcon className="w-6 h-6" />;
-                  })()}
+                  {renderIcon(selectedPlan.icon, { className: "w-6 h-6" })}
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-[var(--text-bible)]">{selectedPlan.title}</h2>
@@ -686,7 +683,7 @@ export const ReadingPlans: React.FC<{
                 )}
               >
                 <div className={cn("p-2 rounded-lg mb-2", colorClasses[stat.color])}>
-                  <Icon className="w-4 h-4" />
+                  {renderIcon(Icon, { className: "w-4 h-4" })}
                 </div>
                 <span className="text-xl font-bold text-[var(--text-bible)]">{stat.value}</span>
                 <span className="text-xs text-[var(--text-bible-muted)] text-center mt-1">{stat.label}</span>
@@ -802,7 +799,7 @@ export const ReadingPlans: React.FC<{
                       "bg-gradient-to-br", plan.gradient,
                       "text-white shadow-lg"
                     )}>
-                      <Icon className="w-6 h-6" />
+                      {renderIcon(Icon, { className: "w-6 h-6" })}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -901,7 +898,7 @@ export const ReadingPlans: React.FC<{
                     "bg-gradient-to-br", preset.gradient,
                     "text-white shadow-lg"
                   )}>
-                    <Icon className="w-6 h-6" />
+                    {renderIcon(Icon, { className: "w-6 h-6" })}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
