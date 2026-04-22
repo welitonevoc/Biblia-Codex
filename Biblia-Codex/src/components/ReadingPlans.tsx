@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, ArrowLeft, Flame, Trophy, Star, Zap, Crown, ChevronDown, Settings, Users, Globe, Heart, Sun, Moon, BookText, Wand2, Loader2, Sparkle, MessageSquare } from 'lucide-react';
+import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, ChevronLeft, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, ArrowLeft, Flame, Trophy, Star, Zap, Crown, ChevronDown, Settings, Users, Globe, Heart, Sun, Moon, BookText, Wand2, Loader2, Sparkle, MessageSquare, Loader } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { generateReadingPlan } from '../services/geminiService';
+import { BibleService } from '../BibleService';
+import { Verse } from '../types';
 import { LucideIcon } from 'lucide-react';
 
 const renderIcon = (icon: React.ElementType | undefined, props: { className?: string }) => {
@@ -128,8 +130,111 @@ const BIBLE_BOOKS = [
   { name: 'Apocalipse', abbrev: 'ap', chapters: 22 },
 ];
 
-const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'>[] = [
-  {
+const DAY_READINGS = {
+  'encontrando-deus': [
+    { day: 1, title: 'A Criação e o Jardim', passages: ['Gênesis 1:1-2', 'Gênesis 2:4-15'] },
+    { day: 2, title: 'O Pecado e a Queda', passages: ['Gênesis 3:1-24'] },
+    { day: 3, title: 'Abraão e a Promise', passages: ['Gênesis 12:1-9', 'Gênesis 15:1-6'] },
+    { day: 4, title: 'Moisés e o Exodo', passages: ['Êxodo 3:1-15', 'Êxodo 14:1-31'] },
+    { day: 5, title: 'A Terra Prometida', passages: ['Josué 1:1-9', 'Josué 6:1-20'] },
+    { day: 6, title: 'Exílio e Esperança', passages: ['Isaías 40:1-11', 'Isaías 55:1-13'] },
+    { day: 7, title: 'Jesus no Deserto', passages: ['Mateus 4:1-11', 'Hebreus 4:14-16'] },
+  ],
+  'salmos-oracao': [
+    { day: 1, title: 'Salmo 1', passages: ['Salmo 1'] },
+    { day: 2, title: 'Salmo 23', passages: ['Salmo 23'] },
+    { day: 3, title: 'Salmo 27', passages: ['Salmo 27'] },
+    { day: 4, title: 'Salmo 51', passages: ['Salmo 51'] },
+    { day: 5, title: 'Salmo 63', passages: ['Salmo 63'] },
+    { day: 6, title: 'Salmo 91', passages: ['Salmo 91'] },
+    { day: 7, title: 'Salmo 103', passages: ['Salmo 103'] },
+    { day: 8, title: 'Salmo 121', passages: ['Salmo 121'] },
+    { day: 9, title: 'Salmo 139', passages: ['Salmo 139'] },
+    { day: 10, title: 'Salmo 150', passages: ['Salmo 150'] },
+  ],
+  'vida-jesus': [
+    { day: 1, title: 'O Nascimento', passages: ['Lucas 2:1-20'] },
+    { day: 2, title: 'Jesus no Templo', passages: ['Lucas 2:41-52'] },
+    { day: 3, title: 'O Batismo', passages: ['Mateus 3:13-17'] },
+    { day: 4, title: 'As Tentações', passages: ['Mateus 4:1-11'] },
+    { day: 5, title: 'Chamando Discípulos', passages: ['Lucas 5:1-11'] },
+    { day: 6, title: 'Sermão do Monte', passages: ['Mateus 5:1-20'] },
+    { day: 7, title: 'O Bom Samaritano', passages: ['Lucas 10:25-37'] },
+    { day: 8, title: 'O Filho Pródigo', passages: ['Lucas 15:11-32'] },
+    { day: 9, title: 'Alimentando 5000', passages: ['João 6:1-15'] },
+    { day: 10, title: 'Lázaro Ressuscitado', passages: ['João 11:1-44'] },
+    { day: 11, title: 'A Última Ceia', passages: ['João 13:1-17'] },
+    { day: 12, title: 'A Crucificação', passages: ['João 19:16-30'] },
+    { day: 13, title: 'A Ressurreição', passages: ['João 20:1-18'] },
+    { day: 14, title: 'A Grande Comissão', passages: ['Mateus 28:16-20'] },
+  ],
+  'canonical-365': Array.from({ length: 365 }, (_, i) => {
+    const books = BIBLE_BOOKS.slice(0, 39);
+    let acc = 0;
+    for (const book of books) {
+      if (acc + book.chapters > i * 3) {
+        const start = Math.max(1, i * 3 - acc + 1);
+        const end = Math.min(book.chapters, (i + 1) * 3 - acc);
+        return { day: i + 1, title: `${book.name} ${start}${end > start ? '-' + end : ''}`, passages: [`${book.name} ${start}:${end}`] };
+      }
+      acc += book.chapters;
+    }
+    return { day: i + 1, title: 'Apocalipse 1', passages: ['Apocalipse 1'] };
+  }),
+  'devotional-90': Array.from({ length: 90 }, (_, i) => ({
+    day: i + 1,
+    title: `Devocional Dia ${i + 1}`,
+    passages: ['Salmo 1', 'Provérbios 3:5-6']
+  })),
+  'nt-180': Array.from({ length: 180 }, (_, i) => {
+    const books = BIBLE_BOOKS.slice(39);
+    let acc = 0;
+    for (const book of books) {
+      if (acc + book.chapters > i * 1.5) {
+        const start = Math.max(1, Math.ceil(i * 1.5 - acc + 1));
+        const end = Math.min(book.chapters, Math.ceil((i + 1) * 1.5 - acc));
+        return { day: i + 1, title: `${book.name} ${start}`, passages: [`${book.name} ${start}:${end}`] };
+      }
+      acc += book.chapters;
+    }
+    return { day: i + 1, title: 'Apocalipse 1', passages: ['Apocalipse 1'] };
+  }),
+  'psalms-proverbs-60': Array.from({ length: 60 }, (_, i) => {
+    const psalm = i % 150 + 1;
+    const prov = i % 31 + 1;
+    return { day: i + 1, title: `Salmo ${psalm} + Provérbios ${prov}`, passages: [`Salmo ${psalm}`, `Provérbios ${prov}`] };
+  }),
+  'gospels-40': Array.from({ length: 40 }, (_, i) => {
+    const gospelDays = [
+      { book: 'Mateus', chapters: 28, start: 0 },
+      { book: 'Marcos', chapters: 16, start: 28 },
+      { book: 'Lucas', chapters: 24, start: 44 },
+      { book: 'João', chapters: 21, start: 68 }
+    ];
+    let acc = 0;
+    for (const g of gospelDays) {
+      if (acc + g.chapters > i) {
+        const chapter = i - acc + 1;
+        return { day: i + 1, title: `${g.book} ${chapter}`, passages: [`${g.book} ${chapter}`] };
+      }
+      acc += g.chapters;
+    }
+    return { day: i + 1, title: 'João 1', passages: ['João 1'] };
+  }),
+  'pauls-letters-60': Array.from({ length: 60 }, (_, i) => {
+    const letters = ['Romanos', '1 Coríntios', '2 Coríntios', 'Gálatas', 'Efésios', 'Filipenses', 'Colossenses', '1 Tessalonicenses', '2 Tessalonicenses', '1 Timóteo', '2 Timóteo', 'Tito', 'Filemom', 'Hebreus'];
+    const letter = letters[i % letters.length];
+    return { day: i + 1, title: letter, passages: [letter] };
+  }),
+};
+
+const addReadingsToPreset = (plan: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'>): Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'> & { dayReadings: { day: number; title: string; passages: string[]; completed: boolean; }[] } => {
+  const readings = DAY_READINGS[plan.id] || [];
+  return { ...plan, dayReadings: readings.map(r => ({ ...r, completed: false })) };
+};
+
+const PRESET_PLANS: (Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'> & { dayReadings: { day: number; title: string; passages: string[]; completed: boolean; }[] })[] = [
+  addReadingsToPreset({
     id: 'canonical-365',
     title: 'Bíblia em 1 Ano',
     description: 'Leia a Bíblia completa em 365 dias - ordem canônica',
@@ -139,8 +244,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-blue-500 to-indigo-600',
     type: 'canonical',
     color: 'blue',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'chronological-365',
     title: 'Bíblia Cronológica',
     description: 'Leia na ordem histórica dos eventos',
@@ -150,8 +255,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-amber-500 to-orange-600',
     type: 'chronological',
     color: 'amber',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'thematic-365',
     title: 'Plano Temático',
     description: 'VT + NT + Salmosdiariamente - varietygarantido',
@@ -161,8 +266,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-emerald-500 to-teal-600',
     type: 'thematic',
     color: 'emerald',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'devotional-90',
     title: 'Devocionais 90 Dias',
     description: 'Reflexões diárias com aplicação prática',
@@ -172,8 +277,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-rose-500 to-pink-600',
     type: 'devotional',
     color: 'rose',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'nt-180',
     title: 'Novo Testamento 180 Dias',
     description: 'Foque nos evangelhos e epístolas',
@@ -183,8 +288,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-violet-500 to-purple-600',
     type: 'canonical',
     color: 'violet',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'psalms-proverbs-60',
     title: 'Salmos e Provérbios',
     description: 'Sabedoria e adoração diária em 60 dias',
@@ -194,8 +299,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-cyan-500 to-blue-600',
     type: 'thematic',
     color: 'cyan',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'gospels-40',
     title: '4 Evangelhos em 40 Dias',
     description: 'Mateus, Marcos, Lucas e João',
@@ -205,8 +310,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-yellow-500 to-orange-500',
     type: 'canonical',
     color: 'yellow',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'pauls-letters-60',
     title: 'Cartas de Paulo',
     description: 'Todas as epístolas de Paulo em 60 dias',
@@ -216,8 +321,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-indigo-500 to-violet-600',
     type: 'canonical',
     color: 'indigo',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'encontrando-deus',
     title: 'Encontrando Deus no Deserto',
     description: 'Uma jornada de 7 dias explorando as experiências no deserto',
@@ -227,8 +332,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-orange-500 to-amber-600',
     type: 'devotional',
     color: 'orange',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'salmos-oracao',
     title: 'Salmos de Oração',
     description: 'Descubra a beleza da oração através dos Salmos',
@@ -238,8 +343,8 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-slate-500 to-gray-600',
     type: 'devotional',
     color: 'slate',
-  },
-  {
+  }),
+  addReadingsToPreset({
     id: 'vida-jesus',
     title: 'A Vida de Jesus',
     description: 'Conheça Jesus através dos quatro evangelhos',
@@ -249,7 +354,7 @@ const PRESET_PLANS: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level
     gradient: 'from-amber-500 to-yellow-600',
     type: 'canonical',
     color: 'amber',
-  },
+  }),
 ];
 
 const LEVELS = [
@@ -281,6 +386,9 @@ export const ReadingPlans: React.FC<{
   const { settings, currentVersion } = useAppContext();
   const [activeTab, setActiveTab] = useState<'home' | 'custom' | 'explore'>('home');
   const [selectedPlan, setSelectedPlan] = useState<ReadingPlan | null>(null);
+  const [viewingDay, setViewingDay] = useState<number | null>(null);
+  const [loadingVerses, setLoadingVerses] = useState(false);
+  const [dayVerses, setDayVerses] = useState<Record<string, Verse[]>>({});
   const [showPlanDetail, setShowPlanDetail] = useState(false);
   const [showVersionPicker, setShowVersionPicker] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<string>(currentVersion?.id || 'ARC');
@@ -307,6 +415,46 @@ export const ReadingPlans: React.FC<{
   useEffect(() => {
     localStorage.setItem('codex-reading-plans', JSON.stringify(userPlans));
   }, [userPlans]);
+
+  useEffect(() => {
+    if (!selectedPlan || !currentVersion) return;
+    
+    const loadVersesForDay = async () => {
+      const readings = selectedPlan.dayReadings?.filter(r => r.day === selectedPlan.currentDay) || [];
+      if (readings.length === 0) return;
+      
+      const key = `day-${selectedPlan.currentDay}`;
+      if (dayVerses[key]) return;
+      
+      setLoadingVerses(true);
+      const versesMap: Record<string, Verse[]> = {};
+      
+      for (const reading of readings) {
+        for (const passage of reading.passages) {
+          const match = passage.match(/^([A-Za-zãéíóúâêôûáéíóú]+)\s*(\d+):?(\d+)?-?(\d+)?$/i);
+          if (match) {
+            const bookName = match[1].toLowerCase();
+            const chapter = parseInt(match[2]);
+            const verseNum = match[3] ? parseInt(match[3]) : 1;
+            const bookId = bookName.substring(0, 3).toUpperCase();
+            
+            try {
+              const verses = await BibleService.getVerses(bookId, chapter, currentVersion);
+              versesMap[passage] = verses.filter(v => !verseNum || (v.verse >= verseNum));
+            } catch (e) {
+              console.error('Erro ao buscar versículos:', e);
+              versesMap[passage] = [];
+            }
+          }
+        }
+      }
+      
+      setDayVerses(prev => ({ ...prev, [key]: Object.values(versesMap).flat() }));
+      setLoadingVerses(false);
+    };
+    
+    loadVersesForDay();
+  }, [selectedPlan?.currentDay, currentVersion]);
 
   const startPlan = (preset: typeof PRESET_PLANS[0]) => {
     console.log('startPlan called with:', preset.id);
@@ -523,10 +671,17 @@ export const ReadingPlans: React.FC<{
                 )}>
                   {renderIcon(selectedPlan.icon, { className: "w-6 h-6" })}
                 </div>
-                <div>
+                <div className="flex-1">
                   <h2 className="text-xl font-bold text-[var(--text-bible)]">{selectedPlan.title}</h2>
                   <p className="text-sm text-[var(--text-bible-muted)]">Dia {selectedPlan.currentDay} de {selectedPlan.totalDays}</p>
                 </div>
+                <button
+                  onClick={() => setShowVersionPicker(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--surface-2)] hover:bg-[var(--surface-3)] transition-colors"
+                >
+                  <BookText className="w-4 h-4 text-[var(--accent-bible)]" />
+                  <span className="text-sm font-medium text-[var(--text-bible)]">{selectedVersion}</span>
+                </button>
               </div>
 
               <div className="grid grid-cols-4 gap-3 mb-6">
@@ -553,9 +708,60 @@ export const ReadingPlans: React.FC<{
               </div>
 
               <div className="mb-6 p-4 rounded-xl bg-[var(--surface-1)] border border-[var(--border-bible)]">
-                <h3 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-3">
-                  Leitura de Hoje ({selectedVersion})
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider">
+                    Selecione o Dia
+                  </h3>
+                </div>
+                
+                <div className="flex gap-1 overflow-x-auto pb-3 mb-3">
+                  {Array.from({ length: Math.min(selectedPlan.totalDays, 60) }, (_, i) => i + 1).map(day => {
+                    const isCompleted = day <= selectedPlan.progress;
+                    const isCurrent = day === selectedPlan.currentDay;
+                    return (
+                      <button
+                        key={day}
+                        onClick={() => setUserPlans(prev => prev.map(p => p.id === selectedPlan.id ? { ...p, currentDay: day } : p))}
+                        className={cn(
+                          "w-9 h-9 rounded-lg flex-shrink-0 text-sm font-medium transition-all",
+                          isCurrent 
+                            ? "bg-[var(--accent-bible)] text-white shadow-md" 
+                            : isCompleted 
+                              ? "bg-green-500 text-white" 
+                              : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-3)]"
+                        )}
+                        title={`Dia ${day}`}
+                      >
+                        {day}
+                      </button>
+                    );
+                  })}
+                  {selectedPlan.totalDays > 60 && (
+                    <span className="text-xs text-[var(--text-bible-muted)] self-center">
+                      +{selectedPlan.totalDays - 60}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="mb-6 p-4 rounded-xl bg-[var(--surface-1)] border border-[var(--border-bible)]">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider">
+                    Leitura de Hoje
+                  </h3>
+                  <button 
+                    onClick={() => {
+                      const nextVersion = allVersions.find(v => v.id === selectedVersion) 
+                        ? allVersions[(allVersions.findIndex(v => v.id === selectedVersion) + 1) % allVersions.length]
+                        : allVersions[0];
+                      if (nextVersion) setSelectedVersion(nextVersion.id);
+                    }}
+                    className="text-xs text-[var(--accent-bible)] hover:underline flex items-center gap-1"
+                  >
+                    <BookText className="w-3 h-3" />
+                    {selectedVersion}
+                  </button>
+                </div>
                 <div className="text-lg font-semibold text-[var(--text-bible)] mb-2">
                   {getTodayReading(selectedPlan)}
                 </div>
@@ -610,6 +816,30 @@ export const ReadingPlans: React.FC<{
                     {Math.round((selectedPlan.progress / selectedPlan.totalDays) * 100)}%
                   </span>
                 </div>
+                {loadingVerses ? (
+                  <div className="flex items-center justify-center gap-2 p-4 text-[var(--text-bible-muted)]">
+                    <Loader className="w-5 h-5 animate-spin" />
+                    <span className="text-sm">Carregando texto...</span>
+                  </div>
+                ) : dayVerses[`day-${selectedPlan.currentDay}`]?.length > 0 ? (
+                  <div className="mb-4 p-4 rounded-xl bg-[var(--surface-0)] border border-[var(--border-bible)] max-h-64 overflow-y-auto">
+                    <h4 className="text-xs font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-2">
+                      Texto Bíblico
+                    </h4>
+                    {dayVerses[`day-${selectedPlan.currentDay}`].map((verse, idx) => (
+                      <p key={idx} className="text-sm text-[var(--text-bible)] leading-relaxed mb-2">
+                        <span className="text-[var(--accent-bible)] font-bold">{verse.verse}</span> {verse.text}
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mb-4 p-4 rounded-xl bg-[var(--surface-2)] border border-[var(--border-bible)]">
+                    <p className="text-sm text-[var(--text-bible-muted)]">
+                      Selecione uma passagem para ver o texto aqui
+                    </p>
+                  </div>
+                )}
+
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -625,25 +855,40 @@ export const ReadingPlans: React.FC<{
                 </motion.button>
               </div>
 
-              <div className="mb-6">
-                <h3 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-3">
-                  Progresso por Livro
-                </h3>
-                <div className="grid grid-cols-8 gap-1">
-                  {BIBLE_BOOKS.slice(0, 40).map((book) => {
-                    const isCompleted = selectedPlan.completedBooks.includes(book.abbrev);
-                    return (
-                      <div
-                        key={book.abbrev}
-                        className={cn(
-                          "aspect-square rounded-sm",
-                          isCompleted ? "bg-[var(--accent-bible)]" : "bg-[var(--surface-2)]"
-                        )}
-                        title={book.name}
-                      />
-                    );
-                  })}
+              <div className="flex items-center justify-between gap-3 mb-6">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setUserPlans(prev => prev.map(p => p.id === selectedPlan.id && p.currentDay > 1 ? { ...p, currentDay: p.currentDay - 1 } : p))}
+                  disabled={selectedPlan.currentDay <= 1}
+                  className={cn(
+                    "flex-1 py-3 rounded-xl font-medium flex items-center justify-center gap-2",
+                    "bg-[var(--surface-2)] hover:bg-[var(--surface-3)] transition-colors",
+                    selectedPlan.currentDay <= 1 && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Dia Anterior
+                </motion.button>
+                <div className="px-3 py-2 rounded-xl bg-[var(--surface-1)] border border-[var(--border-bible)]">
+                  <span className="text-sm font-semibold text-[var(--text-bible)]">
+                    {selectedPlan.currentDay} / {selectedPlan.totalDays}
+                  </span>
                 </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setUserPlans(prev => prev.map(p => p.id === selectedPlan.id && p.currentDay < p.totalDays ? { ...p, currentDay: p.currentDay + 1 } : p))}
+                  disabled={selectedPlan.currentDay >= selectedPlan.totalDays}
+                  className={cn(
+                    "flex-1 py-3 rounded-xl font-medium flex items-center justify-center gap-2",
+                    "bg-[var(--surface-2)] hover:bg-[var(--surface-3)] transition-colors",
+                    selectedPlan.currentDay >= selectedPlan.totalDays && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  Próximo Dia
+                  <ChevronRight className="w-4 h-4" />
+                </motion.button>
               </div>
             </div>
           </motion.div>
