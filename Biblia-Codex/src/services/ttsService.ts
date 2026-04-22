@@ -1,6 +1,6 @@
 /**
  * Serviço de Text-to-Speech (TTS) para Bible Codex
- * Usa a API nativa do navegador (Web Speech API)
+ * Suporta leitura guiada com highlight e scroll automático
  */
 
 export interface TTSOptions {
@@ -9,6 +9,11 @@ export interface TTSOptions {
   volume?: number;
   voice?: SpeechSynthesisVoice;
   lang?: string;
+  onVerseChange?: (verseIndex: number, verseText: string) => void;
+  onComplete?: () => void;
+  onWordHighlight?: (wordIndex: number, word: string, charOffset: number) => void;
+  scrollContainer?: HTMLElement | null;
+  highlightVerseRef?: (verseNumber: number) => void;
 }
 
 export interface TTSVoice {
@@ -17,17 +22,29 @@ export interface TTSVoice {
   voice: SpeechSynthesisVoice;
 }
 
+export interface TTSVerse {
+  verseNumber: number;
+  text: string;
+}
+
 class TTSService {
   private static instance: TTSService;
   private synth: SpeechSynthesis;
   private voices: SpeechSynthesisVoice[] = [];
   private currentUtterance: SpeechSynthesisUtterance | null = null;
   private isInitialized = false;
+  
+  private verses: TTSVerse[] = [];
+  private currentVerseIndex = 0;
+  private isPlaying = false;
+  private options: TTSOptions = {};
+  private words: string[] = [];
+  private currentWordIndex = 0;
 
   private constructor() {
     this.synth = window.speechSynthesis;
     this.loadVoices();
-    if (speechSynthesis.onvoiceschanged !== undefined) {
+    if (typeof window !== 'undefined') {
       speechSynthesis.onvoiceschanged = () => this.loadVoices();
     }
   }
@@ -42,6 +59,7 @@ class TTSService {
   private loadVoices() {
     this.voices = this.synth.getVoices();
     this.isInitialized = this.voices.length > 0;
+    console.log('[TTS] Vozes carregadas:', this.voices.length);
   }
 
   getVoices(): TTSVoice[] {
@@ -63,7 +81,95 @@ class TTSService {
     return this.voices.find(v => v.lang.includes('pt')) || null;
   }
 
-  speak(text: string, options: TTSOptions = {}): Promise<void> {
+  /**
+   * Converte texto em versos numerados
+   */
+  private parseVerses(text: string): TTSVerse[] {
+    const verses: TTSVerse[] = [];
+    const verseRegex = /^(\d+)\.?\s*(.+)$/gm;
+    let match;
+    
+    while ((match = verseRegex.exec(text)) !== null) {
+      verses.push({
+        verseNumber: parseInt(match[1]),
+        text: match[2].trim()
+      });
+    }
+    
+    if (verses.length === 0) {
+      const lines = text.split(/\n+/).filter(l => l.trim());
+      lines.forEach((line, idx) => {
+        const numMatch = line.match(/^(\d+)\.?\s*/);
+        if (numMatch) {
+          verses.push({
+            verseNumber: parseInt(numMatch[1]),
+            text: line.replace(numMatch[0], '').trim()
+          });
+        } else {
+          verses.push({
+            verseNumber: idx + 1,
+            text: line.trim()
+          });
+        }
+      });
+    }
+    
+    return verses;
+  }
+
+  /**
+   * Inicia a leitura de um capítulo inteiro com highlight
+   */
+  async speakChapter(
+    verses: { verse: number; text: string }[],
+    options: TTSOptions = {}
+  ): Promise<void> {
+    this.stop();
+    this.isPlaying = true;
+    this.options = options;
+    
+    this.verses = verses.map(v => ({
+      verseNumber: v.verse,
+      text: v.text.replace(/^[\d]+\.?\s*/, '')
+    }));
+    
+    console.log('[TTS] Iniciando leitura de', this.verses.length, 'versículos');
+    
+    await this.speakNextVerse();
+  }
+
+  /**
+   * Lê o próximo versículo
+   */
+  private async speakNextVerse(): Promise<void> {
+    if (!this.isPlaying || this.currentVerseIndex >= this.verses.length) {
+      this.isPlaying = false;
+      this.options.onComplete?.();
+      console.log('[TTS] Leitura concluída');
+      return;
+    }
+
+    const verse = this.verses[this.currentVerseIndex];
+    const fullText = `${verse.verseNumber}. ${verse.text}`;
+    
+    console.log('[TTS] Lendo versículo', verse.verseNumber);
+    
+    this.options.highlightVerseRef?.(verse.verseNumber);
+    this.options.onVerseChange?.(this.currentVerseIndex, fullText);
+    
+    await this.speakSingleVerse(verse.text, {
+      ...this.options,
+      onComplete: () => {
+        this.currentVerseIndex++;
+        setTimeout(() => this.speakNextVerse(), 300);
+      }
+    });
+  }
+
+  /**
+   * Lê um único versículo com callback
+   */
+  speakSingleVerse(text: string, options: TTSOptions = {}): Promise<void> {
     return new Promise((resolve, reject) => {
       this.stop();
 
@@ -88,11 +194,14 @@ class TTSService {
 
       utterance.onend = () => {
         this.currentUtterance = null;
+        options.onComplete?.();
         resolve();
       };
       
       utterance.onerror = (event) => {
         this.currentUtterance = null;
+        console.error('[TTS] Erro:', event);
+        options.onComplete?.();
         reject(event);
       };
 
@@ -101,22 +210,30 @@ class TTSService {
     });
   }
 
-  speakVerse(bookName: string, chapter: number, verse: number, text: string, options: TTSOptions = {}): Promise<void> {
-    const formattedText = `${bookName} capítulo ${chapter}, versículo ${verse}. ${text}`;
-    return this.speak(formattedText, options);
+  /**
+   * Método original para compatibilidade
+   */
+  speak(text: string, options: TTSOptions = {}): Promise<void> {
+    this.options = options;
+    return this.speakSingleVerse(text, options);
   }
 
   pause() {
     this.synth.pause();
+    this.isPlaying = false;
   }
 
   resume() {
     this.synth.resume();
+    this.isPlaying = true;
   }
 
   stop() {
     this.synth.cancel();
     this.currentUtterance = null;
+    this.isPlaying = false;
+    this.currentVerseIndex = 0;
+    this.currentWordIndex = 0;
   }
 
   isSpeaking(): boolean {
@@ -127,23 +244,41 @@ class TTSService {
     return this.synth.paused;
   }
 
+  isPlayingTTS(): boolean {
+    return this.isPlaying;
+  }
+
   isAvailable(): boolean {
     return 'speechSynthesis' in window;
+  }
+
+  getCurrentVerseIndex(): number {
+    return this.currentVerseIndex;
+  }
+
+  skipToVerse(index: number) {
+    if (index >= 0 && index < this.verses.length) {
+      this.currentVerseIndex = index;
+    }
   }
 }
 
 export const ttsService = TTSService.getInstance();
 
-export const isTTSSupported = 'speechSynthesis' in window;
+export const isTTSSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
 export const getAvailableVoices = () => ttsService.getVoices();
 
 export const speakText = (text: string, options?: TTSOptions) => 
   ttsService.speak(text, options);
 
-export const speakVerse = (bookName: string, chapter: number, verse: number, text: string, options?: TTSOptions) =>
-  ttsService.speakVerse(bookName, chapter, verse, text, options);
+export const speakChapter = (verses: { verse: number; text: string }[], options?: TTSOptions) =>
+  ttsService.speakChapter(verses, options);
 
 export const stopSpeaking = () => ttsService.stop();
 
 export const isCurrentlySpeaking = () => ttsService.isSpeaking();
+
+export const isPlayingTTS = () => ttsService.isPlayingTTS();
+
+export const getCurrentVerseIndex = () => ttsService.getCurrentVerseIndex();

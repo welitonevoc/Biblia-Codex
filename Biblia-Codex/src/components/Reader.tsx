@@ -13,7 +13,7 @@ import {
   Sparkles, Library, Layers, ChevronRight, ChevronLeft, Plus,
   Check, X, Palette, Tag, Trash2, BookOpen, ChevronDown, Volume2
 } from 'lucide-react';
-import { ttsService, speakText, stopSpeaking, isCurrentlySpeaking, isTTSSupported } from '../services/ttsService';
+import { ttsService, speakText, speakChapter, stopSpeaking, isCurrentlySpeaking, isTTSSupported, isPlayingTTS } from '../services/ttsService';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { DictionaryBottomSheet } from './DictionaryBottomSheet';
@@ -58,6 +58,7 @@ export const Reader: React.FC<ReaderProps> = ({
   const [selectedContext, setSelectedContext] = useState<string>('');
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
   const [isSpeakingTTS, setIsSpeakingTTS] = useState(false);
+  const [currentHighlightedVerse, setCurrentHighlightedVerse] = useState<number | null>(null);
   const { config, settings, currentVersion } = useAppContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -513,10 +514,12 @@ export const Reader: React.FC<ReaderProps> = ({
                         />
                       )}
                       <span
+                        id={`verse-${v.verse}`}
                         onClick={() => toggleVerseSelection(v.verse)}
                         className={cn(
                           "relative inline transition-all duration-200 cursor-pointer rounded-xl px-1.5 -mx-1.5",
                           selectedVerses.includes(v.verse) ? "bg-bible-accent/20 shadow-[0_0_0_2px_rgba(var(--accent-bible-rgb),0.12)]" : "hover:bg-bible-accent/7",
+                          currentHighlightedVerse === v.verse && "bg-yellow-400/40 ring-2 ring-yellow-400/50",
                           showHighlight && !settings.visualResources.gradientHighlight && `border-b-2`,
                           showHighlight && settings.visualResources.gradientHighlight && "bg-gradient-to-r from-transparent via-bible-accent/10 to-transparent"
                         )}
@@ -780,7 +783,7 @@ export const Reader: React.FC<ReaderProps> = ({
                     <span className="min-h-[2rem] text-center text-[8px] font-bold uppercase leading-tight tracking-wide text-bible-text-muted sm:text-[9px] sm:tracking-wider">Estudar</span>
                   </motion.button>
 
-                  {/* TTS - Audio Playback */}
+                  {/* TTS - Audio Playback with Highlight */}
                   {isTTSSupported && (
                     <motion.button
                       whileHover={{ scale: 1.1 }}
@@ -789,28 +792,44 @@ export const Reader: React.FC<ReaderProps> = ({
                         if (isSpeakingTTS) {
                           stopSpeaking();
                           setIsSpeakingTTS(false);
+                          setCurrentHighlightedVerse(null);
                         } else {
                           setIsSpeakingTTS(true);
+                          setCurrentHighlightedVerse(null);
                           try {
-                            const textToSpeak = selectedVerses.length > 0
+                            const versesToRead = selectedVerses.length > 0
                               ? selectedVerses
                                   .map(v => {
                                     const verse = verses.find(vers => vers.verse === v);
-                                    return verse ? `${verse.verse}. ${verse.text}` : '';
+                                    return verse ? { verse: v, text: verse.text } : null;
                                   })
                                   .filter(Boolean)
-                                  .join('. ')
-                              : verses
-                                  .map(v => `${v.verse}. ${v.text}`)
-                                  .join('. ');
+                              : verses.map(v => ({ verse: v.verse, text: v.text }));
                             
-                            if (textToSpeak) {
-                              await speakText(textToSpeak, { rate: 0.9, lang: 'pt-BR' });
-                              setIsSpeakingTTS(false);
+                            if (versesToRead.length > 0) {
+                              await speakChapter(versesToRead as { verse: number; text: string }[], {
+                                rate: 0.9,
+                                lang: 'pt-BR',
+                                onVerseChange: (idx, text) => {
+                                  console.log('[TTS] Versículo:', idx, text);
+                                },
+                                highlightVerseRef: (verseNum) => {
+                                  setCurrentHighlightedVerse(verseNum);
+                                  const verseEl = document.getElementById(`verse-${verseNum}`);
+                                  if (verseEl) {
+                                    verseEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  }
+                                },
+                                onComplete: () => {
+                                  setIsSpeakingTTS(false);
+                                  setCurrentHighlightedVerse(null);
+                                }
+                              });
                             }
                           } catch (e) {
                             console.error('Erro TTS:', e);
                             setIsSpeakingTTS(false);
+                            setCurrentHighlightedVerse(null);
                           }
                         }
                       }}
