@@ -1,0 +1,589 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+@keyframes xpIn{0%{width:0}100%{width:var(--w,68%)}}
+@keyframes trophyIn{0%{transform:scale(0) rotate(-15deg);opacity:0}65%{transform:scale(1.12) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes heartCrack{0%{transform:scale(1)}25%{transform:scale(1.35)}60%{transform:scale(0.8) rotate(-8deg)}85%{transform:scale(1.1) rotate(4deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes fadeUp{0%{transform:translateY(14px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes shimmerLock{0%,100%{opacity:0.35}50%{opacity:0.6}}
+@keyframes starPop{0%{transform:scale(0) rotate(-20deg)}65%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes glowPulse{0%,100%{border-color:#B388FF}50%{border-color:#7C4DFF}}
+@keyframes orb{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.03)}}
+@keyframes bookFlip{0%{transform:scaleX(0);opacity:0}100%{transform:scaleX(1);opacity:1}}
+@keyframes xpLost{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-24px)}}
+
+body{font-family:var(--font-sans)}
+.app{background:var(--color-background-secondary);border-radius:20px;max-width:430px;margin:0 auto;overflow:hidden;border:0.5px solid var(--color-border-tertiary)}
+
+.nav{background:var(--color-background-primary);display:flex;border-bottom:0.5px solid var(--color-border-tertiary);overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nb{flex:1;min-width:72px;padding:10px 2px 8px;font-size:10px;text-align:center;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-sans);transition:all 0.15s;white-space:nowrap}
+.nb.on{color:#7C4DFF;border-bottom-color:#7C4DFF;font-weight:500}
+.nb span{display:block;font-size:18px;margin-bottom:2px}
+
+.screen{display:none;padding:16px;overflow-y:auto;max-height:530px}
+.screen.on{display:block;animation:fadeUp 0.22s ease}
+
+.sec{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.07em;margin:16px 0 10px;padding-left:2px}
+
+/* LEVEL CARD */
+.lv-card{background:var(--color-background-primary);border-radius:16px;border:0.5px solid var(--color-border-tertiary);padding:20px;margin-bottom:14px}
+.lv-top{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.lv-orb{width:68px;height:68px;border-radius:50%;background:#F3E0FF;border:2.5px solid #B388FF;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;animation:orb 3s ease-in-out infinite}
+.lv-orb .lnum{font-size:24px;font-weight:500;color:#7C4DFF;line-height:1}
+.lv-orb .llbl{font-size:9px;color:#9C5AFF;font-weight:500}
+.lv-name{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.lv-sub{font-size:12px;color:var(--color-text-secondary);margin-top:3px;line-height:1.4}
+.xp-top{display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-secondary);margin-bottom:6px}
+.xp-bar{height:10px;background:var(--color-background-secondary);border-radius:5px;overflow:hidden}
+.xp-fill{height:100%;background:#7C4DFF;border-radius:5px;width:0;animation:xpIn 1s 0.3s cubic-bezier(0.4,0,0.2,1) forwards;--w:68%}
+
+.coins{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.coin{background:var(--color-background-primary);border-radius:12px;border:0.5px solid var(--color-border-tertiary);padding:10px 4px;text-align:center}
+.c-ico{font-size:20px;display:block;margin-bottom:4px}
+.c-val{font-size:15px;font-weight:500;color:var(--color-text-primary);display:block}
+.c-lbl{font-size:9px;color:var(--color-text-secondary)}
+
+/* XP RULES */
+.xp-rule{background:var(--color-background-primary);border-radius:12px;border:0.5px solid var(--color-border-tertiary);overflow:hidden;margin-bottom:10px}
+.xr-head{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.xr-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.xr-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.xr-sub{font-size:11px;color:var(--color-text-secondary);margin-top:1px}
+.xr-val{margin-left:auto;font-size:13px;font-weight:500;white-space:nowrap}
+.xr-item{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;color:var(--color-text-secondary)}
+.xr-item:last-child{border-bottom:none}
+.xr-item strong{color:var(--color-text-primary)}
+
+/* LEVELS TABLE */
+.lvls{background:var(--color-background-primary);border-radius:12px;border:0.5px solid var(--color-border-tertiary);overflow:hidden;margin-bottom:14px}
+.lv-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.lv-row:last-child{border-bottom:none}
+.lv-row.cur{background:#F9F4FF}
+.lv-ball{width:34px;height:34px;border-radius:50%;background:#F3E0FF;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#7C4DFF;flex-shrink:0}
+.lv-row.cur .lv-ball{background:#7C4DFF;color:white}
+.lv-inf{flex:1}
+.lv-ttl{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.lv-rng{font-size:10px;color:var(--color-text-secondary)}
+
+/* TROPHIES */
+.t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.t-card{background:var(--color-background-primary);border-radius:14px;border:0.5px solid var(--color-border-tertiary);padding:14px 8px;text-align:center;cursor:pointer;transition:transform 0.15s;position:relative}
+.t-card:hover{transform:translateY(-3px)}
+.t-card.anim{animation:trophyIn 0.5s ease forwards}
+.t-card.locked{opacity:0.38;animation:shimmerLock 2.5s ease-in-out infinite}
+.t-card.prem{border-color:#B388FF;animation:glowPulse 2.5s ease-in-out infinite}
+.t-card.prem.anim{animation:trophyIn 0.5s ease forwards,glowPulse 2.5s 0.5s ease-in-out infinite}
+.t-ico{font-size:30px;display:block;margin-bottom:7px;animation:floatY 2.5s ease-in-out infinite}
+.t-name{font-size:11px;font-weight:500;color:var(--color-text-primary);line-height:1.3;margin-bottom:3px}
+.t-desc{font-size:9px;color:var(--color-text-secondary);line-height:1.3;margin-bottom:6px}
+.t-xp{font-size:10px;color:#7C4DFF;font-weight:500}
+.badge{display:inline-block;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:500}
+.br{background:#F3E5D3;color:#7B4F2E}.si{background:#ECEFF1;color:#455A64}.go{background:#FFF8E1;color:#C66A00}.di{background:#EDE7F6;color:#512DA8}.sp{background:#FCE4EC;color:#B71C1C}
+.lock-i{position:absolute;top:7px;right:8px;font-size:11px}
+
+/* BOOKS */
+.bgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:6px}
+.bk{background:var(--color-background-primary);border-radius:8px;border:0.5px solid var(--color-border-tertiary);padding:7px 3px;text-align:center;cursor:pointer;transition:all 0.2s}
+.bk.done{background:#F3E0FF;border-color:#B388FF}
+.bk.done .bk-name{color:#7C4DFF}
+.bk-ico{font-size:12px;display:block;margin-bottom:1px}
+.bk-name{font-size:8px;color:var(--color-text-secondary);display:block;line-height:1.2}
+.bk.done .bk-ico{animation:starPop 0.4s ease}
+.bk-xp{font-size:7px;color:#9C5AFF}
+.legend{display:flex;gap:14px;margin-bottom:14px}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-secondary)}
+.leg-box{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.book-xp-info{background:var(--color-background-primary);border-radius:12px;border:0.5px solid var(--color-border-tertiary);padding:14px;margin-bottom:10px}
+.bxi-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:10px}
+.bxi-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+.bxi-row:last-child{border-bottom:none}
+.bxi-l{color:var(--color-text-secondary)}
+.bxi-r{font-weight:500;color:#7C4DFF}
+
+/* PLANS */
+.plan{background:var(--color-background-primary);border-radius:14px;border:0.5px solid var(--color-border-tertiary);padding:16px;margin-bottom:10px}
+.plan-top{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px}
+.plan-ico{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.plan-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
+.plan-desc{font-size:11px;color:var(--color-text-secondary);line-height:1.4}
+.p-bar{height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.p-fill{height:100%;border-radius:3px}
+.p-foot{display:flex;justify-content:space-between;align-items:center}
+.p-prog{font-size:11px;color:var(--color-text-secondary)}
+.p-rewards{display:flex;gap:6px;flex-wrap:wrap}
+.pill{background:var(--color-background-secondary);border-radius:10px;padding:3px 9px;font-size:11px;font-weight:500;color:var(--color-text-primary)}
+.prem-pill{background:#EDE7F6;color:#512DA8}
+
+/* HEARTS */
+.hearts-card{background:var(--color-background-primary);border-radius:14px;border:0.5px solid var(--color-border-tertiary);padding:20px;margin-bottom:12px;text-align:center;position:relative}
+.hearts-title{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px}
+.hearts-sub{font-size:12px;color:var(--color-text-secondary);line-height:1.5;margin-bottom:16px}
+.hrow{display:flex;justify-content:center;gap:12px;margin-bottom:6px}
+.hb{font-size:30px;cursor:pointer;border:none;background:none;padding:0;transition:transform 0.1s;animation:floatY 2s ease-in-out infinite}
+.hb:nth-child(2){animation-delay:0.2s}.hb:nth-child(3){animation-delay:0.4s}.hb:nth-child(4){animation-delay:0.6s}.hb:nth-child(5){animation-delay:0.8s}
+.hb.crack{animation:heartCrack 0.45s ease forwards}
+.hint{font-size:11px;color:var(--color-text-secondary);margin-top:8px}
+.xp-lost-label{position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:500;color:#E53935;opacity:0;pointer-events:none;white-space:nowrap}
+.xp-lost-label.show{animation:xpLost 1.2s ease forwards}
+
+.loss-gain{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.lg-card{border-radius:12px;border:0.5px solid var(--color-border-tertiary);padding:14px;background:var(--color-background-primary)}
+.lg-t{font-size:12px;font-weight:500;margin-bottom:10px}
+.lg-item{display:flex;align-items:flex-start;gap:7px;margin-bottom:8px;font-size:11px;color:var(--color-text-secondary);line-height:1.35}
+.lg-ico{font-size:14px;flex-shrink:0;margin-top:0px}
+
+/* RULES */
+.r-card{background:var(--color-background-primary);border-radius:12px;border:0.5px solid var(--color-border-tertiary);overflow:hidden;margin-bottom:10px}
+.r-row{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.r-row:last-child{border-bottom:none}
+.r-ico{font-size:18px;width:24px;flex-shrink:0;margin-top:1px}
+.r-txt{flex:1;font-size:12px;color:var(--color-text-secondary);line-height:1.5}
+.r-txt strong{color:var(--color-text-primary);font-weight:500}
+.r-val{font-size:12px;font-weight:500;white-space:nowrap;margin-left:auto}
+.gain{color:#2E7D32}.lose{color:#C62828}.info{color:#7C4DFF}
+</style>
+
+<h2 class="sr-only">Sistema completo de recompensas do app Bíblia — XP, troféus, livros e regras</h2>
+
+<div style="padding:1rem 0">
+<div class="app">
+
+<div class="nav" id="nav">
+  <button class="nb on" onclick="sw('nivel')"><span>⭐</span>Nível & XP</button>
+  <button class="nb" onclick="sw('trofeus')"><span>🏆</span>Troféus</button>
+  <button class="nb" onclick="sw('livros')"><span>📖</span>Livros</button>
+  <button class="nb" onclick="sw('planos')"><span>🗺️</span>Planos</button>
+  <button class="nb" onclick="sw('regras')"><span>💔</span>Vidas & Regras</button>
+</div>
+
+<!-- ===== NÍVEL & XP ===== -->
+<div class="screen on" id="s-nivel">
+  <div class="lv-card">
+    <div class="lv-top">
+      <div class="lv-orb"><div class="lnum">12</div><div class="llbl">NÍVEL</div></div>
+      <div>
+        <div class="lv-name">Discípulo</div>
+        <div class="lv-sub">6.800 / 10.000 XP para<br>Profeta (Nível 15)</div>
+      </div>
+    </div>
+    <div class="xp-top"><span>Nível 12 — Discípulo</span><span>6.800 XP</span></div>
+    <div class="xp-bar"><div class="xp-fill" style="--w:68%"></div></div>
+  </div>
+
+  <div class="coins">
+    <div class="coin"><span class="c-ico">⭐</span><span class="c-val">3.240</span><span class="c-lbl">Estrelas</span></div>
+    <div class="coin"><span class="c-ico">💎</span><span class="c-val">18</span><span class="c-lbl">Diamantes</span></div>
+    <div class="coin"><span class="c-ico">⚡</span><span class="c-val">57</span><span class="c-lbl">Raios</span></div>
+    <div class="coin"><span class="c-ico">❤️</span><span class="c-val">4/5</span><span class="c-lbl">Vidas</span></div>
+  </div>
+
+  <p class="sec">Como ganhar XP</p>
+  <div class="xp-rule">
+    <div class="xr-head">
+      <div class="xr-ico" style="background:#FFF8E1">📖</div>
+      <div><div class="xr-title">Leitura diária</div><div class="xr-sub">Por cada sessão de leitura</div></div>
+      <div class="xr-val gain">+25 XP</div>
+    </div>
+    <div class="xr-item"><span><strong>Versículo completo lido</strong></span><span class="gain">+5 XP</span></div>
+    <div class="xr-item"><span><strong>Capítulo completo lido</strong></span><span class="gain">+30 XP</span></div>
+    <div class="xr-item"><span><strong>Quiz de versículos acertado</strong></span><span class="gain">+15 XP</span></div>
+  </div>
+  <div class="xp-rule">
+    <div class="xr-head">
+      <div class="xr-ico" style="background:#E3F2FD">📜</div>
+      <div><div class="xr-title">Livro da Bíblia concluído</div><div class="xr-sub">Varia conforme o tamanho do livro</div></div>
+      <div class="xr-val gain">+50–800 XP</div>
+    </div>
+    <div class="xr-item"><span>Livros curtos (Rute, Obadias…)</span><span class="gain">+50–100 XP</span></div>
+    <div class="xr-item"><span>Livros médios (Gálatas, Jonas…)</span><span class="gain">+150–300 XP</span></div>
+    <div class="xr-item"><span>Livros longos (Isaías, Mateus…)</span><span class="gain">+500–700 XP</span></div>
+    <div class="xr-item"><span>Livros extensos (Gênesis, Salmos…)</span><span class="gain">+800 XP</span></div>
+  </div>
+  <div class="xp-rule">
+    <div class="xr-head">
+      <div class="xr-ico" style="background:#F3E0FF">🏆</div>
+      <div><div class="xr-title">Plano de leitura concluído</div><div class="xr-sub">Troféu + XP ao finalizar</div></div>
+      <div class="xr-val gain">+500–50k XP</div>
+    </div>
+    <div class="xr-item"><span>Plano curto (7 dias) — Bronze 🥉</span><span class="gain">+500 XP</span></div>
+    <div class="xr-item"><span>Plano médio (30 dias) — Prata 🥈</span><span class="gain">+2.000 XP</span></div>
+    <div class="xr-item"><span>Plano longo (90 dias) — Ouro 🥇</span><span class="gain">+8.000 XP</span></div>
+    <div class="xr-item"><span>Plano anual (365 dias) — Diamante 💎</span><span class="gain">+50.000 XP</span></div>
+  </div>
+
+  <p class="sec">Progressão de níveis</p>
+  <div class="lvls">
+    <div class="lv-row"><div class="lv-ball">1</div><div class="lv-inf"><div class="lv-ttl">🌱 Leitor</div><div class="lv-rng">Nível 1–5 · 0 a 2.000 XP</div></div></div>
+    <div class="lv-row"><div class="lv-ball">6</div><div class="lv-inf"><div class="lv-ttl">🕯️ Discípulo</div><div class="lv-rng">Nível 6–15 · 2.001 a 10.000 XP</div></div></div>
+    <div class="lv-row cur"><div class="lv-ball">12</div><div class="lv-inf"><div class="lv-ttl">🕯️ Discípulo — você está aqui</div><div class="lv-rng">6.800 / 10.000 XP</div></div></div>
+    <div class="lv-row"><div class="lv-ball">16</div><div class="lv-inf"><div class="lv-ttl">📜 Profeta</div><div class="lv-rng">Nível 16–25 · 10.001 a 50.000 XP</div></div></div>
+    <div class="lv-row"><div class="lv-ball">26</div><div class="lv-inf"><div class="lv-ttl">⚡ Apóstolo</div><div class="lv-rng">Nível 26–35 · 50.001 a 150.000 XP</div></div></div>
+    <div class="lv-row"><div class="lv-ball">36</div><div class="lv-inf"><div class="lv-ttl">🛡️ Guardião</div><div class="lv-rng">Nível 36–45 · 150.001 a 400.000 XP</div></div></div>
+    <div class="lv-row"><div class="lv-ball">46</div><div class="lv-inf"><div class="lv-ttl">👑 Ancião</div><div class="lv-rng">Nível 46–55 · 400.001 a 900.000 XP</div></div></div>
+    <div class="lv-row"><div class="lv-ball">56</div><div class="lv-inf"><div class="lv-ttl">⚓ Patriarca</div><div class="lv-rng">Nível 56–65 · 900.001 a 2M XP</div></div></div>
+    <div class="lv-row"><div class="lv-ball">66</div><div class="lv-inf"><div class="lv-ttl">🔑 Mestre Sábio</div><div class="lv-rng">Nível 66–80 · 2M a 5M XP</div></div></div>
+    <div class="lv-row" style="background:#FFF8E1"><div class="lv-ball" style="background:#C66A00;color:#fff">99</div><div class="lv-inf"><div class="lv-ttl">✝️ Sumo Sacerdote</div><div class="lv-rng">Nível 99 · 10M+ XP — Lendário</div></div></div>
+  </div>
+</div>
+
+<!-- ===== TROFÉUS ===== -->
+<div class="screen" id="s-trofeus">
+  <p class="sec">Troféus de Sequência de Leitura</p>
+  <div class="t-grid">
+    <div class="t-card anim" style="animation-delay:0.05s">
+      <span class="t-ico" style="animation-delay:0s">🛡️</span>
+      <div class="t-name">Escudo da Fé</div>
+      <div class="t-desc">7 dias consecutivos de leitura</div>
+      <div class="t-xp">+500 XP</div>
+      <span class="badge br">Bronze</span>
+    </div>
+    <div class="t-card anim" style="animation-delay:0.1s">
+      <span class="t-ico" style="animation-delay:0.3s">🛡️</span>
+      <div class="t-name">Guerreiro da Fé</div>
+      <div class="t-desc">30 dias consecutivos</div>
+      <div class="t-xp">+2.000 XP</div>
+      <span class="badge si">Prata</span>
+    </div>
+    <div class="t-card anim prem" style="animation-delay:0.15s">
+      <span class="t-ico" style="animation-delay:0.6s">🛡️</span>
+      <div class="t-name">Paladino Eterno</div>
+      <div class="t-desc">365 dias consecutivos</div>
+      <div class="t-xp">+50.000 XP</div>
+      <span class="badge di">Diamante</span>
+    </div>
+  </div>
+
+  <p class="sec">Troféus de Livros e Estudos</p>
+  <div class="t-grid">
+    <div class="t-card anim" style="animation-delay:0.2s">
+      <span class="t-ico" style="animation-delay:0.1s">🕯️</span>
+      <div class="t-name">Lâmpada dos Pés</div>
+      <div class="t-desc">Conclui 1 plano de estudo temático</div>
+      <div class="t-xp">+1.000 XP</div>
+      <span class="badge go">Ouro</span>
+    </div>
+    <div class="t-card anim" style="animation-delay:0.25s">
+      <span class="t-ico" style="animation-delay:0.2s">⚔️</span>
+      <div class="t-name">Espada do Espírito</div>
+      <div class="t-desc">10 versículos memorizados</div>
+      <div class="t-xp">+800 XP</div>
+      <span class="badge si">Prata</span>
+    </div>
+    <div class="t-card anim" style="animation-delay:0.3s">
+      <span class="t-ico" style="animation-delay:0.4s">⚓</span>
+      <div class="t-name">Âncora da Esperança</div>
+      <div class="t-desc">Conclui plano de esperança/sofrimento</div>
+      <div class="t-xp">+1.500 XP</div>
+      <span class="badge go">Ouro</span>
+    </div>
+    <div class="t-card anim" style="animation-delay:0.35s">
+      <span class="t-ico" style="animation-delay:0.5s">🎵</span>
+      <div class="t-name">Harpa de Davi</div>
+      <div class="t-desc">Lê todos os Salmos</div>
+      <div class="t-xp">+3.000 XP</div>
+      <span class="badge go">Ouro</span>
+    </div>
+    <div class="t-card anim prem" style="animation-delay:0.4s">
+      <span class="t-ico" style="animation-delay:0.7s">👑</span>
+      <div class="t-name">Coroa da Vitória</div>
+      <div class="t-desc">Lê Apocalipse completo</div>
+      <div class="t-xp">+5.000 XP</div>
+      <span class="badge di">Diamante</span>
+    </div>
+    <div class="t-card anim" style="animation-delay:0.45s">
+      <span class="t-ico" style="animation-delay:0.9s">🍞</span>
+      <div class="t-name">Pão da Vida</div>
+      <div class="t-desc">30 devocionais diários seguidos</div>
+      <div class="t-xp">+2.000 XP</div>
+      <span class="badge si">Prata</span>
+    </div>
+    <div class="t-card anim" style="animation-delay:0.5s">
+      <span class="t-ico" style="animation-delay:1.1s">🔑</span>
+      <div class="t-name">Chave do Saber</div>
+      <div class="t-desc">Conclui plano de escatologia</div>
+      <div class="t-xp">+2.500 XP</div>
+      <span class="badge go">Ouro</span>
+    </div>
+    <div class="t-card anim" style="animation-delay:0.55s">
+      <span class="t-ico" style="animation-delay:1.3s">🐑</span>
+      <div class="t-name">Bom Pastor</div>
+      <div class="t-desc">Lê Salmo 23 + plano de liderança</div>
+      <div class="t-xp">+1.200 XP</div>
+      <span class="badge si">Prata</span>
+    </div>
+    <div class="t-card locked">
+      <span class="t-ico">🔥</span>
+      <div class="t-name">Fogo do Pentecostes</div>
+      <div class="t-desc">Lê Atos completo</div>
+      <div class="t-xp">+2.800 XP</div>
+      <span class="badge go">Ouro</span>
+      <div class="lock-i">🔒</div>
+    </div>
+  </div>
+
+  <p class="sec">Troféus Lendários — Premium</p>
+  <div class="t-grid">
+    <div class="t-card prem locked">
+      <span class="t-ico">🕊️</span>
+      <div class="t-name">Pomba da Paz</div>
+      <div class="t-desc">NT completo</div>
+      <div class="t-xp">+15.000 XP</div>
+      <span class="badge di">Diamante</span>
+      <div class="lock-i">🔒</div>
+    </div>
+    <div class="t-card prem locked">
+      <span class="t-ico">📜</span>
+      <div class="t-name">Rolo do Profeta</div>
+      <div class="t-desc">Todos os profetas do AT</div>
+      <div class="t-xp">+20.000 XP</div>
+      <span class="badge di">Diamante</span>
+      <div class="lock-i">🔒</div>
+    </div>
+    <div class="t-card prem locked" style="border-color:#FFD700">
+      <span class="t-ico">✝️</span>
+      <div class="t-name">Bíblia Completa</div>
+      <div class="t-desc">Todos os 66 livros lidos</div>
+      <div class="t-xp">+100.000 XP</div>
+      <span class="badge sp">Lendário</span>
+      <div class="lock-i">🔒</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LIVROS ===== -->
+<div class="screen" id="s-livros">
+  <div class="book-xp-info">
+    <div class="bxi-title">XP por livro concluído</div>
+    <div class="bxi-row"><span class="bxi-l">Livros muito curtos (Filemom, 2Jo, 3Jo, Jd…)</span><span class="bxi-r">+50 XP</span></div>
+    <div class="bxi-row"><span class="bxi-l">Livros curtos (Rute, Jonas, Abadias…)</span><span class="bxi-r">+100 XP</span></div>
+    <div class="bxi-row"><span class="bxi-l">Livros médios (Daniel, Gálatas…)</span><span class="bxi-r">+200–350 XP</span></div>
+    <div class="bxi-row"><span class="bxi-l">Livros longos (Mateus, Atos, Romanos…)</span><span class="bxi-r">+400–600 XP</span></div>
+    <div class="bxi-row"><span class="bxi-l">Livros extensos (Gênesis, Isaías, Salmos…)</span><span class="bxi-r">+700–800 XP</span></div>
+    <div class="bxi-row"><span class="bxi-l">🏆 Bônus: concluir todos os 66 livros</span><span class="bxi-r">+100.000 XP</span></div>
+  </div>
+  <div class="legend">
+    <div class="leg"><div class="leg-box" style="background:#F3E0FF;border:1px solid #B388FF"></div>Concluído</div>
+    <div class="leg"><div class="leg-box" style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary)"></div>Não lido</div>
+  </div>
+
+  <div class="sec" style="margin-top:0">Antigo Testamento (39 livros)</div>
+  <div class="bgrid" id="at-grid"></div>
+
+  <div class="sec">Novo Testamento (27 livros)</div>
+  <div class="bgrid" id="nt-grid"></div>
+
+  <div id="book-stats" style="background:var(--color-background-primary);border-radius:12px;border:0.5px solid var(--color-border-tertiary);padding:14px;margin-top:12px">
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
+      <span style="font-weight:500;color:var(--color-text-primary)">Progresso total</span>
+      <span id="bk-count" style="color:#7C4DFF;font-weight:500">11 / 66 livros</span>
+    </div>
+    <div class="xp-bar"><div id="bk-bar" class="xp-fill" style="--w:16.7%;animation:xpIn 0.8s 0.1s cubic-bezier(0.4,0,0.2,1) forwards"></div></div>
+    <div style="font-size:11px;color:var(--color-text-secondary);margin-top:8px">XP total acumulado em livros: <strong style="color:#7C4DFF">5.250 XP</strong></div>
+  </div>
+</div>
+
+<!-- ===== PLANOS ===== -->
+<div class="screen" id="s-planos">
+  <p class="sec">Planos ativos</p>
+  <div class="plan">
+    <div class="plan-top">
+      <div class="plan-ico" style="background:#FFF8E1">⚔️</div>
+      <div>
+        <div class="plan-name">Guerreiro da Palavra — 30 dias</div>
+        <div class="plan-desc">Leitura diária do NT com reflexões guiadas. Cada dia concluído vale +60 XP. Conclusão total vale troféu Prata + 2.000 XP.</div>
+      </div>
+    </div>
+    <div class="p-bar"><div class="p-fill" style="background:#C66A00;width:43%"></div></div>
+    <div class="p-foot"><span class="p-prog">13 / 30 dias · 780 XP acumulados</span><div class="p-rewards"><span class="pill">🥈 Prata</span><span class="pill">+2.000 XP</span></div></div>
+  </div>
+  <div class="plan">
+    <div class="plan-top">
+      <div class="plan-ico" style="background:#F3E0FF">🕯️</div>
+      <div>
+        <div class="plan-name">Lâmpada para os Meus Pés — 7 dias</div>
+        <div class="plan-desc">Estudo temático sobre sabedoria bíblica. Conclusão: troféu Bronze + 500 XP. Ideal para iniciantes.</div>
+      </div>
+    </div>
+    <div class="p-bar"><div class="p-fill" style="background:#7C4DFF;width:71%"></div></div>
+    <div class="p-foot"><span class="p-prog">5 / 7 dias · 350 XP acumulados</span><div class="p-rewards"><span class="pill">🥉 Bronze</span><span class="pill">+500 XP</span></div></div>
+  </div>
+  <div class="plan">
+    <div class="plan-top">
+      <div class="plan-ico" style="background:#FCE4EC">❤️</div>
+      <div>
+        <div class="plan-name">Coração de Davi — Salmos em 90 dias</div>
+        <div class="plan-desc">Leitura completa e meditada dos Salmos. Conclusão: Harpa de Davi 🎵 + troféu Ouro + 8.000 XP.</div>
+      </div>
+    </div>
+    <div class="p-bar"><div class="p-fill" style="background:#E91E63;width:8%"></div></div>
+    <div class="p-foot"><span class="p-prog">7 / 90 dias · 175 XP acumulados</span><div class="p-rewards"><span class="pill">🥇 Ouro</span><span class="pill">+8.000 XP</span></div></div>
+  </div>
+
+  <p class="sec">Planos premium disponíveis</p>
+  <div class="plan" style="border-color:#B388FF">
+    <div class="plan-top">
+      <div class="plan-ico" style="background:#EDE7F6">💎</div>
+      <div>
+        <div class="plan-name">Bíblia em 1 Ano — 365 dias</div>
+        <div class="plan-desc">O plano mais completo. Leitura integral da Bíblia Sagrada. Recompensa máxima: troféu Diamante + 50.000 XP + símbolo exclusivo ✝️ no perfil.</div>
+      </div>
+    </div>
+    <div class="p-bar"><div class="p-fill" style="background:#7C4DFF;width:0%"></div></div>
+    <div class="p-foot"><span class="p-prog">Não iniciado</span><div class="p-rewards"><span class="prem-pill">💎 Diamante</span><span class="prem-pill">+50.000 XP</span></div></div>
+  </div>
+  <div class="plan" style="border-color:#B388FF">
+    <div class="plan-top">
+      <div class="plan-ico" style="background:#E3F2FD">🔑</div>
+      <div>
+        <div class="plan-name">Guardião da Escatologia — 60 dias</div>
+        <div class="plan-desc">Profecias, Apocalipse e escatologia bíblica. Troféu Ouro exclusivo: Chave do Saber + 6.000 XP ao concluir.</div>
+      </div>
+    </div>
+    <div class="p-bar"><div class="p-fill" style="background:#1565C0;width:0%"></div></div>
+    <div class="p-foot"><span class="p-prog">Não iniciado</span><div class="p-rewards"><span class="prem-pill">🔑 Ouro</span><span class="prem-pill">+6.000 XP</span></div></div>
+  </div>
+</div>
+
+<!-- ===== REGRAS & VIDAS ===== -->
+<div class="screen" id="s-regras">
+  <div class="hearts-card">
+    <div class="hearts-title">Vidas & Corações Quebrados</div>
+    <div class="hearts-sub">Você tem 5 vidas. Clique num coração para simular o que acontece quando você abandona um plano ou fica dias sem ler.</div>
+    <div class="hrow" id="hrow"></div>
+    <div class="xp-lost-label" id="xpfloat">— 50 XP</div>
+    <div class="hint" id="heart-hint">Toque num coração ❤️ para ver a animação de coração quebrado 💔</div>
+  </div>
+
+  <div class="loss-gain">
+    <div class="lg-card">
+      <div class="lg-t" style="color:#C62828">💔 Perde vida &amp; XP</div>
+      <div class="lg-item"><span class="lg-ico">🚫</span>Abandona plano de leitura: <strong>−50 XP</strong></div>
+      <div class="lg-item"><span class="lg-ico">⏳</span>3 dias sem abrir o app: <strong>−25 XP</strong></div>
+      <div class="lg-item"><span class="lg-ico">📅</span>7 dias sem leitura: <strong>−100 XP</strong></div>
+      <div class="lg-item"><span class="lg-ico">💀</span>30 dias inativo: <strong>−250 XP</strong> + streak zerado</div>
+      <div class="lg-item"><span class="lg-ico">❌</span>Quiz errado: <strong>−1 vida</strong> (sem perda de XP)</div>
+    </div>
+    <div class="lg-card">
+      <div class="lg-t" style="color:#2E7D32">❤️ Ganha vida &amp; XP</div>
+      <div class="lg-item"><span class="lg-ico">📖</span>Leitura diária completa: <strong>+1 vida</strong></div>
+      <div class="lg-item"><span class="lg-ico">✅</span>Devocional do dia: <strong>+1 vida</strong></div>
+      <div class="lg-item"><span class="lg-ico">⭐</span>Trocar 500 estrelas por 1 vida</div>
+      <div class="lg-item"><span class="lg-ico">💎</span>2 diamantes = recarga total</div>
+      <div class="lg-item"><span class="lg-ico">🌅</span>Recarga automática diária às 00:00</div>
+    </div>
+  </div>
+
+  <p class="sec">Regras completas do sistema</p>
+  <div class="r-card">
+    <div class="r-row"><div class="r-ico">📖</div><div class="r-txt"><strong>Leitura diária</strong> — Cada sessão vale +25 XP. Cada versículo lido +5 XP. Capítulo completo +30 XP.</div></div>
+    <div class="r-row"><div class="r-ico">🏆</div><div class="r-txt"><strong>Troféu de plano</strong> — Cada plano concluído concede 1 troféu permanente (Bronze/Prata/Ouro/Diamante) + XP proporcional à duração do plano.</div></div>
+    <div class="r-row"><div class="r-ico">📕</div><div class="r-txt"><strong>Livro da Bíblia concluído</strong> — XP varia de 50 a 800 conforme o tamanho. Concluir os 66 livros dá +100.000 XP de bônus e troféu lendário ✝️.</div></div>
+    <div class="r-row"><div class="r-ico">⚡</div><div class="r-txt"><strong>Raios (streak)</strong> — Ganhos em sequências de leitura. Usados para "escudos de proteção" que evitam a perda de XP em 1 dia sem leitura.</div></div>
+    <div class="r-row"><div class="r-ico">💎</div><div class="r-txt"><strong>Diamantes</strong> — Moeda premium. Ganhos em conquistas Ouro/Diamante. Usados para recarregar vidas ou desbloquear planos premium.</div></div>
+    <div class="r-row"><div class="r-ico">💔</div><div class="r-txt"><strong>Coração quebrado</strong> — Aparece no perfil ao abandonar plano ou ficar inativo. Cada coração quebrado = perda pequena de XP. Recupera-se lendo por 3 dias seguidos.</div></div>
+    <div class="r-row"><div class="r-ico">🛡️</div><div class="r-txt"><strong>Escudo de proteção</strong> — Gasto 3 raios ⚡ para proteger o streak por 1 dia. Impede perda de vidas e XP em caso de ausência.</div></div>
+    <div class="r-row"><div class="r-ico">📊</div><div class="r-txt"><strong>Perda máxima de XP</strong> — Um usuário nunca perde mais do que 10% do XP total acumulado, independente de quanto tempo ficar inativo. O nível não regride mais de 2 níveis.</div></div>
+  </div>
+
+  <p class="sec">Moedas e para que servem</p>
+  <div class="r-card">
+    <div class="r-row"><div class="r-ico">⭐</div><div class="r-txt"><strong>Estrelas</strong> — Moeda comum. Ganha ao ler, responder quizzes e completar tarefas diárias. Troca por vidas ou itens cosméticos.</div></div>
+    <div class="r-row"><div class="r-ico">💎</div><div class="r-txt"><strong>Diamantes</strong> — Moeda premium. Conquistada apenas em troféus Ouro e Diamante. Usada para planos premium, recargas e selos especiais.</div></div>
+    <div class="r-row"><div class="r-ico">⚡</div><div class="r-txt"><strong>Raios</strong> — Ganha ao manter sequências de leitura. Usados como "seguro" de streak e como bônus de XP em eventos.</div></div>
+    <div class="r-row"><div class="r-ico">❤️</div><div class="r-txt"><strong>Vidas</strong> — Máximo 5. Perdem-se por erros em quizzes, inatividade ou abandono de planos. Recarregadas diariamente e por conquistas.</div></div>
+  </div>
+</div>
+
+</div><!-- app -->
+</div><!-- padding -->
+
+<script>
+var tabs=['nivel','trofeus','livros','planos','regras'];
+function sw(id){
+  tabs.forEach(function(t){
+    document.getElementById('s-'+t).classList.toggle('on',t===id);
+  });
+  document.querySelectorAll('.nb').forEach(function(b,i){
+    b.classList.toggle('on',tabs[i]===id);
+  });
+  if(id==='livros') buildBooks();
+}
+
+var booksBuilt=false;
+var AT=[
+  ['Gn','📜',800,1],['Ex','🔥',700,1],['Lv','🕊️',300,0],['Nm','🗺️',400,0],['Dt','📋',500,0],
+  ['Js','⚔️',400,0],['Jz','🛡️',350,0],['Rt','🌾',100,1],['1Sm','👑',400,0],['2Sm','🎵',350,0],
+  ['1Rs','🔥',400,0],['2Rs','📯',350,0],['1Cr','📜',350,0],['2Cr','🏛️',400,0],['Ed','🔑',200,0],
+  ['Ne','🧱',200,0],['Et','👸',150,1],['Jó','⚓',350,0],['Sl','🎵',800,1],['Pv','💡',500,0],
+  ['Ec','🌀',200,0],['Ct','🌹',100,1],['Is','📜',700,0],['Jr','💧',600,0],['Lm','💔',100,0],
+  ['Ez','👁️',600,0],['Dn','🦁',300,1],['Os','❤️',200,0],['Jl','⚡',100,0],['Am','⚖️',200,0],
+  ['Ab','🗻',50,0],['Jn','🐋',100,1],['Mq','⚖️',150,0],['Na','💥',100,0],['Hc','🗼',100,0],
+  ['Sf','📯',100,0],['Ag','🏛️',100,0],['Zc','🕊️',200,0],['Ml','✉️',100,0]
+];
+var NT=[
+  ['Mt','⭐',600,1],['Mc','⚡',400,1],['Lc','🕊️',600,1],['Jo','❤️',500,1],['At','🔥',500,1],
+  ['Rm','⚖️',400,0],['1Co','🙏',350,0],['2Co','💪',300,0],['Gl','🕊️',200,0],['Ef','🛡️',200,0],
+  ['Fp','😊',150,0],['Cl','👑',150,0],['1Ts','📯',150,0],['2Ts','⏰',100,0],['1Tm','🔑',150,0],
+  ['2Tm','⚔️',150,0],['Tt','📋',100,0],['Fm','🤝',50,0],['Hb','🛡️',300,0],['Tg','⚖️',150,0],
+  ['1Pe','🪨',150,0],['2Pe','⚠️',100,0],['1Jo','❤️',150,0],['2Jo','✉️',50,0],['3Jo','✉️',50,0],
+  ['Jd','⚔️',50,0],['Ap','👑',400,0]
+];
+function buildBooks(){
+  if(booksBuilt) return; booksBuilt=true;
+  function render(books, grid){
+    var g=document.getElementById(grid);
+    books.forEach(function(b,i){
+      var d=document.createElement('div');
+      d.className='bk'+(b[3]?' done':'');
+      d.innerHTML='<span class="bk-ico">'+b[1]+'</span><span class="bk-name">'+b[0]+'</span><span class="bk-xp">'+b[2]+' XP</span>';
+      d.style.animationDelay=(i*0.03)+'s';
+      d.onclick=function(){
+        b[3]=b[3]?0:1;
+        d.classList.toggle('done',!!b[3]);
+        updateCount();
+      };
+      g.appendChild(d);
+    });
+  }
+  render(AT,'at-grid'); render(NT,'nt-grid'); updateCount();
+}
+function updateCount(){
+  var done=AT.filter(function(b){return b[3]}).length + NT.filter(function(b){return b[3]}).length;
+  var xp=AT.reduce(function(s,b){return s+(b[3]?b[2]:0)},0)+NT.reduce(function(s,b){return s+(b[3]?b[2]:0)},0);
+  document.getElementById('bk-count').textContent=done+' / 66 livros';
+  document.getElementById('bk-bar').style.setProperty('--w',((done/66)*100).toFixed(1)+'%');
+  document.querySelector('#book-stats div div:last-child strong').textContent=xp.toLocaleString('pt-BR')+' XP';
+}
+
+// HEARTS
+var hearts=[1,1,1,1,0];
+function buildHearts(){
+  var row=document.getElementById('hrow'); row.innerHTML='';
+  hearts.forEach(function(h,i){
+    var btn=document.createElement('button');
+    btn.className='hb'; btn.style.animationDelay=(i*0.2)+'s';
+    btn.textContent=h?'❤️':'💔';
+    btn.onclick=function(){
+      if(h){
+        h=0; hearts[i]=0; btn.textContent='💔'; btn.classList.add('crack');
+        var fl=document.getElementById('xpfloat');
+        fl.classList.remove('show'); void fl.offsetWidth; fl.classList.add('show');
+        document.getElementById('heart-hint').textContent='💔 Coração quebrado! −50 XP por abandonar um plano';
+        setTimeout(function(){btn.classList.remove('crack')},500);
+      } else {
+        h=1; hearts[i]=1; btn.textContent='❤️';
+        document.getElementById('heart-hint').textContent='❤️ Vida recuperada! Leia por 3 dias seguidos para curar corações quebrados.';
+      }
+    };
+    row.appendChild(btn);
+  });
+}
+buildHearts();
+
+// XP bars on level tab init
+setTimeout(function(){
+  var fill=document.querySelector('.xp-fill');
+  if(fill) fill.style.width='68%';
+},400);
+</script>
