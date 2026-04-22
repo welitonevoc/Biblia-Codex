@@ -17,6 +17,7 @@ import { StudyPanel } from './components/StudyPanel';
 import { Home } from './components/Home';
 import { Notes } from './components/Notes';
 import { SettingsPage } from './components/SettingsPage';
+import { AISettingsPage } from './components/AISettingsPage';
 import { HelpPage } from './components/HelpPage';
 import { DictionaryView } from './components/DictionaryView';
 import { ModuleManagement } from './components/ModuleManagement';
@@ -393,6 +394,18 @@ function AppContent() {
                 <Suspense fallback={<PageLoader />}>
                   <EBDPage />
                 </Suspense>
+              </motion.div>
+            )}
+
+            {activeTab === 'ai-assistant' && (
+              <motion.div
+                key="ai-assistant"
+                initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                animate={{ opacity: 1 }}
+                exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
+                className="h-full"
+              >
+                <AISettingsPage />
               </motion.div>
             )}
 

@@ -3,10 +3,9 @@ import { Verse, Book } from '../types';
 import { Reader } from './Reader';
 import { AudioPlayer } from './AudioPlayer';
 import { ReadingMode } from './ReadingModeSelector';
-import { AudioSpeedSelector } from './AudioSpeedSelector';
 import { AudioTrack } from '../services/audioService';
 import audioService from '../services/audioService';
-import { AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ReaderWithAudioProps {
   book: Book;
@@ -21,6 +20,7 @@ interface ReaderWithAudioProps {
   hasAudioSupport?: boolean;
   readingMode?: ReadingMode;
   onReadingModeChange?: (mode: ReadingMode) => void;
+  onShare?: () => void;
 }
 
 export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
@@ -36,10 +36,10 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
   hasAudioSupport = true,
   readingMode = 'text',
   onReadingModeChange,
+  onShare,
 }) => {
   const [currentAudioTrack, setCurrentAudioTrack] = useState<AudioTrack | null>(null);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
-  const [showAudioError, setShowAudioError] = useState(false);
+  const { t } = useTranslation();
 
   // Encontrar faixa de áudio para o capítulo atual
   useEffect(() => {
@@ -53,14 +53,22 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
     }
   }, [book.id, chapter, audioTracks, hasAudioSupport]);
 
-  // Atualizar velocidade de reprodução
-  useEffect(() => {
-    audioService.setPlaybackRate(playbackSpeed);
-  }, [playbackSpeed]);
+  const handlePreviousChapter = () => {
+    if (onNavigate) {
+      onNavigate(book.id, chapter - 1);
+    }
+  };
 
-  const handleAudioError = () => {
-    setShowAudioError(true);
-    setTimeout(() => setShowAudioError(false), 5000);
+  const handleNextChapter = () => {
+    if (onNavigate) {
+      onNavigate(book.id, chapter + 1);
+    }
+  };
+
+  // Preparar informações da tradução (exemplo)
+  const translationInfo = {
+    name: book.name || 'Bíblia',
+    description: `Áudio do livro ${book.name || ''} capítulo ${chapter}. Tradução: ${currentAudioTrack?.language || 'NTLH'}.`
   };
 
   return (
@@ -69,31 +77,21 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
       {(readingMode === 'audio' || readingMode === 'both') && currentAudioTrack && (
         <div className="space-y-3">
           <AudioPlayer
-            track={currentAudioTrack}
-            onTrackChange={(trackId) => {
-              const track = audioTracks.find(t => t.id === trackId);
-              if (track) setCurrentAudioTrack(track);
+            track={{
+              ...currentAudioTrack,
+              title: `${book.name} ${chapter}`,
+              artist: currentAudioTrack.language || 'NTLH'
             }}
-          />
-
-          {/* Controles de velocidade */}
-          <AudioSpeedSelector
-            currentSpeed={playbackSpeed}
-            onSpeedChange={setPlaybackSpeed}
-            className="px-4 py-2 bg-slate-50 dark:bg-slate-900 rounded-lg"
+            onPreviousChapter={handlePreviousChapter}
+            onNextChapter={handleNextChapter}
+            onShare={onShare}
+            translationInfo={translationInfo}
           />
         </div>
       )}
 
       {/* Mensagem de erro de áudio */}
-      {showAudioError && (
-        <div className="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-          <p className="text-sm text-red-700 dark:text-red-300">
-            Não foi possível carregar o áudio. Verifique sua conexão de internet.
-          </p>
-        </div>
-      )}
+      {/* Removida temporariamente ou pode ser integrada ao player no futuro */}
 
       {/* Leitor de texto */}
       {(readingMode === 'text' || readingMode === 'both') && (
