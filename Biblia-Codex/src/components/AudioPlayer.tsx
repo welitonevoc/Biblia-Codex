@@ -316,7 +316,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         </div>
 
         {/* Status Message */}
-        {!track.verses || track.verses.length === 0 ? (
+        {versesToUse.length === 0 ? (
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Nenhum versículo disponível para leitura
