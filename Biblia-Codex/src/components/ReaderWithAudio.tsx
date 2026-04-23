@@ -21,6 +21,7 @@ interface ReaderWithAudioProps {
   readingMode?: ReadingMode;
   onReadingModeChange?: (mode: ReadingMode) => void;
   onShare?: () => void;
+  verses?: Verse[];
 }
 
 export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
@@ -37,6 +38,7 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
   readingMode = 'text',
   onReadingModeChange,
   onShare,
+  verses = [],
 }) => {
   const [currentAudioTrack, setCurrentAudioTrack] = useState<AudioTrack | null>(null);
   const { t } = useTranslation();
@@ -74,13 +76,15 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
   return (
     <div className="flex flex-col gap-4">
       {/* Reprodutor de áudio */}
-      {(readingMode === 'audio' || readingMode === 'both') && currentAudioTrack && (
+      {(readingMode === 'audio' || readingMode === 'both') && (
         <div className="space-y-3">
           <AudioPlayer
             track={{
-              ...currentAudioTrack,
+              id: `${book.id}-${chapter}`,
               title: `${book.name} ${chapter}`,
-              artist: currentAudioTrack.language || 'NTLH'
+              verses: verses.map(v => ({ verse: v.verse, text: v.text })),
+              chapter,
+              bookId: book.id
             }}
             onPreviousChapter={handlePreviousChapter}
             onNextChapter={handleNextChapter}
