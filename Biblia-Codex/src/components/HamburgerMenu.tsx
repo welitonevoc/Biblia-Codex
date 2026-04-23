@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Home, Book, BookOpen, Bookmark, FileText, Settings,
-  LogIn, User, Database, Map, MessageSquare, Library, Sparkles, Layers, HelpCircle as HelpIcon, Tag, Globe, X, Calendar, History
+  LogIn, User, Database, Map, MessageSquare, Library, Sparkles, Layers, HelpCircle as HelpIcon, Tag, Globe, X, Calendar, History, Palette
 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { clsx, type ClassValue } from 'clsx';
