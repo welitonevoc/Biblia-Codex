@@ -26,6 +26,7 @@ import { StudyToolsPanel } from './components/StudyToolsPanel';
 import { ReadingPlans } from './components/ReadingPlans';
 import { SearchView } from './components/SearchView';
 import { TagsView } from './components/TagsView';
+import { SettingsDashboard } from './components/SettingsDashboard';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { Book, Verse } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -257,7 +258,7 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <SettingsPage />
+                <SettingsDashboard />
               </motion.div>
             )}
             {activeTab === 'tts' && (

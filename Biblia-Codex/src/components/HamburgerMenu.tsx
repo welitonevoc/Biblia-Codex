@@ -42,16 +42,18 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
     { id: 'epub', name: 'Livros', icon: Book, section: 'recursos' },
     { id: 'ebd', name: 'EBD', icon: BookOpen, section: 'recursos' },
     { id: 'ai-assistant', name: 'Assistente IA', icon: Sparkles, section: 'estudo' },
-    { id: 'settings', name: 'Configurações', icon: Settings, section: 'sistema' },
-    { id: 'modules', name: 'Módulos', icon: Database, section: 'sistema' },
-    { id: 'support', name: 'Suporte', icon: HelpIcon, section: 'sistema' },
+    { id: 'profile', name: 'Perfil', icon: User, section: 'configuracoes' },
+    { id: 'settings', name: 'Aparência', icon: Palette, section: 'configuracoes' },
+    { id: 'tts', name: 'TTS', icon: Sparkles, section: 'configuracoes' },
+    { id: 'modules', name: 'Módulos', icon: Database, section: 'configuracoes' },
+    { id: 'support', name: 'Suporte', icon: HelpIcon, section: 'configuracoes' },
   ];
 
   const sections = [
     { id: 'principal', name: 'Explorar' },
     { id: 'recursos', name: 'Biblioteca' },
     { id: 'estudo', name: 'Estudo' },
-    { id: 'sistema', name: 'Sistema' },
+    { id: 'configuracoes', name: 'Configurações' },
   ];
 
   return (
