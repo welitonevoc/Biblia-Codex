@@ -4,20 +4,14 @@ import { BibleModule } from '../types';
 const isWeb = typeof window !== 'undefined' && !(window as any).Capacitor?.isNativePlatform?.();
 
 const PUBLIC_MODULES = [
-  { file: 'ARA_s (Almeida Revista e Atualizada com Strong).bbl.mybible', name: 'ARA (Almeida Revista e Atualizada)' },
-  { file: 'ARC 2009 SBB (Corrigida 2009).bbl.mybible', name: 'ARC 2009 (Almeida Revista e Corrigida)' },
+  { file: 'ARA_s (Almeida Revista e Atualizada com Strong).bbl.mybible', name: 'ARA (Almeida Revista e Atualizada)', abbreviation: 'ARA' },
+  { file: 'ARC 2009 SBB (Corrigida 2009).bbl.mybible', name: 'ARC 2009 (Almeida Revista e Corrigida)', abbreviation: 'ARC' },
   { file: "ACF'07.SQLite3", name: 'ACF (Almeida Corrigida Fiel)', abbreviation: 'ACF' },
 ];
 
 const PUBLIC_DICTIONARIES = [
   { file: 'Strong AMG Bíblia Palavra-Chave.dct.mybible', name: 'Strong AMG (Bíblia Palavra-Chave)' },
   { file: 'Strong KJ Concordância.dct.mybible', name: 'Strong KJ (Concordância)' },
-];
-
-const PUBLIC_MODULES = [
-  { file: 'ARA_s (Almeida Revista e Atualizada com Strong).bbl.mybible', name: 'ARA (Almeida Revista e Atualizada)', abbreviation: 'ARA' },
-  { file: 'ARC 2009 SBB (Corrigida 2009).bbl.mybible', name: 'ARC 2009 (Almeida Revista e Corrigida)', abbreviation: 'ARC' },
-  { file: "ACF'07.SQLite3", name: 'ACF (Almeida Corrigida Fiel)', abbreviation: 'ACF' },
 ];
 
 export const scanForBibleModules = async (): Promise<BibleModule[]> => {
