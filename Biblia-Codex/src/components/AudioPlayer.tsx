@@ -71,7 +71,8 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   }, []);
 
   const handlePlayPause = async () => {
-    if (!track.verses || track.verses.length === 0) return;
+    const versesToUse = verses || track.verses || [];
+    if (!versesToUse || versesToUse.length === 0) return;
 
     if (isPlaying) {
       ttsService.pause();
@@ -79,7 +80,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     } else {
       setIsPlaying(true);
       try {
-        await ttsService.speakChapter(track.verses, {
+        await ttsService.speakChapter(versesToUse, {
           rate: playbackSpeed,
           voice: selectedVoice?.voice,
           onVerseChange: (verseIndex, verseText) => {
@@ -115,8 +116,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     }
   };
 
-  const progressPercentage = track.verses && track.verses.length > 0
-    ? ((currentVerse + 1) / track.verses.length) * 100
+  const versesToUse = verses || track.verses || [];
+  const progressPercentage = versesToUse.length > 0
+    ? ((currentVerse + 1) / versesToUse.length) * 100
     : 0;
 
   if (!isSupported) {
@@ -150,7 +152,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
               {track.title || 'Capítulo da Bíblia'}
             </h1>
             <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Versículo {currentVerse + 1} de {track.verses?.length || 0}
+              Versículo {currentVerse + 1} de {versesToUse.length}
             </div>
           </div>
 
