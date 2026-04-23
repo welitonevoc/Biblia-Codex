@@ -82,10 +82,10 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
             track={{
               id: `${book.id}-${chapter}`,
               title: `${book.name} ${chapter}`,
-              verses: verses.map(v => ({ verse: v.verse, text: v.text })),
               chapter,
               bookId: book.id
             }}
+            verses={verses.map(v => ({ verse: v.verse, text: v.text }))}
             onPreviousChapter={handlePreviousChapter}
             onNextChapter={handleNextChapter}
             onShare={onShare}
