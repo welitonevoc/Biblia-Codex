@@ -20,6 +20,7 @@ interface AudioPlayerProps {
     chapter?: number;
     bookId?: string;
   };
+  verses?: { verse: number; text: string }[];
   onPreviousChapter?: () => void;
   onNextChapter?: () => void;
   onShare?: () => void;
