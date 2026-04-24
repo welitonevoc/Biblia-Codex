@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { VersionSelector } from './VersionSelector';
 import { ModuleManagement } from './ModuleManagement';
+import { TTSSettings } from './TTSSettings';
 import { clsx } from 'clsx';
 import { motion } from 'motion/react';
 import { THEME_OPTIONS } from '../theme/presets';
@@ -116,7 +117,7 @@ export const SettingsPage: React.FC<{ section?: string }> = ({ section }) => {
             </div>
           </motion.div>
 
-          <SettingsTTS />
+          <TTSSettings />
         </div>
       ) : (
       <div className="max-w-4xl mx-auto px-4 py-6 pb-32 space-y-6">

@@ -26,6 +26,7 @@ import { StudyToolsPanel } from './components/StudyToolsPanel';
 import { ReadingPlans } from './components/ReadingPlans';
 import { SearchView } from './components/SearchView';
 import { TagsView } from './components/TagsView';
+import { SettingsDashboard } from './components/SettingsDashboard';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { Book, Verse } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -35,6 +36,7 @@ import { twMerge } from 'tailwind-merge';
 
 import { Onboarding } from './components/Onboarding';
 import { PermissionScreen } from './components/PermissionScreen';
+import { ProfilePage } from './components/ProfilePage';
 
 // Lazy loading for heavy pages (Phase 5: Performance)
 const DevotionalPage = lazy(() => import('./components/DevotionalPage').then(m => ({ default: m.DevotionalPage })));
@@ -188,17 +190,28 @@ function AppContent() {
           config.navigationStyle === 'asymmetric' && "pl-14 md:pl-16"
         )}>
           <AnimatePresence mode="wait">
-            {activeTab === 'home' && (
-              <motion.div
-                key="home"
-                initial={settings.navigation.navAnimation ? { opacity: 0, y: 10 } : {}}
-                animate={{ opacity: 1, y: 0 }}
-                exit={settings.navigation.navAnimation ? { opacity: 0, y: -10 } : {}}
-                className="h-full w-full"
-              >
-                <Home onNavigate={handleSelect} goToReadingPlans={() => setActiveTab('reading-plans')} goToDevocional={() => setActiveTab('devocional')} />
-              </motion.div>
-            )}
+{activeTab === 'home' && (
+                <motion.div
+                  key="home"
+                  initial={settings.navigation.navAnimation ? { opacity: 0, y: 10 } : {}}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={settings.navigation.navAnimation ? { opacity: 0, y: -10 } : {}}
+                  className="h-full w-full"
+                >
+                  <Home onNavigate={handleSelect} goToReadingPlans={() => setActiveTab('reading-plans')} goToDevocional={() => setActiveTab('devocional')} />
+                </motion.div>
+              )}
+              {activeTab === 'profile' && (
+                <motion.div
+                  key="profile"
+                  initial={settings.navigation.navAnimation ? { opacity: 0, y: 10 } : {}}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={settings.navigation.navAnimation ? { opacity: 0, y: -10 } : {}}
+                  className="h-full w-full"
+                >
+                  <ProfilePage />
+                </motion.div>
+              )}
             {activeTab === 'bible' && (
               <motion.div
                 key="bible"
@@ -245,7 +258,7 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <SettingsPage />
+                <SettingsDashboard />
               </motion.div>
             )}
             {activeTab === 'tts' && (
@@ -420,7 +433,7 @@ function AppContent() {
               </motion.div>
             )}
 
-            {!['home', 'bible', 'notes', 'settings', 'tts', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional', 'search', 'ebd'].includes(activeTab) && (
+            {!['home', 'bible', 'notes', 'settings', 'tts', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional', 'search', 'ebd', 'profile'].includes(activeTab) && (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
                 <div className="opacity-20 flex flex-col items-center space-y-4">
                   <BookOpen className="w-16 h-16" />

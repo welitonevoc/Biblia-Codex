@@ -884,21 +884,21 @@ export const ReadingPlans: React.FC<{
 
     <div className="h-full overflow-y-auto scrollbar-thin">
       <AnimatePresence mode="wait">
-        {showVersionPicker && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-            onClick={() => setShowVersionPicker(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-md bg-[var(--surface-1)] rounded-2xl p-6 shadow-xl"
-              onClick={e => e.stopPropagation()}
-            >
+         {showVersionPicker && (
+           <motion.div
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             exit={{ opacity: 0 }}
+             className="fixed inset-0 z-50 bg-black flex items-center justify-center p-4"
+             onClick={() => setShowVersionPicker(false)}
+           >
+             <motion.div
+               initial={{ scale: 0.9, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               exit={{ scale: 0.9, opacity: 0 }}
+               className="w-full max-w-md bg-white rounded-2xl p-6 shadow-xl"
+               onClick={e => e.stopPropagation()}
+             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-[var(--text-bible)]">Escolha a Versão</h3>
                 <button
@@ -909,9 +909,9 @@ export const ReadingPlans: React.FC<{
                 </button>
               </div>
               
-              <p className="text-sm text-[var(--text-bible)] mb-4 bg-[var(--surface-2)] p-3 rounded-lg">
-                Selecione a tradução bíblica para este plano de leitura:
-              </p>
+               <p className="text-sm text-[var(--text-bible)] mb-4 bg-white p-3 rounded-lg">
+                 Selecione a tradução bíblica para este plano de leitura:
+               </p>
 
               <div className="space-y-2 mb-6">
                 {allVersions.map((version) => (

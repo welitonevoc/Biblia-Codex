@@ -4,8 +4,9 @@ import { BibleModule } from '../types';
 const isWeb = typeof window !== 'undefined' && !(window as any).Capacitor?.isNativePlatform?.();
 
 const PUBLIC_MODULES = [
-  { file: 'ARA_s (Almeida Revista e Atualizada com Strong).bbl.mybible', name: 'ARA (Almeida Revista e Atualizada)' },
-  { file: 'ARC 2009 SBB (Corrigida 2009).bbl.mybible', name: 'ARC 2009 (Almeida Revista e Corrigida)' },
+  { file: 'ARA_s (Almeida Revista e Atualizada com Strong).bbl.mybible', name: 'ARA (Almeida Revista e Atualizada)', abbreviation: 'ARA' },
+  { file: 'ARC 2009 SBB (Corrigida 2009).bbl.mybible', name: 'ARC 2009 (Almeida Revista e Corrigida)', abbreviation: 'ARC' },
+  { file: "ACF'07.SQLite3", name: 'ACF (Almeida Corrigida Fiel)', abbreviation: 'ACF' },
 ];
 
 const PUBLIC_DICTIONARIES = [
@@ -19,7 +20,7 @@ export const scanForBibleModules = async (): Promise<BibleModule[]> => {
     const bibleModules = PUBLIC_MODULES.map(m => ({
       id: m.file,
       name: m.name,
-      abbreviation: m.name.substring(0, 4).toUpperCase(),
+      abbreviation: m.abbreviation || m.name.substring(0, 4).toUpperCase(),
       type: 'bible' as const,
       format: 'mybible' as any,
       category: 'mybible' as any,

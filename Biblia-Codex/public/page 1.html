@@ -1,0 +1,565 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes xpGrow{0%{width:0}100%{width:var(--w,68%)}}
+@keyframes orb{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes ripple{0%{transform:scale(0.85);opacity:0.6}100%{transform:scale(1.5);opacity:0}}
+@keyframes glowPulse{0%,100%{border-color:#B388FF}50%{border-color:#7C4DFF}}
+@keyframes trophyPop{0%{transform:scale(0) rotate(-10deg);opacity:0}70%{transform:scale(1.1) rotate(2deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes slideIn{0%{transform:translateX(60px);opacity:0}100%{transform:translateX(0);opacity:1}}
+@keyframes confirmIn{0%{transform:scale(0.92);opacity:0}100%{transform:scale(1);opacity:1}}
+
+body{font-family:var(--font-sans);background:var(--color-background-secondary)}
+
+.phone{max-width:390px;margin:0 auto;background:var(--color-background-secondary);border-radius:36px;border:1px solid var(--color-border-secondary);overflow:hidden;min-height:780px}
+
+.status-bar{background:var(--color-background-primary);padding:12px 20px 4px;display:flex;justify-content:space-between;align-items:center}
+.sb-time{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.sb-icons{font-size:13px;color:var(--color-text-secondary);display:flex;gap:6px;align-items:center}
+
+.page{display:none;animation:fadeUp 0.22s ease}
+.page.on{display:block}
+
+.scroll-area{overflow-y:auto;max-height:720px;background:var(--color-background-secondary)}
+
+.top-bar{background:var(--color-background-primary);padding:16px 20px 12px;display:flex;align-items:center;gap:14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.back-btn{width:34px;height:34px;border-radius:50%;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0}
+.top-title{font-size:16px;font-weight:500;color:var(--color-text-primary)}
+.top-action{margin-left:auto;font-size:13px;color:#7C4DFF;font-weight:500;cursor:pointer}
+
+.hero{background:var(--color-background-primary);padding:24px 20px 20px;border-bottom:0.5px solid var(--color-border-tertiary);position:relative}
+.hero-inner{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}
+.avatar-wrap{position:relative;flex-shrink:0}
+.avatar{width:80px;height:80px;border-radius:50%;background:#EDE7F6;border:3px solid #B388FF;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;animation:orb 3s ease-in-out infinite}
+.avatar-edit{position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:#7C4DFF;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;border:2px solid var(--color-background-primary)}
+.hero-info{flex:1;padding-top:4px}
+.hero-name{font-size:19px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
+.hero-email{font-size:12px;color:var(--color-text-secondary);margin-bottom:8px}
+.premium-badge{display:inline-flex;align-items:center;gap:5px;background:#EDE7F6;border-radius:12px;padding:4px 10px;font-size:11px;font-weight:500;color:#512DA8}
+.prem-ico{font-size:13px}
+.edit-name-btn{position:absolute;top:20px;right:20px;font-size:11px;color:#7C4DFF;cursor:pointer;border:0.5px solid #B388FF;border-radius:8px;padding:5px 10px;background:none;font-family:var(--font-sans)}
+
+.lv-block{background:var(--color-background-secondary);border-radius:14px;border:0.5px solid var(--color-border-tertiary);padding:14px 16px}
+.lv-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.lv-orb{width:48px;height:48px;border-radius:50%;background:#EDE7F6;border:2px solid #B388FF;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;animation:glowPulse 2.5s ease-in-out infinite}
+.lv-num{font-size:18px;font-weight:500;color:#7C4DFF;line-height:1}
+.lv-lbl{font-size:8px;color:#9C5AFF;font-weight:500}
+.lv-text .lv-title{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.lv-text .lv-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.xp-label{display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-secondary);margin-bottom:5px}
+.xp-bar{height:8px;background:var(--color-background-primary);border-radius:4px;overflow:hidden}
+.xp-fill{height:100%;background:#7C4DFF;border-radius:4px;width:0;animation:xpGrow 1s 0.3s ease forwards;--w:68%}
+
+.mini-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 20px;background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary)}
+.ms{text-align:center}
+.ms-val{font-size:16px;font-weight:500;color:var(--color-text-primary);display:block}
+.ms-lbl{font-size:10px;color:var(--color-text-secondary)}
+
+.trophies-strip{padding:14px 20px;background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary)}
+.strip-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.strip-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.strip-more{font-size:12px;color:#7C4DFF;cursor:pointer}
+.t-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.t-scroll::-webkit-scrollbar{display:none}
+.tc{background:var(--color-background-secondary);border-radius:12px;border:0.5px solid var(--color-border-tertiary);padding:10px 10px 8px;text-align:center;min-width:72px;flex-shrink:0;animation:trophyPop 0.4s ease backwards}
+.tc.prem{border-color:#B388FF}
+.tc-ico{font-size:22px;display:block;margin-bottom:4px;animation:floatY 2.5s ease-in-out infinite}
+.tc-name{font-size:9px;color:var(--color-text-secondary);line-height:1.3}
+.tc-badge{font-size:8px;padding:1px 6px;border-radius:8px;margin-top:4px;display:inline-block;font-weight:500}
+.br{background:#F3E5D3;color:#7B4F2E}.si{background:#ECEFF1;color:#455A64}.go{background:#FFF8E1;color:#C66A00}.di{background:#EDE7F6;color:#512DA8}
+
+.section-group{background:var(--color-background-primary);border-radius:16px;margin:12px 14px;border:0.5px solid var(--color-border-tertiary);overflow:hidden}
+.sg-title{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.07em;padding:12px 16px 8px}
+.row{display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer}
+.row:last-child{border-bottom:none}
+.row:active{background:var(--color-background-secondary)}
+.row-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.row-info{flex:1}
+.row-title{font-size:14px;color:var(--color-text-primary);font-weight:500}
+.row-sub{font-size:11px;color:var(--color-text-secondary);margin-top:1px}
+.row-right{font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:6px}
+.chev{font-size:14px;color:var(--color-text-tertiary)}
+.tag{font-size:10px;padding:2px 8px;border-radius:8px;font-weight:500}
+.tag-green{background:#EAF3DE;color:#27500A}
+.tag-purple{background:#EDE7F6;color:#512DA8}
+.tag-amber{background:#FAEEDA;color:#633806}
+
+.google-btn{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;border:1.5px solid #4285F4;background:var(--color-background-primary);cursor:pointer;margin:0 14px 8px;width:calc(100% - 28px)}
+.g-logo{width:22px;height:22px;border-radius:50%;background:#4285F4;display:flex;align-items:center;justify-content:center;font-size:13px;color:white;font-weight:500;flex-shrink:0}
+.g-text{flex:1;font-size:13px;font-weight:500;color:#185FA5}
+.g-check{font-size:16px}
+
+.logout-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 14px 20px;padding:13px;border-radius:12px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);cursor:pointer;font-size:14px;color:#C62828;font-weight:500;width:calc(100% - 28px)}
+
+.modal-overlay{display:none;min-height:300px;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;padding:20px;border-radius:0 0 36px 36px}
+.modal-overlay.on{display:flex;animation:confirmIn 0.2s ease}
+.modal{background:var(--color-background-primary);border-radius:20px;padding:24px;width:100%;max-width:320px;border:0.5px solid var(--color-border-tertiary)}
+.modal-title{font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.5}
+.modal-inp{width:100%;border:0.5px solid var(--color-border-secondary);border-radius:10px;padding:10px 14px;font-size:14px;color:var(--color-text-primary);background:var(--color-background-secondary);font-family:var(--font-sans);margin-bottom:14px}
+.modal-btns{display:flex;gap:10px}
+.mbtn{flex:1;padding:11px;border-radius:10px;border:0.5px solid var(--color-border-secondary);background:none;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-sans);color:var(--color-text-primary)}
+.mbtn.pri{background:#7C4DFF;color:white;border-color:#7C4DFF}
+
+.backup-page{padding:0 0 24px}
+.backup-hero{background:var(--color-background-primary);padding:20px;margin-bottom:12px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.bk-status{display:flex;align-items:center;gap:14px}
+.bk-icon-wrap{width:56px;height:56px;border-radius:50%;background:#EAF3DE;border:2px solid #639922;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.bk-title{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.bk-sub{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.bk-tag{display:inline-block;font-size:10px;background:#EAF3DE;color:#27500A;padding:3px 9px;border-radius:8px;font-weight:500;margin-top:5px}
+.bk-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px 14px}
+.bk-card{background:var(--color-background-primary);border-radius:14px;border:0.5px solid var(--color-border-tertiary);padding:14px;text-align:center}
+.bk-card-ico{font-size:24px;display:block;margin-bottom:6px}
+.bk-card-val{font-size:16px;font-weight:500;color:var(--color-text-primary);display:block}
+.bk-card-lbl{font-size:10px;color:var(--color-text-secondary)}
+.bk-btn{display:block;margin:0 14px 10px;padding:13px;background:#7C4DFF;color:white;border:none;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-sans);width:calc(100% - 28px);text-align:center}
+.bk-btn.sec{background:none;color:#7C4DFF;border:1px solid #B388FF}
+.bk-progress{margin:0 14px 14px;background:var(--color-background-primary);border-radius:12px;border:0.5px solid var(--color-border-tertiary);padding:16px;display:none}
+.bk-progress.on{display:block;animation:fadeUp 0.2s ease}
+.bk-prog-bar{height:8px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin:10px 0 6px}
+.bk-prog-fill{height:100%;background:#7C4DFF;border-radius:4px;width:0;transition:width 0.4s ease}
+.history-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.history-item:last-child{border-bottom:none}
+.hi-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hi-info{flex:1}
+.hi-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.hi-date{font-size:11px;color:var(--color-text-secondary)}
+.hi-size{font-size:12px;color:var(--color-text-secondary)}
+</style>
+
+<h2 class="sr-only">Perfil do usuário — app Bíblia com sistema de nível, troféus, backup e configurações de conta</h2>
+
+<div style="padding:1rem 0">
+<div class="phone">
+<div class="status-bar">
+  <span class="sb-time">09:41</span>
+  <div class="sb-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+</div>
+
+<!-- ===== PERFIL PRINCIPAL ===== -->
+<div class="page on" id="pg-profile">
+<div class="scroll-area">
+
+  <div class="top-bar">
+    <div class="top-title">Meu Perfil</div>
+    <div class="top-action" onclick="goPage('pg-settings')">Configurações</div>
+  </div>
+
+  <!-- HERO / AVATAR -->
+  <div class="hero">
+    <button class="edit-name-btn" onclick="openModal('modal-name')">Editar nome</button>
+    <div class="hero-inner">
+      <div class="avatar-wrap">
+        <div class="avatar" onclick="openModal('modal-photo')">🙏</div>
+        <div class="avatar-edit" onclick="openModal('modal-photo')">✏️</div>
+      </div>
+      <div class="hero-info">
+        <div class="hero-name" id="display-name">José Menezes</div>
+        <div class="hero-email">jose@gmail.com</div>
+        <div class="premium-badge"><span class="prem-ico">💎</span> Premium — Discípulo</div>
+      </div>
+    </div>
+
+    <!-- NÍVEL XP -->
+    <div class="lv-block">
+      <div class="lv-row">
+        <div class="lv-orb"><div class="lv-num">12</div><div class="lv-lbl">NÍV.</div></div>
+        <div class="lv-text">
+          <div class="lv-title">🕯️ Discípulo</div>
+          <div class="lv-sub">3.200 XP para Profeta (Nível 16)</div>
+        </div>
+      </div>
+      <div class="xp-label"><span>6.800 XP acumulados</span><span>10.000 XP</span></div>
+      <div class="xp-bar"><div class="xp-fill" style="--w:68%"></div></div>
+    </div>
+  </div>
+
+  <!-- MINI STATS -->
+  <div class="mini-stats">
+    <div class="ms"><span class="ms-val">14</span><span class="ms-lbl">🔥 Dias seguidos</span></div>
+    <div class="ms"><span class="ms-val">11</span><span class="ms-lbl">📖 Livros lidos</span></div>
+    <div class="ms"><span class="ms-val">4</span><span class="ms-lbl">🏆 Troféus</span></div>
+    <div class="ms"><span class="ms-val">18</span><span class="ms-lbl">💎 Diamantes</span></div>
+  </div>
+
+  <!-- TROFÉUS RECENTES -->
+  <div class="trophies-strip">
+    <div class="strip-head">
+      <div class="strip-title">Conquistas recentes</div>
+      <div class="strip-more" onclick="goPage('pg-rewards')">Ver todas →</div>
+    </div>
+    <div class="t-scroll">
+      <div class="tc" style="animation-delay:0.05s"><span class="tc-ico" style="animation-delay:0s">🛡️</span><div class="tc-name">Escudo da Fé</div><span class="tc-badge br">Bronze</span></div>
+      <div class="tc" style="animation-delay:0.1s"><span class="tc-ico" style="animation-delay:0.3s">🌾</span><div class="tc-name">Livro de Rute</div><span class="tc-badge si">Prata</span></div>
+      <div class="tc" style="animation-delay:0.15s"><span class="tc-ico" style="animation-delay:0.6s">🕯️</span><div class="tc-name">Lâmpada</div><span class="tc-badge go">Ouro</span></div>
+      <div class="tc prem" style="animation-delay:0.2s"><span class="tc-ico" style="animation-delay:0.9s">🎵</span><div class="tc-name">Harpa de Davi</div><span class="tc-badge di">Diamante</span></div>
+      <div class="tc" style="animation-delay:0.25s"><span class="tc-ico" style="animation-delay:1.2s">📜</span><div class="tc-name">1º Testamento</div><span class="tc-badge si">Prata</span></div>
+    </div>
+  </div>
+
+  <!-- CONTA -->
+  <div class="section-group">
+    <div class="sg-title">Conta</div>
+    <div class="row" onclick="openModal('modal-google')">
+      <div class="row-ico" style="background:#E3F2FD">G</div>
+      <div class="row-info"><div class="row-title">Conta Google</div><div class="row-sub">jose@gmail.com · conectado</div></div>
+      <div class="row-right"><span class="tag tag-green">Ativo</span><span class="chev">›</span></div>
+    </div>
+    <div class="row" onclick="openModal('modal-name')">
+      <div class="row-ico" style="background:#F3E0FF">👤</div>
+      <div class="row-info"><div class="row-title">Nome de exibição</div><div class="row-sub">José Menezes</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+    <div class="row" onclick="openModal('modal-photo')">
+      <div class="row-ico" style="background:#EDE7F6">📷</div>
+      <div class="row-info"><div class="row-title">Foto de perfil</div><div class="row-sub">Alterar avatar ou emoji</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+    <div class="row">
+      <div class="row-ico" style="background:#FFF8E1">🔒</div>
+      <div class="row-info"><div class="row-title">Privacidade e segurança</div><div class="row-sub">PIN, biometria, dados</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+  </div>
+
+  <!-- PREMIUM & RECOMPENSAS -->
+  <div class="section-group">
+    <div class="sg-title">Premium & Recompensas</div>
+    <div class="row" onclick="goPage('pg-rewards')">
+      <div class="row-ico" style="background:#F3E0FF">🏆</div>
+      <div class="row-info"><div class="row-title">Recompensas e troféus</div><div class="row-sub">XP, níveis, conquistas</div></div>
+      <div class="row-right"><span class="tag tag-purple">4 novos</span><span class="chev">›</span></div>
+    </div>
+    <div class="row">
+      <div class="row-ico" style="background:#FFF8E1">⭐</div>
+      <div class="row-info"><div class="row-title">Loja de estrelas</div><div class="row-sub">3.240 estrelas disponíveis</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+    <div class="row">
+      <div class="row-ico" style="background:#EDE7F6">💎</div>
+      <div class="row-info"><div class="row-title">Plano Premium</div><div class="row-sub">Ativo até jan/2026</div></div>
+      <div class="row-right"><span class="tag tag-purple">Premium</span><span class="chev">›</span></div>
+    </div>
+  </div>
+
+  <!-- BACKUP & SINCRONIZAÇÃO -->
+  <div class="section-group">
+    <div class="sg-title">Backup & Sincronização</div>
+    <div class="row" onclick="goPage('pg-backup')">
+      <div class="row-ico" style="background:#EAF3DE">☁️</div>
+      <div class="row-info"><div class="row-title">Backup na nuvem</div><div class="row-sub">Último: hoje às 07:32</div></div>
+      <div class="row-right"><span class="tag tag-green">OK</span><span class="chev">›</span></div>
+    </div>
+    <div class="row">
+      <div class="row-ico" style="background:#E3F2FD">📱</div>
+      <div class="row-info"><div class="row-title">Sincronizar dispositivos</div><div class="row-sub">2 dispositivos vinculados</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+    <div class="row">
+      <div class="row-ico" style="background:#FAEEDA">📤</div>
+      <div class="row-info"><div class="row-title">Exportar progresso</div><div class="row-sub">PDF com todas conquistas</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+  </div>
+
+  <!-- PREFERÊNCIAS -->
+  <div class="section-group">
+    <div class="sg-title">Preferências</div>
+    <div class="row">
+      <div class="row-ico" style="background:#F3E0FF">🔔</div>
+      <div class="row-info"><div class="row-title">Notificações</div><div class="row-sub">Lembretes de leitura diária</div></div>
+      <div class="row-right"><span class="tag tag-green">Ativo</span><span class="chev">›</span></div>
+    </div>
+    <div class="row">
+      <div class="row-ico" style="background:#ECEFF1">🌙</div>
+      <div class="row-info"><div class="row-title">Tema</div><div class="row-sub">Claro</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+    <div class="row">
+      <div class="row-ico" style="background:#FFF8E1">📖</div>
+      <div class="row-info"><div class="row-title">Tradução padrão</div><div class="row-sub">NVI — Nova Versão Internacional</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+    <div class="row">
+      <div class="row-ico" style="background:#E3F2FD">🌍</div>
+      <div class="row-info"><div class="row-title">Idioma</div><div class="row-sub">Português (Brasil)</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+  </div>
+
+  <!-- SUPORTE -->
+  <div class="section-group">
+    <div class="sg-title">Suporte</div>
+    <div class="row">
+      <div class="row-ico" style="background:#EAF3DE">💬</div>
+      <div class="row-info"><div class="row-title">Fale conosco</div><div class="row-sub">Dúvidas e sugestões</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+    <div class="row">
+      <div class="row-ico" style="background:#F3E0FF">⭐</div>
+      <div class="row-info"><div class="row-title">Avaliar o app</div><div class="row-sub">Compartilhe sua experiência</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+    <div class="row">
+      <div class="row-ico" style="background:#FAEEDA">📋</div>
+      <div class="row-info"><div class="row-title">Termos e privacidade</div></div>
+      <div class="row-right"><span class="chev">›</span></div>
+    </div>
+  </div>
+
+  <div style="padding:14px 14px 4px">
+    <button class="google-btn" onclick="openModal('modal-google')">
+      <div class="g-logo">G</div>
+      <span class="g-text">Entrar com o Google</span>
+      <span class="g-check">✓</span>
+    </button>
+  </div>
+  <button class="logout-btn" onclick="openModal('modal-logout')">Sair da conta</button>
+
+  <div style="text-align:center;font-size:11px;color:var(--color-text-tertiary);padding-bottom:24px">
+    Bíblia — versão 3.2.1 · build 202
+  </div>
+</div>
+</div>
+
+<!-- ===== BACKUP PAGE ===== -->
+<div class="page" id="pg-backup">
+<div class="scroll-area">
+  <div class="top-bar">
+    <div class="back-btn" onclick="goPage('pg-profile')">←</div>
+    <div class="top-title">Backup & Sincronização</div>
+  </div>
+  <div class="backup-page">
+    <div class="backup-hero">
+      <div class="bk-status">
+        <div class="bk-icon-wrap">☁️</div>
+        <div>
+          <div class="bk-title">Backup ativo</div>
+          <div class="bk-sub">Seus dados estão protegidos na nuvem Google Drive.</div>
+          <span class="bk-tag">Último backup: hoje 07:32</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bk-grid">
+      <div class="bk-card"><span class="bk-card-ico">📖</span><span class="bk-card-val">11</span><span class="bk-card-lbl">Livros salvos</span></div>
+      <div class="bk-card"><span class="bk-card-ico">🏆</span><span class="bk-card-val">4</span><span class="bk-card-lbl">Troféus salvos</span></div>
+      <div class="bk-card"><span class="bk-card-ico">⭐</span><span class="bk-card-val">6.800</span><span class="bk-card-lbl">XP salvo</span></div>
+      <div class="bk-card"><span class="bk-card-ico">💾</span><span class="bk-card-val">2.4 MB</span><span class="bk-card-lbl">Tamanho</span></div>
+    </div>
+
+    <button class="bk-btn" id="bk-now-btn" onclick="startBackup()">Fazer backup agora</button>
+    <button class="bk-btn sec">Restaurar backup anterior</button>
+
+    <div class="bk-progress" id="bk-progress">
+      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px" id="bk-prog-label">Enviando dados...</div>
+      <div class="bk-prog-bar"><div class="bk-prog-fill" id="bk-prog-fill"></div></div>
+      <div style="font-size:11px;color:var(--color-text-secondary)" id="bk-prog-pct">0%</div>
+    </div>
+
+    <div class="section-group" style="margin:0 14px 14px">
+      <div class="sg-title">O que é salvo no backup</div>
+      <div class="row"><div class="row-ico" style="background:#EAF3DE">✓</div><div class="row-info"><div class="row-title">Progresso de leitura</div><div class="row-sub">Livros, capítulos e versículos</div></div></div>
+      <div class="row"><div class="row-ico" style="background:#EAF3DE">✓</div><div class="row-info"><div class="row-title">Nível e XP</div><div class="row-sub">Nível 12 · 6.800 XP</div></div></div>
+      <div class="row"><div class="row-ico" style="background:#EAF3DE">✓</div><div class="row-info"><div class="row-title">Troféus e conquistas</div><div class="row-sub">4 troféus desbloqueados</div></div></div>
+      <div class="row"><div class="row-ico" style="background:#EAF3DE">✓</div><div class="row-info"><div class="row-title">Planos de leitura</div><div class="row-sub">3 planos em andamento</div></div></div>
+      <div class="row"><div class="row-ico" style="background:#EAF3DE">✓</div><div class="row-info"><div class="row-title">Versículos favoritos</div><div class="row-sub">47 versículos salvos</div></div></div>
+      <div class="row"><div class="row-ico" style="background:#EAF3DE">✓</div><div class="row-info"><div class="row-title">Moedas e diamantes</div><div class="row-sub">3.240 ⭐ · 18 💎 · 57 ⚡</div></div></div>
+      <div class="row"><div class="row-ico" style="background:#EAF3DE">✓</div><div class="row-info"><div class="row-title">Notas e anotações</div><div class="row-sub">12 notas pessoais</div></div></div>
+    </div>
+
+    <div class="section-group" style="margin:0 14px 14px">
+      <div class="sg-title">Histórico de backups</div>
+      <div style="padding:4px 16px 8px">
+        <div class="history-item">
+          <div class="hi-ico" style="background:#EAF3DE">☁️</div>
+          <div class="hi-info"><div class="hi-title">Backup automático</div><div class="hi-date">Hoje, 07:32</div></div>
+          <div class="hi-size">2.4 MB</div>
+        </div>
+        <div class="history-item">
+          <div class="hi-ico" style="background:#E3F2FD">☁️</div>
+          <div class="hi-info"><div class="hi-title">Backup manual</div><div class="hi-date">Ontem, 21:15</div></div>
+          <div class="hi-size">2.3 MB</div>
+        </div>
+        <div class="history-item">
+          <div class="hi-ico" style="background:#ECEFF1">☁️</div>
+          <div class="hi-info"><div class="hi-title">Backup automático</div><div class="hi-date">19 abr, 06:00</div></div>
+          <div class="hi-size">2.1 MB</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-group" style="margin:0 14px 20px">
+      <div class="sg-title">Configurações de backup</div>
+      <div class="row"><div class="row-ico" style="background:#F3E0FF">🔄</div><div class="row-info"><div class="row-title">Backup automático</div><div class="row-sub">Diário às 06:00</div></div><div class="row-right"><span class="tag tag-green">Ativo</span><span class="chev">›</span></div></div>
+      <div class="row"><div class="row-ico" style="background:#EAF3DE">📶</div><div class="row-info"><div class="row-title">Somente Wi-Fi</div><div class="row-sub">Economizar dados móveis</div></div><div class="row-right"><span class="tag tag-green">Ativo</span><span class="chev">›</span></div></div>
+      <div class="row"><div class="row-ico" style="background:#E3F2FD">🔗</div><div class="row-info"><div class="row-title">Google Drive vinculado</div><div class="row-sub">jose@gmail.com</div></div><div class="row-right"><span class="tag tag-green">OK</span><span class="chev">›</span></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== REWARDS REDIRECT PAGE ===== -->
+<div class="page" id="pg-rewards">
+<div class="scroll-area">
+  <div class="top-bar">
+    <div class="back-btn" onclick="goPage('pg-profile')">←</div>
+    <div class="top-title">Recompensas & Troféus</div>
+  </div>
+  <div style="padding:40px 20px;text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🏆</div>
+    <div style="font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px">Sistema de Recompensas</div>
+    <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:24px">Esta aba abre o sistema completo de XP, níveis, troféus, livros e regras de vidas criado anteriormente.</div>
+    <button onclick="sendPrompt('mostre novamente o sistema completo de recompensas premium da bíblia com todas as abas e animações')" style="background:#7C4DFF;color:white;border:none;border-radius:12px;padding:13px 24px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-sans)">Abrir sistema de recompensas ↗</button>
+  </div>
+</div>
+</div>
+
+<!-- ===== SETTINGS PAGE ===== -->
+<div class="page" id="pg-settings">
+<div class="scroll-area">
+  <div class="top-bar">
+    <div class="back-btn" onclick="goPage('pg-profile')">←</div>
+    <div class="top-title">Configurações</div>
+  </div>
+  <div class="section-group">
+    <div class="sg-title">Aparência</div>
+    <div class="row"><div class="row-ico" style="background:#ECEFF1">🌙</div><div class="row-info"><div class="row-title">Tema do app</div><div class="row-sub">Claro · Escuro · Sistema</div></div><div class="row-right"><span class="chev">›</span></div></div>
+    <div class="row"><div class="row-ico" style="background:#FAEEDA">🔤</div><div class="row-info"><div class="row-title">Tamanho da fonte</div><div class="row-sub">Normal</div></div><div class="row-right"><span class="chev">›</span></div></div>
+    <div class="row"><div class="row-ico" style="background:#EAF3DE">🌍</div><div class="row-info"><div class="row-title">Idioma</div><div class="row-sub">Português (Brasil)</div></div><div class="row-right"><span class="chev">›</span></div></div>
+  </div>
+  <div class="section-group">
+    <div class="sg-title">Leitura</div>
+    <div class="row"><div class="row-ico" style="background:#FFF8E1">📖</div><div class="row-info"><div class="row-title">Tradução padrão</div><div class="row-sub">NVI</div></div><div class="row-right"><span class="chev">›</span></div></div>
+    <div class="row"><div class="row-ico" style="background:#F3E0FF">🔢</div><div class="row-info"><div class="row-title">Mostrar números dos versículos</div></div><div class="row-right"><span class="tag tag-green">Sim</span><span class="chev">›</span></div></div>
+    <div class="row"><div class="row-ico" style="background:#E3F2FD">🎧</div><div class="row-info"><div class="row-title">Áudio bíblico</div><div class="row-sub">Narração em português</div></div><div class="row-right"><span class="tag tag-purple">Premium</span><span class="chev">›</span></div></div>
+  </div>
+  <div class="section-group">
+    <div class="sg-title">Notificações</div>
+    <div class="row"><div class="row-ico" style="background:#F3E0FF">🔔</div><div class="row-info"><div class="row-title">Lembrete diário</div><div class="row-sub">06:00 — todos os dias</div></div><div class="row-right"><span class="tag tag-green">Ativo</span><span class="chev">›</span></div></div>
+    <div class="row"><div class="row-ico" style="background:#FAEEDA">⚡</div><div class="row-info"><div class="row-title">Alertas de streak</div><div class="row-sub">Quando prestes a perder sequência</div></div><div class="row-right"><span class="tag tag-green">Ativo</span><span class="chev">›</span></div></div>
+    <div class="row"><div class="row-ico" style="background:#EAF3DE">🏆</div><div class="row-info"><div class="row-title">Novas conquistas</div></div><div class="row-right"><span class="tag tag-green">Ativo</span><span class="chev">›</span></div></div>
+  </div>
+  <div class="section-group" style="margin-bottom:24px">
+    <div class="sg-title">Dados e armazenamento</div>
+    <div class="row" onclick="goPage('pg-backup')"><div class="row-ico" style="background:#EAF3DE">☁️</div><div class="row-info"><div class="row-title">Backup e sincronização</div></div><div class="row-right"><span class="chev">›</span></div></div>
+    <div class="row"><div class="row-ico" style="background:#FCEBEB">🗑️</div><div class="row-info"><div class="row-title">Apagar cache do app</div><div class="row-sub">Liberar 18 MB</div></div><div class="row-right"><span class="chev">›</span></div></div>
+    <div class="row"><div class="row-ico" style="background:#FCEBEB">⚠️</div><div class="row-info"><div class="row-title" style="color:#C62828">Excluir conta</div><div class="row-sub">Ação permanente e irreversível</div></div><div class="row-right"><span class="chev">›</span></div></div>
+  </div>
+</div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<div class="modal-overlay" id="modal-name">
+  <div class="modal" style="animation:confirmIn 0.2s ease">
+    <div class="modal-title">Editar nome</div>
+    <div class="modal-sub">Este nome aparece no seu perfil e no ranking de leitores.</div>
+    <input class="modal-inp" type="text" id="name-inp" value="José Menezes" maxlength="30">
+    <div class="modal-btns">
+      <button class="mbtn" onclick="closeModal('modal-name')">Cancelar</button>
+      <button class="mbtn pri" onclick="saveName()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-photo">
+  <div class="modal" style="animation:confirmIn 0.2s ease">
+    <div class="modal-title">Foto de perfil</div>
+    <div class="modal-sub">Escolha um emoji ou avatar para representar você na jornada bíblica.</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px" id="emoji-grid"></div>
+    <div class="modal-btns">
+      <button class="mbtn" onclick="closeModal('modal-photo')">Cancelar</button>
+      <button class="mbtn pri" onclick="closeModal('modal-photo')">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-google">
+  <div class="modal" style="animation:confirmIn 0.2s ease">
+    <div class="modal-title">Conta Google vinculada</div>
+    <div class="modal-sub">Sua conta <strong>jose@gmail.com</strong> está conectada. Seu progresso é sincronizado automaticamente com o Google Drive.</div>
+    <div style="background:#EAF3DE;border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:#27500A;line-height:1.5">✓ Backup automático ativo<br>✓ Login seguro com Google<br>✓ Dados sincronizados em 2 dispositivos</div>
+    <div class="modal-btns">
+      <button class="mbtn" onclick="closeModal('modal-google')">Fechar</button>
+      <button class="mbtn pri" onclick="closeModal('modal-google')">Gerenciar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-logout">
+  <div class="modal" style="animation:confirmIn 0.2s ease">
+    <div class="modal-title">Sair da conta?</div>
+    <div class="modal-sub">Seu progresso está salvo no backup do Google Drive. Você poderá entrar novamente a qualquer momento sem perder nada.</div>
+    <div class="modal-btns">
+      <button class="mbtn" onclick="closeModal('modal-logout')">Cancelar</button>
+      <button class="mbtn" style="color:#C62828;border-color:#C62828" onclick="closeModal('modal-logout')">Sair</button>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function goPage(id){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});
+  document.getElementById(id).classList.add('on');
+}
+function openModal(id){document.getElementById(id).classList.add('on')}
+function closeModal(id){document.getElementById(id).classList.remove('on')}
+function saveName(){
+  var v=document.getElementById('name-inp').value.trim();
+  if(v){document.getElementById('display-name').textContent=v}
+  closeModal('modal-name');
+}
+
+var emojis=['🙏','✝️','📖','🕊️','⭐','🌟','🔥','💎','🌿','🕯️','🐑','⚓','🛡️','👑','🎵'];
+var sel='🙏';
+var eg=document.getElementById('emoji-grid');
+emojis.forEach(function(e){
+  var b=document.createElement('button');
+  b.textContent=e; b.style.cssText='font-size:24px;background:var(--color-background-secondary);border:1.5px solid transparent;border-radius:10px;padding:8px;cursor:pointer;width:100%;aspect-ratio:1;font-family:var(--font-sans)';
+  b.onclick=function(){
+    document.querySelectorAll('#emoji-grid button').forEach(function(x){x.style.borderColor='transparent'});
+    b.style.borderColor='#7C4DFF'; sel=e;
+    document.querySelector('.avatar').textContent=e;
+  };
+  eg.appendChild(b);
+});
+
+function startBackup(){
+  var prog=document.getElementById('bk-progress');
+  var fill=document.getElementById('bk-prog-fill');
+  var pct=document.getElementById('bk-prog-pct');
+  var lbl=document.getElementById('bk-prog-label');
+  var btn=document.getElementById('bk-now-btn');
+  prog.classList.add('on'); btn.disabled=true; btn.textContent='Fazendo backup...';
+  var v=0;
+  var steps=[
+    [15,'Verificando dados...'],
+    [35,'Compactando progresso...'],
+    [60,'Enviando para o Google Drive...'],
+    [80,'Salvando troféus e XP...'],
+    [100,'Backup concluído!']
+  ];
+  var si=0;
+  var iv=setInterval(function(){
+    if(si>=steps.length){clearInterval(iv);return}
+    var s=steps[si]; si++;
+    fill.style.width=s[0]+'%';
+    pct.textContent=s[0]+'%';
+    lbl.textContent=s[1];
+    if(s[0]===100){
+      setTimeout(function(){
+        prog.classList.remove('on');
+        btn.disabled=false;
+        btn.textContent='Fazer backup agora';
+        fill.style.width='0%';
+      },1800);
+      clearInterval(iv);
+    }
+  },600);
+}
+</script>

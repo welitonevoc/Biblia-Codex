@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Home, BookOpen, Search, Heart, Settings } from 'lucide-react';
+import { Home, BookOpen, Search, Heart, Settings, User } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -15,6 +15,7 @@ interface FloatingDockProps {
 
 const navItems = [
   { id: 'home', icon: Home, label: 'Início' },
+  { id: 'profile', icon: User, label: 'Perfil' },
   { id: 'bible', icon: BookOpen, label: 'Bíbia' },
   { id: 'search', icon: Search, label: 'Buscar' },
   { id: 'notes', icon: Heart, label: 'Notas' },
