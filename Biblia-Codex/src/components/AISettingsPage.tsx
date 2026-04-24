@@ -194,7 +194,7 @@ export const AISettingsPage: React.FC = () => {
 
     try {
       let modelsUrl = '';
-      let data: any;
+      let data: { data?: Array<{ id: string; name?: string; context_length?: number; pricing?: { prompt?: string }; title?: string; inputTokenLimit?: number }>; models?: Array<{ name: string; title?: string; inputTokenLimit?: number }> };
 
       if (apiProvider === 'openrouter') {
         modelsUrl = `https://openrouter.ai/api/v1/models`;
@@ -233,7 +233,7 @@ export const AISettingsPage: React.FC = () => {
           free: true
         }));
       } else if (apiProvider === 'google') {
-        models = (data.models || []).map((m: any) => ({
+        models = (data?.models || []).map((m: { name: string; title?: string; inputTokenLimit?: number }) => ({
           id: m.name.replace('models/', ''),
           name: m.title || m.name,
           context_length: m.inputTokenLimit
@@ -244,7 +244,7 @@ export const AISettingsPage: React.FC = () => {
       if (models.length > 0) {
         setSelectedModel(models[0].id);
       }
-    } catch (err: any) {
+     } catch (err: unknown) {
       setModelsError(err.message || 'Erro ao carregar modelos');
     } finally {
       setIsLoadingModels(false);

@@ -37,7 +37,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
   type,
   onNavigate
 }) => {
-  const [content, setContent] = useState<any>(null);
+  const [content, setContent] = useState<Record<string, unknown> | string | null>(null);
   const [loading, setLoading] = useState(true);
   const { settings } = useAppContext();
 
@@ -264,7 +264,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
                   {/* Dictionary */}
                   {type === 'dictionary' && content && (
                     <div className="space-y-3">
-                      {Object.entries(content).slice(0, 20).map(([key, value]: [string, any]) => (
+                      {Object.entries(content as Record<string, unknown>).slice(0, 20).map(([key, value]) => (
                         <motion.div
                           key={key}
                           initial={{ opacity: 0, y: 10 }}
@@ -288,7 +288,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
                   {/* Cross References */}
                   {type === 'xrefs' && Array.isArray(content) && content.length > 0 && (
                     <div className="space-y-3">
-                      {content.map((ref: any, i: number) => (
+                      {(content as Array<Record<string, unknown>>).map((ref: Record<string, unknown>, i: number) => (
                         <motion.button
                           key={i}
                           initial={{ opacity: 0, x: -10 }}

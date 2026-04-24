@@ -286,3 +286,86 @@ export interface AppSettings {
     status: string;
   };
 }
+
+export interface UnknownError extends Error {
+  cause?: unknown;
+}
+
+export interface SQLiteRow extends Record<string, unknown> {
+  [key: string]: unknown;
+}
+
+export interface SQLiteSchema {
+  table: string;
+  bookCol: string;
+  chapterCol: string;
+  verseCol: string;
+  textCol: string;
+  isMyBible?: boolean;
+}
+
+export interface SQLiteDatabase {
+  exec(sql: string): Array<{ columns: string[]; values: unknown[][] }>;
+  close(): void;
+}
+
+export interface CachedDB {
+  db: SQLiteDatabase;
+  schema: SQLiteSchema;
+}
+
+export interface PeopleData {
+  id: string;
+  name: string;
+  description?: string;
+  born?: number;
+  died?: number;
+  generation?: number;
+  father?: string;
+  mother?: string;
+  spouse?: string;
+  children: string[];
+}
+
+export interface PlacesData {
+  id: string;
+  name: string;
+  description?: string;
+  latitude?: number;
+  longitude?: number;
+  type?: string;
+}
+
+export interface CrossRef {
+  id: string;
+  bookId: string;
+  bookName: string;
+  chapter: number;
+  verse: number;
+  text?: string;
+  rank: number;
+}
+
+export type ParseSettings = {
+  paragraphMode?: boolean;
+  verseNumbers?: boolean;
+  wordsOfJesusRed?: boolean;
+  chapterTitles?: boolean;
+  headlines?: boolean;
+  footnotes?: boolean;
+};
+
+export interface ModuleData {
+  data: ArrayBuffer | Uint8Array;
+  path?: string;
+}
+
+export interface CapacitorWindow extends Window {
+  Capacitor?: {
+    isNative?: boolean;
+    isNativePlatform?: () => boolean;
+  };
+  webkit?: {
+    messageHandlers?: Record<string, { postMessage: (msg: unknown) => void }>;
+  };
+}

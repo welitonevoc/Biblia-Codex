@@ -665,7 +665,7 @@ export const MapsPage: React.FC<MapsPageProps> = ({ onNavigate }) => {
   const [activeLayers, setActiveLayers] = useState<MapLayer[]>(MAP_LAYERS);
   const [mapZoom, setMapZoom] = useState(1);
   const [showLayerPanel, setShowLayerPanel] = useState(false);
-  const [installedModules, setInstalledModules] = useState<any[]>([]);
+  const [installedModules, setInstalledModules] = useState<ModuleInfo[]>([]);
   const [viewMode, setViewMode] = useState<'map' | 'list' | 'journeys'>('map');
 
   useEffect(() => {

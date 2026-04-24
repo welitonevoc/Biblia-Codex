@@ -31,11 +31,11 @@ const ToggleGroup: React.FC<ToggleGroupProps> = ({
     <div className={cn("inline-flex rounded-lg bg-[var(--surface-1)] p-1", className)} {...props}>
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
-          ? React.cloneElement(child as React.ReactElement<{ value: string; selected?: boolean; onClick?: () => void }>, {
+                ? React.cloneElement(child as React.ReactElement<{ value: string; selected?: boolean; onClick?: () => void }>, {
               selected: type === "single" 
-                ? (child.props as any).value === value
-                : value?.split(",").includes((child.props as any).value),
-              onClick: () => handleChildClick((child.props as any).value),
+                ? (child.props as { value: string }).value === value
+                : value?.split(",").includes((child.props as { value: string }).value),
+              onClick: () => handleChildClick((child.props as { value: string }).value),
             })
           : child
       )}

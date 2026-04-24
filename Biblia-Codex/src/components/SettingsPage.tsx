@@ -61,7 +61,7 @@ const ChoicePills: React.FC<{
   label: string;
   options: Array<string | number>;
   current: string | number;
-  onSelect: (value: any) => void;
+  onSelect: (value: string | number) => void;
 }> = ({ label, options, current, onSelect }) => (
   <div className="space-y-2.5">
     <div className="text-xs font-semibold text-bible-text-muted uppercase tracking-wider">{label}</div>

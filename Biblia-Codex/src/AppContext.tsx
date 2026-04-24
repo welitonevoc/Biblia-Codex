@@ -1,14 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
-  ThemeMode, ThemeConfig, AppSettings,
-  Book, Verse, BibleModule, StudyModule, DrawerContext, DictionaryEntry,
-  UIGeometry, NavigationStyle, FontPreference,
-  AnimationStyle, AnimationIntensity, AnimationSpeed, LightingEffect, PageTransition
+  ThemeMode, ThemeConfig, AppSettings, AppSettingsKey, TextDisplayKey, StudyToolsKey, VisualResourcesKey, BehaviorKey, NavigationKey, AnimationKey, AiKey,
+  Book, Verse, BibleModule, StudyModule, DrawerContext, DictionaryEntry, UIGeometry, NavigationStyle, FontPreference,
+  AnimationStyle, AnimationIntensity, AnimationSpeed, LightingEffect, PageTransition, ModuleInfo, CapacitorWindow
 } from './types';
 import { auth, db, onAuthStateChanged, User, loginWithGoogle, logout, handleRedirectResult, doc, setDoc, onSnapshot, serverTimestamp } from './firebase';
 import { dictionaryService, createAiModule } from './services/dictionaryService';
 import { scanForBibleModules } from './services/moduleScanner';
-import { listInstalledModules, ModuleInfo } from './services/moduleService';
+import { listInstalledModules } from './services/moduleService';
 import { DEFAULT_THEME_MODE, THEME_CLASSNAMES, getThemePreset, getThemeVariables, normalizeThemeMode } from './theme/presets';
 
 interface AppContextType {
@@ -62,6 +61,9 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const VALID_GEOMETRIES: UIGeometry[] = ['sharp', 'soft', 'pill', 'minimal', 'geometric', 'premium', 'circle', 'soft-square', 'glass', 'neon', 'brutal', 'elegant', 'cyber', 'vintage'];
+const VALID_NAV_STYLES: NavigationStyle[] = ['floating', 'asymmetric', 'bottom', 'sidebar', 'top', 'hybrid', 'compact', 'dock', 'minimal'];
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -79,8 +81,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [availableModules, setAvailableModules] = useState<ModuleInfo[]>([]);
   const [currentVersion, setCurrentVersion] = useState<BibleModule | null>(null);
 
-
-
   const [config, setConfig] = useState<ThemeConfig>(() => {
     const defaultPreset = getThemePreset(DEFAULT_THEME_MODE);
     const defaults: ThemeConfig = {
@@ -96,17 +96,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       navigationStyle: 'bottom',
       fontPreference: 'serif',
     };
-    const validGeometries = ['sharp', 'soft', 'pill', 'minimal', 'geometric', 'premium', 'circle', 'soft-square', 'glass', 'neon', 'brutal', 'elegant', 'cyber', 'vintage'];
-    const validNavStyles = ['floating', 'asymmetric', 'bottom', 'sidebar', 'top', 'hybrid', 'compact', 'dock', 'minimal'];
     const saved = localStorage.getItem('codex-theme');
     if (!saved) return defaults;
     try {
       const parsed = JSON.parse(saved);
       const normalized = { ...defaults, ...parsed, mode: normalizeThemeMode(parsed.mode) };
-      if (parsed.uiGeometry && !validGeometries.includes(parsed.uiGeometry)) {
+      if (parsed.uiGeometry && !VALID_GEOMETRIES.includes(parsed.uiGeometry as UIGeometry)) {
         normalized.uiGeometry = 'soft';
       }
-      if (parsed.navigationStyle && !validNavStyles.includes(parsed.navigationStyle)) {
+      if (parsed.navigationStyle && !VALID_NAV_STYLES.includes(parsed.navigationStyle as NavigationStyle)) {
         normalized.navigationStyle = 'bottom';
       }
       return normalized;
@@ -186,14 +184,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   });
 
+  const lastRemoteSettingsRef = useRef<string>('');
+
   // Auth Listener
   useEffect(() => {
-    // ✅ CAPACITOR: captura o usuário que retornou do fluxo de signInWithRedirect
     handleRedirectResult().catch(err =>
       console.error('Erro no redirect de autenticação:', err)
     );
 
-    // Se Firebase não está configurado, pula autenticação
     if (!auth) {
       setIsAuthReady(true);
       return;
@@ -206,8 +204,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => unsubscribe();
   }, []);
 
-  const lastRemoteSettingsRef = useRef<string>('');
-
   // Sync from Cloud
   useEffect(() => {
     if (!user || !db) return;
@@ -218,7 +214,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const data = docSnap.data();
         const settingsStr = JSON.stringify(data.settings);
 
-        // Só atualiza se for DIFERENTE do que já temos e do que enviamos
         if (data.settings && settingsStr !== lastRemoteSettingsRef.current) {
           lastRemoteSettingsRef.current = settingsStr;
           setSettings(prev => ({ ...prev, ...data.settings }));
@@ -243,7 +238,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     try {
       const settingsStr = JSON.stringify(newSettings);
-      // Se estamos enviando o que já é igual ao que recebemos, pula
       if (settingsStr === lastRemoteSettingsRef.current) return;
 
       const userDocRef = doc(db, 'users', user.uid);
@@ -263,22 +257,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [user]);
 
+  // Apply theme to document
   useEffect(() => {
     localStorage.setItem('codex-theme', JSON.stringify(config));
 
-    // Apply theme to document
     const root = document.documentElement;
     root.classList.remove(...THEME_CLASSNAMES);
     root.classList.add(config.mode);
 
     // Apply UI geometry class
-    const validGeomStyles = ['sharp', 'soft', 'pill', 'minimal', 'geometric', 'premium', 'circle', 'soft-square', 'glass', 'neon', 'brutal', 'elegant', 'cyber', 'vintage'];
-    root.classList.remove(...validGeomStyles.map(s => `geom-${s}`));
+    root.classList.remove(...VALID_GEOMETRIES.map(s => `geom-${s}`));
     root.classList.add(`geom-${config.uiGeometry}`);
 
     // Apply navigation style class
-    const validNavStyles = ['floating', 'asymmetric', 'bottom', 'sidebar', 'top', 'hybrid', 'compact', 'dock', 'minimal'];
-    root.classList.remove(...validNavStyles.map(s => `nav-${s}`));
+    root.classList.remove(...VALID_NAV_STYLES.map(s => `nav-${s}`));
     root.classList.add(`nav-${config.navigationStyle}`);
 
     // Apply font preference class
@@ -310,14 +302,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     root.style.setProperty('--radius-compact', config.uiGeometry === 'sharp' || config.uiGeometry === 'geometric' ? '0px' : '16px');
   }, [config]);
 
+  // Persist settings
   useEffect(() => {
     localStorage.setItem('codex-settings', JSON.stringify(settings));
   }, [settings]);
 
+  // Debounced cloud sync
   useEffect(() => {
     if (!user) return;
 
-    // Combined effect with debounce for sync
     const timer = setTimeout(() => {
       syncToCloud(config, settings);
     }, 2000);
@@ -356,19 +349,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const toggleSetting = useCallback(<T extends keyof AppSettings>(section: T, key: keyof AppSettings[T]) => {
     setSettings(prev => {
-      const sectionData = prev[section] as any;
+      const sectionData = prev[section] as Record<string, unknown>;
       return {
         ...prev,
         [section]: {
           ...sectionData,
-          [key]: !sectionData[key]
+          [key]: !sectionData[key as string]
         }
       };
     });
   }, []);
 
   const toggleModule = useCallback((module: keyof AppSettings['modules']) => {
-    toggleSetting('modules', module as any);
+    toggleSetting('modules', module);
   }, [toggleSetting]);
 
   const setAnimationStyle = useCallback((style: AnimationStyle) => {
@@ -377,28 +370,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       animation: { ...prev.animation, style }
     }));
   }, []);
-
   const setAnimationIntensity = useCallback((intensity: AnimationIntensity) => {
     setSettings(prev => ({
       ...prev,
       animation: { ...prev.animation, intensity }
     }));
   }, []);
-
   const setAnimationSpeed = useCallback((speed: AnimationSpeed) => {
     setSettings(prev => ({
       ...prev,
       animation: { ...prev.animation, speed }
     }));
   }, []);
-
   const setLightingEffect = useCallback((lighting: LightingEffect) => {
     setSettings(prev => ({
       ...prev,
       animation: { ...prev.animation, lighting }
     }));
   }, []);
-
   const setPageTransition = useCallback((pageTransition: PageTransition) => {
     setSettings(prev => ({
       ...prev,
@@ -449,16 +438,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (refreshModulesRunning.current) return;
     refreshModulesRunning.current = true;
     try {
-      const isNative = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.();
+      const isNative = typeof window !== 'undefined' && (window as unknown as CapacitorWindow).Capacitor?.isNativePlatform?.();
       const scanned = isNative ? [] : await scanForBibleModules();
       const installedRaw = await import('./services/moduleService').then(m => m.listInstalledModules());
 
-      const allInstalled: BibleModule[] = installedRaw.map(m => ({
+      const allInstalled: BibleModule[] = installedRaw.map((m: ModuleInfo) => ({
         id: m.id,
         name: m.name,
         abbreviation: m.abbreviation,
-        type: m.category as any,
-        format: m.format === 'other' ? 'mybible' : m.format as any,
+        type: m.category as BibleModule['type'],
+        format: m.format === 'other' ? 'mybible' : m.format as BibleModule['format'],
         category: 'mybible',
         path: m.path,
         language: m.language,
@@ -476,7 +465,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       setAvailableModules(installedRaw);
 
-      // Só atualiza se o conteúdo realmente mudou (evita re-renders desnecessários)
       setAvailableVersions(prev => {
         if (prev.length === bibles.length && prev.every((v, i) => v.id === bibles[i].id && v.path === bibles[i].path)) {
           return prev;
@@ -490,7 +478,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return dictionaries;
       });
 
-      // Seleciona versão apenas se ainda não há uma selecionada
       setCurrentVersion(prev => {
         if (prev) return prev;
         return bibles.length > 0 ? bibles[0] : null;
@@ -524,7 +511,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (savedPath && savedPath !== 'ai') {
         const found = availableDictionaries.find(d => d.path === savedPath || d.path.endsWith(savedPath));
         if (found) {
-          setSelectedDictionaryModule(found as any);
+          setSelectedDictionaryModule(found);
         }
       }
     }
@@ -534,7 +521,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return dictionaryService.getEntries(term, selectedDictionaryModule);
   }, [selectedDictionaryModule]);
 
-  const contextValue = React.useMemo(() => ({
+  const contextValue = useMemo(() => ({
     config,
     settings,
     user,

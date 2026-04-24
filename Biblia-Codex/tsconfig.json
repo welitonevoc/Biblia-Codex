@@ -1,10 +1,15 @@
 {
   "extends": "./config/tsconfig.json",
   "compilerOptions": {
-    "strict": false,
+    "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src/**/*", "config/**/*"],
   "exclude": ["node_modules", "dist", "android"]
