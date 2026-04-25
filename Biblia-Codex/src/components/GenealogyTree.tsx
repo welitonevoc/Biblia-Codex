@@ -67,8 +67,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
       const convertedPeople: Person[] = data.map(p => ({
         id: Number(p.id) || 0,
         name: p.name,
-        gender: p.gender,
-        birthyear: p.birth ? String(p.birth) : undefined,
+        birthyear: p.born ? String(p.born) : undefined,
         deathyear: p.died ? String(p.died) : undefined,
         children: []
       }));

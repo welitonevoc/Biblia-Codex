@@ -221,21 +221,21 @@ export const SettingsPage: React.FC<{ section?: string }> = ({ section }) => {
               label="Fonte"
               options={['Untitled Serif', 'Serif', 'Sans Serif']}
               current={config.fontFamily}
-              onSelect={setFontFamily}
+              onSelect={(value) => setFontFamily(value as typeof config.fontFamily)}
             />
 
             <ChoicePills
               label="Geometria"
               options={['soft', 'sharp', 'pill', 'minimal', 'geometric', 'premium', 'circle', 'soft-square', 'glass', 'neon', 'brutal', 'elegant', 'cyber']}
               current={config.uiGeometry}
-              onSelect={setUIGeometry}
+              onSelect={(value) => setUIGeometry(value as typeof config.uiGeometry)}
             />
 
             <ChoicePills
               label="Navegação"
               options={['bottom', 'floating', 'asymmetric', 'sidebar', 'top', 'hybrid', 'compact', 'dock', 'minimal']}
               current={config.navigationStyle}
-              onSelect={setNavigationStyle}
+              onSelect={(value) => setNavigationStyle(value as typeof config.navigationStyle)}
             />
           </div>
         </motion.section>

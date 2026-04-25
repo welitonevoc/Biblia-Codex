@@ -130,7 +130,7 @@ const BIBLE_BOOKS = [
   { name: 'Apocalipse', abbrev: 'ap', chapters: 22 },
 ];
 
-const DAY_READINGS = {
+const DAY_READINGS: Record<string, { day: number; title: string; passages: string[]; }[]> = {
   'encontrando-deus': [
     { day: 1, title: 'A Criação e o Jardim', passages: ['Gênesis 1:1-2', 'Gênesis 2:4-15'] },
     { day: 2, title: 'O Pecado e a Queda', passages: ['Gênesis 3:1-24'] },
@@ -231,8 +231,8 @@ const DAY_READINGS = {
 const addReadingsToPreset = (plan: Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'>): Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'> & { dayReadings: { day: number; title: string; passages: string[]; completed: boolean; }[] } => {
   const readings = plan.id === biblia365Data.id 
     ? biblia365Data.dayReadings 
-    : DAY_READINGS[plan.id] || [];
-  return { ...plan, dayReadings: readings.map(r => ({ ...r, completed: false })) };
+    : (DAY_READINGS[plan.id] ?? []);
+  return { ...plan, dayReadings: readings.map((r: { day: number; title: string; passages: string[] }) => ({ ...r, completed: false })) };
 };
 
 const PRESET_PLANS: (Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'level' | 'currentDay' | 'completedBooks'> & { dayReadings: { day: number; title: string; passages: string[]; completed: boolean; }[] })[] = [
@@ -244,7 +244,7 @@ const PRESET_PLANS: (Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'leve
     progress: 0,
     icon: BookOpen,
     gradient: biblia365Data.gradient,
-    type: biblia365Data.type,
+    type: biblia365Data.type as ReadingPlan['type'],
     color: biblia365Data.color,
   }),
   addReadingsToPreset({

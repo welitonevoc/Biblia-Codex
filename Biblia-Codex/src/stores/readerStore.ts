@@ -37,7 +37,7 @@ export const useReaderStore = create<ReaderState>()(
       scrollPosition: 0,
 
       setCurrentModule: (currentModule) => set({ currentModule }),
-      setCurrentLocation: (currentBook, currentChapter, currentVerse = null) =>
+      setCurrentLocation: (currentBook, currentChapter, currentVerse = undefined) =>
         set({ currentBook, currentChapter, currentVerse, scrollPosition: 0 }),
       setFontSize: (fontSize) => set({ fontSize }),
       setFontFamily: (fontFamily) => set({ fontFamily }),

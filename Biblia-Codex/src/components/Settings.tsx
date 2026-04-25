@@ -449,11 +449,10 @@ export const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
               <OptionPills
                 options={[
                   { id: 'Untitled Serif', label: 'Serifada' },
-                  { id: 'Serif', label: 'Serif' },
-                  { id: 'Sans Serif', label: 'Sans' },
+{ id: 'Serif', label: 'Serif' },
                 ]}
                 selected={config.fontFamily}
-                onSelect={setFontFamily}
+                onSelect={(value) => setFontFamily(value as typeof config.fontFamily)}
               />
             </div>
           </SettingsSection>

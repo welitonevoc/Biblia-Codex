@@ -138,7 +138,7 @@ function AppContent() {
     setIsStudyOpen(true);
   };
 
-  const handleToolOpen = (verse: Verse, type: 'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places') => {
+  const handleToolOpen = (verse: Verse, type: 'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places' | 'footnotes') => {
     setToolVerse(verse);
     setToolType(type);
     setIsToolOpen(true);

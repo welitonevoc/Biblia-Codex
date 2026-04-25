@@ -286,6 +286,14 @@ export interface AppSettings {
     enabled: boolean;
     status: string;
   };
+  tts?: {
+    enabled: boolean;
+    voice?: string;
+    rate?: number;
+    pitch?: number;
+    volume?: number;
+    language?: string;
+  };
 }
 
 export interface UnknownError extends Error {

@@ -90,16 +90,18 @@ export function RichTextEditor({
 
   const handleInput = useCallback(() => {
     if (isUpdatingFromProp.current) return;
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
+    const editor = editorRef.current;
+    if (editor) {
+      onChange(editor.innerHTML);
     }
   }, [onChange]);
 
   // Atualiza o editor quando o conteúdo muda externamente
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== content) {
+    const editor = editorRef.current;
+    if (editor && editor.innerHTML !== content) {
       isUpdatingFromProp.current = true;
-      editorRef.current.innerHTML = content;
+      editor.innerHTML = content;
       setTimeout(() => { isUpdatingFromProp.current = false; }, 0);
     }
   }, [content]);
