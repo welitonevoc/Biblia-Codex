@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   ThemeMode, ThemeConfig, AppSettings, AppSettingsKey, TextDisplayKey, StudyToolsKey, VisualResourcesKey, BehaviorKey, NavigationKey, AnimationKey, AiKey,
-  Book, Verse, BibleModule, StudyModule, DrawerContext, DictionaryEntry, UIGeometry, NavigationStyle, FontPreference,
-  AnimationStyle, AnimationIntensity, AnimationSpeed, LightingEffect, PageTransition, ModuleInfo, CapacitorWindow
+  Book, Verse, BibleModule, DrawerContext, DictionaryEntry, UIGeometry, NavigationStyle, FontPreference,
+  AnimationStyle, AnimationIntensity, AnimationSpeed, LightingEffect, PageTransition, ModuleInfo, CapacitorWindow, ModuleType
 } from './types';
 import { auth, db, onAuthStateChanged, User, loginWithGoogle, logout, handleRedirectResult, doc, setDoc, onSnapshot, serverTimestamp } from './firebase';
 import { dictionaryService, createAiModule } from './services/dictionaryService';
@@ -15,9 +15,9 @@ interface AppContextType {
   settings: AppSettings;
   user: User | null;
   isAuthReady: boolean;
-  selectedDictionaryModule: StudyModule | null;
-  selectedCommentaryModule: StudyModule | null;
-  selectedXrefModule: StudyModule | null;
+  selectedDictionaryModule: BibleModule | null;
+  selectedCommentaryModule: BibleModule | null;
+  selectedXrefModule: BibleModule | null;
   availableVersions: BibleModule[];
   availableDictionaries: BibleModule[];
   availableModules: ModuleInfo[];
@@ -53,9 +53,9 @@ interface AppContextType {
   refreshModules: () => Promise<void>;
   login: () => Promise<void>;
   handleLogout: () => Promise<void>;
-  setSelectedDictionaryModule: (module: StudyModule | null) => void;
-  setSelectedCommentaryModule: (module: StudyModule | null) => void;
-  setSelectedXrefModule: (module: StudyModule | null) => void;
+  setSelectedDictionaryModule: (module: BibleModule | null) => void;
+  setSelectedCommentaryModule: (module: BibleModule | null) => void;
+  setSelectedXrefModule: (module: BibleModule | null) => void;
   searchDictionary: (term: string) => Promise<DictionaryEntry[]>;
 }
 
@@ -67,9 +67,18 @@ const VALID_NAV_STYLES: NavigationStyle[] = ['floating', 'asymmetric', 'bottom',
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [selectedDictionaryModule, setSelectedDictionaryModule] = useState<StudyModule | null>(() => createAiModule('dictionary'));
-  const [selectedCommentaryModule, setSelectedCommentaryModule] = useState<StudyModule | null>(null);
-  const [selectedXrefModule, setSelectedXrefModule] = useState<StudyModule | null>(null);
+  const [selectedDictionaryModule, setSelectedDictionaryModule] = useState<BibleModule | null>(() => {
+    const aiModule = createAiModule('dictionary');
+    return {
+      ...aiModule,
+      type: 'dictionary' as ModuleType,
+      format: 'sqlite' as const,
+      category: 'mybible' as const,
+      isVirtual: true
+    };
+  });
+  const [selectedCommentaryModule, setSelectedCommentaryModule] = useState<BibleModule | null>(null);
+  const [selectedXrefModule, setSelectedXrefModule] = useState<BibleModule | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.innerWidth >= 1024;
@@ -493,13 +502,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     refreshModules();
   }, [refreshModules]);
 
-  const handleSetSelectedDictionaryModule = useCallback((module: StudyModule | null) => {
+  const handleSetSelectedDictionaryModule = useCallback((module: BibleModule | null) => {
     setSelectedDictionaryModule(module);
     if (module) {
       updateSettings({
         studyTools: {
           ...settings.studyTools,
-          selectedStrongsDictionary: module.id === 'ai_assistant' ? 'ai' : module.path
+          selectedStrongsDictionary: module.id === 'ai_assistant' || module.isVirtual ? 'ai' : module.path
         }
       });
     }

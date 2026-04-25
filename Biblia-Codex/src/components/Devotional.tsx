@@ -469,8 +469,8 @@ const DevotionalReader: React.FC<{
     setPreviewLoading(true);
     setPreviewText(null);
 
-    try {
-      const verses = await BibleService.getVerses(reference.bookId, reference.chapter, currentVersion || undefined, settings);
+      try {
+        const verses = await BibleService.getVerses(reference.bookId, reference.chapter, currentVersion || undefined, settings.textDisplay);
       const matchingVerse = verses.find((verse: Verse) => verse.verse === (reference.verse || 1));
       setPreviewText(matchingVerse?.text || null);
     } catch (error) {

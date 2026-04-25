@@ -73,7 +73,9 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
       const dbFile = Object.keys(zip.files).find(f => f.endsWith('.SQLite3'));
       if (!dbFile) throw new Error('Arquivo SQLite não encontrado no ZIP');
       
-      const dbBuffer = await zip.file(dbFile).async('arraybuffer');
+      const file = zip.file(dbFile);
+      if (!file) throw new Error('Erro ao acessar arquivo no ZIP');
+      const dbBuffer = await file.async('arraybuffer');
       const dbData = new Uint8Array(dbBuffer);
       
       const SQL = await initSqlJs({

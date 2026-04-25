@@ -164,9 +164,10 @@ export interface BibleModule {
   format: 'mybible' | 'mysword' | 'sword' | 'epub' | 'sqlite';
   category: 'mybible' | 'mysword' | 'sword' | 'epub';
   path: string;
-  language: string;
+  language?: string;
   author?: string;
   fileSize?: number;
+  isVirtual?: boolean;
 }
 
 export type ThemeMode =
@@ -205,7 +206,7 @@ export type AnimationStyle = 'suave' | 'elastica' | 'fade' | 'slide' | 'scale' |
 export type AnimationIntensity = 'leve' | 'moderada' | 'intensa';
 export type AnimationSpeed = 'lento' | 'normal' | 'rapido';
 export type LightingEffect = 'brilho' | 'glow' | 'shadow' | 'particles' | 'aurora' | 'none';
-export type PageTransition = 'fade' | 'slide' | 'flip' | 'cube' | 'cover' | 'zoom';
+export type PageTransition = 'fade' | 'slide' | 'flip' | 'cube' | 'cover' | 'zoom' | 'none';
 
 export interface AppSettings {
   textDisplay: {
@@ -304,18 +305,13 @@ export interface SQLiteSchema {
   isMyBible?: boolean;
 }
 
-export interface SQLiteDatabase {
-  exec(sql: string): Array<{ columns: string[]; values: unknown[][] }>;
-  close(): void;
-}
-
 export interface CachedDB {
-  db: SQLiteDatabase;
+  db: unknown;  // sql.js Database
   schema: SQLiteSchema;
 }
 
 export interface PeopleData {
-  id: string;
+  id: string | number;
   name: string;
   description?: string;
   born?: number;
@@ -368,4 +364,27 @@ export interface CapacitorWindow extends Window {
   webkit?: {
     messageHandlers?: Record<string, { postMessage: (msg: unknown) => void }>;
   };
+}
+
+// AppSettings key types for type-safe settings access
+export type AppSettingsKey = keyof AppSettings;
+export type TextDisplayKey = keyof AppSettings['textDisplay'];
+export type StudyToolsKey = keyof AppSettings['studyTools'];
+export type VisualResourcesKey = keyof AppSettings['visualResources'];
+export type BehaviorKey = keyof AppSettings['behavior'];
+export type NavigationKey = keyof AppSettings['navigation'];
+export type AnimationKey = keyof AppSettings['animation'];
+export type AiKey = keyof AppSettings['ai'];
+
+// ModuleInfo interface for module listing
+export interface ModuleInfo {
+  id: string;
+  name: string;
+  abbreviation: string;
+  category: string;
+  format: string;
+  language?: string;
+  author?: string;
+  size?: number;
+  path: string;
 }

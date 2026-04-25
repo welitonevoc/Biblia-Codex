@@ -244,11 +244,10 @@ export const AISettingsPage: React.FC = () => {
       if (models.length > 0) {
         setSelectedModel(models[0].id);
       }
-     } catch (err: unknown) {
-      setModelsError(err.message || 'Erro ao carregar modelos');
-    } finally {
-      setIsLoadingModels(false);
-    }
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar modelos';
+        setModelsError(errorMessage);
+      }
   }, [currentApiKey, apiProvider]);
 
   const aiFeatures = [

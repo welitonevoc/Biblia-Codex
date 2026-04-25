@@ -1,4 +1,4 @@
-import { Verse, BibleModule, DictionaryEntry, Footnote, FootnoteType, CrossReference, PeopleData, PlacesData, SQLiteRow, SQLiteSchema, SQLiteDatabase, CachedDB, ParseSettings, ModuleData } from './types';
+import { Verse, BibleModule, DictionaryEntry, Footnote, FootnoteType, CrossReference, PeopleData, PlacesData, SQLiteRow, SQLiteSchema, CachedDB, ParseSettings, ModuleData } from './types';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { readModuleBinary } from './services/moduleService';
 import { BookNumberConverter } from './services/BookNumberConverter';
@@ -21,14 +21,15 @@ export const getSqlInstance = async () => {
   return sqlInstance;
 };
 
-const detectSchema = (db: SQLiteDatabase): SQLiteSchema | null => {
-  const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+const detectSchema = (db: unknown): SQLiteSchema | null => {
+  const execFunc = (sql: string) => (db as { exec(sql: string): Array<{ columns: string[]; values: unknown[][] }> }).exec(sql);
+  const tables = execFunc("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
   const tableNames = (tables[0]?.values.map((v: unknown[]) => String(v[0]).toLowerCase()) || []) as string[];
 
   const table = tableNames.includes('bible') ? 'bible' : tableNames.includes('verses') ? 'verses' : null;
   if (!table) return null;
 
-  const pragma = db.exec(`PRAGMA table_info("${table}")`);
+  const pragma = execFunc(`PRAGMA table_info("${table}")`);
   const cols = (pragma[0]?.values.map((v: unknown[]) => String(v[1]).toLowerCase()) || []) as string[];
 
   return {
@@ -37,7 +38,7 @@ const detectSchema = (db: SQLiteDatabase): SQLiteSchema | null => {
     chapterCol: cols.find(c => ['chapter', 'c'].includes(c)) || 'chapter',
     verseCol: cols.find(c => ['verse', 'v'].includes(c)) || 'verse',
     textCol: cols.find(c => ['scripture', 'text', 't'].includes(c)) || 'text',
-    isMyBible: (db.exec(`SELECT COUNT(*) FROM ${table} WHERE ${cols.find(c => ['book', 'book_number', 'book_id', 'b'].includes(c)) || 'book'} > 66`)[0]?.values[0][0] as number) > 0
+    isMyBible: (execFunc(`SELECT COUNT(*) FROM ${table} WHERE ${cols.find(c => ['book', 'book_number', 'book_id', 'b'].includes(c)) || 'book'} > 66`)[0]?.values[0][0] as number) > 0
   };
 };
 
@@ -65,7 +66,7 @@ const readModuleBinaryFromAssets = async (modulePath: string): Promise<Uint8Arra
     const { Filesystem, Directory } = await import('@capacitor/filesystem');
     const contents = await Filesystem.readFile({
       path: fileName,
-      directory: Directory.Application
+      directory: Directory.Documents
     });
     const raw = contents.data;
     if (typeof raw === 'string') {
@@ -92,6 +93,12 @@ const readModuleBinaryFromAssets = async (modulePath: string): Promise<Uint8Arra
   }
 };
 
+// Helper to execute SQL on unknown db type
+const execSQL = (db: unknown, sql: string, params?: unknown[]): Array<{ columns: string[]; values: unknown[][] }> => {
+  const database = db as { exec(sql: string, params?: unknown[]): Array<{ columns: string[]; values: unknown[][] }> };
+  return database.exec(sql, params || []);
+};
+
 // Reusable loader to ensure cache hit and low latency
 const getDbInstance = async (version: BibleModule): Promise<CachedDB> => {
   const cacheKey = version.path;
@@ -115,7 +122,7 @@ const getDbInstance = async (version: BibleModule): Promise<CachedDB> => {
     cached = { db, schema };
     dbCache.set(cacheKey, cached);
   }
-  return cached;
+  return cached!;
 };
 
 export const BibleService = {
@@ -137,11 +144,11 @@ export const BibleService = {
 
       const query = `SELECT ${schema.verseCol}, ${schema.textCol} FROM ${schema.table} WHERE ${schema.bookCol} = ? AND ${schema.chapterCol} = ? ORDER BY ${schema.verseCol} ASC`;
 
-      let queryRes = db.exec(query, [stdBookId, chapter]);
+      let queryRes = execSQL(db, query, [stdBookId, chapter]);
       console.log(`[BibleService.getVerses] Resultado padrão (book=${stdBookId}):`, queryRes.length > 0 ? queryRes[0].values.length : 0, 'versículos');
 
       if (!queryRes.length || !queryRes[0].values.length) {
-        queryRes = db.exec(query, [myBibleBookId, chapter]);
+        queryRes = execSQL(db, query, [myBibleBookId, chapter]);
         console.log(`[BibleService.getVerses] Resultado MyBible (book=${myBibleBookId}):`, queryRes.length > 0 ? queryRes[0].values.length : 0, 'versículos');
       }
 
@@ -197,13 +204,13 @@ export const BibleService = {
         }
         const db = new SQL.Database(binaryData);
 
-        const tablesResult = db.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
+        const tablesResult = execSQL(db, `SELECT name FROM sqlite_master WHERE type='table'`);
         const tableNames = (tablesResult[0]?.values ?? []).map((row: unknown[]) => String(row[0]).toLowerCase()) as string[];
         const table = ['dictionary', 'dict', 'entries', 'words'].find(t => tableNames.includes(t)) || tableNames[0];
 
         if (!table) throw new Error("Tabela de dicionário não encontrada");
 
-        const pragma = db.exec(`PRAGMA table_info("${table}")`);
+        const pragma = execSQL(db, `PRAGMA table_info("${table}")`);
         const cols = (pragma[0]?.values.map((v: unknown[]) => String(v[1]).toLowerCase()) || []) as string[];
 
         const schema: SQLiteSchema = {
@@ -219,10 +226,10 @@ export const BibleService = {
         dbCache.set(cacheKey, cached);
       }
 
-      const { db, schema } = cached;
+      const { db, schema } = cached!;
       const cleanWord = word.replace(/^[HG]/i, '');
       const query = `SELECT "${schema.textCol}" FROM "${schema.table}" WHERE "${schema.bookCol}" = ? OR "${schema.bookCol}" = ? LIMIT 1`;
-      const result = db.exec(query, [word, cleanWord]);
+      const result = execSQL(db, query, [word, cleanWord]);
 
       if (result.length > 0 && result[0].values.length > 0) {
         return {
@@ -255,7 +262,8 @@ export const BibleService = {
         model
       );
       const xrefs = JSON.parse(response || '[]') as Array<{ bookId: string; chapter: number; verse: number; text?: string; reason?: string; rank?: number }>;
-      return xrefs.map(ref => ({
+      return xrefs.map((ref, index) => ({
+        id: `xref-${ref.bookId}-${ref.chapter}-${ref.verse}-${index}`,
         ...ref,
         bookName: BIBLE_BOOKS.find(b => b.id === ref.bookId)?.name || ref.bookId,
         rank: ref.rank || 0
@@ -310,10 +318,10 @@ export const BibleService = {
 
           const db = new SQL.Database(binaryData);
 
-          let result = db.exec(`SELECT * FROM people WHERE verses LIKE ? LIMIT 15`, [`%${bookAbbr} ${verseRef}%`]);
+          let result = execSQL(db, `SELECT * FROM people WHERE verses LIKE ? LIMIT 15`, [`%${bookAbbr} ${verseRef}%`]);
 
           if (!result.length || !result[0].values.length) {
-            result = db.exec(`SELECT * FROM people WHERE verses LIKE ? LIMIT 15`, [`%${bookAbbr} ${chapter}:%`]);
+            result = execSQL(db, `SELECT * FROM people WHERE verses LIKE ? LIMIT 15`, [`%${bookAbbr} ${chapter}:%`]);
           }
 
           if (result.length > 0 && result[0].values.length > 0) {
@@ -346,13 +354,13 @@ export const BibleService = {
           }
           const db = new SQL.Database(binaryData);
 
-          const tablesResult = db.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
+          const tablesResult = execSQL(db, `SELECT name FROM sqlite_master WHERE type='table'`);
           const tableNames = (tablesResult[0]?.values ?? []).map((row: unknown[]) => String(row[0]).toLowerCase()) as string[];
           const table = tableNames.find(t => t.includes('people')) || tableNames[0];
 
           if (!table) continue;
 
-          const result = db.exec(`SELECT * FROM ${table} WHERE tree_id = ? ORDER BY name`, [treeId]);
+          const result = execSQL(db, `SELECT * FROM ${table} WHERE tree_id = ? ORDER BY name`, [treeId]);
 
           if (result.length > 0 && result[0].values.length > 0) {
             const columns = result[0].columns;
@@ -398,7 +406,7 @@ export const BibleService = {
 
           const db = new SQL.Database(binaryData);
 
-          const tablesResult = db.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
+          const tablesResult = execSQL(db, `SELECT name FROM sqlite_master WHERE type='table'`);
           const allTables = (tablesResult[0]?.values?.flat() || []) as string[];
           const locationTable = allTables.find((t: string) => t.toLowerCase().includes('place') || t.toLowerCase().includes('location')) || 'location';
           const verseTable = allTables.find((t: string) => t.toLowerCase() === 'verse');
@@ -407,7 +415,7 @@ export const BibleService = {
 
           if (verseTable) {
             try {
-              const verseResult = db.exec(
+              const verseResult = execSQL(db,
                 `SELECT v.location, l.location as place_name, l.lat, l.lon, l.verses, l.comment
                  FROM "${verseTable}" v
                  LEFT JOIN "${locationTable}" l ON v.location = l.location
@@ -431,7 +439,7 @@ export const BibleService = {
           }
 
           if (places.length === 0) {
-            const pragma = db.exec(`PRAGMA table_info("${locationTable}")`);
+            const pragma = execSQL(db, `PRAGMA table_info("${locationTable}")`);
             const cols = (pragma[0]?.values.map((v: unknown[]) => v[1]) || []) as string[];
             const versesCol = cols.find(c => c.toLowerCase() === 'verses') || 'verses';
 
@@ -464,7 +472,7 @@ export const BibleService = {
 
             for (const bookRef of bookRefs) {
               const searchPattern = `%${bookRef} ${chapter}:${verse}%`;
-              const searchResult = db.exec(
+              const searchResult = execSQL(db,
                 `SELECT * FROM "${locationTable}" WHERE "${versesCol}" LIKE ? LIMIT 15`,
                 [searchPattern]
               );
@@ -504,7 +512,7 @@ export const BibleService = {
                         WHERE ${schema.textCol} LIKE ?
                         LIMIT 100`;
 
-      const result = db.exec(sqlQuery, [sqlSearch]);
+      const result = execSQL(db, sqlQuery, [sqlSearch]);
       if (result.length > 0) {
         return result[0].values.map((row: unknown[]) => {
           const bookNum = Number(row[0]);

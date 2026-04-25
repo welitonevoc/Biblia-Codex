@@ -76,7 +76,7 @@ export const Reader: React.FC<ReaderProps> = ({
     const fetchVerses = async () => {
       setLoading(true);
       try {
-        const data = await BibleService.getVerses(book.id, chapter, currentVersion || undefined, settings);
+        const data = await BibleService.getVerses(book.id, chapter, currentVersion || undefined, settings.textDisplay);
         if (!cancelled) setVerses(data);
       } catch (error) {
         if (!cancelled) console.error("Erro ao carregar versículos:", error);
