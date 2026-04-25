@@ -69,6 +69,8 @@ export function RichTextEditor({
   const savedRangeRef = useRef<Range | null>(null);
 
   const isDark = theme === 'dark';
+  const currentFontFamily = fontFamily ?? '"Lora", serif';
+  const currentFontSize = fontSize ?? 16;
 
   // Atualiza stats quando o conteúdo muda
   useEffect(() => {
@@ -91,7 +93,7 @@ export function RichTextEditor({
   const handleInput = useCallback(() => {
     if (isUpdatingFromProp.current) return;
     const editor = editorRef.current;
-    if (editor) {
+    if (editor && onChange) {
       onChange(editor.innerHTML);
     }
   }, [onChange]);
@@ -99,9 +101,10 @@ export function RichTextEditor({
   // Atualiza o editor quando o conteúdo muda externamente
   useEffect(() => {
     const editor = editorRef.current;
-    if (editor && editor.innerHTML !== content) {
+    const html = content ?? '';
+    if (editor && editor.innerHTML !== html) {
       isUpdatingFromProp.current = true;
-      editor.innerHTML = content;
+      editor.innerHTML = html;
       setTimeout(() => { isUpdatingFromProp.current = false; }, 0);
     }
   }, [content]);
@@ -297,7 +300,7 @@ export function RichTextEditor({
   // Font size input
   const handleFontSizeInput = useCallback((val: string) => {
     const size = Math.min(96, Math.max(8, parseInt(val) || 16));
-    onFontSizeChange(size);
+    onFontSizeChange?.(size);
   }, [onFontSizeChange]);
 
   // Handle keydown
@@ -378,10 +381,10 @@ export function RichTextEditor({
         <div className={`mx-1 h-5 w-px ${sepClass}`} />
 
         {/* Font */}
-        <select value={fontFamily} onChange={(e) => onFontFamilyChange(e.target.value)} className={selectClass} title="Fonte">
+        <select value={currentFontFamily} onChange={(e) => onFontFamilyChange?.(e.target.value)} className={selectClass} title="Fonte">
           {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
         </select>
-        <input type="number" value={fontSize} min={8} max={96} onChange={(e) => handleFontSizeInput(e.target.value)} className={`w-14 text-center ${selectClass}`} title="Tamanho (px)" />
+        <input type="number" value={currentFontSize} min={8} max={96} onChange={(e) => handleFontSizeInput(e.target.value)} className={`w-14 text-center ${selectClass}`} title="Tamanho (px)" />
         <div className={`mx-1 h-5 w-px ${sepClass}`} />
 
         {/* Block format */}
@@ -463,7 +466,7 @@ export function RichTextEditor({
         <button onClick={() => execCmd('removeFormat')} className={btnBase} title="Limpar formatação"><RemoveFormatting size={14} /></button>
 
         <div className="ml-auto">
-          <button onClick={() => onThemeChange(isDark ? 'light' : 'dark')} className={btnBase} title={isDark ? 'Modo claro' : 'Modo escuro'}>
+          <button onClick={() => onThemeChange?.(isDark ? 'light' : 'dark')} className={btnBase} title={isDark ? 'Modo claro' : 'Modo escuro'}>
             {isDark ? '☀️' : '🌙'}
           </button>
         </div>
@@ -478,7 +481,7 @@ export function RichTextEditor({
         onPaste={handlePaste}
         onClick={() => setShowHlPalette(false)}
         className={`flex-1 overflow-y-auto p-6 outline-none ${isDark ? 'text-white' : 'text-gray-900'}`}
-        style={{ fontFamily, fontSize: `${fontSize}px`, lineHeight: '1.8', minHeight: '200px', caretColor: isDark ? '#BCA0F5' : '#7C5FC8' }}
+        style={{ fontFamily: currentFontFamily, fontSize: `${currentFontSize}px`, lineHeight: '1.8', minHeight: '200px', caretColor: isDark ? '#BCA0F5' : '#7C5FC8' }}
         data-placeholder="Escreva sua nota aqui..."
         suppressContentEditableWarning
       />

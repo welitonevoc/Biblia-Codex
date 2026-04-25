@@ -155,7 +155,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
             bookId={book.id}
             chapter={verse.chapter}
             verse={verse.verse}
-            places={content}
+            places={content as Place[] | undefined}
             onClose={onClose}
           />
         </motion.div>
@@ -258,20 +258,20 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
                   className="p-5 space-y-4"
                 >
                   {/* Commentary */}
-                  {type === 'commentary' && content && (
+                  {type === 'commentary' && content && typeof content === 'object' && 'content' in content && (
                     <div className="premium-card p-5">
                       <div
                         onClick={handleLinkClick}
                         className="prose prose-bible max-w-none"
                         dangerouslySetInnerHTML={{
-                          __html: DOMPurify.sanitize(MySwordParser.parseHTML(content.content || content.text || '', settings))
+                          __html: DOMPurify.sanitize(MySwordParser.parseHTML((content as { content?: string }).content || (content as { text?: string }).text || '', settings))
                         }}
                       />
                     </div>
                   )}
 
                   {/* Dictionary */}
-                  {type === 'dictionary' && content && (
+                  {type === 'dictionary' && content && typeof content === 'object' && !Array.isArray(content) && (
                     <div className="space-y-3">
                       {Object.entries(content as Record<string, unknown>).slice(0, 20).map(([key, value]) => (
                         <motion.div
@@ -287,7 +287,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
                           <div
                             onClick={handleLinkClick}
                             className="text-sm text-bible-text leading-relaxed"
-                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(value)) }}
                           />
                         </motion.div>
                       ))}
@@ -297,7 +297,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
                   {/* Cross References */}
                   {type === 'xrefs' && Array.isArray(content) && content.length > 0 && (
                     <div className="space-y-3">
-                      {(content as Array<Record<string, unknown>>).map((ref: Record<string, unknown>, i: number) => (
+                      {content.map((ref, i: number) => (
                         <motion.button
                           key={i}
                           initial={{ opacity: 0, x: -10 }}
@@ -306,8 +306,9 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
                           whileHover={{ scale: 1.01, y: -2 }}
                           whileTap={{ scale: 0.99 }}
                           onClick={() => {
-                            if (ref.bookId) {
-                              onNavigate(ref.bookId, ref.chapter, ref.verse);
+                            const r = ref as { bookId?: string; chapter?: number; verse?: number; bookName?: string; text?: string; reason?: string };
+                            if (r.bookId) {
+                              onNavigate(r.bookId, r.chapter ?? 1, r.verse ?? 1);
                               onClose();
                             }
                           }}
@@ -317,19 +318,19 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
                             <div className="flex items-center gap-2">
                               <div className="w-1.5 h-1.5 rounded-full bg-bible-accent" />
                               <span className="text-xs font-semibold text-bible-accent">
-                                {ref.bookName || ref.bookId} {ref.chapter}:{ref.verse}
+                                {(ref as { bookName?: string }).bookName || (ref as { bookId?: string }).bookId} {(ref as { chapter?: number }).chapter}:{(ref as { verse?: number }).verse}
                               </span>
                             </div>
                             <ChevronRight className="w-4 h-4 text-bible-text-muted group-hover:text-bible-accent group-hover:translate-x-1 transition-all" />
                           </div>
-                          {ref.text && (
+                          {(ref as { text?: string }).text && (
                             <p className="text-sm text-bible-text line-clamp-2 leading-relaxed font-serif">
-                              {ref.text}
+                              {(ref as { text?: string }).text}
                             </p>
                           )}
-                          {ref.reason && (
+                          {(ref as { reason?: string }).reason && (
                             <p className="text-xs text-bible-text-muted mt-2">
-                              {ref.reason}
+                              {(ref as { reason?: string }).reason}
                             </p>
                           )}
                         </motion.button>
