@@ -19,6 +19,7 @@ const ASSEMBLEIANO_CLASSICO_PROMPT = `
 
 export class AIStudyService {
   async explainTerm(term: string): Promise<string> {
+    if (!auth) throw new Error("Firebase Auth não disponível");
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error("Usuário não autenticado");
 
@@ -50,6 +51,7 @@ export class AIStudyService {
   }
 
   async explainVerses(reference: string, text: string): Promise<string> {
+    if (!auth) throw new Error("Firebase Auth não disponível");
     const userId = auth.currentUser?.uid;
     if (!userId) throw new Error("Usuário não autenticado");
 
@@ -73,6 +75,7 @@ export class AIStudyService {
   }
 
   private async getCachedExplanation(userId: string, key: string): Promise<string | null> {
+    if (!db) return null;
     try {
       const cacheRef = doc(db, "users", userId, "aiCache", key);
       const snap = await getDoc(cacheRef);
@@ -86,6 +89,7 @@ export class AIStudyService {
   }
 
   private async saveToCache(userId: string, key: string, content: string): Promise<void> {
+    if (!db) return;
     try {
       const cacheRef = doc(db, "users", userId, "aiCache", key);
       await setDoc(cacheRef, {

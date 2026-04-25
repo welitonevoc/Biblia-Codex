@@ -25,6 +25,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useAppContext } from '../AppContext';
 import { listInstalledModules } from '../services/moduleService';
+import type { ModuleInfo } from '../types';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

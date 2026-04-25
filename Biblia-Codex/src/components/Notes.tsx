@@ -401,6 +401,10 @@ export const Notes: React.FC = () => {
         token = await getStoredGoogleAccessToken();
       }
 
+      if (!token) {
+        throw new Error('Token de acesso não disponível');
+      }
+
       await exportNoteToGoogleDocs(draftNote, token);
       console.log('Google Docs export successful');
       setGoogleDocsState('success');

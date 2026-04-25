@@ -6,7 +6,7 @@ import {
   Info, BookOpen, History, Users, MapPin, Calendar, ArrowRight
 } from 'lucide-react';
 import { BibleService } from '../BibleService';
-import { Verse, Book } from '../types';
+import { Verse, Book, CrossReference, PeopleData, PlacesData, Footnote } from '../types';
 import { useAppContext } from '../AppContext';
 import { MySwordParser } from '../services/mySwordParser';
 import ReactMarkdown from 'react-markdown';
@@ -37,7 +37,16 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
   type,
   onNavigate
 }) => {
-  const [content, setContent] = useState<Record<string, unknown> | string | null>(null);
+  type StudyToolContent = 
+    | string
+    | CrossReference[]
+    | PeopleData[]
+    | PlacesData[]
+    | Footnote[]
+    | Record<string, unknown>
+    | null;
+
+  const [content, setContent] = useState<StudyToolContent>(null);
   const [loading, setLoading] = useState(true);
   const { settings } = useAppContext();
 

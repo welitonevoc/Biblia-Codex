@@ -64,13 +64,21 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     async function loadData() {
       setLoading(true);
       const data = await BibleService.getPeopleData(bookId, chapter, verse);
-      const peopleWithChildren = buildFamilyTree(data);
+      const convertedPeople: Person[] = data.map(p => ({
+        id: Number(p.id) || 0,
+        name: p.name,
+        gender: p.gender,
+        birthyear: p.birth ? String(p.birth) : undefined,
+        deathyear: p.died ? String(p.died) : undefined,
+        children: []
+      }));
+      const peopleWithChildren = buildFamilyTree(convertedPeople);
       setPeople(peopleWithChildren);
-      if (data.length > 0) {
+      if (convertedPeople.length > 0) {
         const root = findRootPerson(peopleWithChildren);
-        setCenterNode(root?.id || data[0].id);
+        setCenterNode(root?.id || convertedPeople[0].id);
         const allIds = new Set<number>();
-        collectAllIds(root || data[0], allIds);
+        collectAllIds(root || convertedPeople[0], allIds);
         setExpandedNodes(allIds);
       }
       setLoading(false);
