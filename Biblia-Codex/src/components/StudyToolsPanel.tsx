@@ -155,7 +155,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
             bookId={book.id}
             chapter={verse.chapter}
             verse={verse.verse}
-            places={content as Place[] | undefined}
+            places={content as PlacesData[] | undefined}
             onClose={onClose}
           />
         </motion.div>
