@@ -1,4 +1,5 @@
 import { Verse, BibleModule, DictionaryEntry, Footnote, FootnoteType, CrossReference, PeopleData, PlacesData, SQLiteRow, SQLiteSchema, CachedDB, ParseSettings, ModuleData } from './types';
+import { storage } from './StorageService';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { readModuleBinary } from './services/moduleService';
 import { BookNumberConverter } from './services/BookNumberConverter';
@@ -534,6 +535,20 @@ export const BibleService = {
       console.error('Erro na busca:', error);
     }
     return [];
+  },
+
+  globalSearch: async (query: string, version?: BibleModule) => {
+    const [verses, notes, footnotes] = await Promise.all([
+      BibleService.search(query, version),
+      storage.searchNotes(query),
+      storage.searchFootnotes(query)
+    ]);
+
+    return {
+      verses,
+      notes,
+      footnotes
+    };
   },
 
   getFootnotes: async (bookId: string, chapter: number, verse: number): Promise<Footnote[]> => {

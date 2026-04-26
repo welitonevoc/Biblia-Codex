@@ -5,16 +5,16 @@ import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { useAppContext } from '../AppContext';
 import { storage } from '../StorageService';
 import { MySwordParser } from '../services/mySwordParser';
-import { TagService } from '../services/TagService';
 import { motion, AnimatePresence } from 'motion/react';
 import DOMPurify from 'dompurify';
 import {
   Bookmark, Share2, MessageSquare,
   Sparkles, Library, Layers, X, BookOpen, Volume2, Trash2, Tag
 } from 'lucide-react';
-import { speakChapter, stopSpeaking, isTTSSupported } from '../services/ttsService';
 import { cn } from '../utils/cn';
 import { DictionaryBottomSheet } from './DictionaryBottomSheet';
+import { useReaderSelection } from '../hooks/useReaderSelection';
+import { useReaderTTS } from '../hooks/useReaderTTS';
 
 interface ReaderProps {
   book: Book;
@@ -27,7 +27,6 @@ interface ReaderProps {
   onToolOpen: (verse: Verse, type: 'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places' | 'footnotes') => void;
 }
 
-// Sub-componente para renderizar cada versículo de forma otimizada
 const VerseItem = React.memo(({ 
   v, 
   headingsHtml, 
@@ -41,7 +40,6 @@ const VerseItem = React.memo(({
   currentHighlightedVerse,
   settings,
   allTags,
-  onVerseSelect,
   toggleVerseSelection,
   onToolOpen,
   handleRemoveTag,
@@ -59,7 +57,6 @@ const VerseItem = React.memo(({
   currentHighlightedVerse: number | null;
   settings: any;
   allTags: TagType[];
-  onVerseSelect: (verseNum: number) => void;
   toggleVerseSelection: (verseNum: number) => void;
   onToolOpen: (verse: Verse, type: any) => void;
   handleRemoveTag: (bmId: string, tagId: string) => void;
@@ -120,7 +117,6 @@ const VerseItem = React.memo(({
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(bodyHtml) }}
             />
 
-            {/* Tags Pills Inline */}
             {bookmark && bookmark.tags && bookmark.tags.length > 0 && (
               <span className="ml-2 inline-flex gap-1 align-middle">
                 {bookmark.tags.map(tId => {
@@ -146,58 +142,33 @@ const VerseItem = React.memo(({
             )}
           </span>
 
-          {/* Study Icons - Premium Inline Access */}
           <div className={cn(
             "inline-flex items-center ml-3 space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 bg-bible-accent/7 backdrop-blur-sm rounded-full px-2 py-1 border border-bible-accent/10",
             !settings.textDisplay.paragraphMode && "absolute right-0 top-0 mt-1"
           )}>
             {settings.modules.commentary && (
-              <button
-                onClick={() => onToolOpen(v, 'commentary')}
-                className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool"
-                title="Comentário"
-              >
+              <button onClick={() => onToolOpen(v, 'commentary')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Comentário">
                 <MessageSquare className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
             )}
             {settings.modules.dictionary && (
-              <button
-                onClick={() => onToolOpen(v, 'dictionary')}
-                className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool"
-                title="Dicionário"
-              >
+              <button onClick={() => onToolOpen(v, 'dictionary')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Dicionário">
                 <Library className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
             )}
             {settings.modules.xrefs && settings.visualResources.crossRefs && (
-              <button
-                onClick={() => onToolOpen(v, 'xrefs')}
-                className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool"
-                title="Ref. Cruzadas"
-              >
+              <button onClick={() => onToolOpen(v, 'xrefs')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Ref. Cruzadas">
                 <Layers className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
             )}
-            <button
-              onClick={() => onToolOpen(v, 'people')}
-              className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool"
-              title="Pessoas"
-            >
+            <button onClick={() => onToolOpen(v, 'people')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Pessoas">
               <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">👥</span>
             </button>
-            <button
-              onClick={() => onToolOpen(v, 'places')}
-              className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool"
-              title="Lugares"
-            >
+            <button onClick={() => onToolOpen(v, 'places')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Lugares">
               <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📍</span>
             </button>
             {settings.textDisplay.footnotes && (
-              <button
-                onClick={() => onToolOpen(v, 'footnotes')}
-                className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool"
-                title="Notas de Rodapé"
-              >
+              <button onClick={() => onToolOpen(v, 'footnotes')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Notas de Rodapé">
                 <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📝</span>
               </button>
             )}
@@ -220,20 +191,47 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
 }) => {
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedVerses, setSelectedVerses] = useState<number[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkType[]>([]);
   const [allTags, setAllTags] = useState<TagType[]>([]);
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const [showTagEditor, setShowTagEditor] = useState(false);
-  const [currentTags, setCurrentTags] = useState<string>('');
   const [selectedTerm, setSelectedTerm] = useState<string>('');
   const [selectedContext, setSelectedContext] = useState<string>('');
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
-  const [isSpeakingTTS, setIsSpeakingTTS] = useState(false);
-  const [currentHighlightedVerse, setCurrentHighlightedVerse] = useState<number | null>(null);
   const { config, settings, currentVersion } = useAppContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  const {
+    selectedVerses,
+    setSelectedVerses,
+    showColorPicker,
+    setShowColorPicker,
+    showTagEditor,
+    setShowTagEditor,
+    currentTags,
+    setCurrentTags,
+    bookmarkMap,
+    toggleVerseSelection,
+    handleStudy,
+    handleBookmark,
+    handleDeleteBookmarks,
+    handleRemoveTag,
+    handleSaveTags
+  } = useReaderSelection({
+    book,
+    chapter,
+    verses,
+    bookmarks,
+    setBookmarks,
+    onStudyOpen,
+    setAllTags
+  });
+
+  const {
+    isSpeakingTTS,
+    currentHighlightedVerse,
+    toggleTTS,
+    isTTSSupported
+  } = useReaderTTS({ verses });
 
   useEffect(() => {
     let cancelled = false;
@@ -272,142 +270,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
       setSelectedVerses([targetVerse]);
       if (onTargetVerseReached) onTargetVerseReached();
     }
-  }, [loading, targetVerse, onTargetVerseReached]);
-
-  const bookmarkMap = useMemo(() => {
-    const map: Record<number, BookmarkType> = {};
-    bookmarks.forEach(b => {
-      if (b.bookId === book.id && b.chapter === chapter) {
-        map[b.verse] = b;
-      }
-    });
-    return map;
-  }, [bookmarks, book.id, chapter]);
-
-  const toggleVerseSelection = useCallback((verseNum: number) => {
-    setSelectedVerses(prev =>
-      prev.includes(verseNum)
-        ? prev.filter(v => v !== verseNum)
-        : [...prev, verseNum]
-    );
-  }, []);
-
-  const handleStudy = useCallback(() => {
-    const selected = verses
-      .filter(v => selectedVerses.includes(v.verse))
-      .map(v => ({ verse: v.verse, text: v.text }));
-    onStudyOpen(selected);
-  }, [verses, selectedVerses, onStudyOpen]);
-
-  const handleBookmark = useCallback(async (color: string | null) => {
-    if (selectedVerses.length === 0) return;
-
-    const updatedBookmarks: BookmarkType[] = [];
-    const newBookmarks: BookmarkType[] = [];
-
-    for (const vNum of selectedVerses) {
-      const existing = bookmarkMap[vNum];
-      const verse = verses.find(v => v.verse === vNum);
-
-      if (existing) {
-        const updated = { ...existing, color: color || undefined };
-        await storage.saveBookmark(updated);
-        updatedBookmarks.push(updated);
-      } else if (color) {
-        const newItem: BookmarkType = {
-          id: `${book.id}-${chapter}-${vNum}-${Date.now()}`,
-          bookId: book.id,
-          chapter,
-          verse: vNum,
-          text: verse?.text || '',
-          color,
-          tags: [],
-          createdAt: Date.now()
-        };
-        await storage.saveBookmark(newItem);
-        newBookmarks.push(newItem);
-      }
-    }
-
-    setBookmarks(prev => {
-      const filtered = prev.filter(b => !updatedBookmarks.some(ub => ub.id === b.id));
-      return [...filtered, ...updatedBookmarks, ...newBookmarks];
-    });
-
-    setSelectedVerses([]);
-    setShowColorPicker(false);
-  }, [selectedVerses, bookmarkMap, verses, book.id, chapter]);
-
-  const handleDeleteBookmarks = useCallback(async () => {
-    if (selectedVerses.length === 0) return;
-    for (const vNum of selectedVerses) {
-      const existing = bookmarkMap[vNum];
-      if (existing) {
-        await storage.deleteBookmark(existing.id);
-      }
-    }
-    setBookmarks(prev => prev.filter(b => {
-      if (b.bookId !== book.id || b.chapter !== chapter) return true;
-      return !selectedVerses.includes(b.verse);
-    }));
-    setSelectedVerses([]);
-  }, [selectedVerses, bookmarkMap, book.id, chapter]);
-
-  const handleRemoveTag = useCallback(async (bookmarkId: string, tagId: string) => {
-    const bm = bookmarks.find(b => b.id === bookmarkId);
-    if (!bm) return;
-    const updated = { ...bm, tags: bm.tags.filter(t => t !== tagId) };
-    await storage.saveBookmark(updated);
-    setBookmarks(prev => prev.map(b => b.id === bookmarkId ? updated : b));
-  }, [bookmarks]);
-
-  const handleSaveTags = useCallback(async () => {
-    if (selectedVerses.length === 0) return;
-    const tagNames = currentTags.split(',').map(t => t.trim()).filter(Boolean);
-    const tagIds: string[] = [];
-
-    for (const name of tagNames) {
-      const tag = await TagService.createTag(name);
-      tagIds.push(tag.id);
-    }
-
-    const updatedBookmarks: BookmarkType[] = [];
-    const newBookmarks: BookmarkType[] = [];
-
-    for (const vNum of selectedVerses) {
-      const verse = verses.find(v => v.verse === vNum);
-      const existing = bookmarkMap[vNum];
-
-      if (existing) {
-        const updated = { ...existing, tags: Array.from(new Set([...existing.tags, ...tagIds])) };
-        await storage.saveBookmark(updated);
-        updatedBookmarks.push(updated);
-      } else {
-        const newItem: BookmarkType = {
-          id: `${book.id}-${chapter}-${vNum}-${Date.now()}`,
-          bookId: book.id,
-          chapter,
-          verse: vNum,
-          text: verse?.text || '',
-          tags: tagIds,
-          createdAt: Date.now()
-        };
-        await storage.saveBookmark(newItem);
-        newBookmarks.push(newItem);
-      }
-    }
-
-    setBookmarks(prev => {
-      const filtered = prev.filter(b => !updatedBookmarks.some(ub => ub.id === b.id));
-      return [...filtered, ...updatedBookmarks, ...newBookmarks];
-    });
-
-    const freshTags = await storage.getTags();
-    setAllTags(freshTags);
-    setCurrentTags('');
-    setShowTagEditor(false);
-    setSelectedVerses([]);
-  }, [selectedVerses, currentTags, verses, bookmarkMap, book.id, chapter]);
+  }, [loading, targetVerse, onTargetVerseReached, setSelectedVerses]);
 
   const splitVerseHtml = useCallback((text: string, verseNumber: number, isChapterHeader?: boolean) => {
     const normalizedText = text.replace(/\r\n?/g, '\n').trim();
@@ -524,7 +387,6 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
                   currentHighlightedVerse={currentHighlightedVerse}
                   settings={settings}
                   allTags={allTags}
-                  onVerseSelect={(n) => onVerseSelect?.(verses[n-1])}
                   toggleVerseSelection={toggleVerseSelection}
                   onToolOpen={onToolOpen}
                   handleRemoveTag={handleRemoveTag}
@@ -549,7 +411,10 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
                 <div className="grid grid-cols-5 gap-3">
                   <button onClick={() => setShowColorPicker(!showColorPicker)} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-bible-accent/10"><Bookmark className="h-5 w-5 text-bible-accent" /></div><span className="text-[8px] font-bold uppercase">Marcador</span></button>
                   <button onClick={() => setShowTagEditor(!showTagEditor)} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-500/10"><Tag className="h-5 w-5 text-blue-500" /></div><span className="text-[8px] font-bold uppercase">Etiquetas</span></button>
-                  <button onClick={() => handleStudy()} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-purple-500/10"><Sparkles className="h-5 w-5 text-purple-500" /></div><span className="text-[8px] font-bold uppercase">Estudar</span></button>
+                  <button onClick={handleStudy} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-purple-500/10"><Sparkles className="h-5 w-5 text-purple-500" /></div><span className="text-[8px] font-bold uppercase">Estudar</span></button>
+                  {isTTSSupported && (
+                    <button onClick={() => toggleTTS(selectedVerses)} className="flex flex-col items-center gap-1.5"><div className={cn("h-10 w-10 flex items-center justify-center rounded-xl transition-colors", isSpeakingTTS ? "bg-orange-500/20" : "bg-orange-500/10")}><Volume2 className={cn("h-5 w-5 text-orange-500", isSpeakingTTS && "animate-pulse")} /></div><span className="text-[8px] font-bold uppercase">{isSpeakingTTS ? 'Parar' : 'Ouvir'}</span></button>
+                  )}
                   <button onClick={handleDeleteBookmarks} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-red-500/10"><Trash2 className="h-5 w-5 text-red-500" /></div><span className="text-[8px] font-bold uppercase">Remover</span></button>
                 </div>
                 {showColorPicker && (

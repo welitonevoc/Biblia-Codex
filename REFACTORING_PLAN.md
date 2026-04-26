@@ -113,7 +113,7 @@ O projeto agora está totalmente tipado e seguro. Todos os erros foram resolvido
   - Refatorado para estilo "Control Panel" com elevações dinâmicas.
 
 ### 🎯 PRÓXIMOS PASSOS (FASE 3: INOVAÇÃO)
-- [ ] **Busca Instantânea**: Implementar indexação offline para pesquisa global ultra-rápida.
+- [x] **Busca Global**: Implementada busca unificada em Escrituras, Notas e Rodapés.
 - [ ] **Sincronização Cloud**: Backup de marcadores e notas (Firebase/Supabase).
 - [ ] **Social Sharing**: Gerador de cartões de versículos premium para redes sociais.
 - [ ] **Modo Estudo Profundo**: Integração avançada de ferramentas grego/hebraico (Strong's).

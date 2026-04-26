@@ -268,6 +268,16 @@ class StorageService {
       f.strongsNumber?.toLowerCase().includes(lowerQuery)
     );
   }
+
+  async searchNotes(query: string): Promise<Note[]> {
+    const db = await this.dbPromise;
+    const all = await db.getAll('notes');
+    const lowerQuery = query.toLowerCase();
+    return all.filter(n => 
+      n.content.toLowerCase().includes(lowerQuery) || 
+      (n.title && n.title.toLowerCase().includes(lowerQuery))
+    );
+  }
 }
 
 export const storage = new StorageService();

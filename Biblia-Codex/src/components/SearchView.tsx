@@ -1,28 +1,33 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search as SearchIcon, X, BookOpen, ChevronRight, Clock, TrendingUp, Sparkles, Loader2, Play, Pause, AlertCircle } from 'lucide-react';
+import { 
+  Search as SearchIcon, X, BookOpen, ChevronRight, Clock, 
+  TrendingUp, Sparkles, Loader2, Play, Pause, AlertCircle,
+  FileText, MessageSquare, Tag, Bookmark
+} from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { BibleService } from '../BibleService';
-import { Verse } from '../types';
+import { Verse, Note, Footnote } from '../types';
 import { BIBLE_BOOKS } from '../data/bibleMetadata';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import { getAudioTracksForChapter } from '../data/audioData';
+import { cn } from '../utils/cn';
 import { getAIResponse, getApiKey, getConfiguredProvider, testAIConfiguration, suggestOpenRouterForQuota, autoSwitchToOpenRouter, diagnoseAIConfiguration } from '../services/geminiService';
-import { debugAIConfig } from '../debugAI';
-
-function cn(...inputs: (string | boolean | undefined)[]) {
-  return twMerge(clsx(inputs));
-}
 
 interface SearchViewProps {
   onNavigate: (bookId: string, chapter: number, verse: number) => void;
 }
 
+type SearchCategory = 'verses' | 'notes' | 'footnotes';
+
 export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
-  const { currentVersion, settings, updateSettings } = useAppContext();
+  const { currentVersion, settings, updateSettings, setActiveTab } = useAppContext();
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Verse[]>([]);
+  const [results, setResults] = useState<{
+    verses: Verse[],
+    notes: Note[],
+    footnotes: Footnote[]
+  }>({ verses: [], notes: [], footnotes: [] });
+  
+  const [activeCategory, setActiveCategory] = useState<SearchCategory>('verses');
   const [isSearching, setIsSearching] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [aiEnabled, setAiEnabled] = useState(() => settings.ai.searchWithAI ?? false);
@@ -31,7 +36,12 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
   const [aiResults, setAiResults] = useState<Map<string, string>>(new Map());
   const [aiError, setAiError] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [configTest, setConfigTest] = useState<{ success: boolean; message: string; quotaWarning?: boolean; suggestion?: string; provider?: string; model?: string } | null>(null);
+  const [configTest, setConfigTest] = useState<any>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('kerygma-recent-searches');
+    if (saved) setRecentSearches(JSON.parse(saved));
+  }, []);
 
   const toggleAI = useCallback(() => {
     const newValue = !aiEnabled;
@@ -39,85 +49,41 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
     updateSettings({ ai: { ...settings.ai, searchWithAI: newValue } });
   }, [aiEnabled, settings.ai, updateSettings]);
 
-  const handlePlayAudio = useCallback((verse: Verse) => {
-    const trackId = `${verse.bookId}-${verse.chapter}-${verse.verse}`;
-    if (playingVerse === trackId) {
-      setPlayingVerse(null);
-      setAudioPlaying(false);
-      return;
-    }
-    setPlayingVerse(trackId);
-    setAudioPlaying(true);
-    setTimeout(() => {
-      setPlayingVerse(null);
-      setAudioPlaying(false);
-    }, 3000);
-  }, [playingVerse]);
+  const handleStudyVerse = useCallback((verse: Verse) => {
+    onNavigate(verse.bookId, verse.chapter, verse.verse);
+  }, [onNavigate]);
 
   const handleAISearch = useCallback(async (term: string, searchResults: Verse[]) => {
-    if (!aiEnabled || searchResults.length === 0) {
-      if (!aiEnabled) {
-        setAiError('Busca com IA desativada. Ative o interruptor para usar.');
-      }
-      return;
-    }
-
-    // Verificar se há chave de API configurada
+    if (!aiEnabled || searchResults.length === 0) return;
+    
     const apiKey = getApiKey();
     if (!apiKey) {
-      const provider = getConfiguredProvider();
-      setAiError(`Chave de API não configurada. Vá em Configurações → IA e adicione sua chave para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`);
+      setAiError(`Chave de API não configurada.`);
       setAiEnabled(false);
-      updateSettings({ ai: { ...settings.ai, searchWithAI: false } });
       return;
     }
 
     setAiError(null);
     setIsAiLoading(true);
     const newResults = new Map(aiResults);
-    let hadError = false;
 
     try {
-      // Processar até 3 resultados com IA
       for (const verse of searchResults.slice(0, 3)) {
         const key = `${verse.bookId}-${verse.chapter}:${verse.verse}`;
         try {
           const book = BIBLE_BOOKS.find(b => b.id === verse.bookId);
-          const bookName = book ? book.name : verse.bookId;
-
-          // Usar skills do agente-IA se disponível, caso contrário usar geminiService
-          const prompt = `Pesquise sobre "${term}" no contexto de ${bookName} ${verse.chapter}:${verse.verse}. Texto: ${verse.text}`;
-          const explanation = await getAIResponse(
-            prompt,
-            'Você é um assistente de estudo bíblico. Forneça insights profundos sobre o texto, contextualização e aplicação prática. Se houver palavras-chave como "safe" ou "warning" mencione aspectos de segurança espiritual.'
-          );
+          const prompt = `Analise "${term}" em ${book?.name || verse.bookId} ${verse.chapter}:${verse.verse}. Texto: ${verse.text}`;
+          const explanation = await getAIResponse(prompt, 'Você é um teólogo bíblico.');
           newResults.set(key, explanation);
-        } catch (err: any) {
-          hadError = true;
-          console.error('Erro na busca IA:', err);
-
-          let errorMsg = `Erro ao processar versículo ${verse.bookId} ${verse.chapter}:${verse.verse}`;
-
-          // Tratamento específico de quota
-          if (err.message?.includes('Quota exceeded')) {
-            errorMsg = `Quota excedida para ${getConfiguredProvider() === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}`;
-          } else if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
-            errorMsg = 'Chave de API inválida';
-          } else if (err.message?.includes('403') || err.message?.includes('Forbidden')) {
-            errorMsg = 'Acesso negado à API';
-          }
-
-          newResults.set(key, `❌ ${errorMsg}`);
+        } catch (err) {
+          console.error(err);
         }
       }
       setAiResults(newResults);
-      if (hadError) {
-        setAiError('Algumas interpretações não puderam ser geradas. Verifique sua chave de API e conexão.');
-      }
     } finally {
       setIsAiLoading(false);
     }
-  }, [aiEnabled, aiResults, settings.ai, updateSettings]);
+  }, [aiEnabled, aiResults]);
 
   const handleSearch = useCallback(async (searchQuery: string) => {
     const term = searchQuery.trim();
@@ -127,500 +93,230 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
     setAiResults(new Map());
     setAiError(null);
     try {
-      const found = await BibleService.search(term, currentVersion || undefined);
-      setResults(found);
+      const data = await BibleService.globalSearch(term, currentVersion || undefined);
+      setResults(data);
 
       const nextRecent = [term, ...recentSearches.filter(s => s !== term)].slice(0, 5);
       setRecentSearches(nextRecent);
       localStorage.setItem('kerygma-recent-searches', JSON.stringify(nextRecent));
 
-      if (aiEnabled && found.length > 0) {
-        await handleAISearch(term, found);
+      if (aiEnabled && data.verses.length > 0) {
+        await handleAISearch(term, data.verses);
+      }
+      
+      // Auto-switch to category with results if current is empty
+      if (data.verses.length === 0) {
+        if (data.notes.length > 0) setActiveCategory('notes');
+        else if (data.footnotes.length > 0) setActiveCategory('footnotes');
       }
     } catch (error) {
       console.error('Search error:', error);
-      setAiError('Erro na busca. Tente novamente.');
+      setAiError('Erro na busca.');
     } finally {
       setIsSearching(false);
     }
-  }, [currentVersion, aiEnabled, handleAISearch]);
+  }, [currentVersion, aiEnabled, handleAISearch, recentSearches]);
 
   const handleRecentSearch = (term: string) => {
     setQuery(term);
     handleSearch(term);
   };
 
+  const currentResultsCount = useMemo(() => {
+    return results[activeCategory].length;
+  }, [results, activeCategory]);
+
   return (
-    <div className="h-full flex flex-col overflow-y-auto scrollbar-thin">
-      <div className="max-w-3xl mx-auto w-full px-4 py-6 pb-28 space-y-6">
-        
-        {/* Header Premium */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
+    <div className="h-full flex flex-col overflow-hidden bg-bible-bg">
+      <div className="max-w-4xl mx-auto w-full px-4 pt-6 pb-2 space-y-4">
+        {/* Search Bar Premium */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={cn(
-            "relative overflow-hidden rounded-2xl p-5",
-            "bg-[var(--surface-1)] border border-[var(--border-bible)]",
-            "transition-all duration-300 hover:shadow-md"
-          )}
+          className="premium-card p-4 sm:p-6"
         >
-          <div className="absolute top-0 right-0 w-32 h-32 opacity-10"
-            style={{
-              background: 'radial-gradient(circle, var(--accent-bible) 0%, transparent 70%)'
-            }}
-          />
-          <div className="relative flex items-start gap-3">
-            <div className={cn(
-              "p-3 rounded-xl",
-              "bg-[var(--accent-bible)]/10 text-[var(--accent-bible)]"
-            )}>
-              <SearchIcon className="w-6 h-6" />
+          <div className="relative flex items-center gap-4 mb-4">
+            <div className="p-2 rounded-xl bg-bible-accent/10">
+              <SearchIcon className="w-5 h-5 text-bible-accent" />
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-3.5 h-3.5 text-[var(--accent-bible)]" />
-                <span className={cn(
-                  "inline-flex items-center px-2.5 py-1 rounded-full",
-                  "text-[10px] font-bold uppercase tracking-wider",
-                  "bg-[var(--accent-bible)]/10 text-[var(--accent-bible)]"
-                )}>
-                  Pesquisa Bíblica
-                </span>
-              </div>
-              <h1 className={cn(
-                "text-3xl font-bold text-[var(--text-bible)]",
-                "tracking-tight"
-              )} style={{ fontFamily: 'var(--font-display)' }}>
-                Buscar
-              </h1>
-              <p className="mt-1 text-[var(--text-bible-muted)] text-sm">
-                Encontre versículos, palavras e temas na Palavra
-              </p>
+            <div>
+              <h1 className="text-xl font-bold text-bible-text">Busca Global</h1>
+              <p className="text-xs text-bible-text-muted">Encontre versículos, suas notas e rodapés</p>
             </div>
           </div>
-          
-          <div className="mt-4 relative">
+
+          <div className="relative group">
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch(query);
-                }
-              }}
-              placeholder="Digite um versículo, palavra ou tema..."
-              className={cn(
-                "w-full pl-12 pr-20 py-4 rounded-2xl",
-                "bg-[var(--surface-1)] border border-[var(--border-bible)]",
-                "text-[var(--text-bible)] text-base font-medium",
-                "placeholder:text-[var(--text-bible-subtle)]",
-                "focus:outline-none focus:ring-2 focus:ring-[var(--accent-bible)] focus:ring-offset-2",
-                "transition-all duration-200"
-              )}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
+              placeholder="Pesquisar..."
+              className="w-full pl-12 pr-12 py-4 rounded-2xl bg-bible-surface border border-bible-border text-bible-text focus:ring-2 focus:ring-bible-accent outline-none transition-all"
             />
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--accent-bible)]/40" />
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-bible-text-muted/50 group-focus-within:text-bible-accent transition-colors" />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={toggleAI}
                 className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-lg transition-all",
-                  aiEnabled 
-                    ? "bg-[var(--accent-bible)] text-white" 
-                    : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]"
+                  "p-2 rounded-lg transition-all",
+                  aiEnabled ? "bg-bible-accent text-white" : "bg-bible-surface-strong text-bible-text-muted"
                 )}
-                aria-label={aiEnabled ? "Desativar IA" : "Ativar busca com IA"}
               >
                 <Sparkles className="w-4 h-4" />
               </motion.button>
               {query && (
-                <motion.button
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  onClick={() => { setQuery(''); setResults([]); setAiResults(new Map()); }}
-                  className={cn(
-                    "flex items-center justify-center w-8 h-8 rounded-lg",
-                    "bg-[var(--surface-2)] text-[var(--text-bible-muted)]",
-                    "hover:bg-[var(--surface-3)] hover:text-[var(--text-bible)]",
-                    "transition-all duration-200"
-                  )}
-                >
-                  <X className="h-4 w-4" />
-                </motion.button>
+                <button onClick={() => { setQuery(''); setResults({ verses: [], notes: [], footnotes: [] }); }} className="p-2 text-bible-text-muted hover:text-bible-text">
+                  <X className="w-4 h-4" />
+                </button>
               )}
             </div>
           </div>
-          
-          {aiEnabled && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-3 space-y-2"
-            >
-              <div className="flex items-center gap-2 text-xs text-[var(--accent-bible)]">
-                <Sparkles className="w-3 h-3" />
-                <span>Modo IA ativo: resultados terão explicações contextuais</span>
-              </div>
 
-              {/* Aviso sobre plano gratuito */}
-              {getConfiguredProvider() === 'google' && (
-                <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded">
-                  <AlertCircle className="w-3 h-3" />
-                  <span>Usando plano gratuito do Gemini (limite baixo). Considere OpenRouter para mais quota.</span>
+          {/* Categories Tabs */}
+          <div className="flex gap-2 mt-6 overflow-x-auto pb-1 no-scrollbar">
+            {[
+              { id: 'verses', label: 'Escrituras', icon: BookOpen, count: results.verses.length },
+              { id: 'notes', label: 'Minhas Notas', icon: FileText, count: results.notes.length },
+              { id: 'footnotes', label: 'Rodapés', icon: MessageSquare, count: results.footnotes.length }
+            ].map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id as SearchCategory)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all",
+                  activeCategory === cat.id 
+                    ? "bg-bible-accent text-white shadow-lg" 
+                    : "bg-bible-surface text-bible-text-muted hover:bg-bible-surface-strong"
+                )}
+              >
+                <cat.icon className="w-3.5 h-3.5" />
+                {cat.label}
+                {cat.count > 0 && <span className={cn("ml-1 px-1.5 py-0.5 rounded-full text-[10px]", activeCategory === cat.id ? "bg-white/20" : "bg-bible-accent/10 text-bible-accent")}>{cat.count}</span>}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Results Area */}
+      <div className="flex-1 overflow-y-auto px-4 pb-32 scroll-smooth">
+        <div className="max-w-4xl mx-auto w-full">
+          {isSearching ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="w-10 h-10 text-bible-accent animate-spin mb-4" />
+              <p className="text-sm text-bible-text-muted">Vasculhando toda a biblioteca...</p>
+            </div>
+          ) : results.verses.length === 0 && results.notes.length === 0 && results.footnotes.length === 0 ? (
+            <div className="py-12">
+              {query.length < 2 && recentSearches.length > 0 && (
+                <div className="premium-card p-6">
+                  <h3 className="text-sm font-bold text-bible-text mb-4 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-bible-accent" /> Buscas Recentes
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {recentSearches.map((term, i) => (
+                      <button 
+                        key={i} 
+                        onClick={() => handleRecentSearch(term)}
+                        className="px-4 py-2 rounded-xl bg-bible-surface hover:bg-bible-surface-strong text-sm text-bible-text-muted transition-colors"
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
-
-              {/* Configuração de teste */}
-              <div className="flex items-center gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={async () => {
-                    const result = await testAIConfiguration();
-                    setConfigTest(result);
-                    console.log('Resultado do teste IA:', result);
-                    setTimeout(() => setConfigTest(null), 8000);
-                  }}
-                  className="text-xs px-3 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] transition-colors"
-                >
-                  Testar Configuração IA
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    const diag = diagnoseAIConfiguration();
-                    console.log('Diagnóstico IA:', diag);
-                    alert(`Diagnóstico IA:\n\nProvider configurado: ${diag.configuredProvider}\nProvider detectado: ${diag.detectedProvider}\nModelo: ${diag.configuredModel}\n\nChave OpenRouter: ${diag.hasOpenRouterKey ? 'Sim' : 'Não'}\nChave Gemini: ${diag.hasGeminiKey ? 'Sim' : 'Não'}\n\nVerifique o console para mais detalhes.`);
-                  }}
-                  className="text-xs px-3 py-1 rounded-full bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] transition-colors"
-                  title="Diagnóstico detalhado da configuração IA"
-                >
-                  🔍 Diagnosticar IA
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    if (confirm('Isso irá resetar todas as configurações de IA e voltar para o padrão (Google). Você terá que reconfigurar as chaves. Continuar?')) {
-                      localStorage.removeItem('ai-api-provider');
-                      localStorage.removeItem('opencode-api-key');
-                      localStorage.removeItem('openrouter-api-key');
-                      localStorage.removeItem('gemini-api-key');
-                      alert('Configurações resetadas. A página será recarregada.');
-                      window.location.reload();
-                    }
-                  }}
-                  className="text-xs px-3 py-1 rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
-                  title="Reset de emergência da configuração IA"
-                >
-                  🔄 Reset IA
-                </motion.button>
-
-                {configTest && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className={`text-xs px-3 py-2 rounded-lg max-w-xs ${
-                      configTest.success
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        : configTest.quotaWarning
-                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                    }`}
-                  >
-                    <div className="font-medium mb-1">
-                      {configTest.success ? '✅' : configTest.quotaWarning ? '⚠️' : '❌'} Configuração IA
-                    </div>
-                    <div className="text-xs leading-tight">
-                      {configTest.message}
-                    </div>
-                    {configTest.suggestion && (
-                      <div className="text-xs mt-2 text-blue-600 dark:text-blue-400">
-                        💡 {configTest.suggestion}
-                      </div>
-                    )}
-                    {configTest.quotaWarning && suggestOpenRouterForQuota() && (
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => {
-                          console.log('Tentando fazer switch para OpenRouter...');
-                          const switched = autoSwitchToOpenRouter();
-                          console.log('Switch result:', switched);
-                          if (switched) {
-                            // Forçar refresh da configuração
-                            const newDiag = diagnoseAIConfiguration();
-                            console.log('Nova configuração após switch:', newDiag);
-                            setConfigTest({
-                              success: true,
-                              message: 'Switched to OpenRouter for better quota! Teste novamente.',
-                              provider: 'openrouter',
-                              model: 'openrouter/free'
-                            });
-                            // Refresh the AI state
-                            setAiEnabled(true);
-                            updateSettings({ ai: { ...settings.ai, searchWithAI: true } });
-                          } else {
-                            setConfigTest({
-                              success: false,
-                              message: 'Falha ao fazer switch - verifique se a chave OpenRouter está configurada.',
-                              provider: configTest.provider,
-                              model: configTest.model
-                            });
-                          }
-                        }}
-                        className="text-xs mt-2 px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
-                      >
-                        🔄 Switch to OpenRouter
-                      </motion.button>
-                    )}
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-          )}
-          
-          {/* Error message */}
-          {aiError && results.length <= 3 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-4 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800"
-            >
-              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-                <AlertCircle className="w-4 h-4" aria-hidden="true" />
-                <span className="text-sm font-medium">Nota sobre a busca com IA</span>
-              </div>
-              <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">
-                {aiError}
-              </p>
-            </motion.div>
-          )}
-        </motion.div>
-
-        {/* Results */}
-        {isSearching && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-12"
-          >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="w-10 h-10 border-4 border-[var(--accent-bible)] border-t-transparent rounded-full"
-            />
-            <p className="mt-4 text-[var(--text-bible-muted)] text-sm">Buscando...</p>
-            {aiEnabled && (
-              <p className="mt-2 text-[var(--text-bible-muted)] text-xs">Preparando interpretações com IA...</p>
-            )}
-          </motion.div>
-        )}
-
-        {!isSearching && results.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-4"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-[var(--text-bible)]">
-                {results.length} resultado{results.length !== 1 ? 's' : ''} para "{query}"
-              </h2>
-              {aiEnabled && (
-                <span className="text-xs text-[var(--accent-bible)] flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" />
-                  IA ativa
-                </span>
+              {query.length >= 2 && (
+                <div className="text-center py-20">
+                  <div className="inline-block p-6 rounded-full bg-bible-surface mb-4">
+                    <SearchIcon className="w-12 h-12 text-bible-text-muted/20" />
+                  </div>
+                  <h3 className="text-lg font-bold text-bible-text">Nenhum resultado</h3>
+                  <p className="text-sm text-bible-text-muted">Tente usar termos mais curtos ou genéricos.</p>
+                </div>
               )}
             </div>
-            
-            <div className="space-y-3">
-              {results.slice(0, 20).map((verse, index) => {
-                const book = BIBLE_BOOKS.find(b => b.id === verse.bookId);
-                const hasAiResult = aiResults.has(`${verse.bookId}-${verse.chapter}:${verse.verse}`);
-                const aiLoading = isAiLoading && !hasAiResult && aiEnabled;
-                
+          ) : (
+            <motion.div 
+              key={activeCategory}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-4 pt-4"
+            >
+              {activeCategory === 'verses' && results.verses.map((v, i) => {
+                const book = BIBLE_BOOKS.find(b => b.id === v.bookId);
+                const aiKey = `${v.bookId}-${v.chapter}:${v.verse}`;
                 return (
-                  <motion.div
-                    key={`${verse.bookId}-${verse.chapter}-${verse.verse}`}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
+                  <div 
+                    key={i} 
+                    onClick={() => handleStudyVerse(v)}
+                    className="premium-card p-4 hover:border-bible-accent/30 cursor-pointer group"
                   >
-                    <div
-                      onClick={() => onNavigate(verse.bookId, verse.chapter, verse.verse)}
-                      className={cn(
-                        "relative rounded-xl p-4 cursor-pointer transition-all",
-                        "bg-[var(--surface-1)] border border-[var(--border-bible)]",
-                        "hover:border-[var(--accent-bible)]/30 hover:shadow-md",
-                      )}
-                      tabIndex={0}
-                      role="button"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          onNavigate(verse.bookId, verse.chapter, verse.verse);
-                        }
-                      }}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <BookOpen className="w-4 h-4 text-[var(--accent-bible)]" />
-                          <span className="text-xs font-bold text-[var(--accent-bible)] uppercase tracking-wide">
-                            {book?.abbreviation} {verse.chapter}:{verse.verse}
-                          </span>
-                        </div>
-                        <div
-                          onClick={(e) => { e.stopPropagation(); handlePlayAudio(verse); }}
-                          className={cn(
-                            "flex items-center justify-center w-8 h-8 rounded-full transition-all",
-                            playingVerse === `${verse.bookId}-${verse.chapter}-${verse.verse}`
-                              ? "bg-[var(--accent-bible)] text-white scale-105"
-                              : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:text-[var(--accent-bible)] hover:scale-105"
-                          )}
-                          role="button"
-                          tabIndex={0}
-                          aria-label="Ouvir versículo"
-                        >
-                          {playingVerse === `${verse.bookId}-${verse.chapter}-${verse.verse}` && audioPlaying ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Play className="w-4 h-4" />
-                          )}
-                        </div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-bible-accent" />
+                        <span className="text-xs font-black text-bible-accent tracking-tighter uppercase">{book?.abbreviation} {v.chapter}:{v.verse}</span>
                       </div>
-                      
-                      <p className="text-sm text-[var(--text-bible)] leading-relaxed mb-3">
-                        {verse.text}
-                      </p>
-                      
-                      {/* AI Result */}
-                      {aiEnabled && (
-                        <AnimatePresence>
-                          {aiLoading && !hasAiResult && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              className="flex items-center gap-2 text-xs text-[var(--accent-bible)]/60 py-2"
-                            >
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                              <span>Processando com IA...</span>
-                            </motion.div>
-                          )}
-                          
-                          {hasAiResult && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className={cn(
-                                "mt-3 p-3 rounded-lg border-l-2",
-                                "bg-[var(--accent-bible)]/5 border-[var(--accent-bible)]/20"
-                              )}
-                            >
-                               <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-bible)] mb-2">
-                                <Sparkles className="w-3.5 h-3.5" />
-                                <span>Interpretação IA</span>
-                              </div>
-                              <p className="text-xs text-[var(--text-bible)] leading-relaxed prose prose-sm dark:prose-invert max-w-none"
-                                 dangerouslySetInnerHTML={{ 
-                                   __html: aiResults.get(`${verse.bookId}-${verse.chapter}:${verse.verse}`)?.replace(/\n/g, '<br/>') || '' 
-                                 }}
-                              />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      )}
+                      <ChevronRight className="w-4 h-4 text-bible-text-muted group-hover:translate-x-1 transition-transform" />
                     </div>
-                  </motion.div>
+                    <p className="text-sm text-bible-text leading-relaxed">{v.text}</p>
+                    
+                    {aiResults.has(aiKey) && (
+                      <div className="mt-3 p-3 rounded-xl bg-bible-accent/5 border border-bible-accent/10">
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-bible-accent uppercase mb-1">
+                          <Sparkles className="w-3 h-3" /> Insight da IA
+                        </div>
+                        <p className="text-xs text-bible-text leading-snug">{aiResults.get(aiKey)}</p>
+                      </div>
+                    )}
+                  </div>
                 );
               })}
-            </div>
 
-            {/* Show AI error if exists */}
-            {aiError && results.length <= 3 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mt-4 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800"
-              >
-                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-                  <AlertCircle className="w-4 h-4" />
-                  <span className="text-sm font-medium">Nota sobre a busca com IA</span>
+              {activeCategory === 'notes' && results.notes.map((n, i) => (
+                <div key={i} className="premium-card p-4 hover:border-blue-500/30 cursor-pointer group">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-blue-500" />
+                      <span className="text-xs font-bold text-blue-500 uppercase">{n.title || 'Nota sem título'}</span>
+                    </div>
+                    <span className="text-[10px] text-bible-text-muted">{n.bookId} {n.chapter}:{n.verse}</span>
+                  </div>
+                  <div 
+                    className="text-sm text-bible-text line-clamp-3 prose dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: n.content }}
+                  />
+                  <div className="mt-2 flex items-center gap-2">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setActiveTab('notes'); }}
+                      className="text-[10px] font-bold text-bible-accent uppercase hover:underline"
+                    >
+                      Ver em Notas
+                    </button>
+                  </div>
                 </div>
-                <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">
-                  A funcionalidade de IA requer uma chave de API configurada em Configurações → IA.
-                  Se você comprou o app ou tem uma assinatura, acesse as configurações para ativar.
-                </p>
-              </motion.div>
-            )}
-          </motion.div>
-        )}
-
-        {/* Empty State */}
-        {!isSearching && results.length === 0 && query.length >= 2 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-16 text-center"
-          >
-            <div className="p-4 rounded-full bg-[var(--surface-2)] mb-4">
-              <SearchIcon className="w-8 h-8 text-[var(--text-bible-muted)]" />
-            </div>
-            <h3 className="text-lg font-semibold text-[var(--text-bible)] mb-2">
-              Nenhum resultado encontrado
-            </h3>
-            <p className="text-sm text-[var(--text-bible-muted)] max-w-xs">
-              Tente buscar com palavras diferentes, verifique a ortografia ou use termos mais genéricos.
-            </p>
-          </motion.div>
-        )}
-
-        {/* Recent Searches (shown when no query) */}
-        {!isSearching && results.length === 0 && query.length < 2 && recentSearches.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className={cn(
-              "rounded-2xl p-5",
-              "bg-[var(--surface-1)] border border-[var(--border-bible)]"
-            )}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="w-4 h-4 text-[var(--accent-bible)]" />
-              <h3 className="text-sm font-bold text-[var(--text-bible)]">Buscas recentes</h3>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {recentSearches.map((term, i) => (
-                <motion.button
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 + i * 0.05 }}
-                  whileHover={{ scale: 1.05, y: -1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleRecentSearch(term)}
-                  className={cn(
-                    "inline-flex items-center gap-2 px-4 py-2 rounded-full",
-                    "text-sm font-medium",
-                    "bg-[var(--surface-2)] text-[var(--text-bible-muted)]",
-                    "hover:bg-[var(--surface-3)] hover:text-[var(--text-bible)]",
-                    "transition-all duration-200"
-                  )}
-                >
-                  <TrendingUp className="w-3.5 h-3.5" />
-                  {term}
-                </motion.button>
               ))}
-            </div>
-          </motion.div>
-        )}
 
+              {activeCategory === 'footnotes' && results.footnotes.map((f, i) => (
+                <div key={i} className="premium-card p-4 hover:border-purple-500/30 cursor-pointer">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MessageSquare className="w-4 h-4 text-purple-500" />
+                    <span className="text-xs font-bold text-purple-500 uppercase">{f.bookId} {f.chapter}:{f.verse}</span>
+                  </div>
+                  <p className="text-sm text-bible-text italic">"{f.content}"</p>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {f.references?.map((r, idx) => (
+                      <span key={idx} className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-purple-500/10 text-purple-500 uppercase">{r}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </div>
       </div>
     </div>
   );

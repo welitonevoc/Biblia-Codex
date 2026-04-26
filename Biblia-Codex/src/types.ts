@@ -50,6 +50,9 @@ export interface Note {
   googleDocId?: string;
   googleDocUrl?: string;
   googleDocExportedAt?: number;
+  bookId?: string;
+  chapter?: number;
+  verse?: number;
 }
 
 export interface CrossReference {
