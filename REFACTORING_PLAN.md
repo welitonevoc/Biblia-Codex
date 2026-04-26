@@ -113,9 +113,11 @@ O projeto agora está totalmente tipado e seguro. Todos os erros foram resolvido
   - Refatorado para estilo "Control Panel" com elevações dinâmicas.
 
 ### 🎯 PRÓXIMOS PASSOS (FASE 2)
-- [ ] **Otimização de Performance**: Revisar componentes pesados com `React.memo` e `useCallback`.
-- [ ] **Refatoração do Reader**: Centralizar lógica de seleção de versículos em custom hooks.
-- [ ] **Busca Global**: Expandir para buscar em notas e comentários simultaneamente.
+- ✅ **Otimização de Performance**: Componentes `Reader` e `Home` agora utilizam `React.memo` e sub-componentes (como `VerseItem`) para minimizar re-renderizações.
+- [/] **Polimento Visual Premium**: Refinar distâncias de toque e transições mobile.
+- [ ] **Refatoração do Reader**: Isolar lógica complexa em *custom hooks* independentes.
+- [ ] **Busca Global**: Expandir para buscar em notas e comentários.
+- [ ] **Testes de Unidade**: Validar lógica de negócio do `BibleService`.
 
 ---
 
