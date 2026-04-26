@@ -23,6 +23,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface ReaderProps {
+  // Bible Reader Props分析
   book: Book;
   chapter: number;
   targetVerse?: number;
