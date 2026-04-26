@@ -75,7 +75,8 @@ export const useReaderSelection = ({
           text: verse?.text || '',
           color,
           tags: [],
-          createdAt: Date.now()
+          createdAt: Date.now(),
+          updatedAt: Date.now()
         };
         await storage.saveBookmark(newItem);
         newBookmarks.push(newItem);
@@ -143,7 +144,8 @@ export const useReaderSelection = ({
           verse: vNum,
           text: verse?.text || '',
           tags: tagIds,
-          createdAt: Date.now()
+          createdAt: Date.now(),
+          updatedAt: Date.now()
         };
         await storage.saveBookmark(newItem);
         newBookmarks.push(newItem);

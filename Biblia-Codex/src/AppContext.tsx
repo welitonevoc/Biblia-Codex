@@ -5,6 +5,7 @@ import {
   AnimationStyle, AnimationIntensity, AnimationSpeed, LightingEffect, PageTransition, ModuleInfo, CapacitorWindow, ModuleType
 } from './types';
 import { auth, db, onAuthStateChanged, User, loginWithGoogle, logout, handleRedirectResult, doc, setDoc, onSnapshot, serverTimestamp } from './firebase';
+import { syncService } from './services/SyncService';
 import { dictionaryService, createAiModule } from './services/dictionaryService';
 import { scanForBibleModules } from './services/moduleScanner';
 import { listInstalledModules } from './services/moduleService';
@@ -418,10 +419,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   }, []);
 
-  const syncNow = useCallback(() => {
+  const syncNow = useCallback(async () => {
     if (!user) return;
     setSettings(prev => ({ ...prev, syncConfig: { ...prev.syncConfig!, status: 'syncing' } }));
-    syncToCloud(config, settings).then(() => {
+    
+    try {
+      await Promise.all([
+        syncToCloud(config, settings),
+        syncService.syncAll()
+      ]);
+      
       setSettings(prev => ({
         ...prev,
         syncConfig: {
@@ -430,7 +437,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           lastSyncedAt: Date.now()
         }
       }));
-    });
+    } catch (e) {
+      console.error('Sync error:', e);
+      setSettings(prev => ({ ...prev, syncConfig: { ...prev.syncConfig!, status: 'error' } }));
+    }
   }, [user, syncToCloud, config, settings]);
 
   const login = useCallback(async () => {

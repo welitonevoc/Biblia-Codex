@@ -34,6 +34,7 @@ export interface Bookmark {
   color?: string;
   tags: string[]; // IDs of Tags
   createdAt: number;
+  updatedAt: number;
 }
 
 export interface Note {
@@ -288,6 +289,7 @@ export interface AppSettings {
   syncConfig?: {
     enabled: boolean;
     status: string;
+    lastSyncedAt?: number;
   };
   tts?: {
     enabled: boolean;

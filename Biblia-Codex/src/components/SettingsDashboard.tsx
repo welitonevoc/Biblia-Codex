@@ -4,7 +4,7 @@ import {
   User, Palette, Sparkles, Database, HelpCircle,
   Settings2, ChevronRight, Sun, Type, Layout, Navigation2,
   BookOpen, Brain, MessageSquare, Languages, Volume2,
-  Download, Globe, Shield, Key, Zap, ArrowLeft
+  Download, Globe, Shield, Key, Zap, ArrowLeft, Cloud, RefreshCw
 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { cn } from '../utils/cn';
@@ -51,8 +51,11 @@ const SettingCard: React.FC<{
 );
 
 export const SettingsDashboard: React.FC = () => {
-  const { setActiveTab } = useAppContext();
+  const { setActiveTab, syncNow, settings } = useAppContext();
   const [activeSubSection, setActiveSubSection] = useState<string | null>(null);
+
+  // Expose syncNow to window for SettingCard onClick if needed (hacky but works without refactoring sections)
+  (window as any).AppContextSyncNow = syncNow;
 
   // Render sub-section if active
   if (activeSubSection === 'appearance') {
@@ -184,6 +187,24 @@ export const SettingsDashboard: React.FC = () => {
           description: 'Configurações específicas para estudo',
           icon: MessageSquare,
           onClick: () => setActiveTab('ai-assistant')
+        }
+      ]
+    },
+    {
+      id: 'sync',
+      title: 'Sincronização',
+      icon: Cloud,
+      description: 'Mantenha seus dados seguros na nuvem',
+      items: [
+        {
+          id: 'cloud-sync',
+          title: 'Sincronizar Agora',
+          description: settings.syncConfig?.lastSyncedAt 
+            ? `Última sincronização: ${new Date(settings.syncConfig.lastSyncedAt).toLocaleString()}`
+            : 'Forçar sincronização de notas e marcadores',
+          icon: RefreshCw,
+          badge: settings.syncConfig?.status === 'syncing' ? 'Sincronizando...' : undefined,
+          onClick: () => (window as any).AppContextSyncNow?.()
         }
       ]
     },

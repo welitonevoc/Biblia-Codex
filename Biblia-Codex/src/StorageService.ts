@@ -74,7 +74,8 @@ class StorageService {
   // Bookmarks
   async saveBookmark(bookmark: Bookmark) {
     const db = await this.dbPromise;
-    await db.put('bookmarks', bookmark);
+    const toSave = { ...bookmark, updatedAt: Date.now() };
+    await db.put('bookmarks', toSave);
   }
 
   async getBookmarks(): Promise<Bookmark[]> {
@@ -105,6 +106,18 @@ class StorageService {
 
   // Notes
   async saveNote(note: Note) {
+    const db = await this.dbPromise;
+    const toSave = { ...note, updatedAt: Date.now() };
+    await db.put('notes', toSave);
+  }
+
+  // Métodos específicos para Sincronização (preservam Metadados)
+  async _saveBookmarkRaw(bookmark: Bookmark) {
+    const db = await this.dbPromise;
+    await db.put('bookmarks', bookmark);
+  }
+
+  async _saveNoteRaw(note: Note) {
     const db = await this.dbPromise;
     await db.put('notes', note);
   }
