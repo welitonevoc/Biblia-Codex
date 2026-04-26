@@ -7,12 +7,7 @@ import {
 import { Book } from '../types';
 import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { useAppContext } from '../AppContext';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: (string | boolean | undefined)[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from '../utils/cn';
 
 interface HomeProps {
   onNavigate: (book: Book, chapter: number) => void;

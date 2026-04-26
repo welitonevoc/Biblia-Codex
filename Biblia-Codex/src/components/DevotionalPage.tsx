@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import DOMPurify from 'dompurify';
+import initSqlJs from 'sql.js';
 
 interface DevotionalModule {
   id: string;
