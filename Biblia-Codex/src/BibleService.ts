@@ -307,6 +307,47 @@ export const BibleService = {
     return null;
   },
 
+  getCommentedVersesForChapter: async (bookId: string, chapter: number, modulePath: string): Promise<number[]> => {
+    try {
+      const cacheKey = `cmt-${modulePath}`;
+      let cached = dbCache.get(cacheKey);
+
+      if (!cached) {
+        const SQL = await getSqlInstance();
+        let binaryData: Uint8Array;
+        if (isWeb) {
+          binaryData = await readModuleBinaryFromPublic(modulePath);
+        } else {
+          binaryData = await readModuleBinary(modulePath);
+        }
+        const db = new SQL.Database(binaryData);
+        const schema = detectSchema(db);
+        if (!schema) throw new Error("Schema de comentário não detectado");
+        cached = { db, schema };
+        dbCache.set(cacheKey, cached);
+      }
+
+      const { db, schema } = cached!;
+      const bookMetadata = BIBLE_BOOKS.find(b => b.id === bookId);
+      const myBibleBookId = BookNumberConverter.toMyBible(bookMetadata?.numericId || 1);
+      const stdBookId = bookMetadata?.numericId || 1;
+
+      const query = `SELECT ${schema.verseCol} FROM ${schema.table} WHERE ${schema.bookCol} = ? AND ${schema.chapterCol} = ?`;
+      
+      let result = execSQL(db, query, [stdBookId, chapter]);
+      if (!result.length || !result[0].values.length) {
+        result = execSQL(db, query, [myBibleBookId, chapter]);
+      }
+
+      if (result.length > 0 && result[0].values.length > 0) {
+        return result[0].values.map(row => Number(row[0]));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar versículos com comentário:', error);
+    }
+    return [];
+  },
+
   getStrongsDefinition: async (strongsNumber: string, modulePath?: string): Promise<StrongsEntry | null> => {
     try {
       // Default module if not provided

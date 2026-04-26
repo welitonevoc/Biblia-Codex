@@ -185,9 +185,11 @@ export const CommentaryBottomSheet: React.FC<CommentaryBottomSheetProps> = ({
                     handleSearchLocal(path);
                   }}
                 >
-                  {availableCommentaries.map(module => (
-                    <option key={module.path} value={module.path}>{module.name}</option>
-                  ))}
+                  <optgroup label="Comentários Instalados" className="bg-bible-bg text-bible">
+                    {availableCommentaries.map(module => (
+                      <option key={module.path} value={module.path}>{module.name}</option>
+                    ))}
+                  </optgroup>
                 </select>
                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none opacity-20">
                   <ChevronRight className="w-3 h-3 rotate-90" />
