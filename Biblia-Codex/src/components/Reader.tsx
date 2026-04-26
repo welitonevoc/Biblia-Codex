@@ -16,6 +16,8 @@ import { DictionaryBottomSheet } from './DictionaryBottomSheet';
 import { useReaderSelection } from '../hooks/useReaderSelection';
 import { useReaderTTS } from '../hooks/useReaderTTS';
 import { StrongsBottomSheet } from './StrongsBottomSheet';
+import { CommentaryBottomSheet } from './CommentaryBottomSheet';
+import { CrossReferencesBottomSheet } from './CrossReferencesBottomSheet';
 
 interface ReaderProps {
   book: Book;
@@ -206,6 +208,9 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
   const [selectedStrongs, setSelectedStrongs] = useState<string>('');
   const [isStrongsOpen, setIsStrongsOpen] = useState(false);
+  const [selectedCommentaryVerse, setSelectedCommentaryVerse] = useState<Verse | null>(null);
+  const [isCommentaryOpen, setIsCommentaryOpen] = useState(false);
+  const [isXrefsOpen, setIsXrefsOpen] = useState(false);
   const { config, settings, currentVersion } = useAppContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -242,6 +247,20 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     toggleTTS,
     isTTSSupported
   } = useReaderTTS({ verses });
+
+  const handleToolOpen = useCallback((v: Verse, type: string) => {
+    if (type === 'commentary') {
+      setSelectedCommentaryVerse(v);
+      setIsCommentaryOpen(true);
+      return;
+    }
+    if (type === 'xrefs') {
+      setSelectedCommentaryVerse(v); // Reusing this generic "selected verse for tools" state
+      setIsXrefsOpen(true);
+      return;
+    }
+    onToolOpen(v, type as any);
+  }, [onToolOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -404,7 +423,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
                   settings={settings}
                   allTags={allTags}
                   toggleVerseSelection={toggleVerseSelection}
-                  onToolOpen={onToolOpen}
+                  onToolOpen={handleToolOpen}
                   handleRemoveTag={handleRemoveTag}
                   onShare={(v) => onShare([{ verse: v.verse, text: v.text }], `${book.name} ${chapter}:${v.verse}`)}
                   verseRef={(el) => { verseRefs.current[v.verse] = el; }}
@@ -458,6 +477,21 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
 
       <DictionaryBottomSheet term={selectedTerm} context={selectedContext} isOpen={isDictionaryOpen} onClose={() => setIsDictionaryOpen(false)} />
       <StrongsBottomSheet strongsNumber={selectedStrongs} context={selectedContext} isOpen={isStrongsOpen} onClose={() => setIsStrongsOpen(false)} />
+      <CommentaryBottomSheet 
+        isOpen={isCommentaryOpen}
+        onClose={() => setIsCommentaryOpen(false)}
+        bookId={selectedCommentaryVerse?.bookId || ''}
+        chapter={selectedCommentaryVerse?.chapter || 0}
+        verse={selectedCommentaryVerse?.verse || 0}
+      />
+      <CrossReferencesBottomSheet
+        isOpen={isXrefsOpen}
+        onClose={() => setIsXrefsOpen(false)}
+        bookId={selectedCommentaryVerse?.bookId || ''}
+        chapter={selectedCommentaryVerse?.chapter || 0}
+        verse={selectedCommentaryVerse?.verse || 0}
+        onNavigate={onNavigate}
+      />
     </div>
   );
 });

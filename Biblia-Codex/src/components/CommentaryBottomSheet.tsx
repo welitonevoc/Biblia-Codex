@@ -1,87 +1,99 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  X, Book, Sparkles, Loader2, 
-  ChevronRight, AlertCircle, Quote,
-  Share2, Save, Languages
+  X, Sparkles, Loader2, Book, 
+  History, ChevronRight, AlertCircle, Quote,
+  Share2, Save, MessageSquare, Languages
 } from 'lucide-react';
-import { searchLocalDictionary, getAIDefinition } from '../services/dictionaryService';
 import { useAppContext } from '../AppContext';
-import { DictionaryEntry, BibleModule } from '../types';
+import { BibleService } from '../BibleService';
 import { MySwordParser } from '../services/mySwordParser';
 import { cn } from '../utils/cn';
 import DOMPurify from 'dompurify';
 
-interface DictionaryBottomSheetProps {
-  term: string;
-  context?: string;
+interface CommentaryBottomSheetProps {
+  bookId: string;
+  chapter: number;
+  verse: number;
   onClose: () => void;
   isOpen: boolean;
 }
 
-export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({ 
-  term, context, onClose, isOpen 
+export const CommentaryBottomSheet: React.FC<CommentaryBottomSheetProps> = ({ 
+  bookId, chapter, verse, onClose, isOpen 
 }) => {
-  const { settings, availableDictionaries, setSelectedDictionaryModule, selectedDictionaryModule } = useAppContext();
+  const { settings, availableCommentaries, updateSettings } = useAppContext();
   const [activeTab, setActiveTab] = useState<'local' | 'ai'>('local');
-  const [localEntry, setLocalEntry] = useState<DictionaryEntry | null>(null);
-  const [aiEntry, setAiEntry] = useState<DictionaryEntry | null>(null);
-  const [loadingLocal, setLoadingLocal] = useState(false);
+  const [localEntry, setLocalEntry] = useState<{ text: string, moduleName: string } | null>(null);
+  const [aiContent, setAiContent] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen && term) {
-      setAiEntry(null);
+    if (isOpen && bookId) {
       setLocalEntry(null);
-      setError(null);
+      setAiContent(null);
       setActiveTab('local');
       handleSearchLocal();
     }
-  }, [isOpen, term]);
+  }, [isOpen, bookId, chapter, verse]);
 
-  const handleSearchLocal = async (forcedModule?: BibleModule) => {
-    const targetModule = forcedModule || selectedDictionaryModule;
-    
-    if (!targetModule || targetModule.isVirtual) {
-      setActiveTab('ai');
-      handleSearchAI();
-      return;
-    }
-
-    setLoadingLocal(true);
+  const handleSearchLocal = async (forcedPath?: string) => {
+    setLoading(true);
     setLocalEntry(null);
     try {
-      const result = await searchLocalDictionary(term, targetModule.path);
-      setLocalEntry(result);
-      if (!result && !aiEntry) {
+      const savedPath = settings.studyTools.selectedCommentaryDictionary;
+      const targetPath = forcedPath || savedPath;
+      
+      let commentaryModule;
+      if (targetPath) {
+        commentaryModule = availableCommentaries.find(c => c.path === targetPath);
+      }
+      
+      if (!commentaryModule) {
+        commentaryModule = availableCommentaries[0];
+      }
+
+      if (commentaryModule) {
+        const result = await BibleService.getLocalCommentary(bookId, chapter, verse, commentaryModule.path);
+        setLocalEntry(result);
+        if (!result && !aiContent) {
+          // Fallback para IA se não houver local
+          setActiveTab('ai');
+          handleSearchAI();
+        }
+      } else {
+        // Sem módulos locais, vai direto pra IA
         setActiveTab('ai');
         handleSearchAI();
       }
     } catch (err) {
-      console.error("Erro na busca local:", err);
+      console.error("Erro na busca de comentário local:", err);
       setActiveTab('ai');
       handleSearchAI();
     } finally {
-      setLoadingLocal(false);
+      setLoading(false);
     }
   };
 
   const handleSearchAI = async () => {
-    if (aiEntry) return;
+    if (aiContent) return;
     setLoadingAI(true);
     setError(null);
     try {
-      const result = await getAIDefinition(term, context);
-      setAiEntry(result);
+      const result = await BibleService.getCommentary(bookId, chapter, verse, settings.ai.model);
+      setAiContent(result);
     } catch (err) {
-      setError('Falha ao conectar com o Assistente IA.');
+      setError('Falha ao gerar comentário exegético.');
     } finally {
       setLoadingAI(false);
     }
   };
 
   if (!isOpen) return null;
+
+  const verseLabel = `${bookId} ${chapter}:${verse}`;
 
   return (
     <AnimatePresence>
@@ -115,14 +127,14 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
                     <span className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-bible-text/5 text-bible/60">
-                      Dicionário
+                      Comentário
                     </span>
                     <span className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-gold/10 text-gold">
-                      Teológico
+                      Exegese
                     </span>
                   </div>
                   <h2 className="text-2xl font-display font-black text-bible mt-0.5">
-                    {term}
+                    {verseLabel}
                   </h2>
                 </div>
               </div>
@@ -144,7 +156,7 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
                 )}
               >
                 <Languages className="w-3.5 h-3.5" />
-                <span className="ui-text text-[9px] font-black uppercase tracking-widest">Definição</span>
+                <span className="ui-text text-[9px] font-black uppercase tracking-widest">Exposição</span>
               </button>
               <button 
                 onClick={() => { setActiveTab('ai'); handleSearchAI(); }}
@@ -158,24 +170,22 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
               </button>
             </div>
 
-            {/* Module Selector */}
-            {activeTab === 'local' && (
+            {/* Commentary Module Selector */}
+            {activeTab === 'local' && availableCommentaries.length > 0 && (
               <div className="relative group">
                 <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                   <Book className="w-3 h-3 text-gold opacity-50" />
                 </div>
                 <select 
                   className="w-full pl-8 pr-3 py-2 bg-bible-text/5 border border-bible-border/5 rounded-xl ui-text text-[10px] font-bold text-bible/70 appearance-none focus:outline-none transition-all cursor-pointer"
-                  value={selectedDictionaryModule?.path || ''}
+                  value={settings.studyTools.selectedCommentaryDictionary || availableCommentaries[0].path}
                   onChange={(e) => {
-                    const module = availableDictionaries.find(m => m.path === e.target.value);
-                    if (module) {
-                      setSelectedDictionaryModule(module);
-                      handleSearchLocal(module);
-                    }
+                    const path = e.target.value;
+                    updateSettings({ studyTools: { ...settings.studyTools, selectedCommentaryDictionary: path } });
+                    handleSearchLocal(path);
                   }}
                 >
-                  {availableDictionaries.map(module => (
+                  {availableCommentaries.map(module => (
                     <option key={module.path} value={module.path}>{module.name}</option>
                   ))}
                 </select>
@@ -186,7 +196,7 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
             )}
           </div>
 
-          {/* Content Area */}
+          {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto px-5 py-4 pb-12 scrollbar-premium">
             <AnimatePresence mode="wait">
               {activeTab === 'local' ? (
@@ -197,18 +207,19 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
                   exit={{ opacity: 0 }}
                   className="space-y-4"
                 >
-                  {loadingLocal ? (
+                  {loading ? (
                     <div className="flex flex-col items-center justify-center py-12 space-y-3 opacity-20">
                       <Loader2 className="w-6 h-6 animate-spin text-bible" />
-                      <p className="ui-text text-[9px] uppercase tracking-widest font-black text-bible">Consultando Módulos...</p>
+                      <p className="ui-text text-[9px] uppercase tracking-widest font-black text-bible">Consultando Módulo...</p>
                     </div>
                   ) : localEntry ? (
                     <div className="space-y-4 animate-in fade-in duration-500">
                       <div className="glass-panel p-5">
-                        <div 
-                          className="prose prose-gold max-w-none ui-text text-[15px] leading-relaxed text-bible/80"
-                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(MySwordParser.parseContent(localEntry.definition)) }}
-                        />
+                        <div className="prose prose-gold max-w-none prose-p:ui-text prose-p:text-base prose-p:leading-relaxed prose-strong:text-gold prose-p:text-bible">
+                           <div 
+                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(MySwordParser.parseContent(localEntry.text)) }}
+                           />
+                        </div>
                       </div>
                       <div className="flex items-center justify-end px-2 opacity-30">
                         <span className="text-[9px] font-black uppercase tracking-widest text-bible">Fonte: {localEntry.moduleName}</span>
@@ -216,8 +227,14 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-12 space-y-4 opacity-20 text-center">
-                      <Book className="w-10 h-10 text-bible" />
-                      <p className="ui-text text-[10px] font-black uppercase tracking-widest text-bible">Termo não encontrado offline</p>
+                      <MessageSquare className="w-10 h-10 text-bible" />
+                      <p className="ui-text text-[10px] font-black uppercase tracking-widest text-bible">Nenhum comentário local para este versículo</p>
+                      <button 
+                        onClick={() => { setActiveTab('ai'); handleSearchAI(); }}
+                        className="px-4 py-2 bg-gold/20 text-gold rounded-full text-[9px] font-black uppercase tracking-widest"
+                      >
+                        Usar Erudição IA
+                      </button>
                     </div>
                   )}
                 </motion.div>
@@ -231,20 +248,23 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
                 >
                   {loadingAI ? (
                     <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                      <Loader2 className="w-6 h-6 animate-spin text-gold" />
-                      <p className="ui-text text-[9px] uppercase tracking-widest font-black text-gold">IA Processando Definição...</p>
+                      <div className="relative">
+                        <Loader2 className="w-8 h-8 animate-spin text-gold" />
+                        <Sparkles className="w-4 h-4 text-gold absolute -top-1 -right-1 animate-pulse" />
+                      </div>
+                      <p className="ui-text text-[9px] uppercase tracking-widest font-black text-gold">Analista IA em Ação...</p>
                     </div>
                   ) : error ? (
-                    <div className="p-6 bg-red-500/5 border border-red-500/10 rounded-2xl flex flex-col items-center space-y-3 text-red-500">
-                      <AlertCircle className="w-8 h-8 opacity-60" />
-                      <p className="ui-text text-[10px] font-black leading-tight text-center">{error}</p>
-                      <button onClick={handleSearchAI} className="px-4 py-1.5 bg-red-500/10 rounded-lg text-[9px] font-black uppercase tracking-widest">Tentar Novamente</button>
+                    <div className="p-6 bg-red-500/5 border border-red-500/10 rounded-2xl flex flex-col items-center space-y-3">
+                      <AlertCircle className="w-8 h-8 text-red-500 opacity-60" />
+                      <p className="ui-text text-[10px] font-black text-red-500">{error}</p>
+                      <button onClick={handleSearchAI} className="px-4 py-1.5 bg-red-500/10 text-red-500 rounded-lg text-[9px] font-black uppercase tracking-widest">Tentar Novamente</button>
                     </div>
-                  ) : aiEntry ? (
+                  ) : aiContent ? (
                     <div className="space-y-4 animate-in fade-in duration-500">
                       <div className="prose prose-gold max-w-none">
                         <div className="whitespace-pre-wrap ui-text text-[15px] leading-relaxed text-bible/80">
-                           {aiEntry.definition}
+                           {aiContent}
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-3 pt-6 border-t border-bible-border/5">
@@ -254,7 +274,7 @@ export const DictionaryBottomSheet: React.FC<DictionaryBottomSheetProps> = ({
                         </button>
                         <button className="flex items-center justify-center gap-2 p-4 glass-panel rounded-2xl text-gold">
                           <Save className="w-4 h-4" />
-                          <span className="text-[9px] font-black uppercase tracking-widest">Salvar</span>
+                          <span className="text-[9px] font-black uppercase tracking-widest">Arquivar</span>
                         </button>
                       </div>
                     </div>

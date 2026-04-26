@@ -27,7 +27,10 @@ const detectSchema = (db: unknown): SQLiteSchema | null => {
   const tables = execFunc("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
   const tableNames = (tables[0]?.values.map((v: unknown[]) => String(v[0]).toLowerCase()) || []) as string[];
 
-  const table = tableNames.includes('bible') ? 'bible' : tableNames.includes('verses') ? 'verses' : null;
+  const table = tableNames.includes('bible') ? 'bible' : 
+                tableNames.includes('verses') ? 'verses' : 
+                tableNames.includes('cross_reference') ? 'cross_reference' :
+                tableNames.includes('xrefs') ? 'xrefs' : null;
   if (!table) return null;
 
   const pragma = execFunc(`PRAGMA table_info("${table}")`);
@@ -182,7 +185,7 @@ export const BibleService = {
     return [];
   },
 
-  getCommentary: async (bookId: string, chapter: number, verse: number, model?: string): Promise<string> => {
+  getAICommentary: async (bookId: string, chapter: number, verse: number, model?: string): Promise<string> => {
     try {
       const prompt = `Para o versículo bíblico ${bookId} ${chapter}:${verse}, forneça um comentário teológico profundo, contexto histórico e aplicação prática. Use um tom erudito, mas acessível. Responda em Português (PT-BR).`;
       const response = await getAIResponse(
@@ -193,9 +196,57 @@ export const BibleService = {
       );
       return response || 'Não foi possível gerar o comentário.';
     } catch (error: unknown) {
-      console.error('Erro ao buscar comentário:', error);
-      return 'Erro ao conectar com o serviço de comentários. Verifique sua conexão.';
+      console.error('Erro ao buscar comentário IA:', error);
+      return 'Erro ao conectar com o serviço de comentários IA.';
     }
+  },
+
+  getCommentary: async (bookId: string, chapter: number, verse: number, model?: string): Promise<string> => {
+    return BibleService.getAICommentary(bookId, chapter, verse, model);
+  },
+
+  getLocalCommentary: async (bookId: string, chapter: number, verse: number, modulePath: string): Promise<{ text: string, moduleName: string } | null> => {
+    try {
+      const cacheKey = `cmt-${modulePath}`;
+      let cached = dbCache.get(cacheKey);
+
+      if (!cached) {
+        const SQL = await getSqlInstance();
+        let binaryData: Uint8Array;
+        if (isWeb) {
+          binaryData = await readModuleBinaryFromPublic(modulePath);
+        } else {
+          binaryData = await readModuleBinary(modulePath);
+        }
+        const db = new SQL.Database(binaryData);
+        const schema = detectSchema(db);
+        if (!schema) throw new Error("Schema de comentário não detectado");
+        cached = { db, schema };
+        dbCache.set(cacheKey, cached);
+      }
+
+      const { db, schema } = cached!;
+      const bookMetadata = BIBLE_BOOKS.find(b => b.id === bookId);
+      const myBibleBookId = BookNumberConverter.toMyBible(bookMetadata?.numericId || 1);
+      const stdBookId = bookMetadata?.numericId || 1;
+
+      const query = `SELECT ${schema.textCol} FROM ${schema.table} WHERE ${schema.bookCol} = ? AND ${schema.chapterCol} = ? AND ${schema.verseCol} = ? LIMIT 1`;
+      
+      let result = execSQL(db, query, [stdBookId, chapter, verse]);
+      if (!result.length || !result[0].values.length) {
+        result = execSQL(db, query, [myBibleBookId, chapter, verse]);
+      }
+
+      if (result.length > 0 && result[0].values.length > 0) {
+        return {
+          text: String(result[0].values[0][0]),
+          moduleName: modulePath.split('/').pop() || 'Comentário'
+        };
+      }
+    } catch (error) {
+      console.error('Erro ao buscar comentário local:', error);
+    }
+    return null;
   },
 
   getDictionaryEntry: async (word: string, modulePath: string): Promise<DictionaryEntry | null> => {
@@ -285,7 +336,7 @@ export const BibleService = {
     return `Definição simulada para ${word}`;
   },
 
-  getCrossReferences: async (bookId: string, chapter: number, verse: number, model?: string): Promise<CrossReference[]> => {
+  getAICrossReferences: async (bookId: string, chapter: number, verse: number, model?: string): Promise<CrossReference[]> => {
     const validIds = ['GEN', 'EXO', 'LEV', 'NUM', 'DEU', 'JOS', 'JDG', 'RUT', '1SA', '2SA', '1KI', '2KI', '1CH', '2CH', 'EZR', 'NEH', 'EST', 'JOB', 'PSA', 'PRO', 'ECC', 'SNG', 'ISA', 'JER', 'LAM', 'EZK', 'DAN', 'HOS', 'JOE', 'AMO', 'OBA', 'JON', 'MIC', 'NAM', 'HAB', 'ZEP', 'HAG', 'ZEC', 'MAL', 'MAT', 'MRK', 'LUK', 'JHN', 'ACT', 'ROM', '1CO', '2CO', 'GAL', 'EPH', 'PHP', 'COL', '1TH', '2TH', '1TI', '2TI', 'TIT', 'PHM', 'HEB', 'JAS', '1PE', '2PE', '1JN', '2JN', '3JN', 'JUD', 'REV'];
     const prompt = `Encontre 10 referências cruzadas para ${bookId} ${chapter}:${verse}. Responda APENAS com um array JSON no formato: [{"bookId":"GEN","chapter":1,"verse":1,"text":"...","reason":"..."}]. Não inclua texto fora do JSON.`;
     try {
@@ -303,6 +354,54 @@ export const BibleService = {
         rank: ref.rank || 0
       }));
     } catch (error: unknown) { return []; }
+  },
+
+  getCrossReferences: async (bookId: string, chapter: number, verse: number, model?: string): Promise<CrossReference[]> => {
+    return BibleService.getAICrossReferences(bookId, chapter, verse, model);
+  },
+
+  getLocalCrossReferences: async (bookId: string, chapter: number, verse: number, modulePath: string): Promise<{ text: string, moduleName: string } | null> => {
+    try {
+      const cacheKey = `xrefs-${modulePath}`;
+      let cached = dbCache.get(cacheKey);
+
+      if (!cached) {
+        const SQL = await getSqlInstance();
+        let binaryData: Uint8Array;
+        if (isWeb) {
+          binaryData = await readModuleBinaryFromPublic(modulePath);
+        } else {
+          binaryData = await readModuleBinary(modulePath);
+        }
+        const db = new SQL.Database(binaryData);
+        const schema = detectSchema(db);
+        if (!schema) throw new Error("Schema de referências não detectado");
+        cached = { db, schema };
+        dbCache.set(cacheKey, cached);
+      }
+
+      const { db, schema } = cached!;
+      const bookMetadata = BIBLE_BOOKS.find(b => b.id === bookId);
+      const myBibleBookId = BookNumberConverter.toMyBible(bookMetadata?.numericId || 1);
+      const stdBookId = bookMetadata?.numericId || 1;
+
+      const query = `SELECT ${schema.textCol} FROM ${schema.table} WHERE ${schema.bookCol} = ? AND ${schema.chapterCol} = ? AND ${schema.verseCol} = ? LIMIT 1`;
+      
+      let result = execSQL(db, query, [stdBookId, chapter, verse]);
+      if (!result.length || !result[0].values.length) {
+        result = execSQL(db, query, [myBibleBookId, chapter, verse]);
+      }
+
+      if (result.length > 0 && result[0].values.length > 0) {
+        return {
+          text: String(result[0].values[0][0]),
+          moduleName: modulePath.split('/').pop() || 'Referências'
+        };
+      }
+    } catch (error) {
+      console.error('Erro ao buscar referências locais:', error);
+    }
+    return null;
   },
 
   getPeopleData: async (bookId: string, chapter: number, verse: number): Promise<PeopleData[]> => {

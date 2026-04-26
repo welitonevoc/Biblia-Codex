@@ -63,6 +63,7 @@ export interface CrossReference {
   verse: number;
   text?: string;
   rank: number; // Relevance score
+  bookName?: string;
 }
 
 export interface DictionaryEntry {

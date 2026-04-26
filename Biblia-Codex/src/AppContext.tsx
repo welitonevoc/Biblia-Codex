@@ -21,6 +21,8 @@ interface AppContextType {
   selectedXrefModule: BibleModule | null;
   availableVersions: BibleModule[];
   availableDictionaries: BibleModule[];
+  availableCommentaries: BibleModule[];
+  availableXrefs: BibleModule[];
   availableModules: ModuleInfo[];
   currentVersion: BibleModule | null;
   selectVersion: (version: BibleModule) => void;
@@ -89,6 +91,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeTab, setActiveTab] = useState('home');
   const [availableVersions, setAvailableVersions] = useState<BibleModule[]>([]);
   const [availableDictionaries, setAvailableDictionaries] = useState<BibleModule[]>([]);
+  const [availableCommentaries, setAvailableCommentaries] = useState<BibleModule[]>([]);
+  const [availableXrefs, setAvailableXrefs] = useState<BibleModule[]>([]);
   const [availableModules, setAvailableModules] = useState<ModuleInfo[]>([]);
   const [currentVersion, setCurrentVersion] = useState<BibleModule | null>(null);
 
@@ -482,6 +486,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const bibles = unified.filter(m => m.type === 'bible');
       const dictionaries = unified.filter(m => m.type === 'dictionary');
+      const commentaries = unified.filter(m => m.type === 'commentary');
+      const xrefs = unified.filter(m => m.type === 'xrefs');
 
       setAvailableModules(installedRaw);
 
@@ -496,6 +502,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return prev;
         }
         return dictionaries;
+      });
+      setAvailableCommentaries(prev => {
+        if (prev.length === commentaries.length && prev.every((c, i) => c.id === commentaries[i].id && c.path === commentaries[i].path)) {
+          return prev;
+        }
+        return commentaries;
+      });
+      setAvailableXrefs(prev => {
+        if (prev.length === xrefs.length && prev.every((x, i) => x.id === xrefs[i].id && x.path === xrefs[i].path)) {
+          return prev;
+        }
+        return xrefs;
       });
 
       setCurrentVersion(prev => {
@@ -549,6 +567,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     selectedDictionaryModule,
     availableVersions,
     availableDictionaries,
+    availableCommentaries,
+    availableXrefs,
     availableModules,
     currentVersion,
     selectVersion,
@@ -599,7 +619,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }), [
     config, settings, user, isAuthReady, selectedDictionaryModule,
-    availableVersions, availableDictionaries, availableModules, currentVersion, selectVersion, setMode,
+    availableVersions, availableDictionaries, availableCommentaries, availableXrefs, availableModules, currentVersion, selectVersion, setMode,
     setFontSize, setLineHeight, setLetterSpacing, setFontFamily,
     setHorizontalMargin, setAccentColor, setUIGeometry, setNavigationStyle, setFontPreference,
     updateSettings, toggleSetting,
