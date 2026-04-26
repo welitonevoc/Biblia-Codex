@@ -37,6 +37,7 @@ import { twMerge } from 'tailwind-merge';
 import { Onboarding } from './components/Onboarding';
 import { PermissionScreen } from './components/PermissionScreen';
 import { ProfilePage } from './components/ProfilePage';
+import { VerseCardGenerator } from './components/VerseCardGenerator';
 
 // Lazy loading for heavy pages (Phase 5: Performance)
 const DevotionalPage = lazy(() => import('./components/DevotionalPage').then(m => ({ default: m.DevotionalPage })));
@@ -75,6 +76,10 @@ function AppContent() {
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [selectedVersesForStudy, setSelectedVersesForStudy] = useState<{ verse: number, text: string }[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(true);
+
+  // Verse Card Generator State
+  const [shareData, setShareData] = useState<{ verses: { verse: number; text: string }[]; reference: string } | null>(null);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   useEffect(() => {
     const hasOnboarded = localStorage.getItem('codex-onboarded');
@@ -136,6 +141,11 @@ function AppContent() {
   const handleStudyOpen = (verses: { verse: number, text: string }[]) => {
     setSelectedVersesForStudy(verses);
     setIsStudyOpen(true);
+  };
+
+  const handleShare = (verses: { verse: number; text: string }[], reference: string) => {
+    setShareData({ verses, reference });
+    setIsShareOpen(true);
   };
 
   const handleToolOpen = (verse: Verse, type: 'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places' | 'footnotes') => {
@@ -232,6 +242,7 @@ function AppContent() {
                   onTargetVerseReached={() => setTargetVerse(undefined)}
                   onStudyOpen={handleStudyOpen}
                   onToolOpen={handleToolOpen}
+                  onShare={handleShare}
                   onNavigate={(bookId, chapter, verse) => {
                     const book = BIBLE_BOOKS.find(b => b.id === bookId);
                     if (book) handleSelect(book, chapter, verse);
@@ -511,6 +522,13 @@ function AppContent() {
           }}
         />
       )}
+
+      <VerseCardGenerator
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        verses={shareData?.verses || []}
+        reference={shareData?.reference || ''}
+      />
 
       {/* Onboarding Overlay */}
       <AnimatePresence>

@@ -115,7 +115,7 @@ O projeto agora está totalmente tipado e seguro. Todos os erros foram resolvido
 ### 🎯 PRÓXIMOS PASSOS (FASE 3: INOVAÇÃO)
 - [x] **Busca Global**: Implementada busca unificada em Escrituras, Notas e Rodapés.
 - [x] **Sincronização Cloud**: Backup de marcadores e notas (Firebase/Firestore) concluído e integrado.
-- [ ] **Social Sharing**: Gerador de cartões de versículos premium para redes sociais.
+- [x] **Social Sharing**: Gerador de cartões de versículos premium para redes sociais concluído.
 - [ ] **Modo Estudo Profundo**: Integração avançada de ferramentas grego/hebraico (Strong's).
 
 ---

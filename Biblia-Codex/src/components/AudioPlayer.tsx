@@ -23,7 +23,7 @@ interface AudioPlayerProps {
   verses?: { verse: number; text: string }[];
   onPreviousChapter?: () => void;
   onNextChapter?: () => void;
-  onShare?: () => void;
+  onShare?: (verses: { verse: number, text: string }[], reference: string) => void;
   translationInfo?: {
     name: string;
     description: string;
@@ -160,7 +160,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={onShare}
+              onClick={() => onShare(versesToUse, track.title || '')}
               className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-rose-500 hover:bg-rose-600 text-white font-medium text-sm shadow-lg shadow-rose-500/30 transition-colors"
             >
               <Share2 className="w-4 h-4" />

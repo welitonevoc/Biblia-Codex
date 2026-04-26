@@ -20,7 +20,7 @@ interface ReaderWithAudioProps {
   hasAudioSupport?: boolean;
   readingMode?: ReadingMode;
   onReadingModeChange?: (mode: ReadingMode) => void;
-  onShare?: () => void;
+  onShare: (verses: { verse: number, text: string }[], reference: string) => void;
   verses?: Verse[];
 }
 
@@ -108,6 +108,7 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
           onNavigate={onNavigate}
           onStudyOpen={onStudyOpen}
           onToolOpen={onToolOpen}
+          onShare={onShare}
         />
       )}
 
