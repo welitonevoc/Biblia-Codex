@@ -1611,3 +1611,78 @@ button, input, textarea, select { font: inherit; }
   outline-offset: 2px;
   border-radius: var(--radius-xs);
 }
+/* ─────────────────────────────────────────────
+   DEEP STUDY & STRONG'S SYSTEM
+   ───────────────────────────────────────────── */
+.strongs-link {
+  font-family: var(--font-sans);
+  font-size: 0.55em;
+  font-weight: 800;
+  color: var(--accent-bible);
+  background: rgba(var(--accent-bible-rgb), 0.08);
+  padding: 0 4px;
+  border-radius: 4px;
+  margin-left: 2px;
+  vertical-align: super;
+  text-decoration: none;
+  transition: all 0.2s var(--ease-premium);
+  opacity: 0.6;
+  letter-spacing: 0.05em;
+  display: inline-block;
+  line-height: normal;
+}
+
+.strongs-link:hover {
+  opacity: 1;
+  background: rgba(var(--accent-bible-rgb), 0.15);
+  transform: translateY(-1px);
+  color: var(--accent-bible-strong);
+  box-shadow: 0 2px 5px rgba(var(--accent-bible-rgb), 0.2);
+}
+
+.strongs-text {
+  /* When showStrongs is on but linkedStrongs is off */
+  cursor: default;
+}
+
+.morph-link {
+  font-family: var(--font-sans);
+  font-size: 0.5em;
+  font-weight: 600;
+  color: #6a9a7c;
+  margin-left: 2px;
+  vertical-align: super;
+  text-decoration: none;
+  opacity: 0.5;
+}
+
+.morph-link:hover {
+  opacity: 1;
+  color: #1f8f63;
+}
+
+.gold {
+  color: #d4af37;
+}
+
+/* Deep Study Active State */
+.topbar-study-active {
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+  border-color: #d4af37 !important;
+  color: #d4af37 !important;
+}
+
+/* Card Generator Premium Styles */
+.verse-card-preview {
+  box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+.verse-card-theme-modern {
+  background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+}
+
+.verse-card-theme-classic {
+  background: #fdfaf6;
+  color: #2c241a;
+}

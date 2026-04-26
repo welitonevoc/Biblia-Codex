@@ -1,4 +1,4 @@
-import { Verse, BibleModule, DictionaryEntry, Footnote, FootnoteType, CrossReference, PeopleData, PlacesData, SQLiteRow, SQLiteSchema, CachedDB, ParseSettings, ModuleData } from './types';
+import { Verse, BibleModule, DictionaryEntry, Footnote, FootnoteType, CrossReference, PeopleData, PlacesData, SQLiteRow, SQLiteSchema, CachedDB, ParseSettings, ModuleData, StrongsEntry } from './types';
 import { storage } from './StorageService';
 import { BIBLE_BOOKS } from './data/bibleMetadata';
 import { readModuleBinary } from './services/moduleService';
@@ -252,6 +252,31 @@ export const BibleService = {
       }
     } catch (error: unknown) {
       console.error('Erro ao buscar no dicionário:', error);
+    }
+    return null;
+  },
+
+  getStrongsDefinition: async (strongsNumber: string, modulePath?: string): Promise<StrongsEntry | null> => {
+    try {
+      // Default module if not provided
+      const path = modulePath || 'Strong KJ Concordância.dct.mybible';
+      const entry = await BibleService.getDictionaryEntry(strongsNumber, path);
+      
+      if (entry) {
+        // Parse the definition to extract components if possible
+        // For simplicity, we'll return a basic StrongsEntry
+        const isHebrew = strongsNumber.startsWith('H');
+        return {
+          number: strongsNumber,
+          language: isHebrew ? 'hebrew' : 'greek',
+          word: '', // We could extract this from the definition
+          transliteration: '',
+          pronunciation: '',
+          definition: entry.definition
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching Strongs:', error);
     }
     return null;
   },

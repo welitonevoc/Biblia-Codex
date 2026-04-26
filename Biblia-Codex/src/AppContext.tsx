@@ -58,6 +58,7 @@ interface AppContextType {
   setSelectedCommentaryModule: (module: BibleModule | null) => void;
   setSelectedXrefModule: (module: BibleModule | null) => void;
   searchDictionary: (term: string) => Promise<DictionaryEntry[]>;
+  toggleStrongs: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -586,7 +587,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setDrawerContext,
     activeTab,
     setActiveTab,
-    searchDictionary
+    searchDictionary,
+    toggleStrongs: () => {
+      updateSettings({
+        studyTools: {
+          ...settings.studyTools,
+          strongsTags: !settings.studyTools.strongsTags,
+          strongsLinks: !settings.studyTools.strongsTags // Liga links junto com tags
+        }
+      });
+    }
   }), [
     config, settings, user, isAuthReady, selectedDictionaryModule,
     availableVersions, availableDictionaries, availableModules, currentVersion, selectVersion, setMode,

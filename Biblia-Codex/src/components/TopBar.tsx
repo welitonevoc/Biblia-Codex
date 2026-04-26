@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Book } from '../types';
 import { BIBLE_BOOKS } from '../data/bibleMetadata';
-import { Menu, Search, Settings as SettingsIcon, ChevronDown, ChevronLeft, ChevronRight, BookOpen, Globe, Check, Sparkles, Play, X } from 'lucide-react';
+import { Menu, Search, Settings as SettingsIcon, ChevronDown, ChevronLeft, ChevronRight, BookOpen, Globe, Check, Sparkles, Play, X, Zap } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx } from 'clsx';
@@ -38,7 +38,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   hasAudio = false,
   onNavigate,
 }) => {
-  const { availableVersions, currentVersion, selectVersion } = useAppContext();
+  const { availableVersions, currentVersion, selectVersion, settings, toggleStrongs } = useAppContext();
   const [showVersionMenu, setShowVersionMenu] = useState(false);
   const versionMenuRef = useRef<HTMLDivElement>(null);
 
@@ -293,6 +293,23 @@ export const TopBar: React.FC<TopBarProps> = ({
               <span>{getReadingModeLabel()}</span>
             </motion.button>
           )}
+
+          {/* Deep Study Toggle */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleStrongs}
+            className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-xl",
+              "border transition-all duration-200 cursor-pointer",
+              settings?.studyTools?.strongsTags 
+                ? "bg-gold/20 border-gold text-gold shadow-[0_0_15px_rgba(212,175,55,0.3)] animate-pulse" 
+                : "bg-[var(--surface-1)] border-[var(--border-bible)] text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] hover:bg-[var(--surface-2)]"
+            )}
+            title={settings?.studyTools?.strongsTags ? "Desativar Estudo Profundo" : "Ativar Estudo Profundo (Strong/Léxico)"}
+          >
+            <Zap className={cn("h-5 w-5", settings?.studyTools?.strongsTags && "fill-current")} />
+          </motion.button>
 
           {/* Search */}
           <motion.button

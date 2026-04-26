@@ -116,7 +116,7 @@ O projeto agora está totalmente tipado e seguro. Todos os erros foram resolvido
 - [x] **Busca Global**: Implementada busca unificada em Escrituras, Notas e Rodapés.
 - [x] **Sincronização Cloud**: Backup de marcadores e notas (Firebase/Firestore) concluído e integrado.
 - [x] **Social Sharing**: Gerador de cartões de versículos premium para redes sociais concluído.
-- [ ] **Modo Estudo Profundo**: Integração avançada de ferramentas grego/hebraico (Strong's).
+- [x] **Modo Estudo Profundo**: Integração avançada de ferramentas grego/hebraico (Strong's) concluída.
 
 ---
 

@@ -15,6 +15,7 @@ import { cn } from '../utils/cn';
 import { DictionaryBottomSheet } from './DictionaryBottomSheet';
 import { useReaderSelection } from '../hooks/useReaderSelection';
 import { useReaderTTS } from '../hooks/useReaderTTS';
+import { StrongsBottomSheet } from './StrongsBottomSheet';
 
 interface ReaderProps {
   book: Book;
@@ -203,6 +204,8 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   const [selectedTerm, setSelectedTerm] = useState<string>('');
   const [selectedContext, setSelectedContext] = useState<string>('');
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
+  const [selectedStrongs, setSelectedStrongs] = useState<string>('');
+  const [isStrongsOpen, setIsStrongsOpen] = useState(false);
   const { config, settings, currentVersion } = useAppContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
@@ -335,9 +338,15 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
           }
         } else if (href.startsWith('s')) {
           const term = href.substring(1);
-          setSelectedTerm(term);
-          setSelectedContext(`${book.name} ${chapter}`);
-          setIsDictionaryOpen(true);
+          if (/^[HG]\d+/i.test(term)) {
+            setSelectedStrongs(term);
+            setSelectedContext(`${book.name} ${chapter}`);
+            setIsStrongsOpen(true);
+          } else {
+            setSelectedTerm(term);
+            setSelectedContext(`${book.name} ${chapter}`);
+            setIsDictionaryOpen(true);
+          }
         }
       }
     }
@@ -448,6 +457,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
       </AnimatePresence>
 
       <DictionaryBottomSheet term={selectedTerm} context={selectedContext} isOpen={isDictionaryOpen} onClose={() => setIsDictionaryOpen(false)} />
+      <StrongsBottomSheet strongsNumber={selectedStrongs} context={selectedContext} isOpen={isStrongsOpen} onClose={() => setIsStrongsOpen(false)} />
     </div>
   );
 });

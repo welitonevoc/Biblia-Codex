@@ -54,16 +54,22 @@ export class MySwordParser {
         parsed = parsed.replace(/<WG(\d+)>/gi, `<a href="sG$1" class="${strongsClass}">G$1</a>`);
         parsed = parsed.replace(/<WH(\d+)>/gi, `<a href="sH$1" class="${strongsClass}">H$1</a>`);
 
-        // 3b. MyBible Style (S prefix without letter, determined by context)
+        // 3b. MyBible Style (S prefix without letter, or S[HG]1234)
         const prefix = isNewTestament ? 'G' : 'H';
-        parsed = parsed.replace(/<S(\d+)>/gi, `<a href="s${prefix}$1" class="${strongsClass}">${prefix}$1</a>`);
-        parsed = parsed.replace(/<S>(\d+)<\/S>/gi, `<a href="s${prefix}$1" class="${strongsClass}">${prefix}$1</a>`);
+        parsed = parsed.replace(/<S([HG]?\d+)>/gi, (_, num) => {
+            const fullNum = /^[HG]/i.test(num) ? num : `${prefix}${num}`;
+            return `<a href="s${fullNum}" class="${strongsClass}">${fullNum}</a>`;
+        });
+        parsed = parsed.replace(/<S>([HG]?\d+)<\/S>/gi, (_, num) => {
+            const fullNum = /^[HG]/i.test(num) ? num : `${prefix}${num}`;
+            return `<a href="s${fullNum}" class="${strongsClass}">${fullNum}</a>`;
+        });
     } else {
         // Hide Strong's - remove all forms
         parsed = parsed.replace(/<WH\d+>/gi, '');
         parsed = parsed.replace(/<WG\d+>/gi, '');
-        parsed = parsed.replace(/<S\d+>/gi, '');
-        parsed = parsed.replace(/<S>\d+<\/S>/gi, '');
+        parsed = parsed.replace(/<S[HG]?\d+>/gi, '');
+        parsed = parsed.replace(/<S>[HG]?\d+<\/S>/gi, '');
     }
 
     // 4. Morphology
