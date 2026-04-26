@@ -99,6 +99,14 @@ const execSQL = (db: unknown, sql: string, params?: unknown[]): Array<{ columns:
   return database.exec(sql, params || []);
 };
 
+const mapResultRow = <T>(columns: string[], row: unknown[]): T => {
+  const obj: Record<string, unknown> = {};
+  columns.forEach((col, idx) => {
+    obj[col.toLowerCase()] = row[idx];
+  });
+  return obj as unknown as T;
+};
+
 // Reusable loader to ensure cache hit and low latency
 const getDbInstance = async (version: BibleModule): Promise<CachedDB> => {
   const cacheKey = version.path;
@@ -326,11 +334,7 @@ export const BibleService = {
 
           if (result.length > 0 && result[0].values.length > 0) {
             const columns = result[0].columns;
-            return result[0].values.map((row: unknown[]) => {
-              const obj: Record<string, unknown> = {};
-              columns.forEach((col: string, idx: number) => { obj[col.toLowerCase()] = row[idx]; });
-              return obj as unknown as PeopleData;
-            });
+            return result[0].values.map((row: unknown[]) => mapResultRow<PeopleData>(columns, row));
           }
         } catch (e: unknown) { console.log(`Error:`, e); }
       }
@@ -364,11 +368,7 @@ export const BibleService = {
 
           if (result.length > 0 && result[0].values.length > 0) {
             const columns = result[0].columns;
-            return result[0].values.map((row: unknown[]) => {
-              const obj: Record<string, unknown> = {};
-              columns.forEach((col: string, idx: number) => { obj[col.toLowerCase()] = row[idx]; });
-              return obj as unknown as PeopleData;
-            });
+            return result[0].values.map((row: unknown[]) => mapResultRow<PeopleData>(columns, row));
           }
         } catch (e: unknown) { console.log(e); }
       }
@@ -478,11 +478,7 @@ export const BibleService = {
               );
               if (searchResult.length > 0 && searchResult[0].values.length > 0) {
                 const resultCols = searchResult[0].columns;
-                places = searchResult[0].values.slice(0, 10).map(row => {
-                  const obj: Record<string, unknown> = {};
-                  resultCols.forEach((col: string, idx: number) => { obj[col] = row[idx]; });
-                  return obj as unknown as PlacesData;
-                });
+                places = searchResult[0].values.slice(0, 10).map(row => mapResultRow<PlacesData>(resultCols, row));
                 break;
               }
             }

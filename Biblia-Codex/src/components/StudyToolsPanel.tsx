@@ -180,9 +180,9 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
           <motion.div
             initial={{ x: '100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-bible-bg shadow-2xl flex flex-col z-[300]"
+            exit={{ x: '100%', opacity: 0.5 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 260 }}
+            className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-bible-bg shadow-float flex flex-col z-[300]"
           >
             {/* Header Premium */}
             <div className="shrink-0 px-6 py-5 border-b border-bible-border/50">
@@ -252,9 +252,9 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
                 </div>
               ) : (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
+                  transition={{ delay: 0.15, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
                   className="p-5 space-y-4"
                 >
                   {/* Commentary */}

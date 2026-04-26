@@ -12,23 +12,13 @@ function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
 }
 
-interface Place {
-  id: number;
-  location: string;
-  lat: number;
-  lon: number;
-  verses: string;
-  description: string;
-  images: string[];
-  modernName: string;
-  type: string;
-}
+import { Verse, Book, CrossReference, PeopleData, PlacesData, Footnote } from '../types';
 
 interface PlacesViewProps {
   bookId?: string;
   chapter?: number;
   verse?: number;
-  places?: Place[];
+  places?: PlacesData[];
   onClose?: () => void;
 }
 
@@ -64,9 +54,9 @@ function cleanDescription(comment: string): string {
 }
 
 export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onClose }: PlacesViewProps) {
-  const [places, setPlaces] = useState<Place[]>([]);
+  const [places, setPlaces] = useState<PlacesData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<PlacesData | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -95,11 +85,12 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
     }
   }, [bookId, chapter, verse, initialPlaces]);
 
-  function processPlaces(data: any[]): Place[] {
-    return (data || []).map((p: any) => {
+  function processPlaces(data: PlacesData[]): PlacesData[] {
+    return (data || []).map((p) => {
       const images = extractImagesFromComment(p.comment || '');
       return {
         id: p.id || 0,
+        name: p.name || p.location || '',
         location: p.location || p.name || '',
         lat: p.lat || 0,
         lon: p.lon || 0,
@@ -109,7 +100,7 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
         modernName: extractModernName(p.comment || ''),
         type: ''
       };
-    }).filter((p: Place) => p.location);
+    }).filter((p: PlacesData) => p.location);
   }
 
   const placeTypes = useMemo(() => {
@@ -223,14 +214,15 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
             <div className="space-y-3">
               <AnimatePresence>
                 {filteredPlaces.map((place, idx) => {
-                  const hasImage = place.images.length > 0;
+                  const images = place.images || [];
+                  const hasImage = images.length > 0;
                   
                   return (
                     <motion.button key={place.id || place.location || idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: idx * 0.03 }} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={() => { setSelectedPlace(place); setCurrentImageIndex(0); }} className="w-full flex items-start gap-3 p-3 rounded-xl text-left transition-all border" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
                       {hasImage ? (
                         <div className="w-20 h-20 rounded-lg shrink-0 overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}>
                           <img 
-                            src={place.images[0]} 
+                            src={images[0]} 
                             alt={place.location} 
                             className="w-full h-full object-cover"
                             onError={(e) => {
@@ -278,7 +270,7 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                 
                 <div className="overflow-y-auto px-5 pb-6" style={{ maxHeight: 'calc(85vh - 40px)' }}>
                   {(() => {
-                    const images = selectedPlace.images;
+                    const images = selectedPlace.images || [];
                     const hasImages = images.length > 0;
                     
                     return (
@@ -342,7 +334,7 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                           </div>
                         )}
 
-                        {selectedPlace.lat !== 0 && selectedPlace.lon !== 0 && (
+                        {selectedPlace.lat !== undefined && selectedPlace.lon !== undefined && selectedPlace.lat !== 0 && selectedPlace.lon !== 0 && (
                           <div className="p-3 rounded-xl border mb-4" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
                             <div className="flex items-center gap-2 mb-1">
                               <Globe className="w-3.5 h-3.5" style={{ color: 'var(--text-bible-muted)' }} />
@@ -359,8 +351,8 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                               <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-bible-muted)' }}>Referências Bíblicas</span>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                              {selectedPlace.verses.split(',').map((verse, idx) => (
-                                <span key={idx} className="px-3 py-2 rounded-lg text-sm font-medium border" style={{ backgroundColor: 'var(--surface-2)', borderColor: 'var(--border-bible)', color: 'var(--text-bible)' }}>{verse.trim()}</span>
+                              {selectedPlace.verses.split(',').map((verseStr: string, idx: number) => (
+                                <span key={idx} className="px-3 py-2 rounded-lg text-sm font-medium border" style={{ backgroundColor: 'var(--surface-2)', borderColor: 'var(--border-bible)', color: 'var(--text-bible)' }}>{verseStr.trim()}</span>
                               ))}
                             </div>
                           </div>

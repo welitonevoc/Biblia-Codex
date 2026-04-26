@@ -332,12 +332,19 @@ export interface PeopleData {
 }
 
 export interface PlacesData {
-  id: string;
+  id: string | number;
   name: string;
   description?: string;
   latitude?: number;
+  lat?: number;
   longitude?: number;
+  lon?: number;
   type?: string;
+  verses?: string;
+  images?: string[];
+  modernName?: string;
+  location?: string;
+  comment?: string;
 }
 
 export interface CrossRef {
