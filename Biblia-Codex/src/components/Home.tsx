@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   BookOpen, History, Bookmark, Calendar, Flame, ChevronRight, Play,
@@ -18,13 +18,34 @@ interface HomeProps {
   onNavigate: (book: Book, chapter: number) => void;
   goToReadingPlans?: () => void;
   goToDevocional?: () => void;
+  goToAI?: () => void;
 }
 
-export const Home: React.FC<HomeProps> = ({ onNavigate, goToReadingPlans, goToDevocional }) => {
+export const Home: React.FC<HomeProps> = ({ onNavigate, goToReadingPlans, goToDevocional, goToAI }) => {
   const { user } = useAppContext();
   const [streak] = useState(7);
   const [planDay] = useState(4);
   const [isReadToday, setIsReadToday] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Verse of the Day Data
+  const dailyVerses = [
+    { bookId: 'JHN', chapter: 3, verse: 16, text: 'Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crer não pereça, mas tenha a vida eterna.', ref: 'João 3:16' },
+    { bookId: 'ROM', chapter: 8, verse: 28, text: 'E sabemos que todas as coisas contribuem juntamente para o bem daqueles que amam a Deus, daqueles que são chamados segundo o seu propósito.', ref: 'Romanos 8:28' },
+    { bookId: 'PHL', chapter: 4, verse: 13, text: 'Posso todas as coisas naquele que me fortalece.', ref: 'Filipenses 4:13' },
+    { bookId: 'PSA', chapter: 23, verse: 1, text: 'O Senhor é o meu pastor, nada me faltará.', ref: 'Salmos 23:1' },
+    { bookId: 'ISA', chapter: 41, verse: 10, text: 'Não temas, porque eu sou contigo; não te assombres, porque eu sou teu Deus; eu te fortaleço, e te ajudo, e te sustento com a destra da minha justiça.', ref: 'Isaías 41:10' }
+  ];
+
+  const dailyVerse = useMemo(() => {
+    const day = new Date().getDate();
+    return dailyVerses[day % dailyVerses.length];
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const lastVerses = [
     { bookId: 'GEN', chapter: 1, verse: 1, text: 'No princípio criou Deus os céus e a terra.' },
@@ -73,16 +94,25 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, goToReadingPlans, goToDe
       icon: Sparkles,
       title: 'Estudo com IA',
       subtitle: 'Aprofunde seu conhecimento',
-      action: () => { },
+      action: () => goToAI?.(),
       gradient: 'from-purple-500 to-violet-600',
     },
   ];
 
   return (
-    <div className="h-full overflow-y-auto scrollbar-thin">
-      <div className="max-w-4xl mx-auto px-4 py-6 pb-28 space-y-6">
+    <div className="h-full overflow-y-auto scrollbar-thin bg-[var(--bg-bible)]">
+      <div className="max-w-4xl mx-auto px-4 py-6 pb-28 space-y-8">
         
-        {/* Header Premium */}
+        {loading ? (
+          <div className="space-y-6 animate-pulse">
+            <div className="h-40 bg-[var(--surface-2)] rounded-2xl" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-[var(--surface-1)] rounded-xl" />)}
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Header Premium */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -155,6 +185,41 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, goToReadingPlans, goToDe
               </motion.div>
             </div>
           </div>
+        </motion.div>
+
+        {/* Verse of the Day - Premium Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className={cn(
+            "relative overflow-hidden rounded-3xl p-8 text-center",
+            "bg-gradient-to-br from-[var(--surface-1)] to-[var(--surface-2)]",
+            "border border-[var(--border-bible-strong)]/20 shadow-xl"
+          )}
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Sparkles className="w-20 h-20 text-[var(--accent-bible)]" />
+          </div>
+          
+          <span className="premium-kicker mb-4 mx-auto">Versículo do Dia</span>
+          <blockquote className="relative">
+            <p className="text-xl md:text-2xl font-serif text-[var(--text-bible)] leading-relaxed italic mb-6">
+              "{dailyVerse.text}"
+            </p>
+            <cite className="not-italic block mt-4">
+              <button 
+                onClick={() => {
+                  const book = BIBLE_BOOKS.find(b => b.id === dailyVerse.bookId);
+                  if (book) onNavigate(book, dailyVerse.chapter);
+                }}
+                className="group inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--accent-bible)]/10 text-[var(--accent-bible)] font-bold text-sm hover:bg-[var(--accent-bible)] hover:text-white transition-all"
+              >
+                {dailyVerse.ref}
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </cite>
+          </blockquote>
         </motion.div>
 
         {/* Quick Actions */}
@@ -326,6 +391,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, goToReadingPlans, goToDe
             </motion.button>
           </div>
         </motion.div>
+          </>
+        )}
       </div>
     </div>
   );

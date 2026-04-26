@@ -5,13 +5,8 @@ import {
   Sun, Moon, Sparkles, BookMarked, Settings, Plus,
   ChevronDown, Play, Pause, Volume2, VolumeX, Loader
 } from 'lucide-react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import initSqlJs from 'sql.js';
-
-function cn(...inputs: (string | boolean | undefined)[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from '../utils/cn';
+import DOMPurify from 'dompurify';
 
 interface DevotionalModule {
   id: string;
@@ -303,9 +298,9 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
                 )}
 
                 <div 
-                  className="p-4 rounded-xl border prose prose-sm max-w-none"
+                  className="p-4 rounded-xl border prose prose-sm max-w-none bible-text-content"
                   style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}
-                  dangerouslySetInnerHTML={{ __html: currentDevotion.content }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentDevotion.content) }}
                 />
               </motion.div>
             )}
