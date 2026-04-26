@@ -126,19 +126,22 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
       const isPast = i < currentDay;
 
       days.push(
-        <button
+        <motion.button
           key={i}
+          whileHover={{ scale: 1.1, y: -2 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => goToDay(i)}
           className={cn(
-            'w-10 h-10 rounded-lg text-sm font-medium transition-all',
-            hasDevotion && 'bg-[var(--accent-bible)]/10 text-[var(--accent-bible)] hover:bg-[var(--accent-bible)]/20',
-            !hasDevotion && 'text-[var(--text-bible-subtle)]',
-            isToday && 'ring-2 ring-[var(--accent-bible)]',
-            isPast && !hasDevotion && 'opacity-30'
+            'w-10 h-10 rounded-xl text-sm font-bold transition-all flex items-center justify-center',
+            'border shadow-sm',
+            isToday && 'bg-[var(--accent-bible)] text-white border-[var(--accent-bible)] shadow-float',
+            !isToday && hasDevotion && 'bg-[var(--accent-bible)]/10 text-[var(--accent-bible)] border-[var(--accent-bible)]/20',
+            !isToday && !hasDevotion && 'bg-[var(--surface-1)] text-[var(--text-bible-muted)] border-[var(--border-bible)]',
+            isPast && !hasDevotion && 'opacity-40'
           )}
         >
           {i}
-        </button>
+        </motion.button>
       );
     }
     return days;
@@ -191,43 +194,57 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
         <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: '#8b5cf6', opacity: 0.05 }} />
       </div>
 
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="shrink-0 relative px-4 py-4 z-10">
-        <div className="absolute inset-0 border-b" style={{ borderColor: 'var(--border-bible)' }} />
-        
-        <div className="relative">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <BookMarked className="w-4 h-4" style={{ color: 'var(--accent-bible)' }} />
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--accent-bible)' }}>Devocional</span>
-              </div>
-              <h1 className="text-lg font-bold" style={{ color: 'var(--text-bible)', fontFamily: 'var(--font-display)' }}>
-                {selectedModule ? selectedModule.name : 'Escolha um devocional'}
-              </h1>
-              {selectedModule && (
-                <p className="text-xs mt-1" style={{ color: 'var(--text-bible-muted)' }}>{selectedModule.description}</p>
-              )}
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        className="shrink-0 relative px-6 py-6 z-10"
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="premium-kicker">Devocional Diário</span>
             </div>
-            {onClose && (
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onClose} className="p-2 rounded-lg" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)' }}>
-                <X className="w-4 h-4" style={{ color: 'var(--text-bible-muted)' }} />
-              </motion.button>
-            )}
-          </div>
-
-          <div className="flex gap-2">
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowModuleSelector(!showModuleSelector)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--accent-bible)', color: 'white' }}>
-              <Plus className="w-4 h-4" />
-              Módulos
-            </motion.button>
-
+            <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text-bible)', fontFamily: 'var(--font-display)' }}>
+              {selectedModule ? selectedModule.name : 'Escolha sua Jornada'}
+            </h1>
             {selectedModule && (
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => goToDay(new Date().getDate())} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)', color: 'var(--text-bible)' }}>
-                <Sun className="w-4 h-4" />
-                Hoje
-              </motion.button>
+              <p className="text-sm mt-2 text-[var(--text-bible-muted)] max-w-sm">{selectedModule.description}</p>
             )}
           </div>
+          {onClose && (
+            <motion.button 
+              whileHover={{ scale: 1.1, rotate: 90 }} 
+              whileTap={{ scale: 0.9 }} 
+              onClick={onClose} 
+              className="p-3 rounded-2xl bg-[var(--surface-1)] border border-[var(--border-bible)] shadow-sm"
+            >
+              <X className="w-5 h-5 text-[var(--text-bible-muted)]" />
+            </motion.button>
+          )}
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <motion.button 
+            whileHover={{ scale: 1.02 }} 
+            whileTap={{ scale: 0.98 }} 
+            onClick={() => setShowModuleSelector(!showModuleSelector)} 
+            className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-[var(--accent-bible)] text-white shadow-lg shadow-[var(--accent-bible)]/20"
+          >
+            <Plus className="w-5 h-5" />
+            Mudar Módulo
+          </motion.button>
+
+          {selectedModule && (
+            <motion.button 
+              whileHover={{ scale: 1.02 }} 
+              whileTap={{ scale: 0.98 }} 
+              onClick={() => goToDay(new Date().getDate())} 
+              className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold bg-[var(--surface-1)] border border-[var(--border-bible)] text-[var(--text-bible)] hover:shadow-md transition-shadow"
+            >
+              <Sun className="w-5 h-5 text-amber-500" />
+              Retornar ao Hoje
+            </motion.button>
+          )}
         </div>
       </motion.div>
 

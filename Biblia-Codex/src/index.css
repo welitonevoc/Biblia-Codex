@@ -145,6 +145,28 @@
     background-clip: text;
   }
 
+  .premium-kicker {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    background: rgba(var(--accent-bible-rgb), 0.1);
+    color: var(--accent-bible);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border: 1px solid rgba(var(--accent-bible-rgb), 0.15);
+  }
+
+  .glass-panel {
+    background: var(--surface-overlay);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-bible);
+    border-radius: var(--radius-lg);
+  }
+
   /* Surface layers */
   .surface-lift {
     background: var(--surface-1);

@@ -7,14 +7,9 @@ import {
   Download, Globe, Shield, Key, Zap, ArrowLeft
 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn } from '../utils/cn';
 import { AppearanceSettings } from './AppearanceSettings';
 import { TTSSettings } from './TTSSettings';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 const SettingCard: React.FC<{
   icon: React.ElementType;
@@ -25,13 +20,13 @@ const SettingCard: React.FC<{
   disabled?: boolean;
 }> = ({ icon: Icon, title, description, onClick, badge, disabled }) => (
   <motion.button
-    whileHover={{ scale: 1.02 }}
+    whileHover={{ scale: 1.02, y: -2 }}
     whileTap={{ scale: 0.98 }}
     onClick={onClick}
     disabled={disabled}
     className={cn(
-      "w-full p-4 rounded-xl bg-bible-surface border border-bible-border text-left transition-all",
-      "hover:bg-bible-surface-strong hover:border-bible-accent/50",
+      "w-full p-5 rounded-2xl bg-[var(--surface-1)] border border-[var(--border-bible)] text-left transition-all",
+      "hover:bg-[var(--surface-2)] hover:border-[var(--accent-bible)]/30 hover:shadow-md",
       disabled && "opacity-50 cursor-not-allowed"
     )}
   >
@@ -222,13 +217,14 @@ export const SettingsDashboard: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-bible-accent/10">
-              <Settings2 className="w-6 h-6 text-bible-accent" />
+          <div className="flex flex-col items-center gap-4 mb-4">
+            <div className="p-4 rounded-2xl bg-[var(--accent-bible)]/10 shadow-inner-glow">
+              <Settings2 className="w-8 h-8 text-[var(--accent-bible)]" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-bible-text">Configurações</h1>
-              <p className="text-sm text-bible-text-muted">Personalize sua experiência</p>
+            <div className="text-center">
+              <span className="premium-kicker mb-2">Painel de Controle</span>
+              <h1 className="text-3xl font-bold text-[var(--text-bible)] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>Configurações</h1>
+              <p className="text-sm text-[var(--text-bible-muted)]">Ajuste cada detalhe da sua experiência</p>
             </div>
           </div>
         </motion.div>
@@ -243,13 +239,13 @@ export const SettingsDashboard: React.FC = () => {
             className="space-y-4"
           >
             {/* Section Header */}
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-bible-accent/10">
-                <section.icon className="w-4 h-4 text-bible-accent" />
+            <div className="flex items-center gap-4 mb-2">
+              <div className="p-2.5 rounded-xl bg-[var(--accent-bible)]/10">
+                <section.icon className="w-5 h-5 text-[var(--accent-bible)]" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-bible-text">{section.title}</h2>
-                <p className="text-sm text-bible-text-muted">{section.description}</p>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent-bible)]/60">Seção</span>
+                <h2 className="text-xl font-bold text-[var(--text-bible)]">{section.title}</h2>
               </div>
             </div>
 
