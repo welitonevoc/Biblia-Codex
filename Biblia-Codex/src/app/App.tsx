@@ -4,18 +4,21 @@
  */
 
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { AppProvider, useAppContext } from './app-context.tsx';
+import { AppProvider, useAppContext } from './app-context';
 // Componentes que são carregados imediatamente (não lazy)
-import { TopBar } from '../features/navigation/TopBar';
-import { ReaderWithAudio } from '../features/bible/ReaderWithAudio';
-import { HamburgerMenu } from '../features/navigation/HamburgerMenu';
-import { Navigation } from '../features/bible/Navigation';
-import { Settings } from '../features/settings/Settings';
-import { StudyPanel } from '../features/study/StudyPanel';
-import { StudyToolsPanel } from '../features/study/StudyToolsPanel';
-import { SearchView } from '../features/search/SearchView';
-import { BIBLE_BOOKS } from '../data/bibleMetadata';
-import { Book, Verse } from '../types';
+import TopBar from '../features/navigation/TopBar';
+import Reader from '../features/bible/Reader';
+import ReaderWithAudio from '../features/bible/ReaderWithAudio';
+import HamburgerMenu from '../features/navigation/HamburgerMenu';
+import Navigation from '../features/bible/Navigation';
+import Settings from '../features/settings/Settings';
+import StudyPanel from '../features/study/StudyPanel';
+import StudyToolsPanel from '../features/study/StudyToolsPanel';
+import SearchView from '../features/search/SearchView';
+import { AudioTrack } from '../../services/audioService';
+import { getAudioTracksForChapter, hasAudioForChapter } from '../../data/audioData';
+import { BIBLE_BOOKS } from '../../data/bibleMetadata';
+import { Book, Verse } from '../../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, Loader } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
