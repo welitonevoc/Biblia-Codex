@@ -74,9 +74,9 @@ function cn(...inputs: ClassValue[]) {
 
 function AppContent() {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const {
-    settings, activeTab, setActiveTab, config, availableVersions
-  } = useAppContext();
+  const settings = useSettingsState();
+  const dispatchBible = useBibleDispatch();
+  const dispatchSettings = useSettingsDispatch();
   const [currentBook, setCurrentBook] = useState<Book>(BIBLE_BOOKS[0]);
   const [currentChapter, setCurrentChapter] = useState(1);
   const [targetVerse, setTargetVerse] = useState<number | undefined>(undefined);
@@ -84,8 +84,19 @@ function AppContent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isStudyOpen, setIsStudyOpen] = useState(false);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
-  const [selectedVersesForStudy, setSelectedVersesForStudy] = useState<{ verse: number, text: string }[]>([]);
+  const [selectedVersesForStudy, setSelectedVersesForStudy] = useState<{ verse: number; text: string }[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [activeTab, setActiveTab] = useState<'home' | 'bible' | 'study' | 'navigation' | 'settings' | 'search' | 'bookmarks' | 'reading-plans' | 'tags' | 'tts' | 'support' | 'dictionaries' | 'modules'>('bible');
+
+  // Configuração
+  const [config] = useState({
+    navigation: {
+      navAnimation: !prefersReducedMotion,
+    },
+  });
+
+  // Versões disponíveis
+  const [availableVersions, setAvailableVersions] = useState([{ id: '1', name: 'Almeida Revista e Atualizada', abbreviation: 'ARA' }]);
 
   // Verse Card Generator State
   const [shareData, setShareData] = useState<{ verses: { verse: number; text: string }[]; reference: string } | null>(null);
