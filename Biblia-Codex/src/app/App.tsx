@@ -7,7 +7,7 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { AppProvider, useAppState, useBibleDispatch, useSettingsDispatch } from './app-context';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, Loader } from 'lucide-react';
-import { clsx } from 'clsx';
+import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 // Componentes que são carregados imediatamente (não lazy)
@@ -20,16 +20,10 @@ import { Settings } from '../features/settings';
 import { StudyPanel } from '../features/study';
 import { StudyToolsPanel } from '../features/study';
 import { SearchView } from '../features/search';
-import { BIBLE_BOOKS } from '../data';
+import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { Book, Verse } from '../types';
 import { AudioTrack } from '../services';
 import { getAudioTracksForChapter, hasAudioForChapter } from '../data/audioData';
-import { BIBLE_BOOKS } from '../../data/bibleMetadata';
-import { Book, Verse } from '../../types';
-import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, Loader } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 
 import { Onboarding } from '../features/onboarding';
 import { PermissionScreen } from '../features/permissions';
@@ -86,7 +80,7 @@ function AppContent() {
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [selectedVersesForStudy, setSelectedVersesForStudy] = useState<{ verse: number; text: string }[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(true);
-  const [activeTab, setActiveTab] = useState<'home' | 'bible' | 'study' | 'navigation' | 'settings' | 'search' | 'bookmarks' | 'reading-plans' | 'tags' | 'tts' | 'support' | 'dictionaries' | 'modules'>('bible');
+  const [activeTab, setActiveTab] = useState<'bible' | 'study' | 'navigation' | 'settings' | 'search' | 'bookmarks' | 'reading-plans' | 'tags' | 'tts' | 'support' | 'dictionaries' | 'modules'>('bible');
 
   // Configuração
   const [config] = useState({
@@ -221,22 +215,6 @@ function AppContent() {
           config.navigationStyle === 'asymmetric' && "pl-14 md:pl-16"
         )}>
           <AnimatePresence mode="wait">
-{activeTab === 'home' && (
-                <motion.div
-                  key="home"
-                  initial={settings.navigation.navAnimation ? { opacity: 0, y: 10 } : {}}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={settings.navigation.navAnimation ? { opacity: 0, y: -10 } : {}}
-                  className="h-full w-full"
-                >
-                  <Home 
-                    onNavigate={handleSelect} 
-                    goToReadingPlans={() => setActiveTab('reading-plans')} 
-                    goToDevocional={() => setActiveTab('devocional')}
-                    goToAI={() => setActiveTab('ai-assistant')} 
-                  />
-                </motion.div>
-              )}
               {activeTab === 'profile' && (
                 <motion.div
                   key="profile"
@@ -488,7 +466,7 @@ function AppContent() {
               </motion.div>
             )}
 
-            {!['home', 'bible', 'notes', 'settings', 'tts', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional', 'search', 'ebd', 'profile'].includes(activeTab) && (
+            {!['bible', 'notes', 'settings', 'tts', 'support', 'dictionaries', 'tags', 'modules', 'sync', 'epub', 'reading-plans', 'commentaries', 'maps', 'xrefs', 'ai-assistant', 'bookmarks', 'devocional', 'search', 'ebd', 'profile'].includes(activeTab) && (
               <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
                 <div className="opacity-20 flex flex-col items-center space-y-4">
                   <BookOpen className="w-16 h-16" />
@@ -496,7 +474,7 @@ function AppContent() {
                   <p className="ui-text max-w-xs">Esta funcionalidade estará disponível em breve para aprimorar seus estudos.</p>
                 </div>
                 <button
-                  onClick={() => setActiveTab('home')}
+                  onClick={() => setActiveTab('bible')}
                   className="bg-bible-accent text-bible-bg px-8 py-3 rounded-2xl font-bold ui-text text-sm shadow-lg active:scale-95 transition-transform"
                 >
                   Voltar ao Início
