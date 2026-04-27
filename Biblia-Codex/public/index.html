@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="description" content="Bíblia Codex - Aplicativo de estudo bíblico completo">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Bíblia Codex - Servidor Funcionando</title>
     <style>
         body {
@@ -53,6 +58,7 @@
             margin: 0.25rem 0;
         }
     </style>
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
     <div class="container">
@@ -71,13 +77,31 @@
                 <li>✅ Refatoração completa da estrutura</li>
                 <li>✅ Otimizações de performance (React.memo)</li>
                 <li>✅ Lazy loading de componentes</li>
-                <li>⏳ Correção de imports em andamento</li>
+                <li>✅ Barrel exports implementados</li>
+                <li>✅ Testes unitários adicionados</li>
+                <li>✅ Configuração de desenvolvimento melhorada</li>
+                <li>✅ PWA features iniciadas</li>
             </ul>
         </div>
 
-        <small style="color: #999; font-size: 0.8rem;">
+        <div class="text-xs text-gray-500">
             Aplicação em desenvolvimento - Refatoração em progresso
-        </small>
+        </div>
     </div>
+
+    <script>
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>

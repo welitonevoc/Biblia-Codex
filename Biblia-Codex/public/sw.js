@@ -1,94 +1,60 @@
-const CACHE_NAME = 'codex-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/sql-wasm.wasm'
-];
-
-const CACHE_STRATEGIES = {
-  cacheFirst: [
-    '/icon-',
-    '/manifest.json',
-    '/sql-wasm.wasm'
-  ],
-  networkFirst: [
-    '/api/',
-    '/fonts/'
-  ],
-  staleWhileRevalidate: [
-    '/modules/'
-  ]
-};
-
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+    caches.open('biblia-codex-v1').then((cache) => {
+      return cache.addAll([
+        '/',
+        '/index.html',
+        '/src/index.css',
+      ])
     })
-  );
-  self.skipWaiting();
-});
+  )
+})
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request)
+    })
+  )
+})
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
-      );
+        cacheNames.map((cacheName) => {
+          if (cacheName !== 'biblia-codex-v1') {
+            return caches.delete(cacheName)
+          }
+        })
+      )
     })
-  );
-  self.clients.claim();
-});
+  )
+})
 
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+self.addEventListener('push', (event) => {
+  const data = event.data?.json()
   
-  if (event.request.method !== 'GET') return;
+  self.registration.showNotification(data?.title || 'Bíblia Codex', {
+    body: data?.body || 'Novo conteúdo disponível!',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+  })
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
   
-  for (const pattern of CACHE_STRATEGIES.cacheFirst) {
-    if (url.pathname.includes(pattern)) {
-      event.respondWith caches.match(event.request).then((cached) => {
-        return cached || fetch(event.request);
-      });
-      return;
-    }
-  }
-  
-  for (const pattern of CACHE_STRATEGIES.networkFirst) {
-    if (url.pathname.includes(pattern)) {
-      event.respondWith(
-        fetch(event.request)
-          .then((response) => {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-            return response;
-          })
-          .catch(() => caches.match(event.request))
-      );
-      return;
-    }
-  }
-  
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) {
-        fetch(event.request).then((response) => {
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-        });
-        return cached;
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url === '/' && 'focus' in client) {
+          return client.focus()
+        }
       }
-      return fetch(event.request);
+      if (clients.openWindow) {
+        return clients.openWindow('/')
+      }
     })
-  );
-});
-
-self.addEventListener('message', (event) => {
-  if (event.data === 'skipWaiting') {
-    self.skipWaiting();
-  }
-});
+  )
+})
