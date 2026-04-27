@@ -3,8 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { AppProvider, useAppContext } from './app-context';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { AppProvider, useAppState, useBibleDispatch, useSettingsDispatch } from './app-context';
+import { motion, AnimatePresence } from 'motion/react';
+import { BookOpen, Loader } from 'lucide-react';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
 // Componentes que são carregados imediatamente (não lazy)
 import { TopBar } from '../features/navigation';
 import Reader from '../features/bible/Reader';
