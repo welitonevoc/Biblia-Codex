@@ -26,7 +26,7 @@ interface TopBarProps {
   onNavigate?: (bookId: string, chapter: number) => void;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({
+export const TopBar: React.FC<TopBarProps> = React.memo(({
   currentBook,
   currentChapter,
   onNavOpen,
@@ -356,4 +356,4 @@ export const TopBar: React.FC<TopBarProps> = ({
       />
     </header>
   );
-};
+});

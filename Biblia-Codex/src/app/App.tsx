@@ -4,46 +4,46 @@
  */
 
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { AppProvider, useAppContext } from './AppContext';
-import { TopBar } from './components/TopBar';
-import { Reader } from './components/Reader';
-import { ReaderWithAudio } from './components/ReaderWithAudio';
-import { AudioTrack } from './services/audioService';
-import { getAudioTracksForChapter, hasAudioForChapter } from './data/audioData';
-import { HamburgerMenu } from './components/HamburgerMenu';
-import { Navigation } from './components/Navigation';
-import { Settings } from './components/Settings';
-import { StudyPanel } from './components/StudyPanel';
-import { Home } from './components/Home';
-import { Notes } from './components/Notes';
-import { SettingsPage } from './components/SettingsPage';
-import { AISettingsPage } from './components/AISettingsPage';
-import { HelpPage } from './components/HelpPage';
-import { DictionaryView } from './components/DictionaryView';
-import { ModuleManagement } from './components/ModuleManagement';
-import { BookmarksPage } from './components/BookmarksPage';
-import { StudyToolsPanel } from './components/StudyToolsPanel';
-import { ReadingPlans } from './components/ReadingPlans';
-import { SearchView } from './components/SearchView';
-import { TagsView } from './components/TagsView';
-import { SettingsDashboard } from './components/SettingsDashboard';
-import { BIBLE_BOOKS } from './data/bibleMetadata';
-import { Book, Verse } from './types';
+import { AppProvider, useAppContext } from './app-context.tsx';
+// Componentes que são carregados imediatamente (não lazy)
+import { TopBar } from '../features/navigation/TopBar';
+import { ReaderWithAudio } from '../features/bible/ReaderWithAudio';
+import { HamburgerMenu } from '../features/navigation/HamburgerMenu';
+import { Navigation } from '../features/bible/Navigation';
+import { Settings } from '../features/settings/Settings';
+import { StudyPanel } from '../features/study/StudyPanel';
+import { StudyToolsPanel } from '../features/study/StudyToolsPanel';
+import { SearchView } from '../features/search/SearchView';
+import { BIBLE_BOOKS } from '../data/bibleMetadata';
+import { Book, Verse } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, Loader } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { Onboarding } from './components/Onboarding';
-import { PermissionScreen } from './components/PermissionScreen';
-import { ProfilePage } from './components/ProfilePage';
-import { VerseCardGenerator } from './components/VerseCardGenerator';
+import { Onboarding } from '../features/onboarding/Onboarding';
+import { PermissionScreen } from '../features/permissions/PermissionScreen';
+import { ProfilePage } from '../features/settings/ProfilePage';
+import { VerseCardGenerator } from '../components/common/verse-card-generator';
 
 // Lazy loading for heavy pages (Phase 5: Performance)
-const DevotionalPage = lazy(() => import('./components/DevotionalPage').then(m => ({ default: m.DevotionalPage })));
-const MapsPage = lazy(() => import('./components/MapsPage').then(m => ({ default: m.MapsPage })));
-const XRefsPage = lazy(() => import('./components/XRefsPage').then(m => ({ default: m.XRefsPage })));
-const EBDPage = lazy(() => import('./components/EBDPage').then(m => ({ default: m.EBDPage })));
+const DevotionalPage = lazy(() => import('../features/devotional/DevotionalPage').then(m => ({ default: m.DevotionalPage })));
+const MapsPage = lazy(() => import('../features/maps/MapsPage').then(m => ({ default: m.MapsPage })));
+const XRefsPage = lazy(() => import('../features/study/XRefsPage').then(m => ({ default: m.XRefsPage })));
+const EBDPage = lazy(() => import('../features/ebd/EBDPage').then(m => ({ default: m.EBDPage })));
+
+// Additional lazy loading for performance optimization
+const NotesPage = lazy(() => import('../features/notes/Notes').then(m => ({ default: m.Notes })));
+const BookmarksPage = lazy(() => import('../features/bookmarks/BookmarksPage').then(m => ({ default: m.BookmarksPage })));
+const ReadingPlansPage = lazy(() => import('../features/reading-plans/ReadingPlans').then(m => ({ default: m.ReadingPlans })));
+const TagsPage = lazy(() => import('../features/tags/TagsView').then(m => ({ default: m.TagsView })));
+const DictionaryViewPage = lazy(() => import('../features/study/DictionaryView').then(m => ({ default: m.DictionaryView })));
+const ModuleManagementPage = lazy(() => import('../features/modules/ModuleManagement').then(m => ({ default: m.ModuleManagement })));
+const HelpPage = lazy(() => import('../features/help/HelpPage').then(m => ({ default: m.HelpPage })));
+const AISettingsPage = lazy(() => import('../features/settings/AISettingsPage').then(m => ({ default: m.AISettingsPage })));
+const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const SettingsDashboardPage = lazy(() => import('../features/settings/SettingsDashboard').then(m => ({ default: m.SettingsDashboard })));
+const ProfilePage = lazy(() => import('../features/settings/ProfilePage').then(m => ({ default: m.ProfilePage })));
 
 // Loading fallback
 function PageLoader() {
@@ -263,7 +263,9 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <Notes />
+                <Suspense fallback={<PageLoader />}>
+                  <NotesPage />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'settings' && (
@@ -274,7 +276,9 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <SettingsDashboard />
+                <Suspense fallback={<PageLoader />}>
+                  <SettingsDashboardPage />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'tts' && (
@@ -285,7 +289,9 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <SettingsPage section="tts" />
+                <Suspense fallback={<PageLoader />}>
+                  <SettingsPage />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'support' && (
@@ -296,7 +302,9 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <HelpPage />
+                <Suspense fallback={<PageLoader />}>
+                  <HelpPage />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'dictionaries' && (
@@ -307,7 +315,9 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <DictionaryView />
+                <Suspense fallback={<PageLoader />}>
+                  <DictionaryViewPage />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'modules' && (
@@ -318,7 +328,9 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <ModuleManagement />
+                <Suspense fallback={<PageLoader />}>
+                  <ModuleManagementPage />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'tags' && (
@@ -329,7 +341,9 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <TagsView />
+                <Suspense fallback={<PageLoader />}>
+                  <TagsPage />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'devocional' && (
@@ -356,10 +370,12 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <ReadingPlans onNavigate={(bookId, chapter, verse) => {
-                  const book = BIBLE_BOOKS.find(b => b.id === bookId);
-                  if (book) handleSelect(book, chapter, verse);
-                }} availableVersions={availableVersions.map(v => ({ id: v.id, name: v.name, abbreviation: v.abbreviation }))} />
+                <Suspense fallback={<PageLoader />}>
+                  <ReadingPlansPage onNavigate={(bookId, chapter, verse) => {
+                    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+                    if (book) handleSelect(book, chapter, verse);
+                  }} availableVersions={availableVersions.map(v => ({ id: v.id, name: v.name, abbreviation: v.abbreviation }))} />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'bookmarks' && (
@@ -370,10 +386,12 @@ function AppContent() {
                 exit={settings.navigation.navAnimation ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <BookmarksPage onNavigate={(bookId, chapter, verse) => {
-                  const book = BIBLE_BOOKS.find(b => b.id === bookId);
-                  if (book) handleSelect(book, chapter, verse);
-                }} onBack={() => setActiveTab('home')} />
+                <Suspense fallback={<PageLoader />}>
+                  <BookmarksPage onNavigate={(bookId, chapter, verse) => {
+                    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+                    if (book) handleSelect(book, chapter, verse);
+                  }} onBack={() => setActiveTab('home')} />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === 'search' && (
@@ -559,7 +577,7 @@ function AppContent() {
   );
 }
 
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 
 export default function App() {
   return (

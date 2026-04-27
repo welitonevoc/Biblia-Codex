@@ -29,7 +29,7 @@ interface StudyToolsPanelProps {
   onNavigate: (bookId: string, chapter: number, verse?: number) => void;
 }
 
-export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
+export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
   isOpen,
   onClose,
   verse,
@@ -364,4 +364,4 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = ({
       )}
     </AnimatePresence>
   );
-};
+});
