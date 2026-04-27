@@ -6,17 +6,19 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { AppProvider, useAppContext } from './app-context';
 // Componentes que são carregados imediatamente (não lazy)
-import TopBar from '../features/navigation/TopBar';
+import { TopBar } from '../features/navigation';
 import Reader from '../features/bible/Reader';
 import ReaderWithAudio from '../features/bible/ReaderWithAudio';
-import HamburgerMenu from '../features/navigation/HamburgerMenu';
-import Navigation from '../features/bible/Navigation';
-import Settings from '../features/settings/Settings';
-import StudyPanel from '../features/study/StudyPanel';
-import StudyToolsPanel from '../features/study/StudyToolsPanel';
-import SearchView from '../features/search/SearchView';
-import { AudioTrack } from '../../services/audioService';
-import { getAudioTracksForChapter, hasAudioForChapter } from '../../data/audioData';
+import { HamburgerMenu } from '../features/navigation';
+import { Navigation } from '../features/bible';
+import { Settings } from '../features/settings';
+import { StudyPanel } from '../features/study';
+import { StudyToolsPanel } from '../features/study';
+import { SearchView } from '../features/search';
+import { BIBLE_BOOKS } from '../data';
+import { Book, Verse } from '../types';
+import { AudioTrack } from '../services';
+import { getAudioTracksForChapter, hasAudioForChapter } from '../data/audioData';
 import { BIBLE_BOOKS } from '../../data/bibleMetadata';
 import { Book, Verse } from '../../types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -24,28 +26,28 @@ import { BookOpen, Loader } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import { Onboarding } from '../features/onboarding/Onboarding';
-import { PermissionScreen } from '../features/permissions/PermissionScreen';
-import { ProfilePage } from '../features/settings/ProfilePage';
-import { VerseCardGenerator } from '../components/common/verse-card-generator';
+import { Onboarding } from '../features/onboarding';
+import { PermissionScreen } from '../features/permissions';
+import { ProfilePage } from '../features/settings';
+import { VerseCardGenerator } from '../components/common';
 
 // Lazy loading for heavy pages (Phase 5: Performance)
-const DevotionalPage = lazy(() => import('../features/devotional/DevotionalPage').then(m => ({ default: m.DevotionalPage })));
-const MapsPage = lazy(() => import('../features/maps/MapsPage').then(m => ({ default: m.MapsPage })));
-const XRefsPage = lazy(() => import('../features/study/XRefsPage').then(m => ({ default: m.XRefsPage })));
-const EBDPage = lazy(() => import('../features/ebd/EBDPage').then(m => ({ default: m.EBDPage })));
+const DevotionalPage = lazy(() => import('../features/devotional').then(m => ({ default: m.DevotionalPage })));
+const MapsPage = lazy(() => import('../features/maps').then(m => ({ default: m.MapsPage })));
+const XRefsPage = lazy(() => import('../features/study').then(m => ({ default: m.XRefsPage })));
+const EBDPage = lazy(() => import('../features/ebd').then(m => ({ default: m.EBDPage })));
 
 // Additional lazy loading for performance optimization
-const NotesPage = lazy(() => import('../features/notes/Notes').then(m => ({ default: m.Notes })));
-const BookmarksPage = lazy(() => import('../features/bookmarks/BookmarksPage').then(m => ({ default: m.BookmarksPage })));
-const ReadingPlansPage = lazy(() => import('../features/reading-plans/ReadingPlans').then(m => ({ default: m.ReadingPlans })));
-const TagsPage = lazy(() => import('../features/tags/TagsView').then(m => ({ default: m.TagsView })));
-const DictionaryViewPage = lazy(() => import('../features/study/DictionaryView').then(m => ({ default: m.DictionaryView })));
-const ModuleManagementPage = lazy(() => import('../features/modules/ModuleManagement').then(m => ({ default: m.ModuleManagement })));
-const HelpPage = lazy(() => import('../features/help/HelpPage').then(m => ({ default: m.HelpPage })));
-const AISettingsPage = lazy(() => import('../features/settings/AISettingsPage').then(m => ({ default: m.AISettingsPage })));
-const SettingsPage = lazy(() => import('../features/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
-const SettingsDashboardPage = lazy(() => import('../features/settings/SettingsDashboard').then(m => ({ default: m.SettingsDashboard })));
+const NotesPage = lazy(() => import('../features/notes').then(m => ({ default: m.Notes })));
+const BookmarksPage = lazy(() => import('../features/bookmarks').then(m => ({ default: m.BookmarksPage })));
+const ReadingPlansPage = lazy(() => import('../features/reading-plans').then(m => ({ default: m.ReadingPlans })));
+const TagsPage = lazy(() => import('../features/tags').then(m => ({ default: m.TagsView })));
+const DictionaryViewPage = lazy(() => import('../features/study').then(m => ({ default: m.DictionaryView })));
+const ModuleManagementPage = lazy(() => import('../features/modules').then(m => ({ default: m.ModuleManagement })));
+const HelpPage = lazy(() => import('../features/help').then(m => ({ default: m.HelpPage })));
+const AISettingsPage = lazy(() => import('../features/settings').then(m => ({ default: m.AISettingsPage })));
+const SettingsPage = lazy(() => import('../features/settings').then(m => ({ default: m.SettingsPage })));
+const SettingsDashboardPage = lazy(() => import('../features/settings').then(m => ({ default: m.SettingsDashboard })));
 const ProfilePage = lazy(() => import('../features/settings/ProfilePage').then(m => ({ default: m.ProfilePage })));
 
 // Loading fallback

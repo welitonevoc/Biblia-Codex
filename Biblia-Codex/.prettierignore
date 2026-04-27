@@ -1,0 +1,20 @@
+# Ignore artifacts
+dist
+node_modules
+coverage
+*.log
+.DS_Store
+.vscode
+temp
+tmp
+
+# Build outputs
+public/build
+*.map
+
+# Test snapshots
+__snapshots__/
+
+# Generated files
+*.generated.ts
+*.generated.js
