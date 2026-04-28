@@ -126,6 +126,15 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
     return results[activeCategory].length;
   }, [results, activeCategory]);
 
+  const cleanStrongsCodes = useCallback((text: string) => {
+    return text
+      .replace(/<W[HG]\d+>/gi, '')
+      .replace(/<S>\s*[HG]?\d+\s*<\/S>/gi, '')
+      .replace(/<S\d+>/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }, []);
+
   return (
     <div className="h-full flex flex-col overflow-hidden bg-bible-bg">
       <div className="max-w-4xl mx-auto w-full px-4 pt-6 pb-2 space-y-4">
@@ -262,7 +271,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                       </div>
                       <ChevronRight className="w-4 h-4 text-bible-text-muted group-hover:translate-x-1 transition-transform" />
                     </div>
-                    <p className="text-sm text-bible-text leading-relaxed">{v.text}</p>
+                    <p className="text-sm text-bible-text leading-relaxed">{cleanStrongsCodes(v.text)}</p>
                     
                     {aiResults.has(aiKey) && (
                       <div className="mt-3 p-3 rounded-xl bg-bible-accent/5 border border-bible-accent/10">
