@@ -135,8 +135,10 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
           damping: 30,
           mass: 0.8
         }}
-        className="fixed top-5 left-1/2 z-50 -translate-x-1/2"
-        style={{ paddingTop: 'max(var(--sab), 20px)' }}
+        className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
+        whileHover={{ opacity: 1, scale: 1 }}
+        whileTap={{ scale: 0.95 }}
+        style={{ paddingBottom: 'max(var(--sab), 24px)' }}
       >
         <div 
           className={cn(
@@ -329,4 +331,3 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
       </AnimatePresence>
     </>
   );
-};
