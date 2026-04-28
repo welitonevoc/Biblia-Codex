@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { cn } from '../../utils/cn';
+import { useAppContext } from '../../app/AppContext';
 
 interface VerseCardGeneratorProps {
   verses: { verse: number; text: string }[];
@@ -98,6 +99,7 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
   isOpen,
   onClose
 }) => {
+  const { currentVersion } = useAppContext();
   const [currentTheme, setCurrentTheme] = useState(THEMES[0]);
   const [currentFont, setCurrentFont] = useState(FONTS[0]);
   const [showReference, setShowReference] = useState(true);
@@ -105,7 +107,23 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const fullText = verses.map(v => v.text).join(' ');
+  const cleanShareText = (text: string) =>
+    text
+      .replace(/<TS\d*>/gi, '')
+      .replace(/<\/?TS>/gi, '')
+      .replace(/<W[HG]\d+>/gi, '')
+      .replace(/<S>\s*[HG]?\d+\s*<\/S>/gi, '')
+      .replace(/<S\d+>/gi, '')
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+  const fullText = verses.map(v => cleanShareText(v.text)).join(' ');
+  const versionLabel = currentVersion?.abbreviation || currentVersion?.id || '';
+  const referenceWithVersion = versionLabel && !reference.includes(versionLabel)
+    ? `${reference} ${versionLabel}`
+    : reference;
+  const singleLineShareText = `${referenceWithVersion}: ${fullText}`;
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
@@ -186,7 +204,7 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
                   className="leading-relaxed font-medium"
                   style={{ color: currentTheme.textColor, fontSize: `${fontSize}px` }}
                 >
-                  "{fullText}"
+                  {singleLineShareText}
                 </p>
                 
                 {showReference && (
@@ -196,7 +214,7 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
                       className="text-sm font-bold uppercase tracking-[0.2em]"
                       style={{ color: currentTheme.accentColor }}
                     >
-                      {reference}
+                      {referenceWithVersion}
                     </span>
                   </div>
                 )}
