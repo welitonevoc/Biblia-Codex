@@ -1,26 +1,5 @@
-const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-if ('serviceWorker' in navigator && !isDev) {
-  window.addEventListener('load', async () => {
-    try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('SW registered:', registration.scope);
-      
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        newWorker?.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            if (confirm('Nova versão disponível. Atualizar?')) {
-              newWorker.postMessage('skipWaiting');
-            }
-          }
-        });
-      });
-    } catch (error) {
-      console.error('SW registration failed:', error);
-    }
-  });
-}
+// Service Worker temporariamente desativado para debug
+// Ative novamente após resolver os erros
 
 if ('standalone' in window.navigator) {
   window.addEventListener('beforeinstallprompt', (e) => {
