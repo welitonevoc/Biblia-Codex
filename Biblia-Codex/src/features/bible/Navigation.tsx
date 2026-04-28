@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Book } from '../types';
-import { BIBLE_BOOKS } from '../data/bibleMetadata';
+import { Book } from '../../types';
+import { BIBLE_BOOKS } from '../../data/bibleMetadata';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronRight, Search, BookOpen, BookMarked } from 'lucide-react';
-import { useAppContext } from '../AppContext';
+import { useAppContext } from '../../app/AppContext';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

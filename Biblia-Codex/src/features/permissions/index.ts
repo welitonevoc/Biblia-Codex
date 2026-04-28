@@ -1,2 +1,2 @@
 // Permissions feature exports
-export { default as PermissionScreen } from './PermissionScreen';
+export { PermissionScreen } from './PermissionScreen';

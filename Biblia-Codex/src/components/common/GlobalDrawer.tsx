@@ -5,8 +5,8 @@ import {
   User, LogOut, Moon, Sun, Monitor, Maximize2, Minimize2,
   BookOpen, Layers, Sparkles, MessageSquare
 } from 'lucide-react';
-import { useAppContext } from '../AppContext';
-import { BIBLE_BOOKS } from '../data/bibleMetadata';
+import { useAppContext } from '../../app/AppContext';
+import { BIBLE_BOOKS } from '../../data/bibleMetadata';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

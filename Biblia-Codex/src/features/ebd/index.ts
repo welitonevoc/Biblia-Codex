@@ -1,2 +1,2 @@
 // EBD feature exports
-export { default as EBDPage } from './EBDPage';
+export { EBDPage } from './EBDPage';

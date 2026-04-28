@@ -1,2 +1,2 @@
-// Modules feature exports
-export { default as ModuleManagement } from './ModuleManagement';
+export { ModuleManagement } from './ModuleManagement';
+export { ModuleManagement as ModuleManagementPage } from './ModuleManagement';

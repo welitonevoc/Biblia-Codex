@@ -1,2 +1,2 @@
-// Tags feature exports
-export { default as TagsView } from './TagsView';
+export { TagsView } from './TagsView';
+export { TagsView as TagsPage } from './TagsView';

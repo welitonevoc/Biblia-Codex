@@ -14,7 +14,7 @@ describe('Button Component', () => {
   });
 
   it('should accept variant prop', () => {
-    const button = Button({ variant: 'primary', children: 'Primary' });
+    const button = Button({ variant: 'default', children: 'Primary' });
     expect(button).toBeDefined();
   });
 

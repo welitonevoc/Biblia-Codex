@@ -1,3 +1,3 @@
 // Maps feature exports
-export { default as MapsPage } from './MapsPage';
-export { default as PlacesView } from './PlacesView';
+export { MapsPage } from './MapsPage';
+export { PlacesView } from './PlacesView';

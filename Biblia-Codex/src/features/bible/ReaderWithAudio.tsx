@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Verse, Book } from '../types';
+import { Verse, Book } from '../../types';
 import { Reader } from './Reader';
 import { AudioPlayer } from './AudioPlayer';
 import { ReadingMode } from './ReadingModeSelector';
-import { AudioTrack } from '../services/audioService';
-import audioService from '../services/audioService';
+import type { AudioTrack } from '../../services/audioService';
+import audioService from '../../services/audioService';
 import { useTranslation } from 'react-i18next';
 
 interface ReaderWithAudioProps {

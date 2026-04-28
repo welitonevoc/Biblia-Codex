@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { settingsReducer, initialSettingsState } from '../../app/context/settings-context';
+import { settingsReducer, initialSettingsState } from './settings-context';
 
 describe('Settings Reducer', () => {
   it('should set theme', () => {

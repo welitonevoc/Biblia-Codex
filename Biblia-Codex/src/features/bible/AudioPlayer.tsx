@@ -9,7 +9,7 @@ import {
   RotateCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ttsService, TTSVoice, isTTSSupported } from '../services/ttsService';
+import { ttsService, TTSVoice, isTTSSupported } from '../../services/ttsService';
 
 interface AudioPlayerProps {
   track: {
@@ -83,7 +83,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         await ttsService.speakChapter(versesToUse, {
           rate: playbackSpeed,
           voice: selectedVoice?.voice,
-          onVerseChange: (verseIndex, verseText) => {
+          onVerseChange: (verseIndex: number, verseText: string) => {
             setCurrentVerse(verseIndex);
           },
           onComplete: () => {

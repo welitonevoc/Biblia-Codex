@@ -3,13 +3,13 @@ import {
   ThemeMode, ThemeConfig, AppSettings, AppSettingsKey, TextDisplayKey, StudyToolsKey, VisualResourcesKey, BehaviorKey, NavigationKey, AnimationKey, AiKey,
   Book, Verse, BibleModule, DrawerContext, DictionaryEntry, UIGeometry, NavigationStyle, FontPreference,
   AnimationStyle, AnimationIntensity, AnimationSpeed, LightingEffect, PageTransition, ModuleInfo, CapacitorWindow, ModuleType
-} from './types';
-import { auth, db, onAuthStateChanged, User, loginWithGoogle, logout, handleRedirectResult, doc, setDoc, onSnapshot, serverTimestamp } from './firebase';
-import { syncService } from './services/SyncService';
-import { dictionaryService, createAiModule } from './services/dictionaryService';
-import { scanForBibleModules } from './services/moduleScanner';
-import { listInstalledModules } from './services/moduleService';
-import { DEFAULT_THEME_MODE, THEME_CLASSNAMES, getThemePreset, getThemeVariables, normalizeThemeMode } from './theme/presets';
+} from '../types';
+import { auth, db, onAuthStateChanged, User, loginWithGoogle, logout, handleRedirectResult, doc, setDoc, onSnapshot, serverTimestamp } from '../firebase';
+import { syncService } from '../services/SyncService';
+import { dictionaryService, createAiModule } from '../services/dictionaryService';
+import { scanForBibleModules } from '../services/moduleScanner';
+import { listInstalledModules } from '../services/moduleService';
+import { DEFAULT_THEME_MODE, THEME_CLASSNAMES, getThemePreset, getThemeVariables, normalizeThemeMode } from '../theme/presets';
 
 interface AppContextType {
   config: ThemeConfig;
@@ -199,43 +199,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   });
 
-  const lastRemoteSettingsRef = useRef<string>('');
+   const lastRemoteSettingsRef = useRef<string>('');
 
-  // Auth Listener
-  useEffect(() => {
-    handleRedirectResult().catch(err =>
-      console.error('Erro no redirect de autenticação:', err)
-    );
+   // Auth Listener
+   useEffect(() => {
+     handleRedirectResult().catch((err: unknown) =>
+       console.error('Erro no redirect de autenticação:', err)
+     );
 
-    if (!auth) {
-      setIsAuthReady(true);
-      return;
-    }
+     if (!auth) {
+       setIsAuthReady(true);
+       return;
+     }
 
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setIsAuthReady(true);
-    });
-    return () => unsubscribe();
-  }, []);
+     const unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
+       setUser(currentUser);
+       setIsAuthReady(true);
+     });
+     return () => unsubscribe();
+   }, []);
 
-  // Sync from Cloud
-  useEffect(() => {
+   // Sync from Cloud
+   useEffect(() => {
     if (!user || !db) return;
 
     const userDocRef = doc(db, 'users', user.uid);
-    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+    const unsubscribe = onSnapshot(userDocRef, (docSnap: any) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         const settingsStr = JSON.stringify(data.settings);
 
         if (data.settings && settingsStr !== lastRemoteSettingsRef.current) {
           lastRemoteSettingsRef.current = settingsStr;
-          setSettings(prev => ({ ...prev, ...data.settings }));
+          setSettings((prev: AppSettings) => ({ ...prev, ...data.settings }));
         }
 
         if (data.config) {
-          setConfig(prev => ({
+          setConfig((prev: ThemeConfig) => ({
             ...prev,
             ...data.config,
             mode: normalizeThemeMode(data.config.mode),
@@ -293,7 +293,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     root.classList.add(`font-${config.fontPreference}`);
 
     Object.entries(getThemeVariables(config)).forEach(([key, value]) => {
-      root.style.setProperty(key, value);
+      root.style.setProperty(key, value as string);
     });
 
     // Apply dynamic radius based on geometry
@@ -334,7 +334,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [config, settings, user, syncToCloud]);
 
   const selectVersion = useCallback((version: BibleModule) => {
-    setCurrentVersion(prev => {
+    setCurrentVersion((prev: BibleModule | null) => {
       if (prev?.id === version.id && prev?.path === version.path) return prev;
       return version;
     });
@@ -342,28 +342,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setMode = useCallback((mode: ThemeMode) => {
     const preset = getThemePreset(mode);
-    setConfig(prev => ({
+    setConfig((prev: ThemeConfig) => ({
       ...prev,
       mode,
       accentColor: preset.colors.accent,
     }));
   }, []);
-  const setFontSize = useCallback((fontSize: number) => setConfig(prev => ({ ...prev, fontSize })), []);
-  const setLineHeight = useCallback((lineHeight: number) => setConfig(prev => ({ ...prev, lineHeight })), []);
-  const setLetterSpacing = useCallback((letterSpacing: number) => setConfig(prev => ({ ...prev, letterSpacing })), []);
-  const setFontFamily = useCallback((fontFamily: ThemeConfig['fontFamily']) => setConfig(prev => ({ ...prev, fontFamily })), []);
-  const setHorizontalMargin = useCallback((horizontalMargin: number) => setConfig(prev => ({ ...prev, horizontalMargin })), []);
-  const setAccentColor = useCallback((accentColor: string) => setConfig(prev => ({ ...prev, accentColor })), []);
-  const setUIGeometry = useCallback((uiGeometry: UIGeometry) => setConfig(prev => ({ ...prev, uiGeometry })), []);
-  const setNavigationStyle = useCallback((navigationStyle: NavigationStyle) => setConfig(prev => ({ ...prev, navigationStyle })), []);
-  const setFontPreference = useCallback((fontPreference: FontPreference) => setConfig(prev => ({ ...prev, fontPreference })), []);
+  const setFontSize = useCallback((fontSize: number) => setConfig((prev: ThemeConfig) => ({ ...prev, fontSize })), []);
+  const setLineHeight = useCallback((lineHeight: number) => setConfig((prev: ThemeConfig) => ({ ...prev, lineHeight })), []);
+  const setLetterSpacing = useCallback((letterSpacing: number) => setConfig((prev: ThemeConfig) => ({ ...prev, letterSpacing })), []);
+  const setFontFamily = useCallback((fontFamily: ThemeConfig['fontFamily']) => setConfig((prev: ThemeConfig) => ({ ...prev, fontFamily })), []);
+  const setHorizontalMargin = useCallback((horizontalMargin: number) => setConfig((prev: ThemeConfig) => ({ ...prev, horizontalMargin })), []);
+  const setAccentColor = useCallback((accentColor: string) => setConfig((prev: ThemeConfig) => ({ ...prev, accentColor })), []);
+  const setUIGeometry = useCallback((uiGeometry: UIGeometry) => setConfig((prev: ThemeConfig) => ({ ...prev, uiGeometry })), []);
+  const setNavigationStyle = useCallback((navigationStyle: NavigationStyle) => setConfig((prev: ThemeConfig) => ({ ...prev, navigationStyle })), []);
+  const setFontPreference = useCallback((fontPreference: FontPreference) => setConfig((prev: ThemeConfig) => ({ ...prev, fontPreference })), []);
 
   const updateSettings = useCallback((newSettings: Partial<AppSettings>) => {
-    setSettings(prev => ({ ...prev, ...newSettings }));
+    setSettings((prev: AppSettings) => ({ ...prev, ...newSettings }));
   }, []);
 
   const toggleSetting = useCallback(<T extends keyof AppSettings>(section: T, key: keyof AppSettings[T]) => {
-    setSettings(prev => {
+    setSettings((prev: AppSettings) => {
       const sectionData = prev[section] as Record<string, unknown>;
       return {
         ...prev,
@@ -380,53 +380,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [toggleSetting]);
 
   const setAnimationStyle = useCallback((style: AnimationStyle) => {
-    setSettings(prev => ({
+    setSettings((prev: AppSettings) => ({
       ...prev,
       animation: { ...prev.animation, style }
     }));
   }, []);
   const setAnimationIntensity = useCallback((intensity: AnimationIntensity) => {
-    setSettings(prev => ({
+    setSettings((prev: AppSettings) => ({
       ...prev,
       animation: { ...prev.animation, intensity }
     }));
   }, []);
   const setAnimationSpeed = useCallback((speed: AnimationSpeed) => {
-    setSettings(prev => ({
+    setSettings((prev: AppSettings) => ({
       ...prev,
       animation: { ...prev.animation, speed }
     }));
   }, []);
   const setLightingEffect = useCallback((lighting: LightingEffect) => {
-    setSettings(prev => ({
+    setSettings((prev: AppSettings) => ({
       ...prev,
       animation: { ...prev.animation, lighting }
     }));
   }, []);
   const setPageTransition = useCallback((pageTransition: PageTransition) => {
-    setSettings(prev => ({
+    setSettings((prev: AppSettings) => ({
       ...prev,
       animation: { ...prev.animation, pageTransition }
     }));
   }, []);
 
   const toggleGlow = useCallback(() => {
-    setSettings(prev => ({
+    setSettings((prev: AppSettings) => ({
       ...prev,
       animation: { ...prev.animation, enableGlow: !prev.animation.enableGlow }
     }));
   }, []);
 
   const toggleParticles = useCallback(() => {
-    setSettings(prev => ({
+    setSettings((prev: AppSettings) => ({
       ...prev,
       animation: { ...prev.animation, enableParticles: !prev.animation.enableParticles }
     }));
-  }, []);
+   }, []);
 
   const syncNow = useCallback(async () => {
     if (!user) return;
-    setSettings(prev => ({ ...prev, syncConfig: { ...prev.syncConfig!, status: 'syncing' } }));
+    setSettings((prev: AppSettings) => ({ ...prev, syncConfig: { ...prev.syncConfig!, status: 'syncing' } }));
     
     try {
       await Promise.all([
@@ -434,7 +434,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         syncService.syncAll()
       ]);
       
-      setSettings(prev => ({
+      setSettings((prev: AppSettings) => ({
         ...prev,
         syncConfig: {
           ...prev.syncConfig!,
@@ -444,7 +444,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }));
     } catch (e) {
       console.error('Sync error:', e);
-      setSettings(prev => ({ ...prev, syncConfig: { ...prev.syncConfig!, status: 'error' } }));
+      setSettings((prev: AppSettings) => ({ ...prev, syncConfig: { ...prev.syncConfig!, status: 'error' } }));
     }
   }, [user, syncToCloud, config, settings]);
 
@@ -458,13 +458,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const refreshModulesRunning = useRef(false);
 
-  const refreshModules = useCallback(async () => {
-    if (refreshModulesRunning.current) return;
-    refreshModulesRunning.current = true;
-    try {
-      const isNative = typeof window !== 'undefined' && (window as unknown as CapacitorWindow).Capacitor?.isNativePlatform?.();
-      const scanned = isNative ? [] : await scanForBibleModules();
-      const installedRaw = await import('./services/moduleService').then(m => m.listInstalledModules());
+   const refreshModules = useCallback(async () => {
+     if (refreshModulesRunning.current) return;
+     refreshModulesRunning.current = true;
+     try {
+       const isNative = typeof window !== 'undefined' && (window as unknown as CapacitorWindow).Capacitor?.isNativePlatform?.();
+       const scanned = isNative ? [] : await scanForBibleModules();
+       const installedRaw = await import('../services/moduleService').then(m => m.listInstalledModules());
 
       const allInstalled: BibleModule[] = installedRaw.map((m: ModuleInfo) => ({
         id: m.id,
@@ -479,44 +479,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         fileSize: m.size
       }));
 
-      const unified = [...allInstalled];
-      scanned.forEach(s => {
-        if (!unified.find(u => u.id === s.id)) unified.push(s);
-      });
+       const unified = [...allInstalled];
+       scanned.forEach((s: BibleModule) => {
+         if (!unified.find(u => u.id === s.id)) unified.push(s);
+       });
 
       const bibles = unified.filter(m => m.type === 'bible');
       const dictionaries = unified.filter(m => m.type === 'dictionary');
       const commentaries = unified.filter(m => m.type === 'commentary');
       const xrefs = unified.filter(m => m.type === 'xrefs');
 
-      setAvailableModules(installedRaw);
+       setAvailableModules(installedRaw);
 
-      setAvailableVersions(prev => {
-        if (prev.length === bibles.length && prev.every((v, i) => v.id === bibles[i].id && v.path === bibles[i].path)) {
-          return prev;
-        }
-        return bibles;
-      });
-      setAvailableDictionaries(prev => {
-        if (prev.length === dictionaries.length && prev.every((d, i) => d.id === dictionaries[i].id && d.path === dictionaries[i].path)) {
-          return prev;
-        }
-        return dictionaries;
-      });
-      setAvailableCommentaries(prev => {
-        if (prev.length === commentaries.length && prev.every((c, i) => c.id === commentaries[i].id && c.path === commentaries[i].path)) {
-          return prev;
-        }
-        return commentaries;
-      });
-      setAvailableXrefs(prev => {
-        if (prev.length === xrefs.length && prev.every((x, i) => x.id === xrefs[i].id && x.path === xrefs[i].path)) {
-          return prev;
-        }
-        return xrefs;
-      });
+       setAvailableVersions((prev: BibleModule[]) => {
+         if (prev.length === bibles.length && prev.every((v, i) => v.id === bibles[i].id && v.path === bibles[i].path)) {
+           return prev;
+         }
+         return bibles;
+       });
+       setAvailableDictionaries((prev: BibleModule[]) => {
+         if (prev.length === dictionaries.length && prev.every((d, i) => d.id === dictionaries[i].id && d.path === dictionaries[i].path)) {
+           return prev;
+         }
+         return dictionaries;
+       });
+       setAvailableCommentaries((prev: BibleModule[]) => {
+         if (prev.length === commentaries.length && prev.every((c, i) => c.id === commentaries[i].id && c.path === commentaries[i].path)) {
+           return prev;
+         }
+         return commentaries;
+       });
+       setAvailableXrefs((prev: BibleModule[]) => {
+         if (prev.length === xrefs.length && prev.every((x, i) => x.id === xrefs[i].id && x.path === xrefs[i].path)) {
+           return prev;
+         }
+         return xrefs;
+       });
 
-      setCurrentVersion(prev => {
+       setCurrentVersion((prev: BibleModule | null) => {
         if (prev) return prev;
         return bibles.length > 0 ? bibles[0] : null;
       });
@@ -631,7 +631,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     isDrawerOpen, setDrawerOpen, drawerContext, setDrawerContext,
     activeTab, setActiveTab,
     searchDictionary
-  ]);
+   ]);
 
   return (
     <AppContext.Provider value={contextValue}>
@@ -645,3 +645,4 @@ export const useAppContext = () => {
   if (!context) throw new Error('useAppContext must be used within AppProvider');
   return context;
 };
+

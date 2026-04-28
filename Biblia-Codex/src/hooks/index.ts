@@ -1,3 +1,2 @@
-// Hooks exports
-export { default as useReaderSelection } from './useReaderSelection';
-export { default as useReaderTTS } from './useReaderTTS';
+export { useReaderSelection } from './useReaderSelection';
+export { useReaderTTS } from './useReaderTTS';

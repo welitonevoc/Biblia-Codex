@@ -5,7 +5,7 @@ import { useAppContext } from '../AppContext';
 import { generateReadingPlan } from '../services/geminiService';
 import { BibleService } from '../BibleService';
 import { Verse } from '../types';
-import biblia365Data from '../../plano_biblia365.json';
+import biblia365Data from '../../../plano_biblia365.json';
 
 const renderIcon = (icon: React.ElementType | undefined, props: { className?: string }) => {
   if (!icon) return <BookOpen className={props.className} />;

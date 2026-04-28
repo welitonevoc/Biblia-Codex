@@ -1,23 +1,23 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Verse, Book, Bookmark as BookmarkType, Tag as TagType } from '../types';
-import { BibleService } from '../BibleService';
-import { BIBLE_BOOKS } from '../data/bibleMetadata';
-import { useAppContext } from '../AppContext';
-import { storage } from '../StorageService';
-import { MySwordParser } from '../services/mySwordParser';
+import { Verse, Book, Bookmark as BookmarkType, Tag as TagType } from '../../types';
+import { BibleService } from '../../BibleService';
+import { BIBLE_BOOKS } from '../../data/bibleMetadata';
+import { useAppContext } from '../../app/AppContext';
+import { storage } from '../../StorageService';
+import { MySwordParser } from '../../services/mySwordParser';
 import { motion, AnimatePresence } from 'motion/react';
 import DOMPurify from 'dompurify';
 import {
   Bookmark, Share2, MessageSquare,
   Sparkles, Library, Layers, X, BookOpen, Volume2, Trash2, Tag
 } from 'lucide-react';
-import { cn } from '../utils/cn';
-import { DictionaryBottomSheet } from './DictionaryBottomSheet';
-import { useReaderSelection } from '../hooks/useReaderSelection';
-import { useReaderTTS } from '../hooks/useReaderTTS';
-import { StrongsBottomSheet } from './StrongsBottomSheet';
-import { CommentaryBottomSheet } from './CommentaryBottomSheet';
-import { CrossReferencesBottomSheet } from './CrossReferencesBottomSheet';
+import { cn } from '../../utils/cn';
+import { DictionaryBottomSheet } from '../study/DictionaryBottomSheet';
+import { useReaderSelection } from '../../hooks/useReaderSelection';
+import { useReaderTTS } from '../../hooks/useReaderTTS';
+import { StrongsBottomSheet } from '../study/StrongsBottomSheet';
+import { CommentaryBottomSheet } from '../study/CommentaryBottomSheet';
+import { CrossReferencesBottomSheet } from '../study/CrossReferencesBottomSheet';
 
 interface ReaderProps {
   book: Book;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Home, BookOpen, Search, Settings, Heart } from 'lucide-react';
-import { useAppContext } from '../../AppContext';
+import { useAppContext } from '../../app/AppContext';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

@@ -1,4 +1,4 @@
 // Navigation feature exports
-export { default as TopBar } from './TopBar';
-export { default as HamburgerMenu } from './HamburgerMenu';
-export { default as Sidebar } from './Sidebar';
+export { TopBar } from './TopBar';
+export { HamburgerMenu } from './HamburgerMenu';
+export { Sidebar } from './Sidebar';

@@ -1,8 +1,8 @@
 // Settings feature exports
-export { default as Settings } from './Settings';
-export { default as SettingsPage } from './SettingsPage';
-export { default as SettingsDashboard } from './SettingsDashboard';
-export { default as AISettingsPage } from './AISettingsPage';
-export { default as TTSSettings } from './TTSSettings';
-export { default as AppearanceSettings } from './AppearanceSettings';
-export { default as ProfilePage } from './ProfilePage';
+export { Settings } from './Settings';
+export { SettingsPage } from './SettingsPage';
+export { SettingsDashboard } from './SettingsDashboard';
+export { AISettingsPage } from './AISettingsPage';
+export { TTSSettings } from './TTSSettings';
+export { AppearanceSettings } from './AppearanceSettings';
+export { ProfilePage } from './ProfilePage';

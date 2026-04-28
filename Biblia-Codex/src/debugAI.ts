@@ -1,5 +1,13 @@
 import { testAIConfiguration, diagnoseAIConfiguration } from './services/geminiService';
 
+declare global {
+  interface Window {
+    debugAIConfig?: typeof debugAIConfig;
+    diagnoseAI?: typeof diagnoseAIConfiguration;
+    testAI?: typeof testAIConfiguration;
+  }
+}
+
 export const debugAIConfig = async () => {
   console.log('=== DIAGNÓSTICO COMPLETO DA CONFIGURAÇÃO IA ===');
 

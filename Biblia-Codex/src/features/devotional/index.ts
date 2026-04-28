@@ -1,3 +1,3 @@
 // Devotional feature exports
-export { default as Devotional } from './Devotional';
-export { default as DevotionalPage } from './DevotionalPage';
+export { Devotional } from './Devotional';
+export { DevotionalPage } from './DevotionalPage';

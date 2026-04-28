@@ -1,9 +1,9 @@
 // Common UI components exports
-export { default as Button } from './button';
-export { default as Card } from './card';
-export { default as Badge } from './badge';
-export { default as ErrorBoundary } from './ErrorBoundary';
-export { default as GlobalDrawer } from './GlobalDrawer';
-export { default as RichTextEditor } from './RichTextEditor';
-export { default as IconWrapper } from './IconWrapper';
-export { default as VerseCardGenerator } from './verse-card-generator';
+export { Button } from '../ui/button';
+export { Card } from '../ui/card';
+export { Badge } from '../ui/badge';
+export { ErrorBoundary } from './ErrorBoundary';
+export { GlobalDrawer } from './GlobalDrawer';
+export { RichTextEditor } from './RichTextEditor';
+export { IconWrapper } from './IconWrapper';
+export { VerseCardGenerator } from './verse-card-generator';

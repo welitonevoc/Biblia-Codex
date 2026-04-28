@@ -1,2 +1,2 @@
 // Search feature exports
-export { default as SearchView } from './SearchView';
+export { SearchView } from './SearchView';

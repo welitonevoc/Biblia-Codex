@@ -6,7 +6,7 @@ import {
   Check, ChevronLeft, ChevronRight, Copy
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import { cn } from '../utils/cn';
+import { cn } from '../../utils/cn';
 
 interface VerseCardGeneratorProps {
   verses: { verse: number; text: string }[];

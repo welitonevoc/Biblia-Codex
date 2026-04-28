@@ -1,3 +1,3 @@
 // Onboarding feature exports
-export { default as Onboarding } from './Onboarding';
-export { default as PermissionScreen } from './PermissionScreen';
+export { Onboarding } from './Onboarding';
+export { PermissionScreen } from '../permissions/PermissionScreen';

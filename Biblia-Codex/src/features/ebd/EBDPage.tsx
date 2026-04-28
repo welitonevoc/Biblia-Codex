@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { BookOpen, ChevronRight, Calendar, User, Book, X, Download, Loader2, Bookmark, Globe } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { MagazineReader } from './EBD/MagazineReader';
+import { MagazineReader } from './MagazineReader';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

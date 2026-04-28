@@ -1,2 +1,2 @@
-// Reading plans feature exports
-export { default as ReadingPlans } from './ReadingPlans';
+export { ReadingPlans } from './ReadingPlans';
+export { ReadingPlans as ReadingPlansPage } from './ReadingPlans';

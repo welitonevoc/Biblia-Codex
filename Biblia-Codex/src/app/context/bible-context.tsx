@@ -1,4 +1,6 @@
 // Bible-specific state
+import { Book, Verse } from '../../types';
+
 export type BibleState = {
   currentBook: Book | null;
   currentChapter: number;
@@ -20,6 +22,10 @@ export const initialBibleState: BibleState = {
   readingMode: 'text',
 };
 
+function verseKey(v: Verse): string {
+  return `${v.bookId}-${v.chapter}-${v.verse}`;
+}
+
 export function bibleReducer(state: BibleState, action: BibleAction): BibleState {
   switch (action.type) {
     case 'SET_BOOK':
@@ -27,7 +33,7 @@ export function bibleReducer(state: BibleState, action: BibleAction): BibleState
     case 'SET_CHAPTER':
       return { ...state, currentChapter: action.payload };
     case 'SELECT_VERSE':
-      if (state.selectedVerses.find(v => v.id === action.payload.id)) {
+      if (state.selectedVerses.find(v => verseKey(v) === verseKey(action.payload))) {
         return state;
       }
       return {
@@ -37,7 +43,7 @@ export function bibleReducer(state: BibleState, action: BibleAction): BibleState
     case 'DESELECT_VERSE':
       return {
         ...state,
-        selectedVerses: state.selectedVerses.filter(v => v.id !== action.payload.id),
+        selectedVerses: state.selectedVerses.filter(v => verseKey(v) !== verseKey(action.payload)),
       };
     case 'SET_READING_MODE':
       return { ...state, readingMode: action.payload };

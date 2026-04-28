@@ -1,3 +1,3 @@
-// Notes feature exports
-export { default as Notes } from './Notes';
-export { default as NoteEditorModal } from './NoteEditorModal';
+export { Notes } from './Notes';
+export { Notes as NotesPage } from './Notes';
+export { NoteEditorModal } from './NoteEditorModal';

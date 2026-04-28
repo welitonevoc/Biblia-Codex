@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAppContext } from '../AppContext';
+import { useAppContext } from '../../app/AppContext';
 import { ChevronDown, BookOpen, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx } from 'clsx';

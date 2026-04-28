@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { bibleReducer, initialBibleState } from '../../app/context/bible-context';
-import { Book, Verse } from '../../types';
-import { BIBLE_BOOKS } from '../../data/bibleMetadata';
+import { bibleReducer, initialBibleState } from './bible-context';
+import { Verse } from '../../types';
 
 describe('Bible Reducer', () => {
   it('should set book and reset chapter', () => {
-    const book: Book = BIBLE_BOOKS[0];
+    const book = { id: 'GEN', name: 'Gênesis', chapters: 50, testament: 'OT' as const, numericId: 1 };
     const action = { type: 'SET_BOOK' as const, payload: book };
     const state = bibleReducer(initialBibleState, action);
     
@@ -21,7 +20,7 @@ describe('Bible Reducer', () => {
   });
 
   it('should select verse', () => {
-    const verse: Verse = { id: '1', bookId: 'GEN', bookName: 'Gênesis', chapter: 1, verse: 1, text: 'No princípio' };
+    const verse: Verse = { bookId: 'GEN', chapter: 1, verse: 1, text: 'No princípio' };
     const action = { type: 'SELECT_VERSE' as const, payload: verse };
     const state = bibleReducer(initialBibleState, action);
     
@@ -30,7 +29,7 @@ describe('Bible Reducer', () => {
   });
 
   it('should not add duplicate verse', () => {
-    const verse: Verse = { id: '1', bookId: 'GEN', bookName: 'Gênesis', chapter: 1, verse: 1, text: 'No princípio' };
+    const verse: Verse = { bookId: 'GEN', chapter: 1, verse: 1, text: 'No princípio' };
     const stateWithVerse = bibleReducer(initialBibleState, { type: 'SELECT_VERSE' as const, payload: verse });
     const state = bibleReducer(stateWithVerse, { type: 'SELECT_VERSE' as const, payload: verse });
     
@@ -38,7 +37,7 @@ describe('Bible Reducer', () => {
   });
 
   it('should deselect verse', () => {
-    const verse: Verse = { id: '1', bookId: 'GEN', bookName: 'Gênesis', chapter: 1, verse: 1, text: 'No princípio' };
+    const verse: Verse = { bookId: 'GEN', chapter: 1, verse: 1, text: 'No princípio' };
     const stateWithVerse = bibleReducer(initialBibleState, { type: 'SELECT_VERSE' as const, payload: verse });
     const state = bibleReducer(stateWithVerse, { type: 'DESELECT_VERSE' as const, payload: verse });
     
