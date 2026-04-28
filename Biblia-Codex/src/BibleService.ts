@@ -300,6 +300,27 @@ export const BibleService = {
   },
 
 getDictionaryEntry: async (word: string, modulePath: string): Promise<DictionaryEntry | null> => {
+    // Handle VinePro format (JSON gz)
+    if (modulePath.includes('VinePro')) {
+      try {
+        const { getVineEntry } = await import('./services/VineProService');
+        const text = await getVineEntry(word);
+        if (text) {
+          return {
+            id: `vine-${word}`,
+            term: word,
+            definition: text,
+            moduleName: 'Multiléxico Vine Pro BR',
+            source: 'local',
+            isAiGenerated: false
+          };
+        }
+      } catch (e) {
+        console.error('[BibleService] Erro ao buscar VinePro:', e);
+      }
+      return null;
+    }
+    
     try {
       const cacheKey = `dict-${modulePath}`;
       let cached = dbCache.get(cacheKey);

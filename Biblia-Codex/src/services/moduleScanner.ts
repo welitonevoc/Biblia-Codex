@@ -13,6 +13,7 @@ const PUBLIC_DICTIONARIES = [
   { file: 'Strong AMG Biblia Palavra-Chave.dct.mybible', name: 'Strong AMG (Biblia Palavra-Chave)' },
   { file: 'Strong KJ Concordancia.dct.mybible', name: 'Strong KJ (Concordancia)' },
   { file: 'EnciclopediaMerril_optimized.db', name: 'Enciclopédia Merrill (Tenney)', category: 'merrill' },
+  { file: 'VinePro_clean.json.gz', name: 'Multiléxico Vine Pro BR', category: 'vinepro' },
 ];
 
 export const scanForBibleModules = async (): Promise<BibleModule[]> => {
