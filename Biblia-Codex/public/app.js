@@ -1,4 +1,6 @@
-if ('serviceWorker' in navigator) {
+const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+if ('serviceWorker' in navigator && !isDev) {
   window.addEventListener('load', async () => {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js');
