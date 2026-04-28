@@ -305,6 +305,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
   }, {} as Record<string, { id: string; name: string; numericId: number; count: number }>);
   const distributionRows = Object.values(distributionByBook).sort((a, b) => a.numericId - b.numericId);
   const maxCount = distributionRows.reduce((m, r) => Math.max(m, r.count), 1);
+  const totalVerseMatches = results.verses.length || 1;
 
   const escapeRegExp = useCallback((value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), []);
 
@@ -557,10 +558,11 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                   const isNT = row.numericId >= 40;
                   const color = isNT ? searchOptions.ntColor : searchOptions.otColor;
                   const pct = Math.max(3, (row.count / maxCount) * 100);
+                  const pctLabel = Math.round((row.count / totalVerseMatches) * 100);
                   return (
-                    <div key={row.id} className="grid grid-cols-[56px_56px_1fr] items-center gap-2 text-xs">
+                    <div key={row.id} className="grid grid-cols-[56px_78px_1fr] items-center gap-2 text-xs">
                       <span className="font-semibold text-bible-text">{row.name}</span>
-                      <span className="text-bible-text-muted">{row.count}</span>
+                      <span className="text-bible-text-muted">{row.count} ({pctLabel}%)</span>
                       <div className="h-3 rounded-sm border border-bible-border bg-bible-surface overflow-hidden">
                         <div className="h-full" style={{ width: `${pct}%`, backgroundColor: color }} />
                       </div>
