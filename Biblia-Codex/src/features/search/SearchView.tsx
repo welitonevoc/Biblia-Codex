@@ -26,6 +26,21 @@ interface SearchViewProps {
 type SearchCategory = 'verses' | 'notes' | 'footnotes';
 type SearchLogicMode = 'OR' | 'AND';
 type NearScope = 'verse' | 'chapter';
+type SearchScope =
+  | 'all'
+  | 'ot'
+  | 'nt'
+  | 'ot_pentateuch'
+  | 'ot_historical'
+  | 'ot_wisdom'
+  | 'ot_major_prophets'
+  | 'ot_minor_prophets'
+  | 'nt_gospels_acts'
+  | 'nt_pauline'
+  | 'nt_general_revelation'
+  | 'nt_synoptic'
+  | 'nt_johannine'
+  | 'nt_lukan';
 
 interface SearchOptions {
   logicMode: SearchLogicMode;
@@ -38,6 +53,9 @@ interface SearchOptions {
   ignoreDiacritics: boolean;
   ignorePunctuation: boolean;
   startsWith: boolean;
+  scope: SearchScope;
+  otColor: string;
+  ntColor: string;
 }
 
 const DEFAULT_SEARCH_OPTIONS: SearchOptions = {
@@ -51,6 +69,9 @@ const DEFAULT_SEARCH_OPTIONS: SearchOptions = {
   ignoreDiacritics: true,
   ignorePunctuation: true,
   startsWith: false,
+  scope: 'all',
+  otColor: '#3b82f6',
+  ntColor: '#ef4444',
 };
 
 export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
@@ -74,6 +95,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [previewVerse, setPreviewVerse] = useState<Verse | null>(null);
   const [previewAnchor, setPreviewAnchor] = useState<{ x: number; y: number } | null>(null);
+  const [previewPinned, setPreviewPinned] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('kerygma-recent-searches');
@@ -88,6 +110,8 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
 
   const cleanStrongsCodes = useCallback((text: string) => {
     return text
+      .replace(/<TS\d*>/gi, '')
+      .replace(/<\/?TS>/gi, '')
       .replace(/<W[HG]\d+>/gi, '')
       .replace(/<S>\s*[HG]?\d+\s*<\/S>/gi, '')
       .replace(/<S\d+>/gi, '')
@@ -102,6 +126,27 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
     if (searchOptions.ignorePunctuation) text = text.replace(/[.,;:!?()[\]{}"'`´~^_+=/@\\|-]/g, ' ');
     return text.replace(/\s+/g, ' ').trim();
   }, [searchOptions.ignoreCase, searchOptions.ignoreDiacritics, searchOptions.ignorePunctuation]);
+
+  const isVerseInScope = useCallback((verse: Verse): boolean => {
+    const n = BIBLE_BOOKS.find((b) => b.id === verse.bookId)?.numericId ?? 0;
+    switch (searchOptions.scope) {
+      case 'all': return true;
+      case 'ot': return n >= 1 && n <= 39;
+      case 'nt': return n >= 40 && n <= 66;
+      case 'ot_pentateuch': return n >= 1 && n <= 5;
+      case 'ot_historical': return n >= 6 && n <= 17;
+      case 'ot_wisdom': return n >= 18 && n <= 22;
+      case 'ot_major_prophets': return n >= 23 && n <= 27;
+      case 'ot_minor_prophets': return n >= 28 && n <= 39;
+      case 'nt_gospels_acts': return n >= 40 && n <= 44;
+      case 'nt_pauline': return n >= 45 && n <= 57;
+      case 'nt_general_revelation': return n >= 58 && n <= 66;
+      case 'nt_synoptic': return n >= 40 && n <= 42;
+      case 'nt_johannine': return n === 43 || n === 62 || n === 63 || n === 64 || n === 65;
+      case 'nt_lukan': return n === 42 || n === 44;
+      default: return true;
+    }
+  }, [searchOptions.scope]);
 
   const tokenizeQuery = useCallback((input: string): string[] => {
     return normalizeText(input).split(' ').filter(Boolean);
@@ -215,7 +260,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
 
     try {
       const rawData = await BibleService.globalSearch(term, currentVersion || undefined);
-      const filteredVerses = rawData.verses.filter((verse) => matchesVerseByOptions(verse.text, term));
+      const filteredVerses = rawData.verses.filter((verse) => isVerseInScope(verse) && matchesVerseByOptions(verse.text, term));
 
       const data = {
         verses: filteredVerses,
@@ -243,12 +288,23 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
     } finally {
       setIsSearching(false);
     }
-  }, [currentVersion, aiEnabled, handleAISearch, recentSearches, matchesVerseByOptions]);
+  }, [currentVersion, aiEnabled, handleAISearch, recentSearches, matchesVerseByOptions, isVerseInScope]);
 
   const handleRecentSearch = (term: string) => {
     setQuery(term);
     handleSearch(term);
   };
+
+  const distributionByBook = results.verses.reduce((acc, verse) => {
+    const book = BIBLE_BOOKS.find((b) => b.id === verse.bookId);
+    if (!book) return acc;
+    const key = book.id;
+    if (!acc[key]) acc[key] = { id: book.id, name: book.abbreviation || book.name, numericId: book.numericId, count: 0 };
+    acc[key].count += 1;
+    return acc;
+  }, {} as Record<string, { id: string; name: string; numericId: number; count: number }>);
+  const distributionRows = Object.values(distributionByBook).sort((a, b) => a.numericId - b.numericId);
+  const maxCount = distributionRows.reduce((m, r) => Math.max(m, r.count), 1);
 
   const escapeRegExp = useCallback((value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), []);
 
@@ -266,7 +322,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
     }
   }, [cleanStrongsCodes, tokenizeQuery, escapeRegExp, searchOptions.ignoreCase]);
 
-  const openVersePreview = useCallback((verse: Verse, event: React.MouseEvent | React.TouchEvent) => {
+  const openVersePreview = useCallback((verse: Verse, event: React.MouseEvent | React.TouchEvent, pinned = false) => {
     let x = 0;
     let y = 0;
     if ('touches' in event && event.touches.length > 0) {
@@ -278,6 +334,7 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
     }
     setPreviewVerse(verse);
     setPreviewAnchor({ x, y });
+    setPreviewPinned(pinned);
   }, []);
 
   return (
@@ -379,6 +436,52 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                   </label>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 border-t border-bible-border pt-3">
+                  <label className="text-xs text-bible-text-muted flex items-center justify-between gap-2" title="Filtra a busca por porções bíblicas, como Antigo Testamento e seções do Novo Testamento.">
+                    Intervalo
+                    <select
+                      value={searchOptions.scope}
+                      onChange={(e) => setSearchOptions((prev) => ({ ...prev, scope: e.target.value as SearchScope }))}
+                      className="px-2 py-1 rounded-md bg-bible-bg border border-bible-border text-bible-text text-xs"
+                    >
+                      <option value="all">Bíblia completa</option>
+                      <option value="ot">Antigo Testamento</option>
+                      <option value="ot_pentateuch">Pentateuco (AT)</option>
+                      <option value="ot_historical">Histórico (AT)</option>
+                      <option value="ot_wisdom">Sabedoria (AT)</option>
+                      <option value="ot_major_prophets">Profetas Maiores (AT)</option>
+                      <option value="ot_minor_prophets">Profetas Menores (AT)</option>
+                      <option value="nt">Novo Testamento</option>
+                      <option value="nt_gospels_acts">Evangelhos & Atos (NT)</option>
+                      <option value="nt_pauline">Epístolas de Paulo (NT)</option>
+                      <option value="nt_general_revelation">Epístolas Gerais & Apocalipse (NT)</option>
+                      <option value="nt_synoptic">Evangelhos Sinóticos (NT)</option>
+                      <option value="nt_johannine">Escritos Joaninos (NT)</option>
+                      <option value="nt_lukan">Escritos de Lucas (NT)</option>
+                    </select>
+                  </label>
+
+                  <label className="text-xs text-bible-text-muted flex items-center justify-between gap-2" title="Cor das barras dos livros do Antigo Testamento.">
+                    Cor AT
+                    <input
+                      type="color"
+                      value={searchOptions.otColor}
+                      onChange={(e) => setSearchOptions((prev) => ({ ...prev, otColor: e.target.value }))}
+                      className="h-7 w-10 rounded border border-bible-border bg-transparent"
+                    />
+                  </label>
+
+                  <label className="text-xs text-bible-text-muted flex items-center justify-between gap-2" title="Cor das barras dos livros do Novo Testamento.">
+                    Cor NT
+                    <input
+                      type="color"
+                      value={searchOptions.ntColor}
+                      onChange={(e) => setSearchOptions((prev) => ({ ...prev, ntColor: e.target.value }))}
+                      className="h-7 w-10 rounded border border-bible-border bg-transparent"
+                    />
+                  </label>
+                </div>
+
                 <div className="border-t border-bible-border pt-3 flex justify-end">
                   <button
                     type="button"
@@ -446,6 +549,27 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
 
       <div className="flex-1 overflow-y-auto px-4 pb-32 scroll-smooth">
         <div className="max-w-4xl mx-auto w-full">
+          {activeCategory === 'verses' && distributionRows.length > 0 && (
+            <div className="premium-card p-4 mb-4">
+              <div className="text-xs font-bold uppercase text-bible-text-muted mb-3">Distribuição por livro</div>
+              <div className="space-y-1.5">
+                {distributionRows.map((row) => {
+                  const isNT = row.numericId >= 40;
+                  const color = isNT ? searchOptions.ntColor : searchOptions.otColor;
+                  const pct = Math.max(3, (row.count / maxCount) * 100);
+                  return (
+                    <div key={row.id} className="grid grid-cols-[56px_56px_1fr] items-center gap-2 text-xs">
+                      <span className="font-semibold text-bible-text">{row.name}</span>
+                      <span className="text-bible-text-muted">{row.count}</span>
+                      <div className="h-3 rounded-sm border border-bible-border bg-bible-surface overflow-hidden">
+                        <div className="h-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           {isSearching ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Loader2 className="w-10 h-10 text-bible-accent animate-spin mb-4" />
@@ -487,11 +611,14 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
                   <div
                     key={i}
                     onClick={() => onNavigate(v.bookId, v.chapter, v.verse)}
-                    onMouseEnter={(e) => openVersePreview(v, e)}
-                    onMouseMove={(e) => setPreviewAnchor({ x: e.clientX, y: e.clientY })}
-                    onMouseLeave={() => setPreviewVerse(null)}
-                    onTouchStart={(e) => openVersePreview(v, e)}
-                    onTouchEnd={() => setTimeout(() => setPreviewVerse(null), 1200)}
+                    onMouseEnter={(e) => openVersePreview(v, e, false)}
+                    onMouseMove={(e) => {
+                      if (!previewPinned) setPreviewAnchor({ x: e.clientX, y: e.clientY });
+                    }}
+                    onMouseLeave={() => {
+                      if (!previewPinned) setPreviewVerse(null);
+                    }}
+                    onTouchStart={(e) => openVersePreview(v, e, true)}
                     className="premium-card p-4 hover:border-bible-accent/30 cursor-pointer group"
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -560,12 +687,28 @@ export const SearchView: React.FC<SearchViewProps> = ({ onNavigate }) => {
 
       {previewVerse && previewAnchor && (
         <div
-          className="fixed z-30 w-[min(92vw,540px)] rounded-xl border border-bible-border bg-bible-surface shadow-2xl p-3 pointer-events-none"
+          className={cn(
+            "fixed z-30 w-[min(92vw,540px)] rounded-xl border border-bible-border bg-bible-surface shadow-2xl p-3",
+            previewPinned ? "pointer-events-auto" : "pointer-events-none"
+          )}
           style={{
             left: Math.min(previewAnchor.x + 16, window.innerWidth - 560),
             top: Math.min(previewAnchor.y + 16, window.innerHeight - 240),
           }}
         >
+          {previewPinned && (
+            <button
+              type="button"
+              onClick={() => {
+                setPreviewVerse(null);
+                setPreviewPinned(false);
+              }}
+              className="absolute top-2 right-2 h-6 w-6 rounded-full bg-bible-surface-strong text-bible-text-muted hover:text-bible-text pointer-events-auto"
+              aria-label="Fechar preview"
+            >
+              ×
+            </button>
+          )}
           <div className="text-[11px] font-bold text-bible-accent mb-1 uppercase tracking-wide">
             {BIBLE_BOOKS.find((b) => b.id === previewVerse.bookId)?.name} {previewVerse.chapter}:{previewVerse.verse}
           </div>

@@ -110,28 +110,28 @@ function AppContent() {
     setHasAudioSupport(tracks.length > 0);
   }, [currentBook, currentChapter]);
 
-  const handleSelect = (book: Book, chapter: number, verse?: number) => {
+  const handleSelect = useCallback((book: Book, chapter: number, verse?: number) => {
     setCurrentBook(book);
     setCurrentChapter(chapter);
     setTargetVerse(verse);
     setActiveTab('bible');
-  };
+  }, []);
 
-  const handleStudyOpen = (verses: { verse: number; text: string }[]) => {
+  const handleStudyOpen = useCallback((verses: { verse: number; text: string }[]) => {
     setSelectedVersesForStudy(verses);
     setIsStudyOpen(true);
-  };
+  }, []);
 
-  const handleShare = (verses: { verse: number; text: string }[], reference: string) => {
+  const handleShare = useCallback((verses: { verse: number; text: string }[], reference: string) => {
     setShareData({ verses, reference });
     setIsShareOpen(true);
-  };
+  }, []);
 
-  const handleToolOpen = (verse: Verse, type: ToolType) => {
+  const handleToolOpen = useCallback((verse: Verse, type: ToolType) => {
     setToolVerse(verse);
     setToolType(type);
     setIsToolOpen(true);
-  };
+  }, []);
 
   return (
     <div
