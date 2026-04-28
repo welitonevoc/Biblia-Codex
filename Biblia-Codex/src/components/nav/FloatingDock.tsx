@@ -82,7 +82,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      setIsVisible(currentScrollY < 100);
+      setIsVisible(currentScrollY < 100 || currentScrollY < lastScrollY);
       setLastScrollY(currentScrollY);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -122,11 +122,10 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
     <>
       {/* Floating Dock */}
       <motion.div
-        initial={{ y: -80, opacity: 0 }}
+        initial={{ y: 80, opacity: 0 }}
         animate={{ 
           y: 0, 
           opacity: isVisible ? 1 : 0.3,
-          scale: isVisible ? 1 : 0.95
         }}
         whileHover={{ opacity: 1, scale: 1 }}
         transition={{ 
