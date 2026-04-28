@@ -27,6 +27,15 @@ export interface TTSVerse {
   text: string;
 }
 
+const PREFERRED_PT_BR_VOICE_NAMES = [
+  'pt-BR-AntonioNeural',
+  'pt-BR-FranciscaNeural',
+  'AntonioNeural',
+  'FranciscaNeural',
+  'Antonio',
+  'Francisca'
+];
+
 class TTSService {
   private static instance: TTSService;
   private synth: SpeechSynthesis;
@@ -40,6 +49,11 @@ class TTSService {
   private options: TTSOptions = {};
   private words: string[] = [];
   private currentWordIndex = 0;
+
+  private cancelCurrentUtterance() {
+    this.synth.cancel();
+    this.currentUtterance = null;
+  }
 
   private constructor() {
     this.synth = window.speechSynthesis;
@@ -60,6 +74,10 @@ class TTSService {
     this.voices = this.synth.getVoices();
     this.isInitialized = this.voices.length > 0;
     console.log('[TTS] Vozes carregadas:', this.voices.length);
+    if (this.voices.length > 0) {
+      const voiceNames = this.voices.map(v => `${v.name} (${v.lang})`);
+      console.log('[TTS] Lista de vozes:', voiceNames);
+    }
   }
 
   getVoices(): TTSVoice[] {
@@ -73,6 +91,13 @@ class TTSService {
   }
 
   getDefaultPortugueseVoice(): SpeechSynthesisVoice | null {
+    const preferredByName = this.voices.find(v =>
+      PREFERRED_PT_BR_VOICE_NAMES.some(name =>
+        v.name.toLowerCase().includes(name.toLowerCase())
+      )
+    );
+    if (preferredByName) return preferredByName;
+
     const ptVoice = this.voices.find(v => 
       v.lang.includes('pt-BR') || v.lang.includes('pt_BR')
     );
@@ -126,6 +151,7 @@ class TTSService {
   ): Promise<void> {
     this.stop();
     this.isPlaying = true;
+    this.currentVerseIndex = 0;
     this.options = options;
     
     this.verses = verses.map(v => ({
@@ -171,7 +197,7 @@ class TTSService {
    */
   speakSingleVerse(text: string, options: TTSOptions = {}): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.stop();
+      this.cancelCurrentUtterance();
 
       const utterance = new SpeechSynthesisUtterance(text);
       
@@ -191,6 +217,14 @@ class TTSService {
       if (options.lang) {
         utterance.lang = options.lang;
       }
+
+      console.log('[TTS] Falando com voz:', {
+        name: utterance.voice?.name ?? 'default',
+        lang: utterance.voice?.lang ?? utterance.lang ?? 'default',
+        rate: utterance.rate,
+        pitch: utterance.pitch,
+        volume: utterance.volume
+      });
 
       utterance.onend = () => {
         this.currentUtterance = null;
@@ -229,8 +263,7 @@ class TTSService {
   }
 
   stop() {
-    this.synth.cancel();
-    this.currentUtterance = null;
+    this.cancelCurrentUtterance();
     this.isPlaying = false;
     this.currentVerseIndex = 0;
     this.currentWordIndex = 0;

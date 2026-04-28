@@ -54,11 +54,15 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
   useEffect(() => {
     setIsSupported(isTTSSupported);
-    if (isTTSSupported) {
+    if (!isTTSSupported) {
+      return;
+    }
+
+    const updateVoices = () => {
       const voices = ttsService.getVoices();
       setAvailableVoices(voices);
 
-      // Selecionar voz padrão em português
+      // Selecionar voz padrão em português, priorizando as vozes enviadas
       const defaultVoice = ttsService.getDefaultPortugueseVoice();
       if (defaultVoice) {
         setSelectedVoice({
@@ -67,7 +71,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           voice: defaultVoice
         });
       }
-    }
+    };
+
+    updateVoices();
+    window.speechSynthesis.onvoiceschanged = updateVoices;
+
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
   }, []);
 
   const handlePlayPause = async () => {
@@ -274,7 +285,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handlePlayPause}
-            disabled={!track.verses || track.verses.length === 0}
+            disabled={versesToUse.length === 0}
             className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white shadow-xl hover:shadow-2xl transition-all disabled:cursor-not-allowed"
             aria-label={isPlaying ? 'Pausar' : 'Reproduzir'}
           >
