@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Book } from '../types';
 import { BIBLE_BOOKS } from '../data/bibleMetadata';
-import { Menu, Search, Settings as SettingsIcon, ChevronDown, ChevronLeft, ChevronRight, BookOpen, Globe, Check, Play, Type } from 'lucide-react';
+import { Menu, Search, Settings as SettingsIcon, ChevronDown, ChevronLeft, ChevronRight, BookOpen, Globe, Check, Play, Type, BookMarked, Layers, AlignLeft } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx } from 'clsx';
@@ -38,16 +38,26 @@ export const TopBar: React.FC<TopBarProps> = React.memo(({
   hasAudio = false,
   onNavigate,
 }) => {
-  const { availableVersions, currentVersion, selectVersion, config, settings, toggleStrongs, toggleSetting, setAccentColor } = useAppContext();
+const { availableVersions, currentVersion, selectVersion, config, settings, toggleStrongs, toggleSetting, setAccentColor } = useAppContext();
   const [showVersionMenu, setShowVersionMenu] = useState(false);
+  const [showBooksMenu, setShowBooksMenu] = useState(false);
+  const [showFontMenu, setShowFontMenu] = useState(false);
   const [showReadingMenu, setShowReadingMenu] = useState(false);
   const versionMenuRef = useRef<HTMLDivElement>(null);
   const readingMenuRef = useRef<HTMLDivElement>(null);
+  const booksMenuRef = useRef<HTMLDivElement>(null);
+  const fontMenuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (versionMenuRef.current && !versionMenuRef.current.contains(event.target as Node)) {
         setShowVersionMenu(false);
+      }
+      if (booksMenuRef.current && !booksMenuRef.current.contains(event.target as Node)) {
+        setShowBooksMenu(false);
+      }
+      if (fontMenuRef.current && !fontMenuRef.current.contains(event.target as Node)) {
+        setShowFontMenu(false);
       }
       if (readingMenuRef.current && !readingMenuRef.current.contains(event.target as Node)) {
         setShowReadingMenu(false);
@@ -139,24 +149,106 @@ export const TopBar: React.FC<TopBarProps> = React.memo(({
     >
       <div className="mx-auto flex min-h-16 flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 md:h-16 md:flex-nowrap md:px-6 lg:px-8">
 
-        {/* Left: Menu + Version Selector */}
+        {/* Left: Menu Hamburguer + Version Selector */}
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <motion.button
-            whileHover={{ scale: 1.05, rotate: 5 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onToggleSidebar}
-            className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-xl",
-              "bg-[var(--surface-1)] border border-[var(--border-bible)]",
-              "text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]",
-              "hover:bg-[var(--surface-2)] hover:border-[var(--accent-bible)]/30",
-              "transition-all duration-200 cursor-pointer",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] focus-visible:ring-offset-2"
-            )}
-            aria-label="Menu"
-          >
-            <Menu className="h-5 w-5" />
-          </motion.button>
+          {/* Menu Hamburguer com dropdown */}
+          <div className="relative" ref={booksMenuRef}>
+            <motion.button
+              whileHover={{ scale: 1.05, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowBooksMenu(!showBooksMenu)}
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-xl",
+                "bg-[var(--surface-1)] border border-[var(--border-bible)]",
+                "text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]",
+                "hover:bg-[var(--surface-2)] hover:border-[var(--accent-bible)]/30",
+                "transition-all duration-200 cursor-pointer",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] focus-visible:ring-offset-2"
+              )}
+              aria-label="Menu"
+            >
+              <Menu className="h-5 w-5" />
+            </motion.button>
+
+            <AnimatePresence>
+              {showBooksMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className={cn(
+                    "absolute left-0 top-full mt-2 z-50",
+                    "w-56 rounded-xl border border-[var(--border-bible)]",
+                    "bg-[var(--surface-0)] shadow-lg shadow-black/10 overflow-hidden"
+                  )}
+                >
+                  <div className="p-1">
+                    {/* Versão */}
+                    <button
+                      onClick={() => {
+                        setShowBooksMenu(false);
+                        setShowVersionMenu(true);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm",
+                        "text-[var(--text-bible)] hover:bg-[var(--surface-hover)]",
+                        "transition-colors duration-150"
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-[var(--accent-bible)]" />
+                        Versão
+                      </span>
+                      <span className="text-xs text-[var(--text-bible-muted)] truncate max-w-[100px]">
+                        {currentVersion?.name}
+                      </span>
+                    </button>
+
+                    {/* Livros */}
+                    <button
+                      onClick={() => {
+                        setShowBooksMenu(false);
+                        onNavOpen();
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm",
+                        "text-[var(--text-bible)] hover:bg-[var(--surface-hover)]",
+                        "transition-colors duration-150"
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <BookMarked className="h-4 w-4 text-[var(--accent-bible)]" />
+                        Livros
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-[var(--text-bible-muted)]" />
+                    </button>
+
+                    {/* Fonte/Tipografia */}
+                    <button
+                      onClick={() => {
+                        setShowBooksMenu(false);
+                        setShowFontMenu(true);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm",
+                        "text-[var(--text-bible)] hover:bg-[var(--surface-hover)]",
+                        "transition-colors duration-150"
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Type className="h-4 w-4 text-[var(--accent-bible)]" />
+                        Fonte
+                      </span>
+                      <span className="text-xs text-[var(--text-bible-muted)]">
+                        Aa
+                      </span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Version Selector */}
           <div className="relative min-w-0 max-w-[min(52vw,14rem)] sm:max-w-[18rem]" ref={versionMenuRef}>
