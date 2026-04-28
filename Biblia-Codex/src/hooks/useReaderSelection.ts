@@ -38,6 +38,7 @@ export const useReaderSelection = ({
   }, [bookmarks, book.id, chapter]);
 
   const toggleVerseSelection = useCallback((verseNum: number) => {
+    console.log('toggleVerseSelection called:', verseNum);
     setSelectedVerses(prev =>
       prev.includes(verseNum)
         ? prev.filter(v => v !== verseNum)
@@ -46,9 +47,11 @@ export const useReaderSelection = ({
   }, []);
 
   const handleStudy = useCallback(() => {
+    console.log('handleStudy called, selectedVerses:', selectedVerses);
     const selected = verses
       .filter(v => selectedVerses.includes(v.verse))
       .map(v => ({ verse: v.verse, text: v.text }));
+    console.log('handleStudy selected:', selected);
     onStudyOpen(selected);
   }, [verses, selectedVerses, onStudyOpen]);
 
