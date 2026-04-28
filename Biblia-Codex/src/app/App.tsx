@@ -140,7 +140,7 @@ function AppContent() {
           currentBook={currentBook}
           currentChapter={currentChapter}
           onNavOpen={() => setIsNavOpen(true)}
-          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onSettingsOpen={() => setActiveTab('settings')}
           onSearchOpen={() => setActiveTab('search')}
           onToggleSidebar={() => setIsHamburgerOpen(!isHamburgerOpen)}
           readingMode={readingMode}
@@ -378,8 +378,6 @@ function AppContent() {
         currentBook={currentBook}
         currentChapter={currentChapter}
       />
-
-      <Settings isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
       <StudyPanel
         isOpen={isStudyOpen}
