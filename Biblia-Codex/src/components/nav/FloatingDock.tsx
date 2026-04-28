@@ -331,3 +331,4 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
       </AnimatePresence>
     </>
   );
+};
