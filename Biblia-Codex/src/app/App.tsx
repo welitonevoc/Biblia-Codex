@@ -3,24 +3,24 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from 'react';
+import React, { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, Loader } from 'lucide-react';
+import { Loader } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { Capacitor } from '@capacitor/core';
 
 import { AppProvider, useAppContext } from './AppContext';
+import { useReaderState, useAudioTracks, useUIState, useStudyPanel, useShare } from './hooks';
 import { TopBar, HamburgerMenu } from '../features/navigation';
 import { Navigation, ReaderWithAudio } from '../features/bible';
 import { StudyPanel, StudyToolsPanel } from '../features/study';
 import { SearchView } from '../features/search';
 import { VerseCardGenerator, ErrorBoundary } from '../components/common';
 import { FloatingDock } from '../components/nav/FloatingDock';
-import { BIBLE_BOOKS, getAudioTracksForChapter } from '../data';
-import type { AudioTrack } from '../services/audioService';
-import type { Book, Verse } from '../types';
+import { BIBLE_BOOKS } from '../data';
 import { Onboarding } from '../features/onboarding';
 import { Settings } from '../features/settings';
+import type { Verse, Book } from '../types';
 
 const HomePage = lazy(() => import('../features/home').then((m) => ({ default: m.HomePage })));
 const DevotionalPage = lazy(() => import('../features/devotional').then((m) => ({ default: m.DevotionalPage })));
@@ -76,62 +76,39 @@ function PageLoader() {
 function AppContent() {
   const { settings } = useAppContext();
   const useAnimations = settings?.navigation?.navAnimation ?? true;
-  const [currentBook, setCurrentBook] = useState<Book>(BIBLE_BOOKS[0]);
-  const [currentChapter, setCurrentChapter] = useState(1);
-  const [targetVerse, setTargetVerse] = useState<number | undefined>(undefined);
-  const [isNavOpen, setIsNavOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isStudyOpen, setIsStudyOpen] = useState(false);
-  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
-  const [selectedVersesForStudy, setSelectedVersesForStudy] = useState<{ verse: number; text: string }[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('bible');
-  const [shareData, setShareData] = useState<{ verses: { verse: number; text: string }[]; reference: string } | null>(null);
+  const [readingMode, setReadingMode] = useState<ReadingMode>('text');
+  const [toolVerse, setToolVerse] = useState<Verse | null>(null);
+  const [toolType, setToolType] = useState<ToolType>('commentary');
+
+  const { currentBook, currentChapter, targetVerse, setTargetVerse, handleSelect } = useReaderState();
+  const { tracks: audioTracks, hasSupport: hasAudioSupport } = useAudioTracks(currentBook, currentChapter);
+  const { isNavOpen, isSettingsOpen, isStudyOpen, isHamburgerOpen, isShareOpen, isToolOpen, closeNav, closeSettings, closeStudy, closeHamburger, closeShare, closeTool } = useUIState();
+  const { selectedVersesForStudy, openStudyPanel } = useStudyPanel();
+  const { shareData, openShare } = useShare();
 
   const availableVersions = useMemo(() => [
     { id: '1', name: 'Almeida Revista e Atualizada', abbreviation: 'ARA' }
   ], []);
-  const [isShareOpen, setIsShareOpen] = useState(false);
-  const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
-  const [hasAudioSupport, setHasAudioSupport] = useState(false);
-  const [readingMode, setReadingMode] = useState<ReadingMode>('text');
-  const [toolVerse, setToolVerse] = useState<Verse | null>(null);
-  const [toolType, setToolType] = useState<ToolType>('commentary');
-  const [isToolOpen, setIsToolOpen] = useState(false);
 
   useEffect(() => {
     const hasOnboarded = localStorage.getItem('codex-onboarded');
     setShowOnboarding(!hasOnboarded);
   }, []);
 
-  useEffect(() => {
-    const tracks = getAudioTracksForChapter(currentBook.id, currentChapter);
-    setAudioTracks(tracks);
-    setHasAudioSupport(tracks.length > 0);
-  }, [currentBook, currentChapter]);
+  const handleStudyOpen = (verses: { verse: number; text: string }[]) => {
+    openStudyPanel(verses);
+  };
 
-  const handleSelect = useCallback((book: Book, chapter: number, verse?: number) => {
-    setCurrentBook(book);
-    setCurrentChapter(chapter);
-    setTargetVerse(verse);
-    setActiveTab('bible');
-  }, []);
+  const handleShare = (verses: { verse: number; text: string }[], reference: string) => {
+    openShare(verses, reference);
+  };
 
-  const handleStudyOpen = useCallback((verses: { verse: number; text: string }[]) => {
-    setSelectedVersesForStudy(verses);
-    setIsStudyOpen(true);
-  }, []);
-
-  const handleShare = useCallback((verses: { verse: number; text: string }[], reference: string) => {
-    setShareData({ verses, reference });
-    setIsShareOpen(true);
-  }, []);
-
-  const handleToolOpen = useCallback((verse: Verse, type: ToolType) => {
+  const handleToolOpen = (verse: Verse, type: ToolType) => {
     setToolVerse(verse);
     setToolType(type);
-    setIsToolOpen(true);
-  }, []);
+  };
 
   return (
     <div
