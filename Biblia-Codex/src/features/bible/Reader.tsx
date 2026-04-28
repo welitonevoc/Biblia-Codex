@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import DOMPurify from 'dompurify';
 import {
   Bookmark, Share2, MessageSquare,
-  Sparkles, Library, Layers, X, BookOpen, Volume2, Trash2, Tag
+  Sparkles, Library, Layers, X, Volume2, Trash2, Tag, Copy, GitCompare, Highlighter
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { DictionaryBottomSheet } from '../study/DictionaryBottomSheet';
@@ -248,6 +248,44 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     isTTSSupported
   } = useReaderTTS({ verses });
 
+  const selectedVerseData = selectedVerses
+    .map((vNum) => verses.find((v) => v.verse === vNum))
+    .filter(Boolean) as Verse[];
+
+  const selectedReference = useMemo(() => {
+    if (selectedVerses.length === 0) return `${book.name} ${chapter}`;
+
+    const ordered = [...selectedVerses].sort((a, b) => a - b);
+    const segments: string[] = [];
+    let start = ordered[0];
+    let prev = ordered[0];
+
+    for (let i = 1; i < ordered.length; i++) {
+      const current = ordered[i];
+      if (current === prev + 1) {
+        prev = current;
+        continue;
+      }
+      segments.push(start === prev ? `${start}` : `${start}-${prev}`);
+      start = current;
+      prev = current;
+    }
+    segments.push(start === prev ? `${start}` : `${start}-${prev}`);
+
+    const versionLabel = currentVersion?.abbreviation || currentVersion?.id || '';
+    return `${book.name} ${chapter}:${segments.join(',')}${versionLabel ? ` ${versionLabel}` : ''}`;
+  }, [selectedVerses, book.name, chapter, currentVersion]);
+
+  const handleCopySelected = useCallback(async () => {
+    if (selectedVerseData.length === 0) return;
+    const text = `${selectedReference} - ${selectedVerseData.map((v) => `${v.verse} ${v.text}`).join(' ')}`;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (error) {
+      console.error('Erro ao copiar versículos selecionados:', error);
+    }
+  }, [selectedVerseData, selectedReference]);
+
   const handleToolOpen = useCallback((v: Verse, type: string) => {
     if (type === 'commentary') {
       setSelectedCommentaryVerse(v);
@@ -439,20 +477,70 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
         {selectedVerses.length > 0 && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={() => setSelectedVerses([])} />
-            <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 50, scale: 0.9 }} className="fixed left-1/2 z-50 w-[min(calc(100vw-1.5rem),28rem)] -translate-x-1/2 bottom-8">
-              <div className="glass-panel px-3 py-3 shadow-2xl sm:px-6 sm:py-4">
-                <div className="flex items-center justify-between mb-3 pb-2 border-b border-bible-border/50">
-                  <span className="text-xs font-bold text-bible-text">{selectedVerses.length} versículos selecionados</span>
-                  <button onClick={() => setSelectedVerses([])} className="p-1 hover:bg-bible-surface rounded-full"><X className="w-4 h-4" /></button>
+            <motion.div initial={{ opacity: 0, y: 50, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 50, scale: 0.96 }} className="fixed left-1/2 z-50 w-[min(calc(100vw-1.5rem),32rem)] -translate-x-1/2 bottom-6">
+              <div className="glass-panel px-4 py-4 shadow-2xl sm:px-6 sm:py-5 rounded-3xl">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="text-xs text-bible-text-muted font-semibold">Atualmente Selecionado:</div>
+                    <div className="text-lg font-extrabold text-bible-text mt-0.5">{selectedReference}</div>
+                  </div>
+                  <button onClick={() => setSelectedVerses([])} className="p-2 bg-bible-surface rounded-full hover:bg-bible-surface-strong transition-colors"><X className="w-4 h-4" /></button>
                 </div>
-                <div className="grid grid-cols-5 gap-3">
-                  <button onClick={() => setShowColorPicker(!showColorPicker)} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-bible-accent/10"><Bookmark className="h-5 w-5 text-bible-accent" /></div><span className="text-[8px] font-bold uppercase">Marcador</span></button>
-                  <button onClick={() => setShowTagEditor(!showTagEditor)} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-500/10"><Tag className="h-5 w-5 text-blue-500" /></div><span className="text-[8px] font-bold uppercase">Etiquetas</span></button>
-                  <button onClick={handleStudy} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-purple-500/10"><Sparkles className="h-5 w-5 text-purple-500" /></div><span className="text-[8px] font-bold uppercase">Estudar</span></button>
+
+                <div className="divide-y divide-bible-border/50 border-y border-bible-border/50">
+                  <div className="py-3 flex items-center justify-between gap-3">
+                    <button onClick={() => setShowColorPicker(!showColorPicker)} className="flex items-center gap-3 text-bible-text hover:text-bible-accent transition-colors">
+                      <Highlighter className="w-5 h-5" />
+                      <span className="font-bold text-xl">Destaque</span>
+                    </button>
+                    <div className="flex items-center gap-2">
+                      {['#fef08a', '#bbf7d0', '#67e8f9', '#fdba74', '#f9a8d4'].map(c => (
+                        <button key={c} onClick={() => handleBookmark(c)} className="w-8 h-8 rounded-full border border-white/60 shadow-sm" style={{ backgroundColor: c }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="py-3">
+                    <button onClick={handleCopySelected} className="w-full flex items-center gap-3 text-bible-text hover:text-bible-accent transition-colors">
+                      <Copy className="w-5 h-5" />
+                      <span className="font-bold text-xl">Copiar</span>
+                    </button>
+                  </div>
+
+                  <div className="py-3">
+                    <button onClick={handleStudy} className="w-full flex items-center gap-3 text-bible-text hover:text-bible-accent transition-colors">
+                      <GitCompare className="w-5 h-5" />
+                      <span className="font-bold text-xl">Comparar</span>
+                    </button>
+                  </div>
+
+                  <div className="py-3">
+                    <button
+                      onClick={() => onShare(
+                        selectedVerseData.map((v) => ({ verse: v.verse, text: v.text })),
+                        selectedReference
+                      )}
+                      className="w-full flex items-center gap-3 text-bible-text hover:text-bible-accent transition-colors"
+                    >
+                      <Share2 className="w-5 h-5" />
+                      <span className="font-bold text-xl">Compartilhar</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-3 flex items-center justify-between">
+                  <button onClick={() => setShowTagEditor(!showTagEditor)} className="flex items-center gap-2 text-xs font-semibold text-bible-text-muted hover:text-bible-text">
+                    <Tag className="w-4 h-4" /> Etiquetas
+                  </button>
                   {isTTSSupported && (
-                    <button onClick={() => toggleTTS(selectedVerses)} className="flex flex-col items-center gap-1.5"><div className={cn("h-10 w-10 flex items-center justify-center rounded-xl transition-colors", isSpeakingTTS ? "bg-orange-500/20" : "bg-orange-500/10")}><Volume2 className={cn("h-5 w-5 text-orange-500", isSpeakingTTS && "animate-pulse")} /></div><span className="text-[8px] font-bold uppercase">{isSpeakingTTS ? 'Parar' : 'Ouvir'}</span></button>
+                    <button onClick={() => toggleTTS(selectedVerses)} className="flex items-center gap-2 text-xs font-semibold text-bible-text-muted hover:text-bible-text">
+                      <Volume2 className={cn("w-4 h-4", isSpeakingTTS && "animate-pulse")} />
+                      {isSpeakingTTS ? 'Parar leitura' : 'Ouvir seleção'}
+                    </button>
                   )}
-                  <button onClick={handleDeleteBookmarks} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-red-500/10"><Trash2 className="h-5 w-5 text-red-500" /></div><span className="text-[8px] font-bold uppercase">Remover</span></button>
+                  <button onClick={handleDeleteBookmarks} className="flex items-center gap-2 text-xs font-semibold text-red-500 hover:text-red-600">
+                    <Trash2 className="w-4 h-4" /> Remover
+                  </button>
                 </div>
                 {showColorPicker && (
                   <div className="flex justify-center gap-2 mt-4 p-2 glass-panel">
