@@ -6,7 +6,6 @@ import { BookNumberConverter } from './services/BookNumberConverter';
 import { footnoteService } from './services/FootnoteService';
 import initSqlJs from 'sql.js';
 import { getGeminiExplanation, getAIResponse } from './services/geminiService';
-import { LRUCache } from 'lru-cache';
 
 const isWeb = typeof window !== 'undefined' && !(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
 
@@ -14,11 +13,43 @@ const isWeb = typeof window !== 'undefined' && !(window as unknown as { Capacito
 let sqlInstance: Awaited<ReturnType<typeof initSqlJs>> | null = null;
 const dbCache = new Map<string, CachedDB>();
 
-// LRU Cache for SQL query results (5 min TTL, 100 entries max)
-const queryCache = new LRUCache<string, Verse[]>({
-  max: 100,
-  ttl: 5 * 60 * 1000,
-});
+// Simple LRU Cache for browser (5 min TTL, 100 entries max)
+class SimpleLRU<K, V> {
+  private cache = new Map<K, { value: V; timestamp: number }>();
+  private maxSize: number;
+  private ttl: number;
+
+  constructor(maxSize: number, ttl: number) {
+    this.maxSize = maxSize;
+    this.ttl = ttl;
+  }
+
+  get(key: K): V | undefined {
+    const entry = this.cache.get(key);
+    if (!entry) return undefined;
+    
+    if (Date.now() - entry.timestamp > this.ttl) {
+      this.cache.delete(key);
+      return undefined;
+    }
+    
+    // Move to end (most recently used)
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+    return entry.value;
+  }
+
+  set(key: K, value: V): void {
+    // Delete oldest if at capacity
+    if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey) this.cache.delete(firstKey);
+    }
+    this.cache.set(key, { value, timestamp: Date.now() });
+  }
+}
+
+const queryCache = new SimpleLRU<string, Verse[]>(100, 5 * 60 * 1000);
 
 export const getSqlInstance = async () => {
   if (!sqlInstance) {
