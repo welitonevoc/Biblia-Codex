@@ -136,21 +136,7 @@ function AppContent() {
       />
 
       <div className="app-frame relative flex min-w-0 flex-1 flex-col overflow-hidden">
-        <TopBar
-          currentBook={currentBook}
-          currentChapter={currentChapter}
-          onNavOpen={() => setIsNavOpen(true)}
-          onSettingsOpen={() => setActiveTab('settings')}
-          onSearchOpen={() => setActiveTab('search')}
-          onToggleSidebar={() => setIsHamburgerOpen(!isHamburgerOpen)}
-          readingMode={readingMode}
-          onReadingModeChange={setReadingMode}
-          hasAudio={hasAudioSupport}
-          onNavigate={(bookId: string, chapter: number) => {
-            const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
-            if (book) handleSelect(book, chapter);
-          }}
-        />
+          {/* Navigation via FloatingDock */}
 
         <main id="main-content" className={cn('flex-1 overflow-auto')}>
           <AnimatePresence mode="wait">
