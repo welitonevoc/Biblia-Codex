@@ -394,6 +394,18 @@ export const normalizeThemeMode = (mode: string | undefined): ThemeMode => {
 
 export const getThemeVariables = (config: ThemeConfig) => {
   const preset = getThemePreset(config.mode);
+  const accent = config.accentColor || preset.colors.accent;
+  const hexToRgbChannels = (hex: string) => {
+    const normalized = hex.replace('#', '');
+    const full = normalized.length === 3
+      ? normalized.split('').map((c) => c + c).join('')
+      : normalized;
+    const r = parseInt(full.slice(0, 2), 16);
+    const g = parseInt(full.slice(2, 4), 16);
+    const b = parseInt(full.slice(4, 6), 16);
+    return `${r}, ${g}, ${b}`;
+  };
+
   return {
     '--background-bible': preset.colors.background,
     '--background-alt-bible': preset.colors.backgroundAlt,
@@ -402,14 +414,14 @@ export const getThemeVariables = (config: ThemeConfig) => {
     '--text-bible': preset.colors.text,
     '--text-muted-bible': preset.colors.textMuted,
     '--text-subtle-bible': preset.colors.textSubtle,
-    '--accent-bible': preset.colors.accent,
+    '--accent-bible': accent,
     '--accent-strong-bible': preset.colors.accentStrong,
     '--accent-contrast-bible': preset.colors.accentContrast,
     '--border-bible': preset.colors.border,
     '--border-strong-bible': preset.colors.borderStrong,
-    '--accent-bible-rgb': preset.colors.accent.replace('#', ''),
-    '--accent-bible-alpha': preset.colors.accent + '40',
-    '--surface-rgb': preset.colors.surface.replace('#', ''),
+    '--accent-bible-rgb': hexToRgbChannels(accent),
+    '--accent-bible-alpha': `${accent}40`,
+    '--surface-rgb': hexToRgbChannels(preset.colors.surface),
     '--hero-start-bible': preset.colors.heroStart,
     '--hero-mid-bible': preset.colors.heroMid,
     '--hero-end-bible': preset.colors.heroEnd,

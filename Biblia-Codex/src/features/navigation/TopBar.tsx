@@ -38,7 +38,7 @@ export const TopBar: React.FC<TopBarProps> = React.memo(({
   hasAudio = false,
   onNavigate,
 }) => {
-  const { availableVersions, currentVersion, selectVersion, settings, toggleStrongs, toggleSetting } = useAppContext();
+  const { availableVersions, currentVersion, selectVersion, config, settings, toggleStrongs, toggleSetting, setAccentColor } = useAppContext();
   const [showVersionMenu, setShowVersionMenu] = useState(false);
   const [showReadingMenu, setShowReadingMenu] = useState(false);
   const versionMenuRef = useRef<HTMLDivElement>(null);
@@ -126,6 +126,8 @@ export const TopBar: React.FC<TopBarProps> = React.memo(({
       onClick: () => toggleSetting('textDisplay', 'footnotes'),
     },
   ];
+
+  const accentColors = ['#5a5a40', '#8c6d46', '#3f6b5b', '#7a3e3e', '#3b5f8a', '#5a6b8a'];
 
   return (
     <header
@@ -349,6 +351,27 @@ export const TopBar: React.FC<TopBarProps> = React.memo(({
                           </span>
                         </button>
                       ))}
+                    </div>
+                    <div className="mt-2 border-t border-[var(--border-bible)] pt-2">
+                      <div className="px-2 pb-1 text-[11px] font-semibold text-[var(--text-bible-muted)]">Cor de destaque</div>
+                      <div className="flex flex-wrap gap-2 px-2 pb-1">
+                        {accentColors.map((color) => {
+                          const active = (config.accentColor || '').toLowerCase() === color.toLowerCase();
+                          return (
+                            <button
+                              key={color}
+                              onClick={() => setAccentColor(color)}
+                              className={cn(
+                                "h-6 w-6 rounded-full border-2 transition-all",
+                                active ? "border-[var(--text-bible)] scale-110" : "border-transparent hover:scale-105"
+                              )}
+                              style={{ backgroundColor: color }}
+                              aria-label={`Definir cor de destaque ${color}`}
+                              title={color}
+                            />
+                          );
+                        })}
+                      </div>
                     </div>
                     <div className="mt-2 border-t border-[var(--border-bible)] pt-2">
                       <button
