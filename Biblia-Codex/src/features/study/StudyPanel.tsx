@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Sparkles, BookOpen, MessageSquare, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useAppContext } from '../AppContext';
+import { getAIResponse } from '../services/geminiService';
 
 interface StudyPanelProps {
   isOpen: boolean;
@@ -29,18 +29,20 @@ export const StudyPanel: React.FC<StudyPanelProps> = ({
     
     setLoading(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      const versesText = selectedVerses.map(v => `${v.verse}: ${v.text}`).join('\n');
       const prompt = `Analise os seguintes versículos de ${bookName} ${chapter}:
-      ${selectedVerses.map(v => `${v.verse}: ${v.text}`).join('\n')}
-      
-      Forneça uma análise teológica profunda, contexto histórico e aplicação prática para os dias de hoje. Use um tom acadêmico mas acessível.`;
+${versesText}
 
-      const response = await ai.models.generateContent({
-        model: settings.ai.model,
-        contents: prompt,
-      });
+Forneça uma análise teológica profunda, contexto histórico e aplicação prática para os dias de hoje. Use um tom acadêmico mas acessível.`;
 
-      setAnalysis(response.text || "Não foi possível gerar a análise.");
+      const response = await getAIResponse(
+        prompt,
+        'Você é um teólogo acadêmico especializado em análise bíblica.',
+        undefined,
+        settings.ai.model
+      );
+
+      setAnalysis(response || "Não foi possível gerar a análise.");
     } catch (error) {
       console.error(error);
       setAnalysis("Erro ao conectar com a inteligência artificial. Verifique sua conexão.");
