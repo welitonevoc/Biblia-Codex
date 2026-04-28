@@ -28,7 +28,16 @@ interface MenuItem {
 
 const mainItems: MenuItem[] = [
   { id: 'home', icon: Home, label: 'Início' },
-  { id: 'bible', icon: BookOpen, label: 'Bíbia' },
+  { 
+    id: 'bible', 
+    icon: BookOpen, 
+    label: 'Bíbia',
+    submenu: [
+      { id: 'version', icon: BookOpen, label: 'Versão' },
+      { id: 'books', icon: BookMarked, label: 'Livros' },
+      { id: 'typography', icon: FileText, label: 'Aa' },
+    ]
+  },
   { id: 'devotional', icon: Calendar, label: 'Devocional' },
   { id: 'notes', icon: Heart, label: 'Notas' },
   { id: 'bookmarks', icon: Bookmark, label: 'Marcadores' },
@@ -39,7 +48,7 @@ const mainItems: MenuItem[] = [
   { id: 'commentary', icon: MessageSquare, label: 'Comentários' },
   { id: 'maps', icon: Map, label: 'Mapas' },
   { id: 'xrefs', icon: Link2, label: 'Refs. Cruzadas' },
-  { id: 'books', icon: BookMarked, label: 'Livros' },
+  { id: 'books-nav', icon: BookMarked, label: 'Livros' },
   { id: 'ebd', icon: GraduationCap, label: 'EBD' },
   { id: 'study', icon: Sparkles, label: 'Estudo' },
   { id: 'ai-assistant', icon: Sparkles, label: 'Assistente IA' },
@@ -73,7 +82,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      setIsVisible(currentScrollY < lastScrollY || currentScrollY < 50);
+      setIsVisible(currentScrollY < 100);
       setLastScrollY(currentScrollY);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -115,10 +124,11 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
       <motion.div
         initial={{ y: -80, opacity: 0 }}
         animate={{ 
-          y: isVisible ? 0 : -100, 
-          opacity: isVisible ? 1 : 0,
+          y: 0, 
+          opacity: isVisible ? 1 : 0.3,
           scale: isVisible ? 1 : 0.95
         }}
+        whileHover={{ opacity: 1, scale: 1 }}
         transition={{ 
           type: 'spring', 
           stiffness: 300, 
@@ -129,10 +139,10 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
         style={{ paddingTop: 'max(var(--sab), 20px)' }}
       >
         <div 
-          className="glass-strong rounded-2xl px-2 py-2"
-          style={{
-            boxShadow: '0 20px 40px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.05)'
-          }}
+          className={cn(
+            "rounded-2xl px-2 py-2 transition-all duration-300",
+            isVisible ? "glass-strong" : "glass"
+          )}
         >
           <div className="flex items-center gap-1">
             {navItems.map((item, index) => {
