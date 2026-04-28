@@ -21,6 +21,7 @@ export function useShare() {
   return {
     shareData,
     isShareOpen,
+    setIsShareOpen,
     openShare,
     closeShare,
   };

@@ -10,6 +10,12 @@ interface UseUIStateReturn {
   isHamburgerOpen: boolean;
   isShareOpen: boolean;
   isToolOpen: boolean;
+  setIsNavOpen: (open: boolean) => void;
+  setIsSettingsOpen: (open: boolean) => void;
+  setIsStudyOpen: (open: boolean) => void;
+  setIsHamburgerOpen: (open: boolean) => void;
+  setIsShareOpen: (open: boolean) => void;
+  setIsToolOpen: (open: boolean) => void;
   toggleNav: () => void;
   toggleSettings: () => void;
   toggleStudy: () => void;
@@ -57,6 +63,12 @@ export function useUIState(): UseUIStateReturn {
     isHamburgerOpen,
     isShareOpen,
     isToolOpen,
+    setIsNavOpen,
+    setIsSettingsOpen,
+    setIsStudyOpen,
+    setIsHamburgerOpen,
+    setIsShareOpen,
+    setIsToolOpen,
     toggleNav,
     toggleSettings,
     toggleStudy,

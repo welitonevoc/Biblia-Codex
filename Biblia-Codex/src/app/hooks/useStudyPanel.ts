@@ -16,6 +16,7 @@ export function useStudyPanel() {
   return {
     selectedVersesForStudy,
     isStudyOpen,
+    setIsStudyOpen,
     openStudyPanel,
     closeStudyPanel,
   };

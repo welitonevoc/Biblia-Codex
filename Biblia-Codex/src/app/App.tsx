@@ -84,9 +84,9 @@ function AppContent() {
 
   const { currentBook, currentChapter, targetVerse, setTargetVerse, handleSelect } = useReaderState();
   const { tracks: audioTracks, hasSupport: hasAudioSupport } = useAudioTracks(currentBook, currentChapter);
-  const { isNavOpen, isSettingsOpen, isStudyOpen, isHamburgerOpen, isShareOpen, isToolOpen, closeNav, closeSettings, closeStudy, closeHamburger, closeShare, closeTool } = useUIState();
-  const { selectedVersesForStudy, openStudyPanel } = useStudyPanel();
-  const { shareData, openShare } = useShare();
+  const { isNavOpen, isSettingsOpen, isStudyOpen, isHamburgerOpen, isShareOpen, isToolOpen, setIsNavOpen, setIsSettingsOpen, setIsStudyOpen, setIsHamburgerOpen, setIsShareOpen, setIsToolOpen, closeNav, closeSettings, closeStudy, closeHamburger, closeShare, closeTool } = useUIState();
+  const { selectedVersesForStudy, setIsStudyOpen: setStudyOpen, openStudyPanel } = useStudyPanel();
+  const { shareData, setIsShareOpen: setShareOpen, openShare } = useShare();
 
   const availableVersions = useMemo(() => [
     { id: '1', name: 'Almeida Revista e Atualizada', abbreviation: 'ARA' }
