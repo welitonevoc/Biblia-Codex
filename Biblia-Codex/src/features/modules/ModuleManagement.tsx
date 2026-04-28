@@ -9,7 +9,7 @@ import {
   Trash2, Upload, Search, Check, AlertCircle,
   Info, ChevronRight, Loader2, Plus,
   FileText, Database, Globe, Calendar, Folder,
-  X, BookOpen, MessageSquare, Library, Layers, History, Tag, Sparkles, ArrowRight
+  X, BookOpen, MessageSquare, Library, Layers, History, Tag, Sparkles, ArrowRight, ArrowLeft
 } from 'lucide-react';
 import {
   listInstalledModules,
@@ -65,8 +65,9 @@ const CATEGORY_COLORS: Record<string, string> = {
 const SUPPORTED_EXTENSIONS = ['.mybible', '.sqlite3', '.sqlite', '.mybl', '.mybls', '.twm', '.conf', '.dat', '.epub'];
 
 export const ModuleManagement: React.FC = () => {
+  const { setActiveTab } = useAppContext();
   const isAndroidNative = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
-  const [activeTab, setActiveTab] = useState<'installed' | 'import'>('installed');
+  const [moduleTab, setModuleTab] = useState<'installed' | 'import'>('installed');
   const [modules, setModules] = useState<ModuleInfo[]>([]);
   const [selectedModule, setSelectedModule] = useState<ModuleInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -173,7 +174,7 @@ export const ModuleManagement: React.FC = () => {
       await importModule(fileData, file.name);
       await refreshModules();
       await loadModules();
-      setActiveTab('installed');
+      setModuleTab('installed');
       alert('Módulo importado com sucesso!');
     } catch (err) {
       console.error('Erro ao importar módulo:', err);
@@ -214,6 +215,10 @@ export const ModuleManagement: React.FC = () => {
   return (
     <div className="h-full overflow-y-auto">
       <div className="max-w-4xl mx-auto px-4 py-6 pb-28 space-y-6">
+        <button onClick={() => setActiveTab('settings')} className="flex items-center gap-2 text-bible-accent mb-2">
+          <ArrowLeft className="w-4 h-4" />
+          <span>Voltar para Configurações</span>
+        </button>
         {/* Header Premium */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -261,10 +266,10 @@ export const ModuleManagement: React.FC = () => {
               key={tab.id}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => setModuleTab(tab.id)}
               className={cn(
                 'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all',
-                activeTab === tab.id
+                moduleTab === tab.id
                   ? 'bg-gradient-to-r from-bible-accent to-bible-accent-strong text-white shadow-md'
                   : 'text-bible-text-muted hover:text-bible-text'
               )}
@@ -277,7 +282,7 @@ export const ModuleManagement: React.FC = () => {
 
         {/* Content */}
         <AnimatePresence mode="wait">
-          {activeTab === 'installed' ? (
+          {moduleTab === 'installed' ? (
             <motion.div
               key="installed"
               initial={{ opacity: 0, y: 10 }}
@@ -337,7 +342,7 @@ export const ModuleManagement: React.FC = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setActiveTab('import')}
+                    onClick={() => setModuleTab('import')}
                     className="premium-button px-6 py-3 inline-flex items-center gap-2"
                   >
                     <Upload className="w-4 h-4" />

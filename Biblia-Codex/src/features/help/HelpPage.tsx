@@ -2,16 +2,18 @@ import React from 'react';
 import { 
   HelpCircle, MessageSquare, BookOpen, ExternalLink, 
   Mail, Github, Twitter, Globe, Shield, FileText,
-  ChevronRight, Search, Zap, Star
+  ChevronRight, Search, Zap, Star, ArrowLeft
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useAppContext } from '../AppContext';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export const HelpPage: React.FC = () => {
+  const { setActiveTab } = useAppContext();
   const categories = [
     { 
       title: 'Primeiros Passos', 
@@ -33,6 +35,10 @@ export const HelpPage: React.FC = () => {
   return (
     <div className="h-full overflow-y-auto bg-bible-bg p-4 sm:p-8 md:p-16 lg:p-24">
       <div className="max-w-4xl mx-auto space-y-10 sm:space-y-16">
+        <button onClick={() => setActiveTab('settings')} className="flex items-center gap-2 text-bible-accent mb-2">
+          <ArrowLeft className="w-4 h-4" />
+          <span>Voltar para Configurações</span>
+        </button>
         <header className="space-y-6">
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-bold tracking-tight">Suporte & Ajuda</h1>
           <div className="relative max-w-xl">

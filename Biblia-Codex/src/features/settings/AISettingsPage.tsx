@@ -3,7 +3,7 @@ import { useAppContext } from '../AppContext';
 import {
   Sparkles, Key, Brain, BookOpen, MessageSquare, Lightbulb,
   Check, AlertCircle, ExternalLink, Loader2, Eye, Mic,
-  Zap, Settings2
+  Zap, Settings2, ArrowLeft
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'motion/react';
@@ -60,7 +60,7 @@ const FREE_MODELS = [
 ];
 
 export const AISettingsPage: React.FC = () => {
-  const { settings, updateSettings } = useAppContext();
+  const { settings, updateSettings, setActiveTab } = useAppContext();
 
   const [apiProvider, setApiProvider] = useState(() => {
     return localStorage.getItem('ai-api-provider') || 'openrouter';
@@ -269,6 +269,10 @@ export const AISettingsPage: React.FC = () => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full overflow-y-auto">
       <div className="max-w-4xl mx-auto px-4 py-6 pb-32 space-y-6">
+        <button onClick={() => setActiveTab('settings')} className="flex items-center gap-2 text-bible-accent mb-2">
+          <ArrowLeft className="w-4 h-4" />
+          <span>Voltar para Configurações</span>
+        </button>
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="premium-card p-5">
           <div className="flex items-start justify-between">
             <div className="flex-1">

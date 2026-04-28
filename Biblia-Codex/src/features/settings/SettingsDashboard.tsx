@@ -58,11 +58,29 @@ export const SettingsDashboard: React.FC = () => {
   (window as any).AppContextSyncNow = syncNow;
 
   // Render sub-section if active
+  const handleBack = () => setActiveSubSection(null);
+  
   if (activeSubSection === 'appearance') {
-    return <AppearanceSettings />;
+    return (
+      <div>
+        <button onClick={handleBack} className="flex items-center gap-2 text-bible-accent mb-4">
+          <ArrowLeft className="w-4 h-4" />
+          <span>Voltar</span>
+        </button>
+        <AppearanceSettings />
+      </div>
+    );
   }
   if (activeSubSection === 'tts') {
-    return <TTSSettings />;
+    return (
+      <div>
+        <button onClick={handleBack} className="flex items-center gap-2 text-bible-accent mb-4">
+          <ArrowLeft className="w-4 h-4" />
+          <span>Voltar</span>
+        </button>
+        <TTSSettings />
+      </div>
+    );
   }
 
   const settingsSections = [

@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAppContext } from '../AppContext';
 import { 
   User, Star, Diamond, Zap, Heart, Trophy, BookOpen, Map, 
   Shield, Crown, Flame, Target, Award, Lock, ChevronRight,
   X, Edit3, Camera, Mail, Bell, Moon, Globe, Settings,
   LogOut, Cloud, Smartphone, Download, Share2, Check,
-  AlertTriangle, Plus, Minus, Sparkles
+  AlertTriangle, Plus, Minus, Sparkles, ArrowLeft
 } from 'lucide-react';
 
 interface UserProfile {
@@ -199,7 +200,11 @@ function formatNumber(num: number): string {
 }
 
 export function ProfilePage() {
-  const [activeTab, setActiveTab] = useState('perfil');
+  const { setActiveTab } = useAppContext();
+  const [activeTab, setActiveTabState] = useState('perfil');
+  
+  const handleBack = () => setActiveTab('settings');
+  const handleInnerTab = (tab: string) => setActiveTabState(tab);
   const [profile, setProfile] = useState<UserProfile>(INITIAL_PROFILE);
   const [books, setBooks] = useState<BookProgress[]>([]);
   const [showNameModal, setShowNameModal] = useState(false);
@@ -311,7 +316,12 @@ export function ProfilePage() {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-[var(--surface-overlay)] backdrop-blur-xl border-b border-[var(--border-bible)]">
         <div className="flex items-center justify-between px-4 py-3">
-          <h1 className="text-lg font-semibold text-[var(--text-bible)]">Meu Perfil</h1>
+          <div className="flex items-center gap-2">
+            <button onClick={handleBack} className="p-1.5 -ml-1.5 rounded-lg text-[var(--text-bible-muted)] hover:bg-[var(--surface-1)]">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-lg font-semibold text-[var(--text-bible)]">Meu Perfil</h1>
+          </div>
           <button className="p-2 rounded-lg bg-[var(--surface-1)] text-[var(--text-bible-muted)]">
             <Settings className="w-5 h-5" />
           </button>
@@ -322,7 +332,7 @@ export function ProfilePage() {
           {TABS.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleInnerTab(tab.id)}
               className={cn(
                 'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all',
                 activeTab === tab.id
