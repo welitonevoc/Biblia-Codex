@@ -3,6 +3,8 @@
  * Focado em fornecer definições teológicas profundas (Assembleiano Clássico).
  */
 
+import { getMerrillEntry } from './MerrillService';
+
 const ASSEMBLEIANO_CLASSICO_PROMPT = `
 DIRETRIZES DE PERFIL: Assembleiano Clássico (Pentecostalismo Histórico/CPAD).
 
@@ -253,11 +255,18 @@ const callAI = async (prompt: string, systemInstruction?: string, apiKey?: strin
  * Obtém uma explicação detalhada via IA (compatibilidade - usa template de definição)
  */
 export const getGeminiExplanation = async (term: string, context?: string, apiKey?: string, model?: string): Promise<string> => {
+  const merrillContext = await getMerrillEntry(term);
+  
   const prompt = `
     ${ASSEMBLEIANO_CLASSICO_PROMPT}
 
+    ${merrillContext ? `
+    INFORMAÇÃO DA ENCICLOPÉDIA MERRILL (C. Tenney):
+    ${merrillContext}
+    ` : ''}
+
     TAREFA: Defina e explique o termo bíblico ou palavra: "${term}" ${context ? `no contexto de ${context}` : ""}.
-    Forneça o significado original (hebraico/grego se aplicável), uso bíblico e aplicação espiritual segundo o perfil teológico citado acima.
+    ${merrillContext ? 'Use a informação da Enciclopédia Merrill como base, complementando com seu conhecimento teológico.' : 'Forneça o significado original (hebraico/grego se aplicável), uso bíblico e aplicação espiritual segundo o perfil teológico citado acima.'}
     Responda em Markdown.
   `;
 
