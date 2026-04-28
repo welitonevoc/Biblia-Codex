@@ -274,26 +274,49 @@ export const TopBar: React.FC<TopBarProps> = React.memo(({
               <ChevronLeft className="h-5 w-5" />
             </motion.button>
 
-            <div className="relative flex items-center gap-2" ref={readingMenuRef}>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={onNavOpen}
-                className={cn(
-                  "flex flex-col items-center px-4 py-2 rounded-xl",
-                  "bg-[var(--surface-1)] border border-[var(--border-bible)]",
-                  "hover:bg-[var(--surface-2)] hover:border-[var(--accent-bible)]/30",
-                  "transition-all duration-200 cursor-pointer"
-                )}
-              >
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--accent-bible)]">
-                  Lendo
-                </span>
-                <span className="text-sm font-bold text-[var(--text-bible)]">
-                  {currentBook.name} {currentChapter}
-                </span>
-              </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onNavOpen}
+              className={cn(
+                "flex flex-col items-center px-4 py-2 rounded-xl",
+                "bg-[var(--surface-1)] border border-[var(--border-bible)]",
+                "hover:bg-[var(--surface-2)] hover:border-[var(--accent-bible)]/30",
+                "transition-all duration-200 cursor-pointer"
+              )}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--accent-bible)]">
+                Lendo
+              </span>
+              <span className="text-sm font-bold text-[var(--text-bible)]">
+                {currentBook.name} {currentChapter}
+              </span>
+            </motion.button>
 
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                if (currentChapter < currentBook.chapters) {
+                  onNavigate(currentBook.id, currentChapter + 1);
+                } else {
+                  const bookIdx = BIBLE_BOOKS.findIndex(b => b.id === currentBook.id);
+                  if (bookIdx < BIBLE_BOOKS.length - 1) {
+                    onNavigate(BIBLE_BOOKS[bookIdx + 1].id, 1);
+                  }
+                }
+              }}
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-lg",
+                "text-[var(--text-bible-muted)] hover:text-[var(--accent-bible)]",
+                "hover:bg-[var(--surface-1)] transition-all duration-200"
+              )}
+              title="Próximo capítulo"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </motion.button>
+
+            <div className="relative flex items-center" ref={readingMenuRef}>
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
@@ -388,29 +411,6 @@ export const TopBar: React.FC<TopBarProps> = React.memo(({
                 )}
               </AnimatePresence>
             </div>
-
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => {
-                if (currentChapter < currentBook.chapters) {
-                  onNavigate(currentBook.id, currentChapter + 1);
-                } else {
-                  const bookIdx = BIBLE_BOOKS.findIndex(b => b.id === currentBook.id);
-                  if (bookIdx < BIBLE_BOOKS.length - 1) {
-                    onNavigate(BIBLE_BOOKS[bookIdx + 1].id, 1);
-                  }
-                }
-              }}
-              className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-lg",
-                "text-[var(--text-bible-muted)] hover:text-[var(--accent-bible)]",
-                "hover:bg-[var(--surface-1)] transition-all duration-200"
-              )}
-              title="Próximo capítulo"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </motion.button>
             </div>
           </>
         )}
