@@ -10,8 +10,9 @@ const PUBLIC_MODULES = [
 ];
 
 const PUBLIC_DICTIONARIES = [
-  { file: 'Strong AMG Bíblia Palavra-Chave.dct.mybible', name: 'Strong AMG (Bíblia Palavra-Chave)' },
-  { file: 'Strong KJ Concordância.dct.mybible', name: 'Strong KJ (Concordância)' },
+  { file: 'Strong AMG Biblia Palavra-Chave.dct.mybible', name: 'Strong AMG (Biblia Palavra-Chave)' },
+  { file: 'Strong KJ Concordancia.dct.mybible', name: 'Strong KJ (Concordancia)' },
+  { file: 'EnciclopediaMerril_optimized.db', name: 'Enciclopédia Merrill (Tenney)', category: 'merrill' },
 ];
 
 export const scanForBibleModules = async (): Promise<BibleModule[]> => {
@@ -27,16 +28,16 @@ export const scanForBibleModules = async (): Promise<BibleModule[]> => {
       path: m.file,
       language: 'pt-BR'
     }));
-    const dictModules = PUBLIC_DICTIONARIES.map(m => ({
-      id: m.file,
-      name: m.name,
-      abbreviation: m.name.substring(0, 4).toUpperCase(),
-      type: 'dictionary' as const,
-      format: 'mybible' as any,
-      category: 'mybible' as any,
-      path: m.file,
-      language: 'pt-BR'
-    }));
+const dictModules = PUBLIC_DICTIONARIES.map(m => ({
+  id: m.file,
+  name: m.name,
+  abbreviation: m.name.substring(0, 4).toUpperCase(),
+  type: 'dictionary' as const,
+  format: (m.category || 'mybible') as any,
+  category: 'mybible' as any,
+  path: m.file,
+  language: 'pt-BR'
+}));
     return [...bibleModules, ...dictModules];
   }
 

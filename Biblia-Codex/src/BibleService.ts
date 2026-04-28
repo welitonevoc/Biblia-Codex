@@ -299,7 +299,7 @@ export const BibleService = {
     return null;
   },
 
-  getDictionaryEntry: async (word: string, modulePath: string): Promise<DictionaryEntry | null> => {
+getDictionaryEntry: async (word: string, modulePath: string): Promise<DictionaryEntry | null> => {
     try {
       const cacheKey = `dict-${modulePath}`;
       let cached = dbCache.get(cacheKey);
@@ -314,32 +314,53 @@ export const BibleService = {
         }
         const db = new SQL.Database(binaryData);
 
+        // Detect if it's Merrill format (has 'entries' table directly)
         const tablesResult = execSQL(db, `SELECT name FROM sqlite_master WHERE type='table'`);
         const tableNames = (tablesResult[0]?.values ?? []).map((row: unknown[]) => String(row[0]).toLowerCase()) as string[];
-        const table = ['dictionary', 'dict', 'entries', 'words'].find(t => tableNames.includes(t)) || tableNames[0];
+        
+        let table: string;
+        let schema: SQLiteSchema;
+        
+        if (tableNames.includes('entries')) {
+          // Merrill format: direct 'entries' table
+          table = 'entries';
+          const pragma = execSQL(db, `PRAGMA table_info("entries")`);
+          const cols = (pragma[0]?.values.map((v: unknown[]) => String(v[1]).toLowerCase()) as string[]);
+          
+          schema = {
+            table,
+            bookCol: cols.find(c => ['word', 'topic', 'key', 'entry', 'lexeme'].includes(c)) || 'word',
+            textCol: cols.find(c => ['data', 'definition', 'content', 'text', 'body'].includes(c)) || 'text',
+            chapterCol: '',
+            verseCol: '',
+            isMyBible: false
+          };
+        } else {
+          // mybible format
+          table = ['dictionary', 'dict', 'entries', 'words'].find(t => tableNames.includes(t)) || tableNames[0];
+          if (!table) throw new Error("Tabela de dicionário não encontrada");
 
-        if (!table) throw new Error("Tabela de dicionário não encontrada");
+          const pragma = execSQL(db, `PRAGMA table_info("${table}")`);
+          const cols = (pragma[0]?.values.map((v: unknown[]) => String(v[1]).toLowerCase()) as string[]);
 
-        const pragma = execSQL(db, `PRAGMA table_info("${table}")`);
-        const cols = (pragma[0]?.values.map((v: unknown[]) => String(v[1]).toLowerCase()) || []) as string[];
-
-        const schema: SQLiteSchema = {
-          table,
-          bookCol: cols.find(c => ['word', 'topic', 'key', 'entry', 'lexeme'].includes(c)) || 'word',
-          textCol: cols.find(c => ['data', 'definition', 'content', 'text', 'body'].includes(c)) || 'data',
-          chapterCol: '',
-          verseCol: '',
-          isMyBible: false
-        };
+          schema = {
+            table,
+            bookCol: cols.find(c => ['word', 'topic', 'key', 'entry', 'lexeme'].includes(c)) || 'word',
+            textCol: cols.find(c => ['data', 'definition', 'content', 'text', 'body'].includes(c)) || 'data',
+            chapterCol: '',
+            verseCol: '',
+            isMyBible: false
+          };
+        }
 
         cached = { db, schema };
         dbCache.set(cacheKey, cached);
       }
 
-      const { db, schema } = cached!;
+const { db, schema } = cached!;
       const cleanWord = word.replace(/^[HG]/i, '');
-      const query = `SELECT "${schema.textCol}" FROM "${schema.table}" WHERE "${schema.bookCol}" = ? OR "${schema.bookCol}" = ? LIMIT 1`;
-      const result = execSQL(db, query, [word, cleanWord]);
+      const query = `SELECT "${schema.textCol}", "${schema.bookCol}" FROM "${schema.table}" WHERE "${schema.bookCol}" = ? OR "${schema.bookCol}" = ? OR "${schema.bookCol}" LIKE ? LIMIT 1`;
+      const result = execSQL(db, query, [word, cleanWord, `${cleanWord}%`]);
 
       if (result.length > 0 && result[0].values.length > 0) {
         return {
