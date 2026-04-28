@@ -4,7 +4,8 @@ import {
   User, Palette, Sparkles, Database, HelpCircle,
   Settings2, ChevronRight, Sun, Type, Layout, Navigation2,
   BookOpen, Brain, MessageSquare, Languages, Volume2,
-  Download, Globe, Shield, Key, Zap, ArrowLeft, Cloud, RefreshCw
+  Download, Globe, Shield, Key, Zap, ArrowLeft, Cloud, RefreshCw,
+  X
 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { cn } from '../utils/cn';
@@ -56,6 +57,9 @@ export const SettingsDashboard: React.FC = () => {
 
   // Expose syncNow to window for SettingCard onClick if needed (hacky but works without refactoring sections)
   (window as any).AppContextSyncNow = syncNow;
+
+  // Go back to main reader view
+  const handleClose = () => setActiveTab('reader');
 
   // Render sub-section if active
   const handleBack = () => setActiveSubSection(null);
@@ -254,9 +258,13 @@ export const SettingsDashboard: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="flex items-start justify-between mb-8"
         >
-          <div className="flex flex-col items-center gap-4 mb-4">
+          <div className="flex-1" />
+          <button onClick={handleClose} className="p-2 rounded-full hover:bg-bible-surface transition-colors">
+            <X className="w-5 h-5 text-bible-text-muted" />
+          </button>
+          <div className="flex flex-col items-center gap-4 mb-4 flex-1">
             <div className="p-4 rounded-2xl bg-[var(--accent-bible)]/10 shadow-inner-glow">
               <Settings2 className="w-8 h-8 text-[var(--accent-bible)]" />
             </div>
@@ -266,6 +274,7 @@ export const SettingsDashboard: React.FC = () => {
               <p className="text-sm text-[var(--text-bible-muted)]">Ajuste cada detalhe da sua experiência</p>
             </div>
           </div>
+          <div className="flex-1" />
         </motion.div>
 
         {/* Settings Sections */}
