@@ -334,7 +334,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     if (typeof window === 'undefined') return;
     if (!loading && targetVerse && verseRefs.current[targetVerse]) {
       verseRefs.current[targetVerse]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setSelectedVerses([targetVerse]);
+      setSelectedVerses(prev => prev.includes(targetVerse) ? prev : [...prev, targetVerse]);
       if (onTargetVerseReached) onTargetVerseReached();
     }
   }, [loading, targetVerse, onTargetVerseReached, setSelectedVerses]);
