@@ -6,12 +6,19 @@ import { BookNumberConverter } from './services/BookNumberConverter';
 import { footnoteService } from './services/FootnoteService';
 import initSqlJs from 'sql.js';
 import { getGeminiExplanation, getAIResponse } from './services/geminiService';
+import { LRUCache } from 'lru-cache';
 
 const isWeb = typeof window !== 'undefined' && !(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
 
 // Performance Cache for Premium Experience
 let sqlInstance: Awaited<ReturnType<typeof initSqlJs>> | null = null;
 const dbCache = new Map<string, CachedDB>();
+
+// LRU Cache for SQL query results (5 min TTL, 100 entries max)
+const queryCache = new LRUCache<string, Verse[]>({
+  max: 100,
+  ttl: 5 * 60 * 1000,
+});
 
 export const getSqlInstance = async () => {
   if (!sqlInstance) {
@@ -146,6 +153,14 @@ export const BibleService = {
       return Array.from({ length: 20 }, (_, i) => ({ bookId, chapter, verse: i + 1, text: `Texto simulado ${i + 1}`, isChapterHeader: false }));
     }
 
+    // Check query cache first
+    const cacheKey = `verses-${version.path}-${bookId}-${chapter}`;
+    const cached = queryCache.get(cacheKey);
+    if (cached) {
+      console.log(`[BibleService.getVerses] Cache hit for ${cacheKey}`);
+      return cached;
+    }
+
     try {
       const { db, schema } = await getDbInstance(version);
       const bookMetadata = BIBLE_BOOKS.find(b => b.id === bookId);
@@ -165,7 +180,7 @@ export const BibleService = {
       }
 
       if (queryRes.length > 0 && queryRes[0].values.length > 0) {
-        return queryRes[0].values.map((row: unknown[]) => {
+        const verses = queryRes[0].values.map((row: unknown[]) => {
           const verseNumber = Number(row[0]);
           return {
             bookId,
@@ -175,6 +190,10 @@ export const BibleService = {
             isChapterHeader: verseNumber === 0
           };
         });
+        
+        // Cache the result
+        queryCache.set(cacheKey, verses);
+        return verses;
       }
 
       console.log('[BibleService.getVerses] Nenhum versículo encontrado!');

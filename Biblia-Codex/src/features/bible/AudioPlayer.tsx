@@ -148,7 +148,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   }
 
   return (
-    <div className={`w-full max-w-2xl mx-auto ${className}`}>
+    <div className={`w-full max-w-2xl mx-auto ${className}`} role="region" aria-label="Player de áudio" aria-live="polite">
       {/* Header Section */}
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4 mb-4">

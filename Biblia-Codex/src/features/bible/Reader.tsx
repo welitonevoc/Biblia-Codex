@@ -426,9 +426,15 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
         paddingRight: !settings.navigation.horizontalScroll ? `${config.horizontalMargin}px` : undefined,
       }}
     >
-      <div className={cn("max-w-4xl mx-auto", settings.navigation.horizontalScroll && "min-w-full flex-shrink-0 snap-center")}>
+      <div 
+        className={cn("max-w-4xl mx-auto", settings.navigation.horizontalScroll && "min-w-full flex-shrink-0 snap-center")}
+        role="region" 
+        aria-label={`Leitura de ${book.name} capítulo ${chapter}`}
+        aria-live="polite"
+        aria-atomic="false"
+      >
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24">
+          <div className="flex flex-col items-center justify-center py-24" role="status" aria-live="polite" aria-atomic="true">
             <div className="w-16 h-16 border-4 border-bible-accent/20 border-t-bible-accent rounded-full animate-spin" />
             <p className="text-sm text-bible-text-muted mt-4 font-medium">Carregando capítulo...</p>
           </div>
