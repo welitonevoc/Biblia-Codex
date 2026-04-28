@@ -38,12 +38,13 @@ export const useReaderSelection = ({
   }, [bookmarks, book.id, chapter]);
 
   const toggleVerseSelection = useCallback((verseNum: number) => {
-    console.log('toggleVerseSelection called:', verseNum);
-    setSelectedVerses(prev =>
-      prev.includes(verseNum)
+    setSelectedVerses(prev => {
+      const newSelected = prev.includes(verseNum)
         ? prev.filter(v => v !== verseNum)
-        : [...prev, verseNum]
-    );
+        : [...prev, verseNum];
+      console.log('toggleVerseSelection result:', prev, '->', newSelected);
+      return newSelected;
+    });
   }, []);
 
   const handleStudy = useCallback(() => {
