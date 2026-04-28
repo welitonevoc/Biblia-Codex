@@ -128,6 +128,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
           opacity: isVisible ? 1 : 0.3,
         }}
         whileHover={{ opacity: 1, scale: 1 }}
+        whileTap={{ scale: 0.95 }}
         transition={{ 
           type: 'spring', 
           stiffness: 300, 
@@ -135,8 +136,6 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
           mass: 0.8
         }}
         className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
-        whileHover={{ opacity: 1, scale: 1 }}
-        whileTap={{ scale: 0.95 }}
         style={{ paddingBottom: 'max(var(--sab), 24px)' }}
       >
         <div 
