@@ -43,34 +43,13 @@ export class MySwordParser {
     // 2c. Inline verse markers used by some MySword/MyBible-derived modules
     parsed = parsed.replace(/<v=[^>]+>/gi, '');
     
-    // 3. Strong's Numbers (Support MySword <WG1234>/<WH1234> and MyBible <S1234>)
-    // By default, hide Strong's unless explicitly enabled
-    const showStrongs = settings?.studyTools?.strongsTags === true;
-    const linkedStrongs = settings?.studyTools?.strongsLinks === true;
-
-    if (showStrongs) {
-        // 3a. MySword Style (Explicit G/H)
-        const strongsClass = linkedStrongs ? 'strongs-link' : 'strongs-link strongs-text';
-        parsed = parsed.replace(/<WG(\d+)>/gi, `<a href="sG$1" class="${strongsClass}">G$1</a>`);
-        parsed = parsed.replace(/<WH(\d+)>/gi, `<a href="sH$1" class="${strongsClass}">H$1</a>`);
-
-        // 3b. MyBible Style (S prefix without letter, or S[HG]1234)
-        const prefix = isNewTestament ? 'G' : 'H';
-        parsed = parsed.replace(/<S([HG]?\d+)>/gi, (_, num) => {
-            const fullNum = /^[HG]/i.test(num) ? num : `${prefix}${num}`;
-            return `<a href="s${fullNum}" class="${strongsClass}">${fullNum}</a>`;
-        });
-        parsed = parsed.replace(/<S>([HG]?\d+)<\/S>/gi, (_, num) => {
-            const fullNum = /^[HG]/i.test(num) ? num : `${prefix}${num}`;
-            return `<a href="s${fullNum}" class="${strongsClass}">${fullNum}</a>`;
-        });
-    } else {
-        // Hide Strong's - remove all forms
-        parsed = parsed.replace(/<WH\d+>/gi, '');
-        parsed = parsed.replace(/<WG\d+>/gi, '');
-        parsed = parsed.replace(/<S[HG]?\d+>/gi, '');
-        parsed = parsed.replace(/<S>[HG]?\d+<\/S>/gi, '');
-    }
+    // 3. Strong's Numbers - ALWAYS REMOVE to avoid cluttering the display
+    // These interfere with reading and are only needed for scholarly study
+    // Remove all forms: <WH1234>, <WG1234>, <S1234>, <S>H1234</S>
+    parsed = parsed.replace(/<WH\d+>/gi, '');
+    parsed = parsed.replace(/<WG\d+>/gi, '');
+    parsed = parsed.replace(/<S[HG]?\d+>/gi, '');
+    parsed = parsed.replace(/<S>[HG]?\d+<\/S>/gi, '');
 
     // 4. Morphology
     if (settings?.studyTools?.morphTags) {
