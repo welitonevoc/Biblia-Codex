@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, Loader } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn } from '../utils/cn';
 import { Capacitor } from '@capacitor/core';
 
 import { AppProvider, useAppContext } from './AppContext';
@@ -39,10 +38,6 @@ const ModuleManagementPage = lazy(() => import('../features/modules').then((m) =
 const TagsPage = lazy(() => import('../features/tags').then((m) => ({ default: m.TagsPage })));
 const EBDPage = lazy(() => import('../features/ebd').then((m) => ({ default: m.EBDPage })));
 const ProfilePage = lazy(() => import('../features/settings').then((m) => ({ default: m.ProfilePage })));
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 type TabType =
   | 'bible'
@@ -91,8 +86,11 @@ function AppContent() {
   const [selectedVersesForStudy, setSelectedVersesForStudy] = useState<{ verse: number; text: string }[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('bible');
-  const [availableVersions] = useState([{ id: '1', name: 'Almeida Revista e Atualizada', abbreviation: 'ARA' }]);
   const [shareData, setShareData] = useState<{ verses: { verse: number; text: string }[]; reference: string } | null>(null);
+
+  const availableVersions = useMemo(() => [
+    { id: '1', name: 'Almeida Revista e Atualizada', abbreviation: 'ARA' }
+  ], []);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [audioTracks, setAudioTracks] = useState<AudioTrack[]>([]);
   const [hasAudioSupport, setHasAudioSupport] = useState(false);
