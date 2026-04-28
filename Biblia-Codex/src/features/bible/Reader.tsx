@@ -479,15 +479,15 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
         )}
       </div>
 
-      <AnimatePresence>
+<AnimatePresence>
         {selectedVerses.length > 0 && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={() => setSelectedVerses([])} />
-            <motion.div initial={{ opacity: 0, y: 50, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 50, scale: 0.96 }} className="fixed left-1/2 z-50 w-[min(calc(100vw-1.5rem),32rem)] -translate-x-1/2 bottom-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-transparent z-40" onClick={() => {}} />
+            <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }} className="fixed left-1/2 z-50 w-[min(calc(100vw-1.5rem),32rem)] -translate-x-1/2 bottom-6">
               <div className="glass-panel px-4 py-4 shadow-2xl sm:px-6 sm:py-5 rounded-3xl">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <div className="text-xs text-bible-text-muted font-semibold">Atualmente Selecionado:</div>
+                    <div className="text-xs text-bible-text-muted font-semibold">Versículos Selecionados:</div>
                     <div className="text-lg font-extrabold text-bible-text mt-0.5">{selectedReference}</div>
                   </div>
                   <button onClick={() => setSelectedVerses([])} className="p-2 bg-bible-surface rounded-full hover:bg-bible-surface-strong transition-colors"><X className="w-4 h-4" /></button>
