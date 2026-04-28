@@ -356,6 +356,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
             if (targetBook && onNavigate) onNavigate(targetBook.id, parseInt(c), parseInt(v));
           }
         } else if (href.startsWith('s')) {
+          e.stopPropagation();
           const term = href.substring(1);
           if (/^[HG]\d+/i.test(term)) {
             setSelectedStrongs(term);
