@@ -149,6 +149,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
               const Icon = item.icon;
               const isActive = activeTab === item.id;
               const isMenu = item.id === 'menu';
+              const hasSubmenu = item.id === 'bible';
               
               return (
                 <motion.button
@@ -163,6 +164,9 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
                   }}
                   onClick={() => {
                     if (isMenu) {
+                      setShowMenu(true);
+                    } else if (hasSubmenu) {
+                      setMenuHistory([mainItems.find(m => m.id === 'bible')!]);
                       setShowMenu(true);
                     } else {
                       onTabChange(item.id);
@@ -190,6 +194,9 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
                     }}
                   >
                     <Icon size={20} strokeWidth={1.5} />
+                    {hasSubmenu && (
+                      <ChevronRight className="w-3 h-3 absolute -right-0.5 -bottom-0.5" />
+                    )}
                   </motion.div>
                   
                   {isActive && (
@@ -244,7 +251,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
                 setShowMenu(false);
                 setMenuHistory([]);
               }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
             />
             <motion.div
               ref={menuRef}
@@ -252,7 +259,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[70] w-[85%] max-w-[340px]"
+              className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[70] w-[85%] max-w-[340px]"
             >
               <div 
                 className="glass-strong rounded-3xl p-4"
