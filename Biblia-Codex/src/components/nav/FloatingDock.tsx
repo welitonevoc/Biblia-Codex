@@ -5,7 +5,7 @@ import {
   Bookmark, Book, Map, Link2, Library, Calendar,
   MessageSquare, MapPin, Languages, FileText, GraduationCap,
   Sparkles, Palette, Volume2, Database, HelpCircle, ChevronRight,
-  X, BookMarked
+  X, BookMarked, Network, Type, Tags, MoreHorizontal, PenLine
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -31,42 +31,71 @@ const mainItems: MenuItem[] = [
   { 
     id: 'bible', 
     icon: BookOpen, 
-    label: 'Bíbia',
+    label: 'Bíblia',
     submenu: [
       { id: 'version', icon: BookOpen, label: 'Versão' },
       { id: 'books', icon: BookMarked, label: 'Livros' },
-      { id: 'typography', icon: FileText, label: 'Aa' },
+      { id: 'typography', icon: Type, label: 'Fonte' },
+      { id: 'audio', icon: Volume2, label: 'Áudio' },
     ]
   },
-  { id: 'devotional', icon: Calendar, label: 'Devocional' },
-  { id: 'notes', icon: Heart, label: 'Notas' },
-  { id: 'bookmarks', icon: Bookmark, label: 'Marcadores' },
-  { id: 'highlights', icon: Book, label: 'Destaques' },
-  { id: 'library', icon: Library, label: 'Biblioteca' },
-  { id: 'reading-plans', icon: Calendar, label: 'Planos' },
-  { id: 'dictionaries', icon: Languages, label: 'Dicionários' },
-  { id: 'commentary', icon: MessageSquare, label: 'Comentários' },
-  { id: 'maps', icon: Map, label: 'Mapas' },
-  { id: 'xrefs', icon: Link2, label: 'Refs. Cruzadas' },
-  { id: 'books-nav', icon: BookMarked, label: 'Livros' },
+  { 
+    id: 'reading', 
+    icon: Sparkles, 
+    label: 'Leitura',
+    submenu: [
+      { id: 'devotional', icon: Sparkles, label: 'Devocional' },
+      { id: 'reading-plans', icon: Calendar, label: 'Planos' },
+      { id: 'library', icon: Library, label: 'Biblioteca' },
+    ]
+  },
+  { 
+    id: 'study', 
+    icon: GraduationCap, 
+    label: 'Estudo',
+    submenu: [
+      { id: 'notes', icon: PenLine, label: 'Notas' },
+      { id: 'bookmarks', icon: Bookmark, label: 'Marcadores' },
+      { id: 'tags', icon: Tags, label: 'Tags' },
+      { id: 'search', icon: Search, label: 'Buscar' },
+    ]
+  },
+  { 
+    id: 'tools', 
+    icon: Sparkles, 
+    label: 'Ferramentas',
+    submenu: [
+      { id: 'dictionaries', icon: Languages, label: 'Dicionários' },
+      { id: 'xrefs', icon: Link2, label: 'Refs. Cruzadas' },
+      { id: 'maps', icon: Map, label: 'Mapas' },
+      { id: 'places', icon: MapPin, label: 'Lugares' },
+      { id: 'genealogy', icon: Network, label: 'Genealogia' },
+      { id: 'ai-assistant', icon: Sparkles, label: 'Assistente IA' },
+    ]
+  },
   { id: 'ebd', icon: GraduationCap, label: 'EBD' },
-  { id: 'study', icon: Sparkles, label: 'Estudo' },
-  { id: 'ai-assistant', icon: Sparkles, label: 'Assistente IA' },
+  { 
+    id: 'more', 
+    icon: MoreHorizontal, 
+    label: 'Mais',
+    submenu: [
+      { id: 'support', icon: HelpCircle, label: 'Suporte' },
+      { id: 'profile', icon: User, label: 'Perfil' },
+    ]
+  },
 ];
 
 const configItems: MenuItem[] = [
   { id: 'settings', icon: Settings, label: 'Configurações' },
-  { id: 'profile', icon: User, label: 'Perfil' },
   { id: 'appearance', icon: Palette, label: 'Aparência' },
-  { id: 'tts', icon: Volume2, label: 'TTS' },
+  { id: 'tts', icon: Volume2, label: 'Leitura por voz' },
   { id: 'modules', icon: Database, label: 'Módulos' },
-  { id: 'support', icon: HelpCircle, label: 'Suporte' },
 ];
 
 const navItems = [
   { id: 'menu', icon: Menu, label: 'Menu' },
   { id: 'home', icon: Home, label: 'Início' },
-  { id: 'bible', icon: BookOpen, label: 'Bíbia' },
+  { id: 'bible', icon: BookOpen, label: 'Bíblia' },
   { id: 'search', icon: Search, label: 'Buscar' },
   { id: 'notes', icon: Heart, label: 'Notas' },
   { id: 'settings', icon: Settings, label: 'Ajustes' },
@@ -166,8 +195,11 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
                     if (isMenu) {
                       setShowMenu(true);
                     } else if (hasSubmenu) {
-                      setMenuHistory([mainItems.find(m => m.id === 'bible')!]);
-                      setShowMenu(true);
+                      const categoryItem = mainItems.find(m => m.id === item.id);
+                      if (categoryItem) {
+                        setMenuHistory([categoryItem]);
+                        setShowMenu(true);
+                      }
                     } else {
                       onTabChange(item.id);
                     }

@@ -31,8 +31,9 @@ export default defineConfig(({ mode }) => {
       cssMinify: false, // Evita minificação com Lightning CSS
     },
     server: {
-      host: true,
+      host: '0.0.0.0',
       port: 5173,
+      allowedHosts: ['all'],
       hmr: process.env.DISABLE_HMR !== 'true',
     },
     preview: {
