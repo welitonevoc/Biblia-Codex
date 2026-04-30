@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, useLayoutEffect } from 'react';
 import { Verse, Book, Bookmark as BookmarkType, Tag as TagType } from '../../types';
 import { BibleService } from '../../BibleService';
 import { BIBLE_BOOKS } from '../../data/bibleMetadata';
@@ -327,10 +327,28 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     return () => { cancelled = true; };
   }, [book.id, chapter, currentVersion?.id, settings.textDisplay]);
 
-  useEffect(() => {
-    if (loading || !containerRef.current || targetVerse) return;
-    containerRef.current.scrollTop = 0;
-  }, [loading, book.id, chapter, targetVerse]);
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const scrollToTop = () => {
+      if (container.scrollTop !== 0) {
+        container.scrollTop = 0;
+      }
+    };
+
+    scrollToTop();
+
+    const observer = new MutationObserver(scrollToTop);
+    observer.observe(container, { childList: true, subtree: true });
+
+    const raf = requestAnimationFrame(scrollToTop);
+
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, [book.id, chapter]);
 
   const splitVerseHtml = useCallback((text: string, verseNumber: number, isChapterHeader?: boolean) => {
     const normalizedText = text.replace(/\r\n?/g, '\n').trim();
