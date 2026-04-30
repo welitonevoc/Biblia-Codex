@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Verse, Book, Bookmark as BookmarkType, Tag as TagType } from '../../types';
 import { BibleService } from '../../BibleService';
 import { BIBLE_BOOKS } from '../../data/bibleMetadata';
@@ -154,12 +154,12 @@ const VerseItem = React.memo(({
             !settings.textDisplay.paragraphMode && "absolute right-0 top-0 mt-1"
           )}>
             {settings.modules.commentary && (
-              <button onClick={() => onToolOpen(v, 'commentary')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Comentário">
+              <button onClick={() => onToolOpen(v, 'commentary')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Coment├írio">
                 <MessageSquare className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
             )}
             {settings.modules.dictionary && (
-              <button onClick={() => onToolOpen(v, 'dictionary')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Dicionário">
+              <button onClick={() => onToolOpen(v, 'dictionary')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Dicion├írio">
                 <Library className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
             )}
@@ -169,14 +169,14 @@ const VerseItem = React.memo(({
               </button>
             )}
             <button onClick={() => onToolOpen(v, 'people')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Pessoas">
-              <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">👥</span>
+              <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">≡ƒæÑ</span>
             </button>
             <button onClick={() => onToolOpen(v, 'places')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Lugares">
-              <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📍</span>
+              <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">≡ƒôì</span>
             </button>
             {settings.textDisplay.footnotes && (
-              <button onClick={() => onToolOpen(v, 'footnotes')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Notas de Rodapé">
-                <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📝</span>
+              <button onClick={() => onToolOpen(v, 'footnotes')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Notas de Rodap├⌐">
+                <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">≡ƒô¥</span>
               </button>
             )}
             <button onClick={() => onShare(v)} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Compartilhar">
@@ -283,7 +283,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     try {
       await navigator.clipboard.writeText(text);
     } catch (error) {
-      console.error('Erro ao copiar versículos selecionados:', error);
+      console.error('Erro ao copiar vers├¡culos selecionados:', error);
     }
   }, [selectedVerseData, selectedReference]);
 
@@ -301,6 +301,23 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     onToolOpen(v, type as any);
   }, [onToolOpen]);
 
+  const handleLinkClick = useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const anchor = target.closest('a');
+    if (!anchor) return;
+    e.preventDefault();
+    const href = anchor.getAttribute('href');
+    if (!href) return;
+    const refMatch = href.match(/#([A-Za-z├ü-├║]+)\s+(\d+):(\d+)/);
+    if (refMatch) {
+      const [, bookName, ch, vs] = refMatch;
+      const targetBook = BIBLE_BOOKS.find(b => b.name.toLowerCase().includes(bookName.toLowerCase()));
+      if (targetBook) {
+        onNavigate?.(targetBook.id, parseInt(ch), parseInt(vs));
+      }
+    }
+  }, [onNavigate]);
+
   useEffect(() => {
     let cancelled = false;
     const fetchVerses = async () => {
@@ -309,7 +326,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
         const data = await BibleService.getVerses(book.id, chapter, currentVersion || undefined, settings.textDisplay);
         if (!cancelled) setVerses(data);
       } catch (error) {
-        if (!cancelled) console.error("Erro ao carregar versículos:", error);
+        if (!cancelled) console.error("Erro ao carregar vers├¡culos:", error);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -332,80 +349,10 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     containerRef.current.scrollTop = 0;
   }, [loading, book.id, chapter, targetVerse]);
 
-  const splitVerseHtml = useCallback((text: string, verseNumber: number, isChapterHeader?: boolean) => {
-    const normalizedText = text.replace(/\r\n?/g, '\n').trim();
-    let workingText = normalizedText;
-    let fallbackHeading = '';
-
-    if (!isChapterHeader) {
-      const plainHeadingParts = workingText.split(/\n\s*\n+/);
-      if (plainHeadingParts.length > 1) {
-        const candidateHeading = plainHeadingParts[0]?.trim() ?? '';
-        const remainingBody = plainHeadingParts.slice(1).join('\n\n').trim();
-        const hasStructuredTags = /<TS\d*>|<WG\d+>|<WH\d+>|<S\d+>|<S>\d+<\/S>|<RF|<RX|<CM>|<FI>|<FR>|<FO>|<FU>/i.test(candidateHeading);
-        if (candidateHeading && !hasStructuredTags && remainingBody.length > 0) {
-          fallbackHeading = candidateHeading;
-          workingText = remainingBody;
-        }
-      }
-    }
-
-    workingText = workingText.replace(new RegExp(`^\\s*${verseNumber}\\s*[.:)\\-]+\\s*`), '');
-    const parsedHtml = MySwordParser.parseBibleText(workingText, settings, book.numericId >= 40);
-    const titleRegex = /<span class="bible-title[^"]*">.*?<\/span>/gi;
-    let headings = parsedHtml.match(titleRegex) ?? [];
-    let body = parsedHtml.replace(titleRegex, '').trim();
-
-    const fallbackHeadingHtml = fallbackHeading ? `<span class="bible-title bible-title-1">${fallbackHeading}</span>` : '';
-    return {
-      headingsHtml: `${fallbackHeadingHtml}${headings.join('')}`,
-      bodyHtml: body,
-      parsedHtml
-    };
-  }, [settings, book.numericId]);
-
-  const processedVerses = useMemo(() => {
-    if (!verses || verses.length === 0) return [];
-    return verses.map((v) => {
-      const { headingsHtml, bodyHtml, parsedHtml } = splitVerseHtml(v.text, v.verse, v.isChapterHeader);
-      return { verse: v, headingsHtml, bodyHtml, parsedHtml };
-    });
-  }, [verses, splitVerseHtml]);
-
-  const handleLinkClickOrig = useCallback((e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const anchor = target.closest('a');
-    if (anchor) {
-      const href = anchor.getAttribute('href');
-      if (href) {
-        e.preventDefault();
-        if (href.startsWith('b')) {
-          const match = href.match(/b(\d+)\.(\d+)\.(\d+)/);
-          if (match) {
-            const [_, bNum, c, v] = match;
-            const targetBook = BIBLE_BOOKS.find(book => book.numericId === parseInt(bNum));
-            if (targetBook && onNavigate) onNavigate(targetBook.id, parseInt(c), parseInt(v));
-          }
-        } else if (href.startsWith('s')) {
-          const term = href.substring(1);
-          if (/^[HG]\d+/i.test(term)) {
-            setSelectedStrongs(term);
-            setSelectedContext(`${book.name} ${chapter}`);
-            setIsStrongsOpen(true);
-          } else {
-            setSelectedTerm(term);
-            setSelectedContext(`${book.name} ${chapter}`);
-            setIsDictionaryOpen(true);
-          }
-        }
-      }
-    }
-  }, [book.name, chapter, onNavigate]);
-
   return (
     <div
       ref={containerRef}
-      onClick={handleLinkClickOrig}
+      onClick={handleLinkClick}
       className={cn(
         "h-full overflow-y-auto",
         settings.navigation.horizontalScroll && "flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory"
@@ -421,14 +368,14 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
         <div 
           className={cn("max-w-4xl mx-auto pb-36", settings.navigation.horizontalScroll && "min-w-full flex-shrink-0 snap-center")}
           role="region" 
-          aria-label={`Leitura de ${book.name} capítulo ${chapter}`}
+          aria-label={`Leitura de ${book.name} cap├¡tulo ${chapter}`}
           aria-live="polite"
           aria-atomic="false"
         >
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24" role="status" aria-live="polite" aria-atomic="true">
             <div className="w-16 h-16 border-4 border-bible-accent/20 border-t-bible-accent rounded-full animate-spin" />
-            <p className="text-sm text-bible-text-muted mt-4 font-medium">Carregando capítulo...</p>
+            <p className="text-sm text-bible-text-muted mt-4 font-medium">Carregando cap├¡tulo...</p>
           </div>
         ) : (
           <motion.div
@@ -498,7 +445,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
                 'disabled:opacity-30 disabled:cursor-not-allowed'
               )}
             >
-              <span className="hidden sm:inline">Próximo</span>
+              <span className="hidden sm:inline">Pr├│ximo</span>
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
@@ -513,7 +460,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
               <div className="glass-panel px-4 py-4 shadow-2xl sm:px-6 sm:py-5 rounded-3xl">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <div className="text-xs text-bible-text-muted font-semibold">Versículos Selecionados:</div>
+                    <div className="text-xs text-bible-text-muted font-semibold">Vers├¡culos Selecionados:</div>
                     <div className="text-lg font-extrabold text-bible-text mt-0.5">{selectedReference}</div>
                   </div>
                   <button onClick={() => setSelectedVerses([])} className="p-2 bg-bible-surface rounded-full hover:bg-bible-surface-strong transition-colors"><X className="w-4 h-4" /></button>
@@ -542,7 +489,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
 <div className="py-3">
                     <button onClick={handleStudy} className="w-full flex items-center gap-3 text-bible-text hover:text-bible-accent transition-colors">
                       <GitCompare className="w-5 h-5" />
-                      <span className="font-bold text-xl">Análise Teológica Codex</span>
+                      <span className="font-bold text-xl">An├ílise Teol├│gica Codex</span>
                     </button>
                   </div>
 
@@ -567,7 +514,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
                   {isTTSSupported && (
                     <button onClick={() => toggleTTS(selectedVerses)} className="flex items-center gap-2 text-xs font-semibold text-bible-text-muted hover:text-bible-text">
                       <Volume2 className={cn("w-4 h-4", isSpeakingTTS && "animate-pulse")} />
-                      {isSpeakingTTS ? 'Parar leitura' : 'Ouvir seleção'}
+                      {isSpeakingTTS ? 'Parar leitura' : 'Ouvir sele├º├úo'}
                     </button>
                   )}
                   <button onClick={handleDeleteBookmarks} className="flex items-center gap-2 text-xs font-semibold text-red-500 hover:text-red-600">
