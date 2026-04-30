@@ -378,8 +378,17 @@ function AppContent() {
           activeTab={activeTab} 
           onTabChange={(tab) => {
             if (tab === 'bible') {
-              // Toggle: se já está aberto, fecha; se não, abre
-              setIsBiblicalMenuOpen(prev => !prev);
+              if (activeTab !== 'bible') {
+                // Primeira vez que clica em bible - vai para a página
+                setIsBiblicalMenuOpen(false);
+                setActiveTab('bible');
+              } else if (!isBiblicalMenuOpen) {
+                // Já está em bible, menu fechado - abre o menu
+                setIsBiblicalMenuOpen(true);
+              } else {
+                // Já está em bible, menu aberto - fecha
+                setIsBiblicalMenuOpen(false);
+              }
             } else {
               setIsBiblicalMenuOpen(false);
               setActiveTab(tab as TabType);

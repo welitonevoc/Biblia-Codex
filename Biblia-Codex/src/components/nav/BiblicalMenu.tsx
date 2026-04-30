@@ -32,6 +32,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
   const [showVersions, setShowVersions] = useState(false);
   const [showBooks, setShowBooks] = useState(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [showChapters, setShowChapters] = useState(false);
   const [selectedTestament, setSelectedTestament] = useState<'OT' | 'NT'>(currentBook.testament as 'OT' | 'NT');
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -73,6 +74,11 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
     onClose();
   };
 
+  const handleShowChapters = () => {
+    setSelectedBook(currentBook);
+    setShowChapters(true);
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -85,7 +91,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
           className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2"
           style={{ paddingBottom: 'max(var(--sab), 24px)' }}
         >
-          <div className="w-72 rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)] shadow-lg shadow-black/10 overflow-hidden">
+          <div className="rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)]/95 backdrop-blur-md shadow-lg shadow-black/10 overflow-hidden">
             <AnimatePresence mode="wait">
               {showVersions ? (
                 <motion.div
@@ -232,7 +238,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                       {currentBook.name}
                     </button>
                     <button
-                      onClick={() => handleChapterSelectFromMain(currentChapter)}
+                      onClick={handleShowChapters}
                       className="flex items-center gap-1 text-sm font-medium text-[var(--accent-bible)] hover:underline"
                     >
                       {currentChapter}
@@ -245,26 +251,35 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
           </div>
 
           {/* Chapter Selector Popup */}
-          {selectedBook && (
+          {(selectedBook || showChapters) && (
             <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
-              className="absolute left-full top-0 ml-2 w-48 rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)] shadow-lg shadow-black/10 overflow-hidden"
+              className="absolute left-full top-0 ml-2 rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)]/95 backdrop-blur-md shadow-lg shadow-black/10 overflow-hidden"
             >
               <div className="p-2">
                 <button
-                  onClick={() => setSelectedBook(null)}
+                  onClick={() => {
+                    setShowChapters(false);
+                    setSelectedBook(null);
+                  }}
                   className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--text-bible)]"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  {selectedBook.name}
+                  {(selectedBook || currentBook).name}
                 </button>
                 <div className="max-h-48 grid grid-cols-5 gap-1 overflow-y-auto">
-                  {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapter) => (
+                  {Array.from({ length: (selectedBook || currentBook).chapters }, (_, i) => i + 1).map((chapter) => (
                     <button
                       key={chapter}
-                      onClick={() => handleChapterSelect(chapter)}
+                      onClick={() => {
+                        onNavigate((selectedBook || currentBook).id, chapter);
+                        onGoToBible();
+                        setShowChapters(false);
+                        setSelectedBook(null);
+                        onClose();
+                      }}
                       className={cn(
                         'flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium',
                         'text-[var(--text-bible)] hover:bg-[var(--surface-hover)]',

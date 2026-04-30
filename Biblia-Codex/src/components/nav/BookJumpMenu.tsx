@@ -47,7 +47,7 @@ export const BookJumpMenu: React.FC<BookJumpMenuProps> = ({
           className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2"
           style={{ paddingBottom: 'max(var(--sab), 24px)' }}
         >
-          <div className="flex items-center gap-2 rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)] px-2 py-1.5 shadow-lg shadow-black/10">
+          <div className="flex items-center gap-2 rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)]/95 backdrop-blur-md shadow-lg shadow-black/10">
             <button
               onClick={() => {
                 onClose();
