@@ -182,19 +182,24 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
             </div>
 
             <AnimatePresence>
-              {showExtra && extraItems.length > 0 && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                  animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
-                  exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-thin pb-1 pt-1 border-t border-[var(--border-bible)]/50">
-                    {extraItems.map((item, index) => renderNavItem(item, index, true))}
-                  </div>
-                </motion.div>
-              )}
+               {showExtra && extraItems.length > 0 && (
+                 <motion.div
+                   initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                   animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
+                   exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                   transition={{ duration: 0.2 }}
+                   className="overflow-hidden"
+                 >
+                   <div className="relative">
+                     <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-thin pb-1 pt-1 border-t border-[var(--border-bible)]/50 px-1">
+                       {extraItems.map((item, index) => renderNavItem(item, index, true))}
+                     </div>
+                     <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[var(--surface-2)] to-transparent pointer-events-none flex items-center justify-end pr-1">
+                       <ChevronRight size={14} className="text-[var(--text-bible-muted)] animate-pulse" />
+                     </div>
+                   </div>
+                 </motion.div>
+               )}
             </AnimatePresence>
           </motion.div>
         )}
