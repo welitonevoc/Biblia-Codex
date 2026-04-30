@@ -33,7 +33,6 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
   const [showVersions, setShowVersions] = useState(false);
   const [showBooks, setShowBooks] = useState(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [showChapters, setShowChapters] = useState(false);
   const [selectedTestament, setSelectedTestament] = useState<'OT' | 'NT'>(currentBook.testament as 'OT' | 'NT');
   const menuRef = useRef<HTMLDivElement>(null);
   const { isMobile, isTablet } = useBreakpoint();
@@ -58,12 +57,11 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
 
   const handleBookSelect = (book: Book) => {
     setSelectedBook(book);
-    setShowChapters(true);
   };
 
   useEffect(() => {
     if (isOpen && selectedBook) {
-      setShowChapters(true);
+      setShowBooks(false);
     }
   }, [selectedBook]);
 
@@ -75,24 +73,19 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
     onNavigate((selectedBook || currentBook).id, chapter);
     onGoToBible();
     setSelectedBook(null);
-    setShowChapters(false);
-  };
-
-  const handleChapterSelectFromMain = (chapter: number) => {
-    onNavigate(currentBook.id, chapter);
-    onGoToBible();
+    setShowBooks(false);
     onClose();
   };
 
   const handleShowChapters = () => {
     setSelectedBook(currentBook);
-    setShowChapters(true);
   };
 
   const chapterCols = isMobile ? 'grid-cols-4' : isTablet ? 'grid-cols-5' : 'grid-cols-6';
   const chapterBtnSize = isMobile ? 'h-9 w-9 text-sm' : 'h-10 w-10 text-base';
   const menuMaxWidth = isMobile ? 'max-w-[90vw] w-[280px]' : 'w-[320px]';
-  const chapterPanelMaxWidth = isMobile ? 'max-w-[90vw] w-[280px]' : '';
+
+  const viewKey = selectedBook ? 'chapters' : showBooks ? 'books' : showVersions ? 'versions' : 'main';
 
   return (
     <AnimatePresence>
@@ -108,7 +101,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
         >
           <div className="rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)]/95 backdrop-blur-md shadow-lg shadow-black/10 overflow-hidden">
             <AnimatePresence mode="wait">
-              {showVersions ? (
+              {viewKey === 'versions' && (
                 <motion.div
                   key="versions"
                   initial={{ opacity: 0, x: -20 }}
@@ -145,7 +138,9 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     ))}
                   </div>
                 </motion.div>
-              ) : showBooks ? (
+              )}
+
+              {viewKey === 'books' && (
                 <motion.div
                   key="books"
                   initial={{ opacity: 0, x: -20 }}
@@ -200,7 +195,45 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     ))}
                   </div>
                 </motion.div>
-              ) : (
+              )}
+
+              {viewKey === 'chapters' && selectedBook && (
+                <motion.div
+                  key="chapters"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="p-3"
+                >
+                  <button
+                    onClick={() => {
+                      setSelectedBook(null);
+                      setShowBooks(true);
+                    }}
+                    className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--text-bible)]"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    {selectedBook.name}
+                  </button>
+                  <div className={cn('max-h-48 overflow-y-auto grid gap-2', chapterCols)}>
+                    {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapter) => (
+                      <button
+                        key={chapter}
+                        onClick={() => handleChapterSelect(chapter)}
+                        className={cn(
+                          'flex items-center justify-center rounded-xl font-medium text-[var(--text-bible)]',
+                          'hover:bg-[var(--surface-1)] transition-all duration-150 hover:scale-110',
+                          chapterBtnSize
+                        )}
+                      >
+                        {chapter}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {viewKey === 'main' && (
                 <motion.div
                   key="main"
                   initial={{ opacity: 0 }}
@@ -254,52 +287,6 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
               )}
             </AnimatePresence>
           </div>
-
-          <AnimatePresence>
-            {(selectedBook || showChapters) && (
-              <motion.div
-                key="chapter-panel"
-                initial={{ opacity: 0, x: isMobile ? 0 : -10, y: isMobile ? 4 : 0 }}
-                animate={{ opacity: 1, x: 0, y: 0 }}
-                exit={{ opacity: 0, x: isMobile ? 0 : -10, y: isMobile ? 4 : 0 }}
-                className={cn(
-                  'rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)]/95 backdrop-blur-md shadow-lg shadow-black/10',
-                  isMobile
-                    ? 'relative top-0 left-0 mt-2 mx-auto'
-                    : 'absolute left-full top-0 ml-2'
-                )}
-                style={{ maxWidth: isMobile ? '280px' : 'none' }}
-              >
-                <div className="p-3">
-                  <button
-                    onClick={() => {
-                      setShowChapters(false);
-                      setSelectedBook(null);
-                    }}
-                    className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--text-bible)]"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    {(selectedBook || currentBook).name}
-                  </button>
-                  <div className={cn('max-h-48 overflow-y-auto grid gap-2', chapterCols)}>
-                    {Array.from({ length: (selectedBook || currentBook).chapters }, (_, i) => i + 1).map((chapter) => (
-                      <button
-                        key={chapter}
-                        onClick={() => handleChapterSelect(chapter)}
-                        className={cn(
-                          'flex items-center justify-center rounded-xl font-medium text-[var(--text-bible)]',
-                          'hover:bg-[var(--surface-1)] transition-all duration-150 hover:scale-110',
-                          chapterBtnSize
-                        )}
-                      >
-                        {chapter}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
