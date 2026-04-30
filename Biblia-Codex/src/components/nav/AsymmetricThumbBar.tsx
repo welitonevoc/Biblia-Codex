@@ -39,17 +39,17 @@ export const AsymmetricThumbBar: React.FC<AsymmetricThumbBarProps> = ({ activeTa
           const isActive = activeTab === item.id;
 
           return (
-            <button
-              key={item.id}
-              onClick={() => onTabChange(item.id)}
-              className={cn(
-                'flex h-10 w-10 items-center justify-center rounded transition-colors',
-                isActive 
-                  ? 'bg-bible-accent/10 text-bible-accent' 
-                  : 'text-bible-text-muted hover:text-bible-text hover:bg-bible-surface'
-              )}
-              title={item.label}
-            >
+              <button
+                key={item.id}
+                onClick={() => onTabChange(item.id)}
+                className={cn(
+                  'flex min-h-11 min-w-11 items-center justify-center rounded transition-colors cursor-pointer',
+                  isActive 
+                    ? 'bg-bible-accent/10 text-bible-accent' 
+                    : 'text-bible-text-muted hover:text-bible-text hover:bg-bible-surface'
+                )}
+                aria-label={item.label}
+              >
               <Icon size={18} strokeWidth={1.5} />
             </button>
           );

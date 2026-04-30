@@ -31,9 +31,9 @@
   --text-bible-subtle: #9a8d7c;
 
   /* Accent */
-  --accent-bible: #8a6b43;
-  --accent-bible-strong: #6d5030;
-  --accent-bible-contrast: #fff8ef;
+   --accent-bible: #6d5030;
+   --accent-bible-strong: #4a3820;
+   --accent-bible-contrast: #fff8ef;
   --accent-bible-rgb: 138, 107, 67;
 
   /* Borders — keep only for functional use (inputs, dividers) */
@@ -438,6 +438,10 @@
   --text-bible: #f0e8d9;
   --text-bible-muted: #9a8870;
   --text-bible-subtle: #6a5c4e;
+  --accent-bible: #b08a56;
+  --accent-bible-strong: #c79e5e;
+  --accent-bible-contrast: #0f0e0c;
+  --accent-bible-rgb: 176, 138, 86;
   --border-bible: rgba(255,255,255,0.07);
   --border-bible-strong: rgba(255,255,255,0.12);
   --divider: rgba(255,255,255,0.05);
@@ -465,14 +469,16 @@
   --text-bible: #e8e0d2;
   --text-bible-muted: #8a7d6e;
   --text-bible-subtle: #5a4e40;
+  --accent-bible: #c79e5e;
+  --accent-bible-strong: #dab070;
+  --accent-bible-contrast: #080808;
+  --accent-bible-rgb: 199, 158, 94;
   --border-bible: rgba(255,255,255,0.07);
   --border-bible-strong: rgba(255,255,255,0.12);
   --divider: rgba(255,255,255,0.05);
   --hero-start: #0c0b0a;
   --hero-mid: #080808;
   --hero-end: #080808;
-  --accent-bible: #b08a56;
-  --accent-bible-rgb: 176, 138, 86;
   --shadow-xs: 0 1px 4px rgba(0,0,0,0.5);
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.55);
   --shadow-md: 0 8px 24px rgba(0,0,0,0.65);

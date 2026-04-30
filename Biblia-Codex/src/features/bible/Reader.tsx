@@ -99,19 +99,23 @@ const VerseItem = React.memo(({
             />
           )}
           <span
-            id={`verse-${v.verse}`}
-            onClick={() => toggleVerseSelection(v.verse)}
-            className={cn(
-              "relative inline transition-all duration-200 cursor-pointer rounded-xl px-1.5 -mx-1.5",
-              selectedVerses.includes(v.verse) ? "bg-bible-accent/20 shadow-[0_0_0_2px_rgba(var(--accent-bible-rgb),0.12)]" : "hover:bg-bible-accent/7",
-              currentHighlightedVerse === v.verse && "bg-yellow-400/40 ring-2 ring-yellow-400/50",
-              showHighlight && !settings.visualResources.gradientHighlight && `border-b-2`,
-              showHighlight && settings.visualResources.gradientHighlight && "bg-gradient-to-r from-transparent via-bible-accent/10 to-transparent"
-            )}
-            style={showHighlight && bookmark ? {
-              backgroundColor: `${bookmark.color}4D`,
-              borderBottom: settings.visualResources.gradientHighlight ? 'none' : `2px solid ${bookmark.color}`
-            } : {}}
+             id={`verse-${v.verse}`}
+             onClick={() => toggleVerseSelection(v.verse)}
+             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleVerseSelection(v.verse); } }}
+             role="button"
+             tabIndex={0}
+             aria-label={`Versículo ${v.verse}`}
+             className={cn(
+               "relative inline transition-all duration-200 cursor-pointer rounded-xl px-1.5 -mx-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] focus-visible:ring-offset-1",
+               selectedVerses.includes(v.verse) ? "bg-bible-accent/20 shadow-[0_0_0_2px_rgba(var(--accent-bible-rgb),0.12)]" : "hover:bg-bible-accent/7",
+               currentHighlightedVerse === v.verse && "bg-yellow-400/40 ring-2 ring-yellow-400/50",
+               showHighlight && !settings.visualResources.gradientHighlight && `border-b-2`,
+               showHighlight && settings.visualResources.gradientHighlight && "bg-gradient-to-r from-transparent via-bible-accent/10 to-transparent"
+             )}
+             style={showHighlight && bookmark ? {
+               backgroundColor: `${bookmark.color}4D`,
+               borderBottom: settings.visualResources.gradientHighlight ? 'none' : `2px solid ${bookmark.color}`
+             } : {}}
           >
             {settings.textDisplay.verseNumbers && (
               <sup className="text-[0.6em] font-bold mr-1 opacity-50 select-none">
@@ -139,7 +143,7 @@ const VerseItem = React.memo(({
                       {tag.name}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleRemoveTag(bookmark.id, tId); }}
-                        className="hidden group-hover/tag:inline-flex items-center justify-center ml-0.5 -mr-0.5 w-4 h-4 min-w-[16px] min-h-[16px] rounded-full hover:bg-black/10 align-middle cursor-pointer"
+                        className="hidden group-hover/tag:inline-flex items-center justify-center ml-0.5 -mr-0.5 min-w-11 min-h-11 rounded-full hover:bg-black/10 align-middle cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]"
                         aria-label="Remover tag"
                       >
                         <X className="w-2.5 h-2.5" />
@@ -156,33 +160,33 @@ const VerseItem = React.memo(({
             !settings.textDisplay.paragraphMode && "absolute right-0 top-0 mt-1"
           )}>
             {settings.modules.commentary && (
-              <button onClick={() => onToolOpen(v, 'commentary')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Comentário">
-                <MessageSquare className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+              <button onClick={() => onToolOpen(v, 'commentary')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Comentário" aria-label="Abrir comentário">
+                <MessageSquare className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
             )}
             {settings.modules.dictionary && (
-              <button onClick={() => onToolOpen(v, 'dictionary')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Dicionário">
-                <Library className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+              <button onClick={() => onToolOpen(v, 'dictionary')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Dicionário" aria-label="Abrir dicionário">
+                <Library className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
             )}
             {settings.modules.xrefs && settings.visualResources.crossRefs && (
-              <button onClick={() => onToolOpen(v, 'xrefs')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Ref. Cruzadas">
-                <Layers className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+              <button onClick={() => onToolOpen(v, 'xrefs')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Ref. Cruzadas" aria-label="Ver referências cruzadas">
+                <Layers className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
             )}
-            <button onClick={() => onToolOpen(v, 'people')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Pessoas">
-              <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">👥</span>
+            <button onClick={() => onToolOpen(v, 'people')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Pessoas" aria-label="Ver pessoas">
+              <span className="w-4 h-4 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">👥</span>
             </button>
-            <button onClick={() => onToolOpen(v, 'places')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Lugares">
-              <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📍</span>
+            <button onClick={() => onToolOpen(v, 'places')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Lugares" aria-label="Ver lugares">
+              <span className="w-4 h-4 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📍</span>
             </button>
             {settings.textDisplay.footnotes && (
-              <button onClick={() => onToolOpen(v, 'footnotes')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Notas de Rodapé">
-                <span className="w-3.5 h-3.5 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📝</span>
+              <button onClick={() => onToolOpen(v, 'footnotes')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Notas de Rodapé" aria-label="Ver notas de rodapé">
+                <span className="w-4 h-4 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📝</span>
               </button>
             )}
-            <button onClick={() => onShare(v)} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool" title="Compartilhar">
-              <Share2 className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+            <button onClick={() => onShare(v)} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Compartilhar" aria-label="Compartilhar versículo">
+              <Share2 className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
             </button>
           </div>
         </>

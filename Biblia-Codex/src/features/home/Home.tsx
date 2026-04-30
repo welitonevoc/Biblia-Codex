@@ -494,7 +494,7 @@ export const Home: React.FC<HomeProps> = React.memo(({
                 <h2 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider">
                   Continuar lendo
                 </h2>
-                <button className="text-xs font-medium text-[var(--accent-bible)] flex items-center gap-1">
+                <button className="text-xs font-medium text-[var(--accent-bible)] flex items-center gap-1 cursor-pointer" aria-label="Ver todos os versículos lidos">
                   Ver todos <ChevronRight className="w-3 h-3" />
                 </button>
               </div>

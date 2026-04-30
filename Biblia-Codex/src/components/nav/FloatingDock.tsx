@@ -211,7 +211,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
           'relative rounded-full cursor-pointer transition-all',
           'flex items-center justify-center',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]',
-          isOpen ? 'h-3 w-3' : 'h-3 w-12'
+          isOpen ? 'min-h-11 min-w-11' : 'min-h-11 w-12'
         )}
         style={{
           background: isOpen

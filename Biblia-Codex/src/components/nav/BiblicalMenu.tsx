@@ -111,25 +111,27 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                 >
                   <button
                     onClick={() => setShowVersions(false)}
-                    className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--text-bible)]"
+                    className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--text-bible)] cursor-pointer"
+                    aria-label="Voltar para menu principal"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Versões
                   </button>
                   <div className="max-h-48 space-y-1 overflow-y-auto">
                     {availableVersions.map((version) => (
-                      <button
-                        key={version.id}
-                        onClick={() => {
-                          selectVersion(version);
-                          setShowVersions(false);
-                          onClose();
-                        }}
-                        className={cn(
-                          'flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm transition-all duration-200',
-                          'text-[var(--text-bible)] hover:bg-[var(--surface-1)] hover:scale-[1.02]'
-                        )}
-                      >
+                       <button
+                         key={version.id}
+                         onClick={() => {
+                           selectVersion(version);
+                           setShowVersions(false);
+                           onClose();
+                         }}
+                         className={cn(
+                           'flex w-full items-center justify-between rounded-xl px-4 min-h-11 text-sm transition-all duration-200 cursor-pointer',
+                           'text-[var(--text-bible)] hover:bg-[var(--surface-1)] hover:scale-[1.02]'
+                         )}
+                         aria-label={`Selecionar versão ${version.name}`}
+                       >
                         <span className="truncate">{version.name}</span>
                         {currentVersion?.id === version.id && (
                           <span className="h-2 w-2 rounded-full bg-[var(--accent-bible)]" />
