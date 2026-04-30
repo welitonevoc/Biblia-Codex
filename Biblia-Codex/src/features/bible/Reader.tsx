@@ -404,6 +404,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
 
   return (
     <div
+      key={`${book.id}-${chapter}`}
       ref={containerRef}
       onClick={handleLinkClickOrig}
       className={cn(
