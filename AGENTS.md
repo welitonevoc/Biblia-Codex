@@ -9,7 +9,22 @@ Este é um aplicativo de Bíblia digital para Android (e também roda na web). F
 - **Pasta raiz**: `C:\Projetos\Biblia-Codex\` - É apenas um "diretório pai" que redireciona para a pasta do app
 - **App principal**: Tudo está em `Biblia-Codex/`
 - **Código fonte**: `Biblia-Codex/src/` - Onde está o código React
+- **Componentes de navegação**: `src/components/nav/` - Menu Bíblico, BookJumpMenu, FloatingDock, AsymmetricThumbBar
+- **Features**: `src/features/` - Home, Settings Dashboard e outras funcionalidades
 - **Ponto de entrada**: `src/main.tsx` - Arquivo inicial do app
+
+## Funcionalidades principais
+
+- **Navegação**: Componentes `BiblicalMenu` (navegação bíblica), `BookJumpMenu` (pular entre livros), `FloatingDock` (dock flutuante) e `AsymmetricThumbBar` (barra de polegar assimétrica)
+- **Home**: Tela principal com visualizações atualizadas (`src/features/home/Home.tsx`)
+- **Settings**: Dashboard de configurações (`src/features/settings/SettingsDashboard.tsx`)
+- **IA**: Integração com Google Gemini AI (`@google/genai`)
+- **Exportação**: Suporte a PDF (`html2pdf.js`), DOCX (`docx`) e imagens (`html2canvas`)
+- **Estado global**: Zustand para gerenciamento de estado
+- **PWA**: Service worker com Serwist
+- **Internacionalização**: i18next com react-i18next
+- **Virtualização**: @tanstack/react-virtual para listas longas
+- **Firestore**: Firebase para dados e autenticação
 
 ## Comandos para rodar
 
