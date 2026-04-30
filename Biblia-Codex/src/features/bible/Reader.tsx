@@ -411,6 +411,10 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     }
   }, [book.name, chapter, onNavigate]);
 
+  useEffect(() => {
+    containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [book.id, chapter]);
+
   return (
     <div
       ref={containerRef}
