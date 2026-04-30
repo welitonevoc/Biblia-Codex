@@ -35,7 +35,12 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       allowedHosts: ['all'],
       hmr: process.env.DISABLE_HMR !== 'true',
+      fs: {
+        allow: ['..'],
+      },
     },
+    publicDir: 'public',
+    assetsInclude: ['**/*.json.gz'],
     preview: {
       port: 4173,
     },

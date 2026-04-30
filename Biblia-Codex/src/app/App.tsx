@@ -37,6 +37,7 @@ const DictionaryViewPage = lazy(() => import('../features/study').then((m) => ({
 const ModuleManagementPage = lazy(() => import('../features/modules').then((m) => ({ default: m.ModuleManagementPage })));
 const TagsPage = lazy(() => import('../features/tags').then((m) => ({ default: m.TagsPage })));
 const EBDPage = lazy(() => import('../features/ebd').then((m) => ({ default: m.EBDPage })));
+const EncyclopediaPage = lazy(() => import('../features/encyclopedia').then((m) => ({ default: m.EncyclopediaPage })));
 const ProfilePage = lazy(() => import('../features/settings').then((m) => ({ default: m.ProfilePage })));
 
 type TabType =
@@ -277,9 +278,7 @@ function AppContent() {
             {activeTab === 'encyclopedia' && (
               <motion.div key="encyclopedia" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
                 <Suspense fallback={<PageLoader />}>
-                  <div className="flex h-full items-center justify-center text-[var(--text-bible-muted)]">
-                    Coming soon...
-                  </div>
+                  <EncyclopediaPage />
                 </Suspense>
               </motion.div>
             )}

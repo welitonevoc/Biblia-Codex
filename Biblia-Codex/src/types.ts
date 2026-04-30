@@ -398,6 +398,17 @@ export type AnimationKey = keyof AppSettings['animation'];
 export type AiKey = keyof AppSettings['ai'];
 
 // ModuleInfo interface for module listing
+export interface EncyclopediaEntry {
+  id: string;
+  word: string;
+  text: string;
+  source: 'merrill' | 'vine';
+  language?: 'hebrew' | 'greek';
+  strongNumber?: string;
+  category?: string;
+  searchIndex?: string;
+}
+
 export interface ModuleInfo {
   id: string;
   name: string;
