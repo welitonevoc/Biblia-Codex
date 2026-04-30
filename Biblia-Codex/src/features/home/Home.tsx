@@ -180,9 +180,17 @@ export const Home: React.FC<HomeProps> = React.memo(({
     },
   ], [goToEBD, goToMaps, goToDictionaries, goToSettings]);
 
-  return (
+   return (
     <div className="h-full overflow-y-auto scrollbar-thin bg-[var(--bg-bible)]">
-      <div className="max-w-4xl mx-auto px-4 py-6 pb-28 space-y-8">
+      {/* Skip to content link for keyboard navigation */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--accent-bible)] focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-bible)] focus:ring-offset-2 focus:ring-offset-[var(--bg-bible)] transition-all duration-200"
+      >
+        Pular para o conteúdo
+      </a>
+
+      <div id="main-content" className="max-w-4xl mx-auto px-4 py-6 pb-28 space-y-8">
         
         {loading ? (
           <div className="space-y-6 animate-pulse">
@@ -283,23 +291,24 @@ export const Home: React.FC<HomeProps> = React.memo(({
               </div>
               
               <span className="premium-kicker mb-4 mx-auto">Versículo do Dia</span>
-              <blockquote className="relative">
-                <p className="text-xl md:text-2xl font-serif text-[var(--text-bible)] leading-relaxed italic mb-6">
-                  "{dailyVerse.text}"
-                </p>
-                <cite className="not-italic block mt-4">
-                  <button 
-                    onClick={() => {
-                      const book = BIBLE_BOOKS.find(b => b.id === dailyVerse.bookId);
-                      if (book) onNavigate(book, dailyVerse.chapter);
-                    }}
-                    className="group inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--accent-bible)]/10 text-[var(--accent-bible)] font-bold text-sm hover:bg-[var(--accent-bible)] hover:text-white transition-all"
-                  >
-                    {dailyVerse.ref}
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </cite>
-              </blockquote>
+               <blockquote className="relative" aria-live="polite" aria-label="Versículo do dia">
+                 <p className="text-xl md:text-2xl font-serif text-[var(--text-bible)] leading-relaxed italic mb-6">
+                   "{dailyVerse.text}"
+                 </p>
+                 <cite className="not-italic block mt-4">
+                   <button 
+                     onClick={() => {
+                       const book = BIBLE_BOOKS.find(b => b.id === dailyVerse.bookId);
+                       if (book) onNavigate(book, dailyVerse.chapter);
+                     }}
+                     className="group inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--accent-bible)]/10 text-[var(--accent-bible)] font-bold text-sm hover:bg-[var(--accent-bible)] hover:text-white transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-bible)]"
+                     aria-label={`Ler ${dailyVerse.ref}`}
+                   >
+                     {dailyVerse.ref}
+                     <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                   </button>
+                 </cite>
+               </blockquote>
             </motion.div>
 
             {/* Quick Actions */}
@@ -314,13 +323,15 @@ export const Home: React.FC<HomeProps> = React.memo(({
                        transition={{ delay: index * 0.05 }}
                        whileHover={{ scale: 1.02, y: -2 }}
                        whileTap={{ scale: 0.98 }}
-                       onClick={action.action}
-                       className={cn(
-                         "group relative overflow-hidden rounded-xl p-4",
-                         "text-left transition-all duration-300",
-                         "premium-card hover:premium-card-strong",
-                         "hover:shadow-lg hover:border-[var(--accent-bible)]/30"
-                       )}
+                        onClick={action.action}
+                        className={cn(
+                          "group relative overflow-hidden rounded-xl p-4",
+                          "text-left transition-all duration-300 cursor-pointer",
+                          "premium-card hover:premium-card-strong",
+                          "hover:shadow-lg hover:border-[var(--accent-bible)]/30",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-bible)]"
+                        )}
+                        aria-label={action.title}
                      >
                     <div className={cn(
                       "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
@@ -493,7 +504,7 @@ export const Home: React.FC<HomeProps> = React.memo(({
                  <h2 className="premium-section-title !text-[11px]">
                    Continuar lendo
                  </h2>
-                 <button className="text-xs font-medium text-[var(--accent-bible)] flex items-center gap-1 cursor-pointer" aria-label="Ver todos os versículos lidos">
+                  <button className="text-xs font-medium text-[var(--accent-bible)] flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-bible)]" aria-label="Ver todos os versículos lidos">
                    Ver todos <ChevronRight className="w-3 h-3" />
                  </button>
                </div>
@@ -527,7 +538,7 @@ export const Home: React.FC<HomeProps> = React.memo(({
                         {verse.text}
                       </p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-[var(--text-bible-muted)]" />
+                     <ChevronRight className="w-4 h-4 text-[var(--text-bible-muted)]" />
                   </motion.button>
                 ))}
               </div>
