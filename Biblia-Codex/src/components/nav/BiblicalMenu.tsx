@@ -31,6 +31,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
   const { availableVersions, currentVersion, selectVersion } = useAppContext();
   const [showVersions, setShowVersions] = useState(false);
   const [showBooks, setShowBooks] = useState(false);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [selectedTestament, setSelectedTestament] = useState<'OT' | 'NT'>(currentBook.testament as 'OT' | 'NT');
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -53,17 +54,23 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
   const books = BIBLE_BOOKS.filter((book) => book.testament === selectedTestament);
 
   const handleBookSelect = (book: Book) => {
-    onNavigate(book.id, 1);
-    onGoToBible();
-    setShowBooks(false);
-    onClose();
+    setSelectedBook(book);
   };
 
-  const handleChapterChange = (delta: number) => {
-    const newChapter = currentChapter + delta;
-    if (newChapter >= 1 && newChapter <= currentBook.chapters) {
-      onNavigate(currentBook.id, newChapter);
+  const handleChapterSelect = (chapter: number) => {
+    if (selectedBook) {
+      onNavigate(selectedBook.id, chapter);
+      onGoToBible();
+      setSelectedBook(null);
+      setShowBooks(false);
+      onClose();
     }
+  };
+
+  const handleChapterSelectFromMain = (chapter: number) => {
+    onNavigate(currentBook.id, chapter);
+    onGoToBible();
+    onClose();
   };
 
   return (
@@ -75,7 +82,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.95 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2"
+          className="fixed bottom-24 left-1/2 z-50 -translate-x-[calc(50%-8rem)]"
           style={{ paddingBottom: 'max(var(--sab), 24px)' }}
         >
           <div className="w-72 rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)] shadow-lg shadow-black/10 overflow-hidden">
@@ -217,42 +224,60 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                   </button>
 
                   <div className="mt-1 flex items-center justify-between rounded-lg bg-[var(--surface-1)] px-3 py-2">
-                    <span className="flex items-center gap-2 text-sm text-[var(--text-bible)]">
+                    <button
+                      onClick={() => setShowBooks(true)}
+                      className="flex items-center gap-2 text-sm text-[var(--text-bible)]"
+                    >
                       <BookIcon className="h-4 w-4 text-[var(--accent-bible)]" />
                       {currentBook.name}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleChapterChange(-1)}
-                        disabled={currentChapter <= 1}
-                        className={cn(
-                          'flex h-7 w-7 items-center justify-center rounded-lg transition-colors',
-                          'text-[var(--text-bible-muted)] hover:bg-[var(--surface-hover)]',
-                          'disabled:opacity-30 disabled:cursor-not-allowed'
-                        )}
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </button>
-                      <span className="min-w-[2rem] text-center text-sm font-medium text-[var(--text-bible)]">
-                        {currentChapter}
-                      </span>
-                      <button
-                        onClick={() => handleChapterChange(1)}
-                        disabled={currentChapter >= currentBook.chapters}
-                        className={cn(
-                          'flex h-7 w-7 items-center justify-center rounded-lg transition-colors',
-                          'text-[var(--text-bible-muted)] hover:bg-[var(--surface-hover)]',
-                          'disabled:opacity-30 disabled:cursor-not-allowed'
-                        )}
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                    </div>
+                    </button>
+                    <button
+                      onClick={() => handleChapterSelectFromMain(currentChapter)}
+                      className="flex items-center gap-1 text-sm font-medium text-[var(--accent-bible)] hover:underline"
+                    >
+                      {currentChapter}
+                      <ChevronRight className="h-3 w-3" />
+                    </button>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
+
+          {/* Chapter Selector Popup */}
+          {selectedBook && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              className="absolute left-full top-0 ml-2 w-48 rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)] shadow-lg shadow-black/10 overflow-hidden"
+            >
+              <div className="p-2">
+                <button
+                  onClick={() => setSelectedBook(null)}
+                  className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--text-bible)]"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  {selectedBook.name}
+                </button>
+                <div className="max-h-48 grid grid-cols-5 gap-1 overflow-y-auto">
+                  {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapter) => (
+                    <button
+                      key={chapter}
+                      onClick={() => handleChapterSelect(chapter)}
+                      className={cn(
+                        'flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium',
+                        'text-[var(--text-bible)] hover:bg-[var(--surface-hover)]',
+                        'transition-colors duration-150'
+                      )}
+                    >
+                      {chapter}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

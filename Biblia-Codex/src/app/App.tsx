@@ -16,8 +16,7 @@ import { Navigation, ReaderWithAudio } from '../features/bible';
 import { StudyPanel, StudyToolsPanel } from '../features/study';
 import { SearchView } from '../features/search';
 import { VerseCardGenerator, ErrorBoundary } from '../components/common';
-import { FloatingDock } from '../components/nav/FloatingDock';
-import { BiblicalMenu } from '../components/nav/BiblicalMenu';
+import { FloatingDock, BiblicalMenu, ChapterNav } from '../components/nav';
 import { BIBLE_BOOKS } from '../data';
 import { Onboarding } from '../features/onboarding';
 import { Settings } from '../features/settings';
@@ -365,12 +364,14 @@ function AppContent() {
           </AnimatePresence>
         </main>
 
-        <FloatingDock 
+<FloatingDock 
           activeTab={activeTab} 
           onTabChange={(tab) => {
             if (tab === 'bible') {
-              setIsBiblicalMenuOpen(true);
+              // Toggle: se já está aberto, fecha; se não, abre
+              setIsBiblicalMenuOpen(prev => !prev);
             } else {
+              setIsBiblicalMenuOpen(false);
               setActiveTab(tab as TabType);
             }
           }} 
@@ -390,6 +391,17 @@ function AppContent() {
             setActiveTab('bible');
           }}
         />
+
+        {activeTab === 'bible' && (
+          <ChapterNav
+            currentBook={currentBook}
+            currentChapter={currentChapter}
+            onNavigate={(bookId, chapter) => {
+              const book = BIBLE_BOOKS.find(b => b.id === bookId);
+              if (book) handleSelect(book, chapter);
+            }}
+          />
+        )}
       </div>
 
       <Navigation
