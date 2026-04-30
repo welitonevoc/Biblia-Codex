@@ -92,6 +92,11 @@ function AppContent() {
   const { selectedVersesForStudy, setIsStudyOpen: setStudyOpen, openStudyPanel } = useStudyPanel();
   const { shareData, setIsShareOpen: setShareOpen, openShare } = useShare();
   const [isBiblicalMenuOpen, setIsBiblicalMenuOpen] = useState(false);
+  const [isReaderAtBottom, setIsReaderAtBottom] = useState(false);
+  
+  useEffect(() => {
+    console.log('App: isReaderAtBottom changed to', isReaderAtBottom);
+  }, [isReaderAtBottom]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -193,6 +198,7 @@ function AppContent() {
                   hasAudioSupport={hasAudioSupport}
                   readingMode={readingMode}
                   onReadingModeChange={setReadingMode}
+                  onBottomChange={setIsReaderAtBottom}
                 />
               </motion.div>
             )}
@@ -207,8 +213,8 @@ function AppContent() {
               >
                 <Suspense fallback={<PageLoader />}>
                   <HomePage
-                    onNavigate={(book: Book, chapter: number) => handleSelect(book, chapter)}
-                    goToReadingPlans={() => setActiveTab('reading-plans')}
+                     onNavigate={(book: Book, chapter: number, verse?: number) => handleSelect(book, chapter, verse || 1)}
+                     goToReadingPlans={() => setActiveTab('reading-plans')}
                     goToDevocional={() => setActiveTab('devocional')}
                     goToAI={() => setActiveTab('ai-assistant')}
                     goToNotes={() => setActiveTab('notes')}
@@ -425,7 +431,7 @@ function AppContent() {
           currentChapter={currentChapter}
           onNavigate={(bookId, chapter) => {
             const book = BIBLE_BOOKS.find(b => b.id === bookId);
-            if (book) handleSelect(book, chapter);
+            if (book) handleSelect(book, chapter, 1);
           }}
           onGoToBible={() => {
             setIsBiblicalMenuOpen(false);
@@ -437,11 +443,11 @@ function AppContent() {
           <BookJumpMenu
             currentBook={currentBook}
             currentChapter={currentChapter}
-            onNavigate={(bookId, chapter) => {
-              const book = BIBLE_BOOKS.find(b => b.id === bookId);
-              if (book) handleSelect(book, chapter);
-            }}
-            isOpen={!isBiblicalMenuOpen}
+             onNavigate={(bookId, chapter) => {
+               const book = BIBLE_BOOKS.find(b => b.id === bookId);
+               if (book) handleSelect(book, chapter, 1);
+             }}
+            isOpen={!isBiblicalMenuOpen && !isReaderAtBottom}
             onClose={() => setIsBiblicalMenuOpen(true)}
           />
         )}

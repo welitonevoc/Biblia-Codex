@@ -12,7 +12,7 @@ function cn(...inputs: (string | false | null | undefined)[]) {
 interface BookJumpMenuProps {
   currentBook: Book;
   currentChapter: number;
-  onNavigate: (bookId: string, chapter: number) => void;
+  onNavigate: (bookId: string, chapter: number, verse?: number) => void;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -26,13 +26,13 @@ export const BookJumpMenu: React.FC<BookJumpMenuProps> = ({
 }) => {
   const handlePrevChapter = () => {
     if (currentChapter > 1) {
-      onNavigate(currentBook.id, currentChapter - 1);
+      onNavigate(currentBook.id, currentChapter - 1, 1);
     }
   };
 
   const handleNextChapter = () => {
     if (currentChapter < currentBook.chapters) {
-      onNavigate(currentBook.id, currentChapter + 1);
+      onNavigate(currentBook.id, currentChapter + 1, 1);
     }
   };
 
@@ -51,7 +51,7 @@ export const BookJumpMenu: React.FC<BookJumpMenuProps> = ({
             <button
               onClick={() => {
                 onClose();
-                onNavigate(currentBook.id, Math.max(1, currentChapter - 1));
+                onNavigate(currentBook.id, Math.max(1, currentChapter - 1), 1);
               }}
               disabled={currentChapter <= 1}
               className={cn(
@@ -79,7 +79,7 @@ export const BookJumpMenu: React.FC<BookJumpMenuProps> = ({
             <button
               onClick={() => {
                 onClose();
-                onNavigate(currentBook.id, Math.min(currentBook.chapters, currentChapter + 1));
+                onNavigate(currentBook.id, Math.min(currentBook.chapters, currentChapter + 1), 1);
               }}
               disabled={currentChapter >= currentBook.chapters}
               className={cn(

@@ -11,7 +11,7 @@ import { useAppContext } from '../AppContext';
 import { cn } from '../utils/cn';
 
 interface HomeProps {
-  onNavigate: (book: Book, chapter: number) => void;
+  onNavigate: (book: Book, chapter: number, verse?: number) => void;
   goToReadingPlans?: () => void;
   goToDevocional?: () => void;
   goToAI?: () => void;
@@ -82,9 +82,9 @@ export const Home: React.FC<HomeProps> = React.memo(({
     { label: 'D', state: isReadToday ? 'read' : 'today' },
   ], [isReadToday]);
 
-  const handleVerseClick = useCallback((verse: { bookId: string, chapter: number }) => {
+  const handleVerseClick = useCallback((verse: { bookId: string, chapter: number, verse?: number }) => {
     const book = BIBLE_BOOKS.find((entry) => entry.id === verse.bookId);
-    if (book) onNavigate(book, verse.chapter);
+    if (book) onNavigate(book, verse.chapter, verse.verse || 1);
   }, [onNavigate]);
 
   const quickActions = useMemo(() => [
@@ -92,7 +92,7 @@ export const Home: React.FC<HomeProps> = React.memo(({
       icon: BookOpen,
       title: 'Ler a Bíblia',
       subtitle: 'Iniciar leitura',
-      action: () => goToBible?.() || onNavigate(BIBLE_BOOKS[0], 1),
+      action: () => goToBible?.() || onNavigate(BIBLE_BOOKS[0], 1, 1),
       gradient: 'from-amber-500 to-orange-600',
     },
     {

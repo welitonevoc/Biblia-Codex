@@ -13,12 +13,12 @@ function cn(...inputs: (string | false | null | undefined)[]) {
 }
 
 interface BiblicalMenuProps {
-  isOpen: boolean;
-  onClose: () => void;
   currentBook: Book;
   currentChapter: number;
-  onNavigate: (bookId: string, chapter: number) => void;
+  onNavigate: (bookId: string, chapter: number, verse?: number) => void;
   onGoToBible: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
@@ -70,7 +70,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
   }, [currentBook, currentChapter]);
 
   const handleChapterSelect = (chapter: number) => {
-    onNavigate((selectedBook || currentBook).id, chapter);
+    onNavigate((selectedBook || currentBook).id, chapter, 1);
     onGoToBible();
     setSelectedBook(null);
     setShowBooks(false);

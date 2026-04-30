@@ -14,7 +14,7 @@ function cn(...inputs: (string | boolean | undefined)[]) {
 interface NavigationProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (book: Book, chapter: number) => void;
+  onSelect: (book: Book, chapter: number, verse?: number) => void;
   currentBook: Book;
   currentChapter: number;
 }
@@ -49,7 +49,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   };
 
   const handleChapterSelect = (chapter: number) => {
-    onSelect(selectedBook, chapter);
+    onSelect(selectedBook, chapter, 1);
     onClose();
     setTimeout(() => { setStep('book'); setSearchQuery(''); }, 300);
   };

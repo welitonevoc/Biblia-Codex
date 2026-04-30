@@ -23,7 +23,7 @@ interface TopBarProps {
   readingMode?: ReadingMode;
   onReadingModeChange?: (mode: ReadingMode) => void;
   hasAudio?: boolean;
-  onNavigate?: (bookId: string, chapter: number) => void;
+  onNavigate?: (bookId: string, chapter: number, verse?: number) => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = React.memo(({
@@ -348,11 +348,11 @@ useEffect(() => {
               whileTap={{ scale: 0.9 }}
               onClick={() => {
                 if (currentChapter > 1) {
-                  onNavigate(currentBook.id, currentChapter - 1);
+                  onNavigate(currentBook.id, currentChapter - 1, 1);
                 } else {
                   const bookIdx = BIBLE_BOOKS.findIndex(b => b.id === currentBook.id);
                   if (bookIdx > 0) {
-                    onNavigate(BIBLE_BOOKS[bookIdx - 1].id, BIBLE_BOOKS[bookIdx - 1].chapters);
+                    onNavigate(BIBLE_BOOKS[bookIdx - 1].id, BIBLE_BOOKS[bookIdx - 1].chapters, 1);
                   }
                 }
               }}
@@ -390,11 +390,11 @@ useEffect(() => {
               whileTap={{ scale: 0.9 }}
               onClick={() => {
                 if (currentChapter < currentBook.chapters) {
-                  onNavigate(currentBook.id, currentChapter + 1);
+                  onNavigate(currentBook.id, currentChapter + 1, 1);
                 } else {
                   const bookIdx = BIBLE_BOOKS.findIndex(b => b.id === currentBook.id);
                   if (bookIdx < BIBLE_BOOKS.length - 1) {
-                    onNavigate(BIBLE_BOOKS[bookIdx + 1].id, 1);
+                    onNavigate(BIBLE_BOOKS[bookIdx + 1].id, 1, 1);
                   }
                 }
               }}

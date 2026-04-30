@@ -30,6 +30,7 @@ interface ReaderProps {
   onStudyOpen: (selectedVerses: { verse: number, text: string }[]) => void;
   onToolOpen: (verse: Verse, type: 'commentary' | 'dictionary' | 'xrefs' | 'people' | 'places' | 'footnotes') => void;
   onShare: (verses: { verse: number, text: string }[], reference: string) => void;
+  onBottomChange?: (isAtBottom: boolean) => void;
 }
 
 const VerseItem = React.memo(({ 
@@ -198,7 +199,8 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   onNavigate,
   onStudyOpen,
   onToolOpen,
-  onShare
+  onShare,
+  onBottomChange
 }) => {
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -215,6 +217,38 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   const { config, settings, currentVersion } = useAppContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [isAtBottom, setIsAtBottom] = useState(false);
+
+  const checkIfAtBottom = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const threshold = 50;
+    const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - threshold;
+    
+    if (atBottom !== isAtBottom) {
+      setIsAtBottom(atBottom);
+    }
+  }, [isAtBottom]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      requestAnimationFrame(checkIfAtBottom);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    // Verificação inicial
+    checkIfAtBottom();
+    
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [checkIfAtBottom]);
+
+  useEffect(() => {
+    onBottomChange?.(isAtBottom);
+  }, [isAtBottom, onBottomChange]);
 
   const {
     selectedVerses,
@@ -332,9 +366,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     if (!container) return;
 
     const scrollToTop = () => {
-      if (container.scrollTop !== 0) {
-        container.scrollTop = 0;
-      }
+      container.scrollTop = 0;
     };
 
     scrollToTop();
@@ -349,6 +381,18 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
       cancelAnimationFrame(raf);
     };
   }, [book.id, chapter]);
+
+  useEffect(() => {
+    if (!targetVerse || !verseRefs.current[targetVerse]) return;
+    
+    const verseElement = verseRefs.current[targetVerse];
+    if (verseElement) {
+      setTimeout(() => {
+        verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        onTargetVerseReached?.();
+      }, 100);
+    }
+  }, [targetVerse, book.id, chapter, onTargetVerseReached]);
 
   const splitVerseHtml = useCallback((text: string, verseNumber: number, isChapterHeader?: boolean) => {
     const normalizedText = text.replace(/\r\n?/g, '\n').trim();
@@ -492,7 +536,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
         {!loading && verses.length > 0 && (
           <div className="flex items-center justify-between mt-8 pt-6 border-t border-[var(--border-bible)]/50">
             <button
-              onClick={() => onNavigate?.(book.id, Math.max(1, chapter - 1))}
+              onClick={() => onNavigate?.(book.id, Math.max(1, chapter - 1), 1)}
               disabled={chapter <= 1}
               className={cn(
                 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all',
@@ -509,7 +553,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
             </span>
 
             <button
-              onClick={() => onNavigate?.(book.id, Math.min(book.chapters, chapter + 1))}
+              onClick={() => onNavigate?.(book.id, Math.min(book.chapters, chapter + 1), 1)}
               disabled={chapter >= book.chapters}
               className={cn(
                 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all',

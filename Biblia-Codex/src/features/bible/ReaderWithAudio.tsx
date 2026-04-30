@@ -22,6 +22,7 @@ interface ReaderWithAudioProps {
   onReadingModeChange?: (mode: ReadingMode) => void;
   onShare: (verses: { verse: number, text: string }[], reference: string) => void;
   verses?: Verse[];
+  onBottomChange?: (isAtBottom: boolean) => void;
 }
 
 export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
@@ -39,6 +40,7 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
   onReadingModeChange,
   onShare,
   verses = [],
+  onBottomChange,
 }) => {
   const [currentAudioTrack, setCurrentAudioTrack] = useState<AudioTrack | null>(null);
   const { t } = useTranslation();
@@ -57,13 +59,13 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
 
   const handlePreviousChapter = () => {
     if (onNavigate) {
-      onNavigate(book.id, chapter - 1);
+      onNavigate(book.id, chapter - 1, 1);
     }
   };
 
   const handleNextChapter = () => {
     if (onNavigate) {
-      onNavigate(book.id, chapter + 1);
+      onNavigate(book.id, chapter + 1, 1);
     }
   };
 
@@ -109,6 +111,7 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
           onStudyOpen={onStudyOpen}
           onToolOpen={onToolOpen}
           onShare={onShare}
+          onBottomChange={onBottomChange}
         />
       )}
 
