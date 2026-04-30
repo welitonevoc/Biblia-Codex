@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, BookOpen, Search, Heart, Settings, BookHeart, Library, MessageSquarePlus, BookA, MoreHorizontal, X } from 'lucide-react';
+import { Home, BookOpen, Search, Heart, Settings, Library, MessageSquarePlus, BookA, ChevronRight, X } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useBreakpoint } from '../../hooks/useMediaQuery';
@@ -29,7 +29,7 @@ const mobilePriorityIds = ['home', 'bible', 'search', 'settings'];
 
 export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showMore, setShowMore] = useState(false);
+  const [showExtra, setShowExtra] = useState(false);
   const { isMobile, isTablet } = useBreakpoint();
   const dockRef = useRef<HTMLDivElement>(null);
 
@@ -37,7 +37,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
     const handleClickOutside = (event: MouseEvent) => {
       if (dockRef.current && !dockRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-        setShowMore(false);
+        setShowExtra(false);
       }
     };
     if (isOpen) {
@@ -47,7 +47,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen) setShowMore(false);
+    if (isOpen) setShowExtra(false);
   }, [isOpen]);
 
   const visibleItems = isMobile
@@ -68,7 +68,47 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
   const handleTabChange = (tab: string) => {
     onTabChange(tab);
     setIsOpen(false);
-    setShowMore(false);
+    setShowExtra(false);
+  };
+
+  const renderNavItem = (item: typeof navItems[0], index: number, extra = false) => {
+    const Icon = item.icon;
+    const isActive = activeTab === item.id;
+    return (
+      <motion.button
+        key={item.id}
+        initial={extra ? { opacity: 0, x: 12 } : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, [extra ? 'x' : 'y']: 0 }}
+        exit={{ opacity: 0, [extra ? 'x' : 'y']: extra ? 12 : 12 }}
+        transition={{ delay: index * 0.03, type: 'spring', stiffness: 400, damping: 25 }}
+        onClick={() => handleTabChange(item.id)}
+        className={cn(
+          'group relative flex shrink-0 items-center justify-center rounded-xl cursor-pointer transition-all duration-300',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]',
+          buttonSize,
+          isActive
+            ? 'text-white'
+            : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]'
+        )}
+        title={item.label}
+      >
+        <motion.div
+          animate={{ scale: isActive ? 1.1 : 1, y: isActive ? -2 : 0 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+        >
+          <Icon size={iconSize} strokeWidth={1.5} />
+        </motion.div>
+        {isActive && (
+          <motion.div
+            layoutId={extra ? `dock-extra-${item.id}` : 'dock-active-bg'}
+            className="absolute inset-0 rounded-xl bg-gradient-to-b from-[var(--accent-bible)] to-[var(--accent-bible-strong)]"
+            initial={false}
+            transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+            style={{ zIndex: -1 }}
+          />
+        )}
+      </motion.button>
+    );
   };
 
   return (
@@ -88,130 +128,41 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
           >
             <div className={cn('flex items-center', gapSize)}>
               <AnimatePresence mode="popLayout">
-                {visibleItems.map((item, index) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <motion.button
-                      key={item.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.03, type: 'spring', stiffness: 400, damping: 25 }}
-                      onClick={() => handleTabChange(item.id)}
-                      className={cn(
-                        'group relative flex items-center justify-center rounded-xl cursor-pointer transition-all duration-300',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]',
-                        buttonSize,
-                        isActive
-                          ? 'text-white'
-                          : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]'
-                      )}
-                      title={item.label}
-                    >
-                      <motion.div
-                        animate={{ scale: isActive ? 1.1 : 1, y: isActive ? -2 : 0 }}
-                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                      >
-                        <Icon size={iconSize} strokeWidth={1.5} />
-                      </motion.div>
-                      {isActive && (
-                        <motion.div
-                          layoutId="dock-active-bg"
-                          className="absolute inset-0 rounded-xl bg-gradient-to-b from-[var(--accent-bible)] to-[var(--accent-bible-strong)]"
-                          initial={false}
-                          transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                          style={{ zIndex: -1 }}
-                        />
-                      )}
-                    </motion.button>
-                  );
-                })}
+                {visibleItems.map((item, index) => renderNavItem(item, index))}
               </AnimatePresence>
 
               {isMobile && extraItems.length > 0 && (
-                <div className="relative">
-                  <motion.button
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: visibleItems.length * 0.03, type: 'spring', stiffness: 400, damping: 25 }}
-                    onClick={() => setShowMore(!showMore)}
-                    className={cn(
-                      'group relative flex items-center justify-center rounded-xl cursor-pointer transition-all duration-300',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]',
-                      buttonSize,
-                      showMore
-                        ? 'text-white'
-                        : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]'
-                    )}
-                    title="Mais opções"
+                <motion.button
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: visibleItems.length * 0.03, type: 'spring', stiffness: 400, damping: 25 }}
+                  onClick={() => setShowExtra(!showExtra)}
+                  className={cn(
+                    'group relative flex shrink-0 items-center justify-center rounded-xl cursor-pointer transition-all duration-300',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]',
+                    buttonSize,
+                    showExtra
+                      ? 'text-white'
+                      : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]'
+                  )}
+                  title="Mais opções"
+                >
+                  <motion.div
+                    animate={{ scale: showExtra ? 1.1 : 1, rotate: showExtra ? 90 : 0 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                   >
+                    <ChevronRight size={iconSize} strokeWidth={2} />
+                  </motion.div>
+                  {showExtra && (
                     <motion.div
-                      animate={{ scale: showMore ? 1.1 : 1 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                    >
-                      <MoreHorizontal size={iconSize} strokeWidth={1.5} />
-                    </motion.div>
-                    {showMore && (
-                      <motion.div
-                        layoutId="dock-active-more"
-                        className="absolute inset-0 rounded-xl bg-gradient-to-b from-[var(--accent-bible)] to-[var(--accent-bible-strong)]"
-                        initial={false}
-                        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                        style={{ zIndex: -1 }}
-                      />
-                    )}
-                  </motion.button>
-
-                  <AnimatePresence>
-                    {showMore && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 8, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 8, scale: 0.9 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 glass-strong rounded-xl px-2 py-2 shadow-xl border border-[var(--border-bible)]"
-                      >
-                        <div className={cn('flex items-center', gapSize)}>
-                          {extraItems.map((item) => {
-                            const Icon = item.icon;
-                            const isActive = activeTab === item.id;
-                            return (
-                              <motion.button
-                                key={item.id}
-                                onClick={() => handleTabChange(item.id)}
-                                className={cn(
-                                  'group relative flex items-center justify-center rounded-xl cursor-pointer transition-all duration-300',
-                                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]',
-                                  buttonSize,
-                                  isActive
-                                    ? 'text-white'
-                                    : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]'
-                                )}
-                                title={item.label}
-                              >
-                                <motion.div
-                                  animate={{ scale: isActive ? 1.1 : 1 }}
-                                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                                >
-                                  <Icon size={iconSize} strokeWidth={1.5} />
-                                </motion.div>
-                                {isActive && (
-                                  <motion.div
-                                    layoutId={`dock-extra-${item.id}`}
-                                    className="absolute inset-0 rounded-xl bg-gradient-to-b from-[var(--accent-bible)] to-[var(--accent-bible-strong)]"
-                                    initial={false}
-                                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                                    style={{ zIndex: -1 }}
-                                  />
-                                )}
-                              </motion.button>
-                            );
-                          })}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                      layoutId="dock-active-more"
+                      className="absolute inset-0 rounded-xl bg-gradient-to-b from-[var(--accent-bible)] to-[var(--accent-bible-strong)]"
+                      initial={false}
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                      style={{ zIndex: -1 }}
+                    />
+                  )}
+                </motion.button>
               )}
 
               {!isMobile && (
@@ -220,7 +171,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
                   animate={{ opacity: 1 }}
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    'flex items-center justify-center rounded-xl cursor-pointer transition-all ml-1',
+                    'flex shrink-0 items-center justify-center rounded-xl cursor-pointer transition-all ml-1',
                     'h-8 w-8 text-[var(--text-bible-subtle)] hover:text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
                   )}
                   title="Fechar"
@@ -229,6 +180,22 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
                 </motion.button>
               )}
             </div>
+
+            <AnimatePresence>
+              {showExtra && extraItems.length > 0 && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                  animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
+                  exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-thin pb-1 pt-1 border-t border-[var(--border-bible)]/50">
+                    {extraItems.map((item, index) => renderNavItem(item, index, true))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
