@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, Sparkles, Target, Clock, Bell, Calendar, ChevronRight, ArrowLeft } from 'lucide-react';
+import { BookOpen, Sparkles, Target, Clock, Bell, Calendar, ChevronRight, ChevronLeft, Flame } from 'lucide-react';
 import { PermissionScreen } from './PermissionScreen';
 
 interface OnboardingProps {
@@ -344,7 +344,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
           <section className="flex-shrink-0 w-full snap-start p-6 space-y-8 overflow-y-auto">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-display font-bold">Versículo de hoje</h2>
-              <div className="bg-bible-accent/10 text-bible-accent px-3 py-1 rounded-full font-bold text-[10px] uppercase">🔥 Dia 1</div>
+              <div className="bg-bible-accent/10 text-bible-accent px-3 py-1 rounded-full font-bold text-[10px] uppercase flex items-center gap-1"><Flame className="w-3 h-3" /> Dia 1</div>
             </div>
             <div className="bg-bible-accent text-bible-bg rounded-[30px] p-8 space-y-6 shadow-2xl relative overflow-hidden">
               <Sparkles className="absolute -top-4 -right-4 w-24 h-24 opacity-10 rotate-12" />

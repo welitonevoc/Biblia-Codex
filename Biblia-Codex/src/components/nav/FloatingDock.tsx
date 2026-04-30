@@ -124,7 +124,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.6 }}
-            className={cn('mb-3 rounded-2xl glass-strong shadow-xl border border-[var(--border-bible)]', containerPadding)}
+            className={cn('mb-3 rounded-full premium-toolbar shadow-float border border-[var(--border-bible)]', containerPadding)}
           >
             <div className={cn('flex items-center', gapSize)}>
               <AnimatePresence mode="popLayout">
@@ -190,14 +190,14 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
                    transition={{ duration: 0.2 }}
                    className="overflow-hidden"
                  >
-                   <div className="relative">
-                     <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-thin pb-1 pt-1 border-t border-[var(--border-bible)]/50 px-1">
-                       {extraItems.map((item, index) => renderNavItem(item, index, true))}
-                     </div>
-                     <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[var(--surface-2)] to-transparent pointer-events-none flex items-center justify-end pr-1">
-                       <ChevronRight size={14} className="text-[var(--text-bible-muted)] animate-pulse" />
-                     </div>
-                   </div>
+                    <div className="relative">
+                      <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-thin pb-1 pt-1 border-t border-[var(--border-bible)]/50 px-2">
+                        {extraItems.map((item, index) => renderNavItem(item, index, true))}
+                      </div>
+                      <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[var(--surface-2)] to-transparent pointer-events-none flex items-center justify-end pr-2">
+                        <ChevronRight size={16} className="text-[var(--accent-bible)] animate-pulse" />
+                      </div>
+                    </div>
                  </motion.div>
                )}
             </AnimatePresence>

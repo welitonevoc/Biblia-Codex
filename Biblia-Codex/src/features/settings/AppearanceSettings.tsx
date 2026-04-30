@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import {
   Sun, Type, Layout, Navigation2, Sparkles, Palette,
-  Settings2, ArrowLeft, Check, Minus, Plus
+  Settings2, ChevronLeft, Check, Minus, Plus
 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { clsx } from 'clsx';
@@ -110,7 +110,7 @@ export const AppearanceSettings: React.FC = () => {
             onClick={() => setActiveTab('settings')}
             className="p-2 rounded-lg bg-bible-surface hover:bg-bible-surface-strong transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-bible-text" />
+            <ChevronLeft className="w-5 h-5 text-bible-text" />
           </button>
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-bible-accent/10">

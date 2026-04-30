@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   ChevronLeft, ChevronRight, Sunrise, Moon, Sun, Sunset, Sparkles,
-  ArrowLeft, BookOpen, PenLine, Heart, Calendar, Clock, User, ChevronRight as ChevronRightIcon,
+  BookOpen, PenLine, Heart, Calendar, Clock, User,
   Share2, Play, CheckCircle2, Flame, BookMarked,
   Lightbulb, Quote, X
 } from 'lucide-react';
+const ChevronRightIcon = ChevronRight;
 import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
@@ -524,7 +525,7 @@ const DevotionalReader: React.FC<{
             whileTap={{ scale: 0.95 }}
             className="p-2 -ml-2 rounded-full hover:bg-bible-accent/5 active:scale-95 transition-all"
           >
-            <ArrowLeft className="w-5 h-5 text-bible-accent/60" />
+            <ChevronLeft className="w-5 h-5 text-bible-accent/60" />
           </motion.button>
 
           <div className="flex items-center gap-2">

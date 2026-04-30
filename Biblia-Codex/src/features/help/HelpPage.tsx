@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   HelpCircle, MessageSquare, BookOpen, ExternalLink, 
   Mail, Github, Twitter, Globe, Shield, FileText,
-  ChevronRight, Search, Zap, Star, ArrowLeft
+  ChevronRight, Search, Zap, Star, ChevronLeft
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -36,7 +36,7 @@ export const HelpPage: React.FC = () => {
     <div className="h-full overflow-y-auto bg-bible-bg p-4 sm:p-8 md:p-16 lg:p-24">
       <div className="max-w-4xl mx-auto space-y-10 sm:space-y-16">
         <button onClick={() => setActiveTab('settings')} className="flex items-center gap-2 text-bible-accent mb-2">
-          <ArrowLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" />
           <span>Voltar para Configurações</span>
         </button>
         <header className="space-y-6">

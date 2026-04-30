@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Bookmark, ChevronRight, Search, Filter, Plus, Trash2, 
-  Pencil, X, Check, Calendar, BookOpen, ArrowLeft,
+  Pencil, X, Check, Calendar, BookOpen, ChevronLeft,
   Clock, Star, Heart, Sparkles, Palette
 } from 'lucide-react';
 import { storage } from '../StorageService';
@@ -232,7 +232,7 @@ export const BookmarksPage: React.FC<BookmarksPageProps> = ({ onNavigate, onBack
               onClick={onBack}
               className="p-2 rounded-lg bg-[var(--surface-1)] hover:bg-[var(--surface-2)] transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-[var(--text-bible)]" />
+              <ChevronLeft className="w-5 h-5 text-[var(--text-bible)]" />
             </button>
           )}
           <div>

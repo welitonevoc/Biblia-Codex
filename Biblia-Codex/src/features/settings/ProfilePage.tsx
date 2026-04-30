@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppContext } from '../AppContext';
-import { 
-  User, Star, Diamond, Zap, Heart, Trophy, BookOpen, Map, 
-  Shield, Crown, Flame, Target, Award, Lock, ChevronRight,
-  X, Edit3, Camera, Mail, Bell, Moon, Globe, Settings,
-  LogOut, Cloud, Smartphone, Download, Share2, Check,
-  AlertTriangle, Plus, Minus, Sparkles, ArrowLeft
+import {
+  User, Settings, Flame, BookOpen, Trophy, Medal, Target,
+  ChevronRight, ChevronLeft, Lock, CheckCircle, Star, Gem, Zap, Crown, Shield,
+  Calendar, Clock, BookMarked, BarChart3, TrendingUp, ArrowUp,
+  Layers, Heart, X, CalendarOff, ThumbsDown, UserX,
+  Diamond, Camera, Mail, Bell, Moon, Globe, Cloud, Smartphone, Download, LogOut, Book,
+  Map as MapIcon
 } from 'lucide-react';
 
 interface UserProfile {
@@ -187,7 +188,7 @@ const TABS = [
   { id: 'perfil', icon: User, label: 'Perfil' },
   { id: 'recompensas', icon: Trophy, label: 'Recompensas' },
   { id: 'livros', icon: BookOpen, label: 'Livros' },
-  { id: 'planos', icon: Map, label: 'Planos' },
+  { id: 'planos', icon: MapIcon, label: 'Planos' },
   { id: 'vidas', icon: Heart, label: 'Vidas' },
 ];
 
@@ -318,7 +319,7 @@ export function ProfilePage() {
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <button onClick={handleBack} className="p-1.5 -ml-1.5 rounded-lg text-[var(--text-bible-muted)] hover:bg-[var(--surface-1)]">
-              <ArrowLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
             <h1 className="text-lg font-semibold text-[var(--text-bible)]">Meu Perfil</h1>
           </div>
@@ -952,21 +953,25 @@ function TabVidas({
       {/* Loss/Gain */}
       <div className="grid grid-cols-2 gap-3">
         <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/30">
-          <div className="text-xs font-semibold text-red-600 mb-2">💔 Perde vida & XP</div>
+          <div className="text-xs font-semibold text-red-600 mb-2 flex items-center gap-1">
+            <Heart className="w-3.5 h-3.5 text-red-600" /> Perde vida & XP
+          </div>
           <div className="space-y-1.5 text-xs text-[var(--text-bible-muted)]">
-            <div>🚫 Abandona plano: <strong className="text-[var(--text-bible)]">−50 XP</strong></div>
-            <div>⏳ 3 dias sem app: <strong className="text-[var(--text-bible)]">−25 XP</strong></div>
-            <div>📅 7 dias sem ler: <strong className="text-[var(--text-bible)]">−100 XP</strong></div>
-            <div>💀 30 dias inativo: <strong className="text-[var(--text-bible)]">−250 XP</strong></div>
-            <div>❌ Quiz errado: <strong className="text-[var(--text-bible)]">−1 vida</strong></div>
+            <div className="flex items-center gap-1.5"><X className="w-3 h-3 text-red-500" /> Abandona plano: <strong className="text-[var(--text-bible)]">−50 XP</strong></div>
+            <div className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> 3 dias sem app: <strong className="text-[var(--text-bible)]">−25 XP</strong></div>
+            <div className="flex items-center gap-1.5"><Calendar className="w-3 h-3" /> 7 dias sem ler: <strong className="text-[var(--text-bible)]">−100 XP</strong></div>
+            <div className="flex items-center gap-1.5"><UserX className="w-3 h-3" /> 30 dias inativo: <strong className="text-[var(--text-bible)]">−250 XP</strong></div>
+            <div className="flex items-center gap-1.5"><X className="w-3 h-3 text-red-500" /> Quiz errado: <strong className="text-[var(--text-bible)]">−1 vida</strong></div>
           </div>
         </div>
         
         <div className="p-3 rounded-xl bg-green-50 dark:bg-green-950/30">
-          <div className="text-xs font-semibold text-green-600 mb-2">❤️ Ganha vida & XP</div>
+          <div className="text-xs font-semibold text-green-600 mb-2 flex items-center gap-1">
+            <Heart className="w-3.5 h-3.5 text-green-600" /> Ganha vida & XP
+          </div>
           <div className="space-y-1.5 text-xs text-[var(--text-bible-muted)]">
-            <div>📖 Leitura diária: <strong className="text-[var(--text-bible)]">+1 vida</strong></div>
-            <div>✅ Devocional do dia: <strong className="text-[var(--text-bible)]">+1 vida</strong></div>
+            <div className="flex items-center gap-1.5"><BookOpen className="w-3 h-3" /> Leitura diária: <strong className="text-[var(--text-bible)]">+1 vida</strong></div>
+            <div className="flex items-center gap-1.5"><CheckCircle className="w-3 h-3 text-green-500" /> Devocional do dia: <strong className="text-[var(--text-bible)]">+1 vida</strong></div>
             <div>⭐ 500 estrelas = 1 vida</div>
             <div>💎 2 diamantes = recarga</div>
             <div>🌅 Recarga 00:00</div>
@@ -980,14 +985,14 @@ function TabVidas({
           Regras do sistema
         </div>
         <div className="rounded-xl bg-[var(--surface-1)] overflow-hidden">
-          <RuleRow icon="📖" text="Leitura diária — Cada sessão +25 XP. Versículo +5 XP. Capítulo +30 XP." />
-          <RuleRow icon="🏆" text="Troféu de plano — 1 troféu permanente + XP proporcional." />
-          <RuleRow icon="📕" text="Livro concluído — XP 50-800. Os 66 livros = +100.000 XP." />
-          <RuleRow icon="⚡" text="Raios — Usados para 'escudos de proteção' contra perda de XP." />
-          <RuleRow icon="💎" text="Diamantes — Usados para recarregar vidas ou planos premium." />
-          <RuleRow icon="💔" text="Coração quebrado — Recupera-se lendo por 3 dias seguidos." />
-          <RuleRow icon="🛡️" text="Escudo — Gasto 3 raios para proteger o streak por 1 dia." />
-          <RuleRow icon="📊" text="Perda máx — Nunca mais de 10% do XP total." />
+        <RuleRow icon={<BookOpen className="w-3.5 h-3.5" />} text="Leitura diária — Cada sessão +25 XP. Versículo +5 XP. Capítulo +30 XP." />
+        <RuleRow icon={<Trophy className="w-3.5 h-3.5" />} text="Troféu de plano — 1 troféu permanente + XP proporcional." />
+        <RuleRow icon={<Book className="w-3.5 h-3.5" />} text="Livro concluído — XP 50-800. Os 66 livros = +100.000 XP." />
+        <RuleRow icon={<Shield className="w-3.5 h-3.5" />} text="Raios — Usados para 'estudos de proteção' contra perda de XP." />
+        <RuleRow icon={<Gem className="w-3.5 h-3.5" />} text="Diamantes — Usados para recarregar vidas ou planos premium." />
+        <RuleRow icon={<Heart className="w-3.5 h-3.5 text-red-500" />} text="Coração quebrado — Recupera-se lendo por 3 dias seguidos." />
+        <RuleRow icon={<Shield className="w-3.5 h-3.5" />} text="Escudo — Gasto 3 raios para proteger o streak por 1 dia." />
+        <RuleRow icon={<ThumbsDown className="w-3.5 h-3.5" />} text="Perda máx — Nunca mais de 10% do XP total." />
         </div>
       </div>
 
@@ -997,10 +1002,10 @@ function TabVidas({
           Moedas e para que servem
         </div>
         <div className="rounded-xl bg-[var(--surface-1)] overflow-hidden">
-          <RuleRow icon="⭐" text="Estrelas — Moeda comum. Ganha ao ler, quiz, tarefas. Troca por vidas." />
-          <RuleRow icon="💎" text="Diamantes — Premium. Conquistados em troféus Ouro/Diamante." />
-          <RuleRow icon="⚡" text="Raios — Ganha mantendo sequências. Usados como 'seguro'." />
-          <RuleRow icon="❤️" text="Vidas — Máximo 5. Perdem por erro, inatividade, abandono." />
+        <RuleRow icon={<Star className="w-3.5 h-3.5 text-yellow-500" />} text="Estrelas — Moeda comum. Ganha ao ler, quiz, tarefas. Troca por vidas." />
+        <RuleRow icon={<Gem className="w-3.5 h-3.5 text-blue-500" />} text="Diamantes — Premium. Conquistados em troféus Ouro/Diamante." />
+        <RuleRow icon={<Shield className="w-3.5 h-3.5" />} text="Raios — Ganha mantendo sequências. Usados como 'seguro'." />
+        <RuleRow icon={<Heart className="w-3.5 h-3.5 text-red-500" />} text="Vidas — Máximo 5. Perdem por erro, inatividade, abandono." />
         </div>
       </div>
     </div>
@@ -1182,7 +1187,7 @@ function PlanCard({ plan, premium }: { plan: ReadingPlan; premium?: boolean }) {
   );
 }
 
-function RuleRow({ icon, text }: { icon: string; text: string }) {
+function RuleRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div className="flex items-start gap-3 px-4 py-3 border-t border-[var(--border-bible)]">
       <span className="text-lg">{icon}</span>

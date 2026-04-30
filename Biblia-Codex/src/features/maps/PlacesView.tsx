@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BibleService } from '../BibleService';
 import {
-  MapPin, X, Globe, BookOpen, ChevronRight, Search,
-  Image, Navigation, ArrowLeft, ArrowRight
+  MapPin, X, Globe, BookOpen, Search,
+  Image, Navigation, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -238,7 +238,7 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                       
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-semibold" style={{ color: 'var(--text-bible)' }}>{place.location}</h3>
-                        {place.modernName && <p className="text-xs mt-0.5" style={{ color: 'var(--text-bible-muted)' }}>📍 {place.modernName}</p>}
+                        {place.modernName && <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--text-bible-muted)' }}><MapPin className="w-3 h-3" /> {place.modernName}</p>}
                         {place.verses && (
                           <div className="flex items-center gap-1.5 mt-1.5">
                             <BookOpen className="w-3 h-3" style={{ color: 'var(--accent-bible)' }} />
@@ -278,7 +278,7 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                         <div className="flex justify-between items-start mb-4">
                           <div>
                             <h2 className="text-xl font-bold" style={{ color: 'var(--text-bible)', fontFamily: 'var(--font-display)' }}>{selectedPlace.location}</h2>
-                            {selectedPlace.modernName && <p className="text-sm mt-1" style={{ color: 'var(--text-bible-muted)' }}>📍 {selectedPlace.modernName}</p>}
+                            {selectedPlace.modernName && <p className="text-sm mt-1 flex items-center gap-1" style={{ color: 'var(--text-bible-muted)' }}><MapPin className="w-3.5 h-3.5" /> {selectedPlace.modernName}</p>}
                           </div>
                           <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setSelectedPlace(null)} className="p-2 rounded-lg border" style={{ backgroundColor: 'var(--surface-1)', borderColor: 'var(--border-bible)' }}>
                             <X className="w-4 h-4" style={{ color: 'var(--text-bible-muted)' }} />
@@ -311,12 +311,12 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                                 </div>
                                 {currentImageIndex > 0 && (
                                   <button onClick={() => setCurrentImageIndex(i => i - 1)} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50" style={{ backdropFilter: 'blur(4px)' }}>
-                                    <ArrowLeft className="w-4 h-4 text-white" />
+                                    <ChevronLeft className="w-4 h-4 text-white" />
                                   </button>
                                 )}
                                 {currentImageIndex < images.length - 1 && (
                                   <button onClick={() => setCurrentImageIndex(i => i + 1)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50" style={{ backdropFilter: 'blur(4px)' }}>
-                                    <ArrowRight className="w-4 h-4 text-white" />
+                                    <ChevronRight className="w-4 h-4 text-white" />
                                   </button>
                                 )}
                               </>

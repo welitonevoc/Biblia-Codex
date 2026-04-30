@@ -99,7 +99,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
           className={cn('fixed bottom-24 left-1/2 z-50 -translate-x-1/2', menuMaxWidth)}
           style={{ paddingBottom: 'max(var(--sab), 24px)' }}
         >
-          <div className="rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)]/95 backdrop-blur-md shadow-lg shadow-black/10 overflow-hidden">
+           <div className="rounded-2xl premium-card-strong border border-[var(--border-bible)] shadow-lg shadow-black/10 overflow-hidden">
             <AnimatePresence mode="wait">
               {viewKey === 'versions' && (
                 <motion.div
@@ -109,14 +109,14 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                   exit={{ opacity: 0, x: 20 }}
                   className="p-3"
                 >
-                  <button
-                    onClick={() => setShowVersions(false)}
-                    className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--text-bible)] cursor-pointer"
-                    aria-label="Voltar para menu principal"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Versões
-                  </button>
+                   <button
+                     onClick={() => setShowVersions(false)}
+                     className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--text-bible)] cursor-pointer premium-kicker !py-1.5 !px-2.5"
+                     aria-label="Voltar para menu principal"
+                   >
+                     <ChevronLeft className="h-4 w-4" />
+                     Versões
+                   </button>
                   <div className="max-h-48 space-y-1 overflow-y-auto">
                     {availableVersions.map((version) => (
                        <button
@@ -128,15 +128,15 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                          }}
                          className={cn(
                            'flex w-full items-center justify-between rounded-xl px-4 min-h-11 text-sm transition-all duration-200 cursor-pointer',
-                           'text-[var(--text-bible)] hover:bg-[var(--surface-1)] hover:scale-[1.02]'
+                           'text-[var(--text-bible)] hover:bg-[var(--surface-1)] premium-card-soft'
                          )}
                          aria-label={`Selecionar versão ${version.name}`}
                        >
-                        <span className="truncate">{version.name}</span>
-                        {currentVersion?.id === version.id && (
-                          <span className="h-2 w-2 rounded-full bg-[var(--accent-bible)]" />
-                        )}
-                      </button>
+                         <span className="truncate">{version.name}</span>
+                         {currentVersion?.id === version.id && (
+                           <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent-bible)] shadow-[0_0_8px_var(--accent-bible)]" />
+                         )}
+                       </button>
                     ))}
                   </div>
                 </motion.div>

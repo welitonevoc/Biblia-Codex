@@ -9,7 +9,7 @@ import {
   Trash2, Upload, Search, Check, AlertCircle,
   Info, ChevronRight, Loader2, Plus,
   FileText, Database, Globe, Calendar, Folder,
-  X, BookOpen, MessageSquare, Library, Layers, History, Tag, Sparkles, ArrowRight, ArrowLeft
+  X, BookOpen, MessageSquare, Library, Layers, History, Tag, Sparkles, ArrowRight, ChevronLeft
 } from 'lucide-react';
 import {
   listInstalledModules,
@@ -216,7 +216,7 @@ export const ModuleManagement: React.FC = () => {
     <div className="h-full overflow-y-auto">
       <div className="max-w-4xl mx-auto px-4 py-6 pb-28 space-y-6">
         <button onClick={() => setActiveTab('settings')} className="flex items-center gap-2 text-bible-accent mb-2">
-          <ArrowLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" />
           <span>Voltar para Configurações</span>
         </button>
         {/* Header Premium */}

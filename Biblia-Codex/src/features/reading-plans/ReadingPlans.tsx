@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, ChevronLeft, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, ArrowLeft, Flame, Trophy, Star, Zap, Crown, ChevronDown, Settings, Users, Globe, Heart, Sun, Moon, BookText, Wand2, Loader2, Sparkle, MessageSquare, Loader } from 'lucide-react';
+import { Compass, Play, Library, CheckCircle2, Plus, X, ChevronRight, ChevronLeft, Calendar, Clock, BookOpen, Sparkles, Target, ArrowRight, Flame, Trophy, Star, Zap, Crown, ChevronDown, Settings, Users, Globe, Heart, Sun, Moon, BookText, Wand2, Loader2, Sparkle, MessageSquare, Loader, Leaf, Cross } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { generateReadingPlan } from '../services/geminiService';
 import { BibleService } from '../BibleService';
@@ -360,13 +360,13 @@ const PRESET_PLANS: (Omit<ReadingPlan, 'streak' | 'longestStreak' | 'xp' | 'leve
 ];
 
 const LEVELS = [
-  { name: 'Iniciante', minXp: 0, icon: '🌱' },
-  { name: 'Leitor', minXp: 500, icon: '📖' },
-  { name: 'Estudioso', minXp: 1500, icon: '📚' },
-  { name: 'Discípulo', minXp: 3500, icon: '✝️' },
-  { name: 'Mestre', minXp: 7000, icon: '⭐' },
-  { name: 'Evangelista', minXp: 12000, icon: '🌟' },
-  { name: 'Campeão', minXp: 20000, icon: '👑' },
+  { name: 'Iniciante', minXp: 0, icon: Leaf },
+  { name: 'Leitor', minXp: 500, icon: BookOpen },
+  { name: 'Estudioso', minXp: 1500, icon: BookOpen },
+  { name: 'Discípulo', minXp: 3500, icon: Cross },
+  { name: 'Mestre', minXp: 7000, icon: Star },
+  { name: 'Evangelista', minXp: 12000, icon: Zap },
+  { name: 'Campeão', minXp: 20000, icon: Crown },
 ];
 
 const QUIT_PHRASES = [
@@ -965,7 +965,7 @@ export const ReadingPlans: React.FC<{
                   onClick={() => setShowPlanDetail(false)}
                   className="p-2 rounded-lg bg-[var(--surface-1)] hover:bg-[var(--surface-2)] transition-colors"
                 >
-                  <ArrowLeft className="w-5 h-5 text-[var(--text-bible)]" />
+                  <ChevronLeft className="w-5 h-5 text-[var(--text-bible)]" />
                 </button>
                 <div className={cn(
                   "w-12 h-12 rounded-xl flex items-center justify-center",
@@ -1377,9 +1377,9 @@ export const ReadingPlans: React.FC<{
               </div>
               <span className="text-sm font-medium">{Math.round((activePlan.progress / activePlan.totalDays) * 100)}%</span>
             </div>
-            <div className="text-sm font-medium text-white/90">
-              📖 Leitura de hoje: {getTodayReading(activePlan)}
-            </div>
+              <div className="text-sm font-medium text-white/90 flex items-center gap-1.5">
+                <BookOpen className="w-4 h-4" /> Leitura de hoje: {getTodayReading(activePlan)}
+              </div>
           </motion.div>
         )}
 

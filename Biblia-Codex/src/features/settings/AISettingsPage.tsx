@@ -3,7 +3,7 @@ import { useAppContext } from '../AppContext';
 import {
   Sparkles, Key, Brain, BookOpen, MessageSquare, Lightbulb,
   Check, AlertCircle, ExternalLink, Loader2, Eye, Mic,
-  Zap, Settings2, ArrowLeft
+  Zap, Settings2, ChevronLeft
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'motion/react';
@@ -270,7 +270,7 @@ export const AISettingsPage: React.FC = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full overflow-y-auto">
       <div className="max-w-4xl mx-auto px-4 py-6 pb-32 space-y-6">
         <button onClick={() => setActiveTab('settings')} className="flex items-center gap-2 text-bible-accent mb-2">
-          <ArrowLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" />
           <span>Voltar para Configurações</span>
         </button>
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="premium-card p-5">

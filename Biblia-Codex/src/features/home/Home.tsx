@@ -194,19 +194,18 @@ export const Home: React.FC<HomeProps> = React.memo(({
         ) : (
           <>
             {/* Header Premium */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={cn(
-                "relative overflow-hidden rounded-2xl p-6",
-                "bg-[var(--surface-1)] border border-[var(--border-bible)]",
-                "transition-all duration-300",
-                "hover:shadow-lg hover:shadow-[var(--accent-bible)]/5"
-              )}
-              style={{
-                boxShadow: 'var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.05)'
-              }}
-            >
+               <motion.div
+                 initial={{ opacity: 0, y: -10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 className={cn(
+                   "relative overflow-hidden rounded-2xl p-6",
+                   "premium-card-strong transition-all duration-300",
+                   "hover:shadow-xl hover:border-[var(--accent-bible)]/20"
+                 )}
+                 style={{
+                   boxShadow: 'var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.05)'
+                 }}
+               >
               {/* Decorative gradient */}
               <div 
                 className="absolute inset-0 opacity-30"
@@ -269,16 +268,16 @@ export const Home: React.FC<HomeProps> = React.memo(({
             </motion.div>
 
             {/* Verse of the Day - Premium Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
-              className={cn(
-                "relative overflow-hidden rounded-3xl p-8 text-center",
-                "bg-gradient-to-br from-[var(--surface-1)] to-[var(--surface-2)]",
-                "border border-[var(--border-bible-strong)]/20 shadow-xl"
-              )}
-            >
+               <motion.div
+                 initial={{ opacity: 0, scale: 0.95 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 transition={{ delay: 0.1 }}
+                 className={cn(
+                   "relative overflow-hidden rounded-3xl p-8 text-center",
+                   "premium-card-strong border border-[var(--border-bible-strong)]/20",
+                   "shadow-xl hover:shadow-2xl transition-all duration-300"
+                 )}
+               >
               <div className="absolute top-0 right-0 p-4 opacity-10">
                 <Sparkles className="w-20 h-20 text-[var(--accent-bible)]" />
               </div>
@@ -304,25 +303,25 @@ export const Home: React.FC<HomeProps> = React.memo(({
             </motion.div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {quickActions.map((action, index) => {
-                const Icon = action.icon;
-                return (
-                  <motion.button
-                    key={action.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={action.action}
-                    className={cn(
-                      "group relative overflow-hidden rounded-xl p-4",
-                      "text-left transition-all duration-300",
-                      "bg-[var(--surface-1)] border border-[var(--border-bible)]",
-                      "hover:border-[var(--accent-bible)]/30 hover:shadow-md"
-                    )}
-                  >
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                 {quickActions.map((action, index) => {
+                   const Icon = action.icon;
+                   return (
+                     <motion.button
+                       key={action.title}
+                       initial={{ opacity: 0, y: 20 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       transition={{ delay: index * 0.05 }}
+                       whileHover={{ scale: 1.02, y: -2 }}
+                       whileTap={{ scale: 0.98 }}
+                       onClick={action.action}
+                       className={cn(
+                         "group relative overflow-hidden rounded-xl p-4",
+                         "text-left transition-all duration-300",
+                         "premium-card hover:premium-card-strong",
+                         "hover:shadow-lg hover:border-[var(--accent-bible)]/30"
+                       )}
+                     >
                     <div className={cn(
                       "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
                       "bg-gradient-to-br", action.gradient
@@ -347,34 +346,34 @@ export const Home: React.FC<HomeProps> = React.memo(({
               })}
             </div>
 
-            {/* Ferramentas de Estudo */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-            >
-              <h2 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-3">
-                Ferramentas de Estudo
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {secondaryActions.map((action, index) => {
-                  const Icon = action.icon;
-                  return (
-                    <motion.button
-                      key={action.title}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 + index * 0.05 }}
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={action.action}
-                      className={cn(
-                        'group relative overflow-hidden rounded-xl p-4',
-                        'text-left transition-all duration-300',
-                        'bg-[var(--surface-1)] border border-[var(--border-bible)]',
-                        'hover:border-[var(--accent-bible)]/30 hover:shadow-md'
-                      )}
-                    >
+             {/* Ferramentas de Estudo */}
+             <motion.div
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.15 }}
+             >
+               <h2 className="premium-section-title !text-[11px] mb-3">
+                 Ferramentas de Estudo
+               </h2>
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                 {secondaryActions.map((action, index) => {
+                   const Icon = action.icon;
+                   return (
+                     <motion.button
+                       key={action.title}
+                       initial={{ opacity: 0, y: 20 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       transition={{ delay: 0.1 + index * 0.05 }}
+                       whileHover={{ scale: 1.02, y: -2 }}
+                       whileTap={{ scale: 0.98 }}
+                       onClick={action.action}
+                       className={cn(
+                         'group relative overflow-hidden rounded-xl p-4',
+                         'text-left transition-all duration-300',
+                         'premium-card hover:premium-card-strong',
+                         'hover:shadow-lg'
+                       )}
+                     >
                       <div className={cn(
                         'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500',
                         'bg-gradient-to-br', action.gradient
@@ -396,34 +395,34 @@ export const Home: React.FC<HomeProps> = React.memo(({
               </div>
             </motion.div>
 
-            {/* Explorar */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <h2 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-3">
-                Explorar
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {explorerActions.map((action, index) => {
-                  const Icon = action.icon;
-                  return (
-                    <motion.button
-                      key={action.title}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 + index * 0.05 }}
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={action.action}
-                      className={cn(
-                        'group relative overflow-hidden rounded-xl p-4',
-                        'text-left transition-all duration-300',
-                        'bg-[var(--surface-1)] border border-[var(--border-bible)]',
-                        'hover:border-[var(--accent-bible)]/30 hover:shadow-md'
-                      )}
-                    >
+             {/* Explorar */}
+             <motion.div
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.2 }}
+             >
+               <h2 className="premium-section-title !text-[11px] mb-3">
+                 Explorar
+               </h2>
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                 {explorerActions.map((action, index) => {
+                   const Icon = action.icon;
+                   return (
+                     <motion.button
+                       key={action.title}
+                       initial={{ opacity: 0, y: 20 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       transition={{ delay: 0.2 + index * 0.05 }}
+                       whileHover={{ scale: 1.02, y: -2 }}
+                       whileTap={{ scale: 0.98 }}
+                       onClick={action.action}
+                       className={cn(
+                         'group relative overflow-hidden rounded-xl p-4',
+                         'text-left transition-all duration-300',
+                         'premium-card hover:premium-card-strong',
+                         'hover:shadow-lg'
+                       )}
+                     >
                       <div className={cn(
                         'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500',
                         'bg-gradient-to-br', action.gradient
@@ -445,16 +444,16 @@ export const Home: React.FC<HomeProps> = React.memo(({
               </div>
             </motion.div>
 
-            {/* Reading Progress */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className={cn(
-                "rounded-2xl p-5",
-                "bg-[var(--surface-1)] border border-[var(--border-bible)]"
-              )}
-            >
+             {/* Reading Progress */}
+             <motion.div
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.2 }}
+               className={cn(
+                 "rounded-2xl p-5",
+                 "premium-card-strong"
+               )}
+             >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-bold text-[var(--text-bible)]">
                   Semana de Leitura
@@ -484,37 +483,36 @@ export const Home: React.FC<HomeProps> = React.memo(({
               </div>
             </motion.div>
 
-            {/* Last Read Verses */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider">
-                  Continuar lendo
-                </h2>
-                <button className="text-xs font-medium text-[var(--accent-bible)] flex items-center gap-1 cursor-pointer" aria-label="Ver todos os versículos lidos">
-                  Ver todos <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
-              
-              <div className="space-y-2">
-                {lastVerses.map((verse, index) => (
-                  <motion.button
-                    key={`${verse.bookId}-${verse.chapter}-${verse.verse}`}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.35 + index * 0.05 }}
-                    whileHover={{ scale: 1.01, x: 4 }}
-                    onClick={() => handleVerseClick(verse)}
-                    className={cn(
-                      "w-full flex items-center gap-4 p-4 rounded-xl",
-                      "bg-[var(--surface-1)] border border-[var(--border-bible)]",
-                      "text-left transition-all duration-200",
-                      "hover:border-[var(--accent-bible)]/30 hover:shadow-sm"
-                    )}
-                  >
+             {/* Last Read Verses */}
+             <motion.div
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.3 }}
+             >
+               <div className="flex items-center justify-between mb-3">
+                 <h2 className="premium-section-title !text-[11px]">
+                   Continuar lendo
+                 </h2>
+                 <button className="text-xs font-medium text-[var(--accent-bible)] flex items-center gap-1 cursor-pointer" aria-label="Ver todos os versículos lidos">
+                   Ver todos <ChevronRight className="w-3 h-3" />
+                 </button>
+               </div>
+               
+               <div className="space-y-2">
+                 {lastVerses.map((verse, index) => (
+                   <motion.button
+                     key={`${verse.bookId}-${verse.chapter}-${verse.verse}`}
+                     initial={{ opacity: 0, x: -10 }}
+                     animate={{ opacity: 1, x: 0 }}
+                     transition={{ delay: 0.35 + index * 0.05 }}
+                     whileHover={{ scale: 1.01, x: 4 }}
+                     onClick={() => handleVerseClick(verse)}
+                     className={cn(
+                       "w-full flex items-center gap-4 p-4 rounded-xl",
+                       "premium-card text-left transition-all duration-200",
+                       "hover:premium-card-strong hover:shadow-md"
+                     )}
+                   >
                     <div className={cn(
                       "w-10 h-10 rounded-lg flex items-center justify-center",
                       "bg-[var(--accent-bible)]/10 text-[var(--accent-bible)]"
@@ -535,17 +533,17 @@ export const Home: React.FC<HomeProps> = React.memo(({
               </div>
             </motion.div>
 
-            {/* Continue from where you left off */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className={cn(
-                "relative overflow-hidden rounded-2xl p-6",
-                "bg-gradient-to-br from-[var(--accent-bible)]/5 to-[var(--accent-bible)]/10",
-                "border border-[var(--accent-bible)]/20"
-              )}
-            >
+             {/* Continue from where you left off */}
+             <motion.div
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.4 }}
+               className={cn(
+                 "relative overflow-hidden rounded-2xl p-6",
+                 "premium-card-strong border-[var(--accent-bible)]/20",
+                 "hover:shadow-xl transition-all duration-300"
+               )}
+             >
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-[var(--text-bible)] mb-1">

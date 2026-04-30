@@ -10,7 +10,7 @@ import DOMPurify from 'dompurify';
 import {
   Bookmark, Share2, MessageSquare,
   Sparkles, Library, Layers, X, Volume2, Trash2, Tag, Copy, GitCompare, Highlighter,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Users, MapPin, FileText,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { DictionaryBottomSheet } from '../study/DictionaryBottomSheet';
@@ -33,92 +33,100 @@ interface ReaderProps {
   onBottomChange?: (isAtBottom: boolean) => void;
 }
 
-const VerseItem = React.memo(({ 
-  v, 
-  headingsHtml, 
-  bodyHtml, 
-  bookmark, 
-  showHighlight, 
-  isChapterHeader, 
-  chapterHeaderHtml, 
-  hasHeadingBlock,
-  selectedVerses,
-  currentHighlightedVerse,
-  settings,
-  allTags,
-  toggleVerseSelection,
-  onToolOpen,
-  handleRemoveTag,
-  onShare,
-  verseRef
-}: {
-  v: Verse;
-  headingsHtml: string;
-  bodyHtml: string;
-  bookmark: BookmarkType | undefined;
-  showHighlight: boolean;
-  isChapterHeader: boolean;
-  chapterHeaderHtml: string;
-  hasHeadingBlock: boolean;
-  selectedVerses: number[];
-  currentHighlightedVerse: number | null;
-  settings: any;
-  allTags: TagType[];
-  toggleVerseSelection: (verseNum: number) => void;
-  onToolOpen: (verse: Verse, type: any) => void;
-  handleRemoveTag: (bmId: string, tagId: string) => void;
-  onShare: (v: Verse) => void;
-  verseRef: (el: HTMLDivElement | null) => void;
-}) => {
-  return (
-    <div
-      ref={verseRef}
-      className={cn(
-        "group relative",
-        hasHeadingBlock && "basis-full w-full",
-        !settings.textDisplay.paragraphMode && "block w-full"
-      )}
-    >
-      {isChapterHeader ? (
+  const VerseItem = React.memo(({ 
+    v, 
+    headingsHtml, 
+    bodyHtml, 
+    bookmark, 
+    showHighlight, 
+    isChapterHeader, 
+    chapterHeaderHtml, 
+    hasHeadingBlock,
+    selectedVerses,
+    currentHighlightedVerse,
+    settings,
+    allTags,
+    toggleVerseSelection,
+    onToolOpen,
+    handleRemoveTag,
+    onShare,
+    verseRef
+  }: {
+    v: Verse;
+    headingsHtml: string;
+    bodyHtml: string;
+    bookmark: BookmarkType | undefined;
+    showHighlight: boolean;
+    isChapterHeader: boolean;
+    chapterHeaderHtml: string;
+    hasHeadingBlock: boolean;
+    selectedVerses: number[];
+    currentHighlightedVerse: number | null;
+    settings: any;
+    allTags: TagType[];
+    toggleVerseSelection: (verseNum: number) => void;
+    onToolOpen: (verse: Verse, type: any) => void;
+    handleRemoveTag: (bmId: string, tagId: string) => void;
+    onShare: (v: Verse) => void;
+    verseRef: (el: HTMLDivElement | null) => void;
+  }) => {
+    const isSelected = selectedVerses.includes(v.verse);
+    const isHighlighted = currentHighlightedVerse === v.verse;
+    
+    if (isChapterHeader) {
+      return (
         <div
+          ref={verseRef}
           className={cn(
-            "w-full basis-full",
-            settings.textDisplay.paragraphMode ? "mb-2" : "mb-4"
+            "w-full",
+            settings.textDisplay.paragraphMode ? "mb-4" : "mb-6"
           )}
           dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(chapterHeaderHtml) }}
         />
-      ) : (
-        <>
-          {headingsHtml && (
-            <div
-              className={cn(
-                "w-full",
-                settings.textDisplay.paragraphMode ? "mb-2 basis-full" : "mb-3"
-              )}
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(headingsHtml) }}
-            />
-          )}
+      );
+    }
+
+    return (
+      <div
+        ref={verseRef}
+        className={cn(
+          "group relative",
+          hasHeadingBlock && "basis-full w-full",
+          !settings.textDisplay.paragraphMode && "block w-full mb-3"
+        )}
+      >
+        {headingsHtml && (
+          <div
+            className={cn(
+              "w-full mb-3",
+              settings.textDisplay.paragraphMode && "mt-4"
+            )}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(headingsHtml) }}
+          />
+        )}
+
+        {settings.textDisplay.paragraphMode ? (
+          // Modo Parágrafo: inline com destaque sutil
           <span
-             id={`verse-${v.verse}`}
-             onClick={() => toggleVerseSelection(v.verse)}
-             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleVerseSelection(v.verse); } }}
-             role="button"
-             tabIndex={0}
-             aria-label={`Versículo ${v.verse}`}
-             className={cn(
-               "relative inline transition-all duration-200 cursor-pointer rounded-xl px-1.5 -mx-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] focus-visible:ring-offset-1",
-               selectedVerses.includes(v.verse) ? "bg-bible-accent/20 shadow-[0_0_0_2px_rgba(var(--accent-bible-rgb),0.12)]" : "hover:bg-bible-accent/7",
-               currentHighlightedVerse === v.verse && "bg-yellow-400/40 ring-2 ring-yellow-400/50",
-               showHighlight && !settings.visualResources.gradientHighlight && `border-b-2`,
-               showHighlight && settings.visualResources.gradientHighlight && "bg-gradient-to-r from-transparent via-bible-accent/10 to-transparent"
-             )}
-             style={showHighlight && bookmark ? {
-               backgroundColor: `${bookmark.color}4D`,
-               borderBottom: settings.visualResources.gradientHighlight ? 'none' : `2px solid ${bookmark.color}`
-             } : {}}
+            id={`verse-${v.verse}`}
+            onClick={() => toggleVerseSelection(v.verse)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleVerseSelection(v.verse); } }}
+            role="button"
+            tabIndex={0}
+            aria-label={`Versículo ${v.verse}`}
+            className={cn(
+              "relative cursor-pointer transition-all duration-200 rounded-lg px-1 -mx-1",
+              isSelected && "bg-bible-accent/15 shadow-[0_0_0_2px_rgba(var(--accent-bible-rgb),0.1)]",
+              isHighlighted && "bg-yellow-400/30 ring-2 ring-yellow-400/40",
+              showHighlight && settings.visualResources.gradientHighlight && "bg-gradient-to-r from-transparent via-bible-accent/8 to-transparent"
+            )}
+            style={showHighlight && bookmark ? {
+              backgroundColor: `${bookmark.color}4D`,
+              borderBottom: settings.visualResources.gradientHighlight ? 'none' : `2px solid ${bookmark.color}`
+            } : {}}
           >
             {settings.textDisplay.verseNumbers && (
-              <sup className="text-[0.6em] font-bold mr-1 opacity-50 select-none">
+              <sup className="premium-kicker !text-[10px] !py-0.5 !px-1.5 mr-1.5">
                 {v.verse}
               </sup>
             )}
@@ -128,72 +136,142 @@ const VerseItem = React.memo(({
               )}
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(bodyHtml) }}
             />
-
-            {bookmark && bookmark.tags && bookmark.tags.length > 0 && (
-              <span className="ml-2 inline-flex gap-1 align-middle">
-                {bookmark.tags.map(tId => {
-                  const tag = allTags.find(t => t.id === tId);
-                  if (!tag) return null;
-                  return (
-                    <span
-                      key={tId}
-                      className="group/tag text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-tighter relative"
-                      style={{ backgroundColor: tag.background, color: tag.textColor }}
-                    >
-                      {tag.name}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleRemoveTag(bookmark.id, tId); }}
-                        className="hidden group-hover/tag:inline-flex items-center justify-center ml-0.5 -mr-0.5 min-w-11 min-h-11 rounded-full hover:bg-black/10 align-middle cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]"
-                        aria-label="Remover tag"
-                      >
-                        <X className="w-2.5 h-2.5" />
-                      </button>
-                    </span>
-                  );
-                })}
-              </span>
-            )}
           </span>
+        ) : (
+          // Modo Versículo: Card Premium vibrante
+          <div
+            id={`verse-${v.verse}`}
+            onClick={() => toggleVerseSelection(v.verse)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleVerseSelection(v.verse); } }}
+            role="button"
+            tabIndex={0}
+            aria-label={`Versículo ${v.verse}`}
+            className={cn(
+              "premium-card-soft p-4 cursor-pointer transition-all duration-300",
+              "hover:shadow-md hover:bg-[var(--surface-2)]",
+              isSelected && "ring-2 ring-[var(--accent-bible)] bg-[var(--accent-bible)]/8 shadow-md",
+              isHighlighted && "ring-2 ring-yellow-400/50 bg-yellow-400/20",
+              showHighlight && settings.visualResources.gradientHighlight && "bg-gradient-to-r from-transparent via-[var(--accent-bible)]/5 to-transparent"
+            )}
+            style={showHighlight && bookmark ? {
+              backgroundColor: `${bookmark.color}4D`,
+              borderBottom: settings.visualResources.gradientHighlight ? 'none' : `2px solid ${bookmark.color}`
+            } : {}}
+          >
+            <div className="flex items-start gap-3">
+              {settings.textDisplay.verseNumbers && (
+                <span className="premium-kicker shrink-0 !text-[11px] !py-1 !px-2.5 mt-0.5">
+                  {v.verse}
+                </span>
+              )}
+              <div className="flex-1 min-w-0">
+                <span
+                  className={cn(
+                    "bible-text block",
+                    settings.textDisplay.wordsOfJesusRed && v.text.includes("Jesus") && "words-of-jesus"
+                  )}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(bodyHtml) }}
+                />
+                
+                {bookmark && bookmark.tags && bookmark.tags.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {bookmark.tags.map(tId => {
+                      const tag = allTags.find(t => t.id === tId);
+                      if (!tag) return null;
+                      return (
+                        <span
+                          key={tId}
+                          className="group/tag inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-tight relative"
+                          style={{ backgroundColor: tag.background, color: tag.textColor }}
+                        >
+                          {tag.name}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleRemoveTag(bookmark.id, tId); }}
+                            className="hidden group-hover/tag:inline-flex items-center justify-center min-w-11 min-h-11 rounded-full hover:bg-black/10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]"
+                            aria-label="Remover tag"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
 
-          <div className={cn(
-            "inline-flex items-center ml-3 space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 bg-bible-accent/7 backdrop-blur-sm rounded-full px-2 py-1 border border-bible-accent/10",
-            !settings.textDisplay.paragraphMode && "absolute right-0 top-0 mt-1"
-          )}>
-            {settings.modules.commentary && (
-              <button onClick={() => onToolOpen(v, 'commentary')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Comentário" aria-label="Abrir comentário">
-                <MessageSquare className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+            <div className="flex items-center gap-1 mt-3 pt-3 border-t border-[var(--border-bible)]/30">
+              {settings.modules.commentary && (
+                <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'commentary'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Abrir comentário">
+                  <MessageSquare className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                </button>
+              )}
+              {settings.modules.dictionary && (
+                <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'dictionary'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Abrir dicionário">
+                  <Library className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                </button>
+              )}
+              {settings.modules.xrefs && settings.visualResources.crossRefs && (
+                <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'xrefs'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver referências cruzadas">
+                  <Layers className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                </button>
+              )}
+              <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'people'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver pessoas">
+                <Users className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
-            )}
-            {settings.modules.dictionary && (
-              <button onClick={() => onToolOpen(v, 'dictionary')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Dicionário" aria-label="Abrir dicionário">
-                <Library className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+              <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'places'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver lugares">
+                <MapPin className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
-            )}
-            {settings.modules.xrefs && settings.visualResources.crossRefs && (
-              <button onClick={() => onToolOpen(v, 'xrefs')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Ref. Cruzadas" aria-label="Ver referências cruzadas">
-                <Layers className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+              {settings.textDisplay.footnotes && (
+                <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'footnotes'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver notas de rodapé">
+                  <FileText className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                </button>
+              )}
+              <button onClick={(e) => { e.stopPropagation(); onShare(v); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool ml-auto" aria-label="Compartilhar versículo">
+                <Share2 className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
-            )}
-            <button onClick={() => onToolOpen(v, 'people')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Pessoas" aria-label="Ver pessoas">
-              <span className="w-4 h-4 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">👥</span>
-            </button>
-            <button onClick={() => onToolOpen(v, 'places')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Lugares" aria-label="Ver lugares">
-              <span className="w-4 h-4 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📍</span>
-            </button>
-            {settings.textDisplay.footnotes && (
-              <button onClick={() => onToolOpen(v, 'footnotes')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Notas de Rodapé" aria-label="Ver notas de rodapé">
-                <span className="w-4 h-4 flex items-center justify-center text-bible-accent opacity-60 group-hover/tool:opacity-100">📝</span>
-              </button>
-            )}
-            <button onClick={() => onShare(v)} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" title="Compartilhar" aria-label="Compartilhar versículo">
-              <Share2 className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-            </button>
+            </div>
           </div>
-        </>
-      )}
-    </div>
-  );
-});
+        )}
+
+            {settings.textDisplay.paragraphMode && (
+              <div className={cn(
+                "inline-flex items-center ml-2 space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-bible-accent/7 backdrop-blur-sm rounded-full px-2 py-1 border border-bible-accent/10",
+              )}>
+                {settings.modules.commentary && (
+                  <button onClick={() => onToolOpen(v, 'commentary')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Abrir comentário">
+                    <MessageSquare className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                  </button>
+                )}
+                {settings.modules.dictionary && (
+                  <button onClick={() => onToolOpen(v, 'dictionary')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Abrir dicionário">
+                    <Library className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                  </button>
+                )}
+                {settings.modules.xrefs && settings.visualResources.crossRefs && (
+                  <button onClick={() => onToolOpen(v, 'xrefs')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver referências cruzadas">
+                    <Layers className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                  </button>
+                )}
+                <button onClick={() => onToolOpen(v, 'people')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver pessoas">
+                  <Users className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                </button>
+                <button onClick={() => onToolOpen(v, 'places')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver lugares">
+                  <MapPin className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                </button>
+                {settings.textDisplay.footnotes && (
+                  <button onClick={() => onToolOpen(v, 'footnotes')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver notas de rodapé">
+                    <FileText className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                  </button>
+                )}
+                <button onClick={() => onShare(v)} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Compartilhar versículo">
+                  <Share2 className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                </button>
+              </div>
+            )}
+      </div>
+    );
+  });
 
 export const Reader: React.FC<ReaderProps> = React.memo(({
   book,

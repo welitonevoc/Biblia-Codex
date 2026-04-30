@@ -4,7 +4,7 @@ import {
   User, Palette, Sparkles, Database, HelpCircle,
   Settings2, ChevronRight, Sun, Type, Layout, Navigation2,
   BookOpen, Brain, MessageSquare, Languages, Volume2,
-  Download, Globe, Shield, Key, Zap, ArrowLeft, Cloud, RefreshCw,
+  Download, Globe, Shield, Key, Zap, ChevronLeft, Cloud, RefreshCw,
   X
 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
@@ -12,44 +12,44 @@ import { cn } from '../utils/cn';
 import { AppearanceSettings } from './AppearanceSettings';
 import { TTSSettings } from './TTSSettings';
 
-const SettingCard: React.FC<{
-  icon: React.ElementType;
-  title: string;
-  description: string;
-  onClick: () => void;
-  badge?: string;
-  disabled?: boolean;
-}> = ({ icon: Icon, title, description, onClick, badge, disabled }) => (
-  <motion.button
-    whileHover={{ scale: 1.02, y: -2 }}
-    whileTap={{ scale: 0.98 }}
-    onClick={onClick}
-    disabled={disabled}
-    className={cn(
-      "w-full p-5 rounded-2xl bg-[var(--surface-1)] border border-[var(--border-bible)] text-left transition-all",
-      "hover:bg-[var(--surface-2)] hover:border-[var(--accent-bible)]/30 hover:shadow-md",
-      disabled && "opacity-50 cursor-not-allowed"
-    )}
-  >
-    <div className="flex items-start gap-3">
-      <div className="p-2 rounded-lg bg-bible-accent/10 flex-shrink-0">
-        <Icon className="w-5 h-5 text-bible-accent" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <h3 className="text-sm font-semibold text-bible-text truncate">{title}</h3>
-          {badge && (
-            <span className="px-1.5 py-0.5 text-xs font-medium bg-bible-accent text-white rounded-full">
-              {badge}
-            </span>
-          )}
+  const SettingCard: React.FC<{
+    icon: React.ElementType;
+    title: string;
+    description: string;
+    onClick: () => void;
+    badge?: string;
+    disabled?: boolean;
+  }> = ({ icon: Icon, title, description, onClick, badge, disabled }) => (
+    <motion.button
+      whileHover={{ scale: 1.02, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "w-full p-5 rounded-2xl premium-card hover:premium-card-strong text-left transition-all duration-300",
+        "hover:shadow-lg hover:border-[var(--accent-bible)]/30",
+        disabled && "opacity-50 cursor-not-allowed"
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className="p-2.5 rounded-xl bg-[var(--accent-bible)]/10 flex-shrink-0 shadow-[0_0_12px_rgba(var(--accent-bible-rgb),0.15)]">
+          <Icon className="w-5 h-5 text-[var(--accent-bible)]" />
         </div>
-        <p className="text-xs text-bible-text-muted leading-relaxed">{description}</p>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-sm font-bold text-[var(--text-bible)] truncate">{title}</h3>
+            {badge && (
+              <span className="premium-kicker !py-0.5 !px-2 !text-[10px]">
+                {badge}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-[var(--text-bible-muted)] leading-relaxed">{description}</p>
+        </div>
+        <ChevronRight className="w-4 h-4 text-[var(--text-bible-subtle)] flex-shrink-0 mt-1 group-hover:text-[var(--accent-bible)] transition-colors" />
       </div>
-      <ChevronRight className="w-4 h-4 text-bible-text-muted flex-shrink-0 mt-1" />
-    </div>
-  </motion.button>
-);
+    </motion.button>
+  );
 
 export const SettingsDashboard: React.FC = () => {
   const { setActiveTab, syncNow, settings } = useAppContext();
@@ -68,7 +68,7 @@ export const SettingsDashboard: React.FC = () => {
     return (
       <div>
         <button onClick={handleBack} className="flex items-center gap-2 text-bible-accent mb-4">
-          <ArrowLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" />
           <span>Voltar</span>
         </button>
         <AppearanceSettings />
@@ -79,7 +79,7 @@ export const SettingsDashboard: React.FC = () => {
     return (
       <div>
         <button onClick={handleBack} className="flex items-center gap-2 text-bible-accent mb-4">
-          <ArrowLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" />
           <span>Voltar</span>
         </button>
         <TTSSettings />

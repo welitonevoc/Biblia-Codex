@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, BookOpen, Loader, BookA, Languages, Hash, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Search, BookOpen, Loader, BookA, Languages, Hash, ChevronRight, ChevronLeft } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import {
   loadEncyclopediaEntries,
@@ -51,7 +51,7 @@ const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, 
             className="p-2 rounded-xl hover:bg-[var(--surface-hover)] transition-colors"
             aria-label="Voltar"
           >
-            <ArrowLeft className="w-5 h-5 text-[var(--text-bible)]" />
+            <ChevronLeft className="w-5 h-5 text-[var(--text-bible)]" />
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold text-[var(--text-bible)] truncate">{entry.word}</h1>

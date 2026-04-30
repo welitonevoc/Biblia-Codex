@@ -74,11 +74,11 @@ const SettingsSection: React.FC<{
   <div className="space-y-3">
     <div className="flex items-center gap-2 px-1">
       <Icon className="h-4 w-4 text-[var(--accent-bible)]" strokeWidth={2} />
-      <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-bible-muted)]">{title}</span>
+      <span className="premium-section-title !text-[11px]">{title}</span>
     </div>
     <div className={cn(
-      "overflow-hidden rounded-xl",
-      "bg-[var(--surface-1)] border border-[var(--border-bible)]"
+      "overflow-hidden rounded-2xl",
+      "premium-card border border-[var(--border-bible)]"
     )}>
       {children}
     </div>

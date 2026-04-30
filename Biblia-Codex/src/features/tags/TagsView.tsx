@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Tag as TagIcon, Bookmark, ChevronRight, Hash, FolderOpen, Zap, Heart, Brain, Activity, LayoutDashboard, Link2, ArrowLeft, ArrowRight, RotateCcw, Trash2, Pencil, X, Check, ExternalLink } from 'lucide-react';
+import { Tag as TagIcon, Bookmark, Hash, FolderOpen, Zap, Heart, Brain, Activity, LayoutDashboard, Link2, ChevronLeft, ChevronRight, RotateCcw, Trash2, Pencil, X, Check, ExternalLink } from 'lucide-react';
 import { storage } from '../StorageService';
 import { Bookmark as BookmarkType, Tag } from '../types';
 import { TagService, PALETTE } from '../services/TagService';
@@ -359,7 +359,7 @@ export const TagsView: React.FC = () => {
                   onClick={() => setChainIndex(i => i - 1)}
                   className="p-3 rounded-full bg-white border border-bible-accent/10 text-bible-accent disabled:opacity-30 hover:bg-bible-accent hover:text-white transition-all shadow-sm"
                 >
-                  <ArrowLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
 
                 <div className="flex space-x-2">
@@ -379,7 +379,7 @@ export const TagsView: React.FC = () => {
                   onClick={() => setChainIndex(i => i + 1)}
                   className="p-3 rounded-full bg-white border border-bible-accent/10 text-bible-accent disabled:opacity-30 hover:bg-bible-accent hover:text-white transition-all shadow-sm"
                 >
-                  <ArrowRight className="w-5 h-5" />
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               </div>
 

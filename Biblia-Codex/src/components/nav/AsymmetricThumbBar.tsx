@@ -33,24 +33,25 @@ export const AsymmetricThumbBar: React.FC<AsymmetricThumbBarProps> = ({ activeTa
       className="fixed left-0 top-1/2 z-50 -translate-y-1/2"
       style={{ paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)' }}
     >
-      <div className="flex flex-col gap-1 rounded-r border-r border-bible-border bg-bible-bg/95 px-1 py-2">
+      <div className="flex flex-col gap-1.5 rounded-r-2xl glass-panel px-1.5 py-2.5 border-r border-[var(--border-bible)]/50">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
 
           return (
-              <button
-                key={item.id}
-                onClick={() => onTabChange(item.id)}
-                className={cn(
-                  'flex min-h-11 min-w-11 items-center justify-center rounded transition-colors cursor-pointer',
-                  isActive 
-                    ? 'bg-bible-accent/10 text-bible-accent' 
-                    : 'text-bible-text-muted hover:text-bible-text hover:bg-bible-surface'
-                )}
-                aria-label={item.label}
-              >
-              <Icon size={18} strokeWidth={1.5} />
+            <button
+              key={item.id}
+              onClick={() => onTabChange(item.id)}
+              className={cn(
+                'flex min-h-11 min-w-11 items-center justify-center rounded-xl transition-all duration-200 cursor-pointer',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]',
+                isActive 
+                  ? 'bg-[var(--accent-bible)] text-white shadow-lg shadow-[var(--accent-bible)]/20' 
+                  : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
+              )}
+              aria-label={item.label}
+            >
+              <Icon size={18} strokeWidth={isActive ? 2 : 1.5} />
             </button>
           );
         })}

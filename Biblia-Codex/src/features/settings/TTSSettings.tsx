@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import {
-  Volume2, Settings2, ArrowLeft, Play, Pause, SkipBack, SkipForward,
+  Volume2, Settings2, ChevronLeft, Play, Pause, SkipBack, SkipForward,
   VolumeX, Volume1, Volume2 as VolumeIcon, Mic, Speaker,
   Languages, Zap, Check, AlertCircle
 } from 'lucide-react';
@@ -121,7 +121,7 @@ export const TTSSettings: React.FC = () => {
             onClick={() => setActiveTab('settings')}
             className="p-2 rounded-lg bg-bible-surface hover:bg-bible-surface-strong transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-bible-text" />
+            <ChevronLeft className="w-5 h-5 text-bible-text" />
           </button>
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-bible-accent/10">
