@@ -322,14 +322,15 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
         setBookmarks(savedBookmarks);
         setAllTags(savedTags);
       }
-
-      if (containerRef.current && !targetVerse) {
-        containerRef.current.scrollTop = 0;
-      }
     };
     fetchVerses();
     return () => { cancelled = true; };
   }, [book.id, chapter, currentVersion?.id, settings.textDisplay]);
+
+  useEffect(() => {
+    if (loading || !containerRef.current || targetVerse) return;
+    containerRef.current.scrollTop = 0;
+  }, [loading, book.id, chapter, targetVerse]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -410,10 +411,6 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
       }
     }
   }, [book.name, chapter, onNavigate]);
-
-  useEffect(() => {
-    containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [book.id, chapter]);
 
   return (
     <div
