@@ -332,92 +332,12 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     containerRef.current.scrollTop = 0;
   }, [loading, book.id, chapter, targetVerse]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!loading && targetVerse && verseRefs.current[targetVerse]) {
-      verseRefs.current[targetVerse]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setSelectedVerses(prev => prev.includes(targetVerse) ? prev : [...prev, targetVerse]);
-      if (onTargetVerseReached) onTargetVerseReached();
-    }
-  }, [loading, targetVerse, onTargetVerseReached, setSelectedVerses]);
-
-  const splitVerseHtml = useCallback((text: string, verseNumber: number, isChapterHeader?: boolean) => {
-    const normalizedText = text.replace(/\r\n?/g, '\n').trim();
-    let workingText = normalizedText;
-    let fallbackHeading = '';
-
-    if (!isChapterHeader) {
-      const plainHeadingParts = workingText.split(/\n\s*\n+/);
-      if (plainHeadingParts.length > 1) {
-        const candidateHeading = plainHeadingParts[0]?.trim() ?? '';
-        const remainingBody = plainHeadingParts.slice(1).join('\n\n').trim();
-        const hasStructuredTags = /<TS\d*>|<WG\d+>|<WH\d+>|<S\d+>|<S>\d+<\/S>|<RF|<RX|<CM>|<FI>|<FR>|<FO>|<FU>/i.test(candidateHeading);
-        if (candidateHeading && !hasStructuredTags && remainingBody.length > 0) {
-          fallbackHeading = candidateHeading;
-          workingText = remainingBody;
-        }
-      }
-    }
-
-    workingText = workingText.replace(new RegExp(`^\\s*${verseNumber}\\s*[.:)\\-]+\\s*`), '');
-    const parsedHtml = MySwordParser.parseBibleText(workingText, settings, book.numericId >= 40);
-    const titleRegex = /<span class="bible-title[^"]*">.*?<\/span>/gi;
-    let headings = parsedHtml.match(titleRegex) ?? [];
-    let body = parsedHtml.replace(titleRegex, '').trim();
-
-    const fallbackHeadingHtml = fallbackHeading ? `<span class="bible-title bible-title-1">${fallbackHeading}</span>` : '';
-    return {
-      headingsHtml: `${fallbackHeadingHtml}${headings.join('')}`,
-      bodyHtml: body,
-      parsedHtml
-    };
-  }, [settings, book.numericId]);
-
-  const processedVerses = useMemo(() => {
-    if (!verses || verses.length === 0) return [];
-    return verses.map((v) => {
-      const { headingsHtml, bodyHtml, parsedHtml } = splitVerseHtml(v.text, v.verse, v.isChapterHeader);
-      return { verse: v, headingsHtml, bodyHtml, parsedHtml };
-    });
-  }, [verses, splitVerseHtml]);
-
-  const handleLinkClick = useCallback((e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const anchor = target.closest('a');
-    if (anchor) {
-      const href = anchor.getAttribute('href');
-      if (href) {
-        e.preventDefault();
-        if (href.startsWith('b')) {
-          const match = href.match(/b(\d+)\.(\d+)\.(\d+)/);
-          if (match) {
-            const [_, bNum, c, v] = match;
-            const targetBook = BIBLE_BOOKS.find(book => book.numericId === parseInt(bNum));
-            if (targetBook && onNavigate) onNavigate(targetBook.id, parseInt(c), parseInt(v));
-          }
-        } else if (href.startsWith('s')) {
-          e.stopPropagation();
-          const term = href.substring(1);
-          if (/^[HG]\d+/i.test(term)) {
-            setSelectedStrongs(term);
-            setSelectedContext(`${book.name} ${chapter}`);
-            setIsStrongsOpen(true);
-          } else {
-            setSelectedTerm(term);
-            setSelectedContext(`${book.name} ${chapter}`);
-            setIsDictionaryOpen(true);
-          }
-        }
-      }
-    }
-  }, [book.name, chapter, onNavigate]);
-
   return (
     <div
       ref={containerRef}
       onClick={handleLinkClick}
       className={cn(
-        "h-full overflow-y-auto scroll-smooth",
+        "h-full overflow-y-auto",
         settings.navigation.horizontalScroll && "flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory"
       )}
       style={{
