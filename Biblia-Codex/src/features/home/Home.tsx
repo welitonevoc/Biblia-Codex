@@ -23,6 +23,7 @@ interface HomeProps {
   goToMaps?: () => void;
   goToDictionaries?: () => void;
   goToSettings?: () => void;
+  goToBible?: () => void;
 }
 
 export const Home: React.FC<HomeProps> = React.memo(({ 
@@ -38,6 +39,7 @@ export const Home: React.FC<HomeProps> = React.memo(({
   goToMaps,
   goToDictionaries,
   goToSettings,
+  goToBible,
 }) => {
   const { user } = useAppContext();
   const [streak] = useState(7);
@@ -90,7 +92,7 @@ export const Home: React.FC<HomeProps> = React.memo(({
       icon: BookOpen,
       title: 'Ler a Bíblia',
       subtitle: 'Iniciar leitura',
-      action: () => onNavigate(BIBLE_BOOKS[0], 1),
+      action: () => goToBible?.() || onNavigate(BIBLE_BOOKS[0], 1),
       gradient: 'from-amber-500 to-orange-600',
     },
     {

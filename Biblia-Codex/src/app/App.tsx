@@ -51,6 +51,7 @@ type TabType =
   | 'tts'
   | 'support'
   | 'dictionaries'
+  | 'commentary'
   | 'modules'
   | 'profile'
   | 'devocional'
@@ -216,6 +217,7 @@ function AppContent() {
                     goToMaps={() => setActiveTab('maps')}
                     goToDictionaries={() => setActiveTab('dictionaries')}
                     goToSettings={() => setActiveTab('settings')}
+                    goToBible={() => setActiveTab('bible')}
                   />
                 </Suspense>
               </motion.div>
@@ -257,6 +259,16 @@ function AppContent() {
               <motion.div key="dictionaries" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
                 <Suspense fallback={<PageLoader />}>
                   <DictionaryViewPage />
+                </Suspense>
+              </motion.div>
+            )}
+
+            {activeTab === 'commentary' && (
+              <motion.div key="commentary" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
+                <Suspense fallback={<PageLoader />}>
+                  <div className="flex h-full items-center justify-center text-[var(--text-bible-muted)]">
+                    Coming soon...
+                  </div>
                 </Suspense>
               </motion.div>
             )}

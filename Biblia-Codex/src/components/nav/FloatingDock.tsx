@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Home, BookOpen, Search, Heart, Settings } from 'lucide-react';
+import { Home, BookOpen, Search, Heart, Settings, BookHeart, Library, MessageSquarePlus } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -18,6 +18,8 @@ const navItems = [
   { id: 'bible', icon: BookOpen, label: 'Bíblia' },
   { id: 'search', icon: Search, label: 'Buscar' },
   { id: 'notes', icon: Heart, label: 'Notas' },
+  { id: 'dictionaries', icon: Library, label: 'Dicionário' },
+  { id: 'commentary', icon: MessageSquarePlus, label: 'Comentário' },
   { id: 'settings', icon: Settings, label: 'Ajustes' },
 ];
 
