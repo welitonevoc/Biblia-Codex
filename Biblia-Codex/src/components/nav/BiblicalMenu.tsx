@@ -82,7 +82,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.95 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="fixed bottom-24 left-1/2 z-50 -translate-x-[calc(50%-8rem)]"
+          className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2"
           style={{ paddingBottom: 'max(var(--sab), 24px)' }}
         >
           <div className="w-72 rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)] shadow-lg shadow-black/10 overflow-hidden">

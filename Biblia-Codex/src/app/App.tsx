@@ -16,7 +16,7 @@ import { Navigation, ReaderWithAudio } from '../features/bible';
 import { StudyPanel, StudyToolsPanel } from '../features/study';
 import { SearchView } from '../features/search';
 import { VerseCardGenerator, ErrorBoundary } from '../components/common';
-import { FloatingDock, BiblicalMenu, ChapterNav } from '../components/nav';
+import { FloatingDock, BiblicalMenu, BookJumpMenu } from '../components/nav';
 import { BIBLE_BOOKS } from '../data';
 import { Onboarding } from '../features/onboarding';
 import { Settings } from '../features/settings';
@@ -89,6 +89,16 @@ function AppContent() {
   const { selectedVersesForStudy, setIsStudyOpen: setStudyOpen, openStudyPanel } = useStudyPanel();
   const { shareData, setIsShareOpen: setShareOpen, openShare } = useShare();
   const [isBiblicalMenuOpen, setIsBiblicalMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsBiblicalMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const availableVersions = useMemo(() => [
     { id: '1', name: 'Almeida Revista e Atualizada', abbreviation: 'ARA' }
@@ -393,13 +403,15 @@ function AppContent() {
         />
 
         {activeTab === 'bible' && (
-          <ChapterNav
+          <BookJumpMenu
             currentBook={currentBook}
             currentChapter={currentChapter}
             onNavigate={(bookId, chapter) => {
               const book = BIBLE_BOOKS.find(b => b.id === bookId);
               if (book) handleSelect(book, chapter);
             }}
+            isOpen={!isBiblicalMenuOpen}
+            onClose={() => setIsBiblicalMenuOpen(true)}
           />
         )}
       </div>

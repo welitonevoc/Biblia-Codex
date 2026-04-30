@@ -2,4 +2,4 @@
 export { FloatingDock } from './FloatingDock';
 export { AsymmetricThumbBar } from './AsymmetricThumbBar';
 export { BiblicalMenu } from './BiblicalMenu';
-export { ChapterNav } from './ChapterNav';
+export { BookJumpMenu } from './BookJumpMenu';
