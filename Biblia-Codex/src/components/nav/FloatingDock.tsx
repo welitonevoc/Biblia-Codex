@@ -1,12 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Home, BookOpen, Search, Heart, Settings, User, Menu, 
-  Bookmark, Book, Map, Link2, Library, Calendar,
-  MessageSquare, MapPin, Languages, FileText, GraduationCap,
-  Sparkles, Palette, Volume2, Database, HelpCircle, ChevronRight,
-  X, BookMarked, Network, Type, Tags, MoreHorizontal, PenLine
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import { Home, BookOpen, Search, Heart, Settings } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -19,81 +13,7 @@ interface FloatingDockProps {
   onTabChange: (tab: string) => void;
 }
 
-interface MenuItem {
-  id: string;
-  icon: React.ElementType;
-  label: string;
-  submenu?: MenuItem[];
-}
-
-const mainItems: MenuItem[] = [
-  { id: 'home', icon: Home, label: 'Início' },
-  { 
-    id: 'bible', 
-    icon: BookOpen, 
-    label: 'Bíblia',
-    submenu: [
-      { id: 'version', icon: BookOpen, label: 'Versão' },
-      { id: 'books', icon: BookMarked, label: 'Livros' },
-      { id: 'typography', icon: Type, label: 'Fonte' },
-      { id: 'audio', icon: Volume2, label: 'Áudio' },
-    ]
-  },
-  { 
-    id: 'reading', 
-    icon: Sparkles, 
-    label: 'Leitura',
-    submenu: [
-      { id: 'devotional', icon: Sparkles, label: 'Devocional' },
-      { id: 'reading-plans', icon: Calendar, label: 'Planos' },
-      { id: 'library', icon: Library, label: 'Biblioteca' },
-    ]
-  },
-  { 
-    id: 'study', 
-    icon: GraduationCap, 
-    label: 'Estudo',
-    submenu: [
-      { id: 'notes', icon: PenLine, label: 'Notas' },
-      { id: 'bookmarks', icon: Bookmark, label: 'Marcadores' },
-      { id: 'tags', icon: Tags, label: 'Tags' },
-      { id: 'search', icon: Search, label: 'Buscar' },
-    ]
-  },
-  { 
-    id: 'tools', 
-    icon: Sparkles, 
-    label: 'Ferramentas',
-    submenu: [
-      { id: 'dictionaries', icon: Languages, label: 'Dicionários' },
-      { id: 'xrefs', icon: Link2, label: 'Refs. Cruzadas' },
-      { id: 'maps', icon: Map, label: 'Mapas' },
-      { id: 'places', icon: MapPin, label: 'Lugares' },
-      { id: 'genealogy', icon: Network, label: 'Genealogia' },
-      { id: 'ai-assistant', icon: Sparkles, label: 'Assistente IA' },
-    ]
-  },
-  { id: 'ebd', icon: GraduationCap, label: 'EBD' },
-  { 
-    id: 'more', 
-    icon: MoreHorizontal, 
-    label: 'Mais',
-    submenu: [
-      { id: 'support', icon: HelpCircle, label: 'Suporte' },
-      { id: 'profile', icon: User, label: 'Perfil' },
-    ]
-  },
-];
-
-const configItems: MenuItem[] = [
-  { id: 'settings', icon: Settings, label: 'Configurações' },
-  { id: 'appearance', icon: Palette, label: 'Aparência' },
-  { id: 'tts', icon: Volume2, label: 'Leitura por voz' },
-  { id: 'modules', icon: Database, label: 'Módulos' },
-];
-
 const navItems = [
-  { id: 'menu', icon: Menu, label: 'Menu' },
   { id: 'home', icon: Home, label: 'Início' },
   { id: 'bible', icon: BookOpen, label: 'Bíblia' },
   { id: 'search', icon: Search, label: 'Buscar' },
@@ -104,9 +24,6 @@ const navItems = [
 export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChange }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [showMenu, setShowMenu] = useState(false);
-  const [menuHistory, setMenuHistory] = useState<MenuItem[]>([]);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -118,254 +35,73 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false);
-        setMenuHistory([]);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleMenuClick = (item: MenuItem) => {
-    if (item.submenu && item.submenu.length > 0) {
-      setMenuHistory(prev => [...prev, item]);
-    } else {
-      onTabChange(item.id);
-      setShowMenu(false);
-      setMenuHistory([]);
-    }
-  };
-
-  const handleBack = () => {
-    setMenuHistory(prev => prev.slice(0, -1));
-  };
-
-  const currentMenu = menuHistory.length === 0 
-    ? [...mainItems, { id: 'divider', icon: Settings, label: '---' }, ...configItems]
-    : menuHistory[menuHistory.length - 1].submenu || [];
-
   return (
-    <>
-      {/* Floating Dock */}
-      <motion.div
-        initial={{ y: 80, opacity: 0 }}
-        animate={{ 
-          y: 0, 
-          opacity: isVisible ? 1 : 0.3,
-        }}
-        whileHover={{ opacity: 1, scale: 1 }}
-        whileTap={{ scale: 0.95 }}
-        transition={{ 
-          type: 'spring', 
-          stiffness: 300, 
-          damping: 30,
-          mass: 0.8
-        }}
-        className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
-        style={{ paddingBottom: 'max(var(--sab), 24px)' }}
-      >
-        <div 
-          className={cn(
-            "rounded-2xl px-2 py-2 transition-all duration-300",
-            isVisible ? "glass-strong" : "glass"
-          )}
-        >
-          <div className="flex items-center gap-1">
-            {navItems.map((item, index) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              const isMenu = item.id === 'menu';
-              const hasSubmenu = item.id === 'bible';
-              
-              return (
-                <motion.button
-                  key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
-                    delay: index * 0.05,
-                    type: 'spring',
-                    stiffness: 400,
-                    damping: 25
-                  }}
-                  onClick={() => {
-                    if (isMenu) {
-                      setShowMenu(true);
-                    } else if (hasSubmenu) {
-                      const categoryItem = mainItems.find(m => m.id === item.id);
-                      if (categoryItem) {
-                        setMenuHistory([categoryItem]);
-                        setShowMenu(true);
-                      }
-                    } else {
-                      onTabChange(item.id);
-                    }
-                  }}
-                  className={cn(
-                    'group relative flex h-12 w-12 items-center justify-center rounded-xl',
-                    'cursor-pointer transition-all duration-300 ease-premium',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] focus-visible:ring-offset-2',
-                    isActive 
-                      ? 'text-[var(--accent-bible-contrast)]' 
-                      : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]'
-                  )}
-                  title={item.label}
-                >
-                  <motion.div
-                    animate={{
-                      scale: isActive ? 1.1 : 1,
-                      y: isActive ? -2 : 0
-                    }}
-                    transition={{ 
-                      type: 'spring',
-                      stiffness: 500,
-                      damping: 25
-                    }}
-                  >
-                    <Icon size={20} strokeWidth={1.5} />
-                    {hasSubmenu && (
-                      <ChevronRight className="w-3 h-3 absolute -right-0.5 -bottom-0.5" />
-                    )}
-                  </motion.div>
-                  
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeIndicator"
-                      className="absolute inset-0 rounded-xl bg-gradient-to-b from-[var(--accent-bible)] to-[var(--accent-bible-strong)]"
-                      initial={false}
-                      transition={{ 
-                        type: 'spring',
-                        stiffness: 500,
-                        damping: 35
-                      }}
-                      style={{ zIndex: -1 }}
-                    />
-                  )}
-                </motion.button>
-              );
-            })}
-          </div>
-        </div>
-        
-        <motion.div
-          className="absolute -bottom-3 left-1/2 -translate-x-1/2"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ 
-            opacity: isVisible ? 1 : 0, 
-            scale: isVisible ? 1 : 0,
-            y: isVisible ? 0 : 10
-          }}
-          transition={{ delay: 0.1 }}
-        >
-          <div 
-            className="h-6 w-16 rounded-full"
-            style={{
-              background: 'linear-gradient(0deg, rgba(255,255,255,0.15) 0%, transparent 100%)',
-              backdropFilter: 'blur(8px)',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-            }}
-          />
-        </motion.div>
-      </motion.div>
-
-      {/* Cascading Menu */}
-      <AnimatePresence>
-        {showMenu && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => {
-                setShowMenu(false);
-                setMenuHistory([]);
-              }}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-            />
-            <motion.div
-              ref={menuRef}
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[70] w-[85%] max-w-[340px]"
-            >
-              <div 
-                className="glass-strong rounded-3xl p-4"
-                style={{
-                  boxShadow: '0 25px 50px -12px rgba(0,0,0,0.35)'
-                }}
+    <motion.div
+      initial={{ y: 80, opacity: 0 }}
+      animate={{ y: 0, opacity: isVisible ? 1 : 0.3 }}
+      whileHover={{ opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+      className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
+      style={{ paddingBottom: 'max(var(--sab), 24px)' }}
+    >
+      <div className={cn('rounded-2xl px-2 py-2 transition-all duration-300', isVisible ? 'glass-strong' : 'glass')}>
+        <div className="flex items-center gap-1">
+          {navItems.map((item, index) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <motion.button
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05, type: 'spring', stiffness: 400, damping: 25 }}
+                onClick={() => onTabChange(item.id)}
+                className={cn(
+                  'group relative flex h-12 w-12 items-center justify-center rounded-xl',
+                  'cursor-pointer transition-all duration-300',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]',
+                  isActive
+                    ? 'text-[var(--accent-bible-contrast)]'
+                    : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]'
+                )}
+                title={item.label}
               >
-                {/* Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    {menuHistory.length > 0 && (
-                      <button
-                        onClick={handleBack}
-                        className="p-2 rounded-xl hover:bg-[var(--surface-hover)] transition-colors"
-                      >
-                        <ChevronRight className="w-4 h-4 rotate-180" />
-                      </button>
-                    )}
-                    <h2 className="text-lg font-bold text-[var(--text-bible)]">
-                      {menuHistory.length === 0 ? 'Menu' : menuHistory[menuHistory.length - 1].label}
-                    </h2>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      setMenuHistory([]);
-                    }}
-                    className="p-2 rounded-xl hover:bg-[var(--surface-hover)] transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
+                <motion.div
+                  animate={{ scale: isActive ? 1.1 : 1, y: isActive ? -2 : 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                >
+                  <Icon size={20} strokeWidth={1.5} />
+                </motion.div>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeIndicator"
+                    className="absolute inset-0 rounded-xl bg-gradient-to-b from-[var(--accent-bible)] to-[var(--accent-bible-strong)]"
+                    initial={false}
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    style={{ zIndex: -1 }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
 
-                {/* Menu Items */}
-                <div className="grid grid-cols-2 gap-2">
-                  {currentMenu.map((item) => {
-                    if (item.id === 'divider') {
-                      return <div key="divider" className="col-span-2 border-t border-[var(--border-bible)] my-2" />;
-                    }
-                    const menuItem = item as MenuItem;
-                    const Icon = item.icon;
-                    const hasSubmenu = menuItem.submenu && menuItem.submenu.length > 0;
-                    
-                    return (
-                      <motion.button
-                        key={item.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => handleMenuClick(item)}
-                        className={cn(
-                          'flex items-center gap-3 p-4 rounded-2xl',
-                          'bg-[var(--surface-1)] border border-[var(--border-bible)]',
-                          'hover:border-[var(--accent-bible)]/30 hover:bg-[var(--surface-2)]',
-                          'transition-all duration-200 text-left'
-                        )}
-                      >
-                        <div className="p-2 rounded-xl bg-[var(--accent-bible)]/10">
-                          <Icon className="w-5 h-5 text-[var(--accent-bible)]" />
-                        </div>
-                        <span className="flex-1 text-sm font-medium text-[var(--text-bible)]">
-                          {item.label}
-                        </span>
-                        {hasSubmenu && (
-                          <ChevronRight className="w-4 h-4 text-[var(--text-bible-muted)]" />
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </>
+      <motion.div
+        className="absolute -bottom-3 left-1/2 -translate-x-1/2"
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: isVisible ? 1 : 0, scale: isVisible ? 1 : 0, y: isVisible ? 0 : 10 }}
+        transition={{ delay: 0.1 }}
+      >
+        <div
+          className="h-6 w-16 rounded-full"
+          style={{
+            background: 'linear-gradient(0deg, rgba(255,255,255,0.15) 0%, transparent 100%)',
+            backdropFilter: 'blur(8px)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          }}
+        />
+      </motion.div>
+    </motion.div>
   );
 };

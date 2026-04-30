@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import {
   BookOpen, History, Bookmark, Calendar, Flame, ChevronRight, Play,
-  BookMarked, Clock, Star, Sparkles, ArrowRight
+  BookMarked, Clock, Star, Sparkles, ArrowRight,
+  PenLine, Search, Map, Languages, GraduationCap, Tags, Settings
 } from 'lucide-react';
 import { Book } from '../types';
 import { BIBLE_BOOKS } from '../data/bibleMetadata';
@@ -14,13 +15,29 @@ interface HomeProps {
   goToReadingPlans?: () => void;
   goToDevocional?: () => void;
   goToAI?: () => void;
+  goToNotes?: () => void;
+  goToBookmarks?: () => void;
+  goToTags?: () => void;
+  goToSearch?: () => void;
+  goToEBD?: () => void;
+  goToMaps?: () => void;
+  goToDictionaries?: () => void;
+  goToSettings?: () => void;
 }
 
 export const Home: React.FC<HomeProps> = React.memo(({ 
   onNavigate, 
   goToReadingPlans, 
   goToDevocional, 
-  goToAI 
+  goToAI,
+  goToNotes,
+  goToBookmarks,
+  goToTags,
+  goToSearch,
+  goToEBD,
+  goToMaps,
+  goToDictionaries,
+  goToSettings,
 }) => {
   const { user } = useAppContext();
   const [streak] = useState(7);
@@ -98,6 +115,68 @@ export const Home: React.FC<HomeProps> = React.memo(({
       gradient: 'from-purple-500 to-violet-600',
     },
   ], [onNavigate, goToDevocional, goToReadingPlans, goToAI]);
+
+  const secondaryActions = useMemo(() => [
+    {
+      icon: PenLine,
+      title: 'Notas',
+      subtitle: 'Suas anotações',
+      action: () => goToNotes?.(),
+      gradient: 'from-green-500 to-emerald-600',
+    },
+    {
+      icon: Bookmark,
+      title: 'Marcadores',
+      subtitle: 'Versículos salvos',
+      action: () => goToBookmarks?.(),
+      gradient: 'from-teal-500 to-cyan-600',
+    },
+    {
+      icon: Tags,
+      title: 'Tags',
+      subtitle: 'Organizar versículos',
+      action: () => goToTags?.(),
+      gradient: 'from-yellow-500 to-amber-600',
+    },
+    {
+      icon: Search,
+      title: 'Buscar',
+      subtitle: 'Pesquisar na Bíblia',
+      action: () => goToSearch?.(),
+      gradient: 'from-sky-500 to-blue-600',
+    },
+  ], [goToNotes, goToBookmarks, goToTags, goToSearch]);
+
+  const explorerActions = useMemo(() => [
+    {
+      icon: GraduationCap,
+      title: 'EBD',
+      subtitle: 'Escola Bíblica',
+      action: () => goToEBD?.(),
+      gradient: 'from-emerald-500 to-green-600',
+    },
+    {
+      icon: Map,
+      title: 'Mapas Bíblicos',
+      subtitle: 'Lugares sagrados',
+      action: () => goToMaps?.(),
+      gradient: 'from-cyan-500 to-sky-600',
+    },
+    {
+      icon: Languages,
+      title: 'Dicionários',
+      subtitle: 'Hebraico e Grego',
+      action: () => goToDictionaries?.(),
+      gradient: 'from-fuchsia-500 to-purple-600',
+    },
+    {
+      icon: Settings,
+      title: 'Configurações',
+      subtitle: 'Preferências do app',
+      action: () => goToSettings?.(),
+      gradient: 'from-slate-500 to-gray-600',
+    },
+  ], [goToEBD, goToMaps, goToDictionaries, goToSettings]);
 
   return (
     <div className="h-full overflow-y-auto scrollbar-thin bg-[var(--bg-bible)]">
@@ -265,6 +344,104 @@ export const Home: React.FC<HomeProps> = React.memo(({
                 );
               })}
             </div>
+
+            {/* Ferramentas de Estudo */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <h2 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-3">
+                Ferramentas de Estudo
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {secondaryActions.map((action, index) => {
+                  const Icon = action.icon;
+                  return (
+                    <motion.button
+                      key={action.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + index * 0.05 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={action.action}
+                      className={cn(
+                        'group relative overflow-hidden rounded-xl p-4',
+                        'text-left transition-all duration-300',
+                        'bg-[var(--surface-1)] border border-[var(--border-bible)]',
+                        'hover:border-[var(--accent-bible)]/30 hover:shadow-md'
+                      )}
+                    >
+                      <div className={cn(
+                        'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500',
+                        'bg-gradient-to-br', action.gradient
+                      )} />
+                      <div className="relative">
+                        <div className={cn(
+                          'w-10 h-10 rounded-xl mb-3 flex items-center justify-center',
+                          'bg-gradient-to-br', action.gradient,
+                          'text-white shadow-lg'
+                        )}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-sm font-bold text-[var(--text-bible)]">{action.title}</h3>
+                        <p className="text-xs text-[var(--text-bible-muted)]">{action.subtitle}</p>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </motion.div>
+
+            {/* Explorar */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h2 className="text-sm font-bold text-[var(--text-bible-muted)] uppercase tracking-wider mb-3">
+                Explorar
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {explorerActions.map((action, index) => {
+                  const Icon = action.icon;
+                  return (
+                    <motion.button
+                      key={action.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 + index * 0.05 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={action.action}
+                      className={cn(
+                        'group relative overflow-hidden rounded-xl p-4',
+                        'text-left transition-all duration-300',
+                        'bg-[var(--surface-1)] border border-[var(--border-bible)]',
+                        'hover:border-[var(--accent-bible)]/30 hover:shadow-md'
+                      )}
+                    >
+                      <div className={cn(
+                        'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500',
+                        'bg-gradient-to-br', action.gradient
+                      )} />
+                      <div className="relative">
+                        <div className={cn(
+                          'w-10 h-10 rounded-xl mb-3 flex items-center justify-center',
+                          'bg-gradient-to-br', action.gradient,
+                          'text-white shadow-lg'
+                        )}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-sm font-bold text-[var(--text-bible)]">{action.title}</h3>
+                        <p className="text-xs text-[var(--text-bible-muted)]">{action.subtitle}</p>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </motion.div>
 
             {/* Reading Progress */}
             <motion.div

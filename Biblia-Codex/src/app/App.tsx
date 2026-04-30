@@ -196,6 +196,14 @@ function AppContent() {
                     goToReadingPlans={() => setActiveTab('reading-plans')}
                     goToDevocional={() => setActiveTab('devocional')}
                     goToAI={() => setActiveTab('ai-assistant')}
+                    goToNotes={() => setActiveTab('notes')}
+                    goToBookmarks={() => setActiveTab('bookmarks')}
+                    goToTags={() => setActiveTab('tags')}
+                    goToSearch={() => setActiveTab('search')}
+                    goToEBD={() => setActiveTab('ebd')}
+                    goToMaps={() => setActiveTab('maps')}
+                    goToDictionaries={() => setActiveTab('dictionaries')}
+                    goToSettings={() => setActiveTab('settings')}
                   />
                 </Suspense>
               </motion.div>
