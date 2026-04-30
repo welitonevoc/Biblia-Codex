@@ -16,7 +16,7 @@ import { Navigation, ReaderWithAudio } from '../features/bible';
 import { StudyPanel, StudyToolsPanel } from '../features/study';
 import { SearchView } from '../features/search';
 import { VerseCardGenerator, ErrorBoundary } from '../components/common';
-import { FloatingDock } from '../components/nav/FloatingDock';
+import { FloatingDock, BiblicalMenu } from '../components/nav/FloatingDock';
 import { BIBLE_BOOKS } from '../data';
 import { Onboarding } from '../features/onboarding';
 import { Settings } from '../features/settings';
@@ -88,6 +88,7 @@ function AppContent() {
   const { isNavOpen, isSettingsOpen, isStudyOpen, isHamburgerOpen, isShareOpen, isToolOpen, setIsNavOpen, setIsSettingsOpen, setIsStudyOpen, setIsHamburgerOpen, setIsShareOpen, setIsToolOpen, closeNav, closeSettings, closeStudy, closeHamburger, closeShare, closeTool } = useUIState();
   const { selectedVersesForStudy, setIsStudyOpen: setStudyOpen, openStudyPanel } = useStudyPanel();
   const { shareData, setIsShareOpen: setShareOpen, openShare } = useShare();
+  const [isBiblicalMenuOpen, setIsBiblicalMenuOpen] = useState(false);
 
   const availableVersions = useMemo(() => [
     { id: '1', name: 'Almeida Revista e Atualizada', abbreviation: 'ARA' }
@@ -363,7 +364,27 @@ function AppContent() {
           </AnimatePresence>
         </main>
 
-        <FloatingDock activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab as TabType)} />
+        <FloatingDock 
+          activeTab={activeTab} 
+          onTabChange={(tab) => {
+            if (tab === 'bible') {
+              setIsBiblicalMenuOpen(true);
+            } else {
+              setActiveTab(tab as TabType);
+            }
+          }} 
+        />
+        
+        <BiblicalMenu
+          isOpen={isBiblicalMenuOpen}
+          onClose={() => setIsBiblicalMenuOpen(false)}
+          currentBook={currentBook}
+          currentChapter={currentChapter}
+          onNavigate={(bookId, chapter) => {
+            const book = BIBLE_BOOKS.find(b => b.id === bookId);
+            if (book) handleSelect(book, chapter);
+          }}
+        />
       </div>
 
       <Navigation
