@@ -16,7 +16,8 @@ import { Navigation, ReaderWithAudio } from '../features/bible';
 import { StudyPanel, StudyToolsPanel } from '../features/study';
 import { SearchView } from '../features/search';
 import { VerseCardGenerator, ErrorBoundary } from '../components/common';
-import { FloatingDock, BiblicalMenu } from '../components/nav/FloatingDock';
+import { FloatingDock } from '../components/nav/FloatingDock';
+import { BiblicalMenu } from '../components/nav/BiblicalMenu';
 import { BIBLE_BOOKS } from '../data';
 import { Onboarding } from '../features/onboarding';
 import { Settings } from '../features/settings';
@@ -380,7 +381,7 @@ function AppContent() {
           onClose={() => setIsBiblicalMenuOpen(false)}
           currentBook={currentBook}
           currentChapter={currentChapter}
-          onNavigate={(bookId, chapter) => {
+          onNavigate={(bookId: string, chapter: number) => {
             const book = BIBLE_BOOKS.find(b => b.id === bookId);
             if (book) handleSelect(book, chapter);
           }}

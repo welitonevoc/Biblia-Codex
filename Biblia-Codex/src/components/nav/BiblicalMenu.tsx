@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Globe, BookMarked, ChevronDown, ChevronLeft, ChevronRight, Check, Book } from 'lucide-react';
+import { Globe, BookMarked, ChevronDown, ChevronLeft, ChevronRight, Check, Book as BookIcon } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { BIBLE_BOOKS } from '../../data/bibleMetadata';
@@ -215,7 +215,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
 
                   <div className="mt-1 flex items-center justify-between rounded-lg bg-[var(--surface-1)] px-3 py-2">
                     <span className="flex items-center gap-2 text-sm text-[var(--text-bible)]">
-                      <Book className="h-4 w-4 text-[var(--accent-bible)]" />
+                      <BookIcon className="h-4 w-4 text-[var(--accent-bible)]" />
                       {currentBook.name}
                     </span>
                     <div className="flex items-center gap-1">
