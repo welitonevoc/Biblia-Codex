@@ -139,7 +139,8 @@ const VerseItem = React.memo(({
                       {tag.name}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleRemoveTag(bookmark.id, tId); }}
-                        className="hidden group-hover/tag:inline-flex items-center justify-center ml-0.5 -mr-0.5 w-3 h-3 rounded-full hover:bg-black/10 align-middle"
+                        className="hidden group-hover/tag:inline-flex items-center justify-center ml-0.5 -mr-0.5 w-4 h-4 min-w-[16px] min-h-[16px] rounded-full hover:bg-black/10 align-middle cursor-pointer"
+                        aria-label="Remover tag"
                       >
                         <X className="w-2.5 h-2.5" />
                       </button>

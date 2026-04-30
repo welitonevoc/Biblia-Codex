@@ -13,11 +13,11 @@ const buttonVariants = {
 } as const
 
 const buttonSizes = {
-  default: "h-10 px-4 py-2 rounded-lg text-sm font-medium",
-  sm: "h-8 rounded-md px-3 text-xs font-medium",
-  lg: "h-12 rounded-lg px-8 text-base font-medium",
-  xl: "h-14 rounded-xl px-10 text-lg font-medium",
-  icon: "h-10 w-10 rounded-lg",
+  default: "min-h-11 px-4 py-2 rounded-lg text-sm font-medium",
+  sm: "min-h-8 rounded-md px-3 text-xs font-medium",
+  lg: "min-h-12 rounded-lg px-8 text-base font-medium",
+  xl: "min-h-14 rounded-xl px-10 text-lg font-medium",
+  icon: "min-h-11 min-w-11 rounded-lg",
 } as const
 
 export type ButtonVariant = keyof typeof buttonVariants
@@ -31,9 +31,9 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 const Button = React.memo(React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", ...props }, ref) => {
     return (
-      <button
+       <button
         className={cn(
-          "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-bible)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+          "inline-flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-bible)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
           buttonVariants[variant],
           buttonSizes[size],
           className
