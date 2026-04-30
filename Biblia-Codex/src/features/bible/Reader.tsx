@@ -294,12 +294,29 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
       return;
     }
     if (type === 'xrefs') {
-      setSelectedCommentaryVerse(v); // Reusing this generic "selected verse for tools" state
+      setSelectedCommentaryVerse(v);
       setIsXrefsOpen(true);
       return;
     }
     onToolOpen(v, type as any);
   }, [onToolOpen]);
+
+  const handleLinkClick = useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const anchor = target.closest('a');
+    if (!anchor) return;
+    e.preventDefault();
+    const href = anchor.getAttribute('href');
+    if (!href) return;
+    const refMatch = href.match(/#([A-Za-zÁ-ú]+)\s+(\d+):(\d+)/);
+    if (refMatch) {
+      const [, bookName, ch, vs] = refMatch;
+      const targetBook = BIBLE_BOOKS.find(b => b.name.toLowerCase().includes(bookName.toLowerCase()));
+      if (targetBook) {
+        onNavigate?.(targetBook.id, parseInt(ch), parseInt(vs));
+      }
+    }
+  }, [onNavigate]);
 
   useEffect(() => {
     let cancelled = false;
