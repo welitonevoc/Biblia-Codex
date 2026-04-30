@@ -74,10 +74,11 @@ function PageLoader() {
 }
 
 function AppContent() {
-  const { settings } = useAppContext();
+  const { settings, activeTab: contextActiveTab, setActiveTab: contextSetActiveTab } = useAppContext();
   const useAnimations = settings?.navigation?.navAnimation ?? true;
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabType>('bible');
+  const activeTab = contextActiveTab as TabType;
+  const setActiveTab = (tab: TabType | string) => contextSetActiveTab(tab);
   const [readingMode, setReadingMode] = useState<ReadingMode>('text');
   const [toolVerse, setToolVerse] = useState<Verse | null>(null);
   const [toolType, setToolType] = useState<ToolType>('commentary');

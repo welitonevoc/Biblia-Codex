@@ -59,7 +59,7 @@ export const SettingsDashboard: React.FC = () => {
   (window as any).AppContextSyncNow = syncNow;
 
   // Go back to main reader view
-  const handleClose = () => setActiveTab('reader');
+  const handleClose = () => setActiveTab('bible');
 
   // Render sub-section if active
   const handleBack = () => setActiveSubSection(null);
