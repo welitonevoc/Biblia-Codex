@@ -51,6 +51,7 @@ type TabType =
   | 'tts'
   | 'support'
   | 'dictionaries'
+  | 'encyclopedia'
   | 'commentary'
   | 'modules'
   | 'profile'
@@ -265,6 +266,16 @@ function AppContent() {
 
             {activeTab === 'commentary' && (
               <motion.div key="commentary" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
+                <Suspense fallback={<PageLoader />}>
+                  <div className="flex h-full items-center justify-center text-[var(--text-bible-muted)]">
+                    Coming soon...
+                  </div>
+                </Suspense>
+              </motion.div>
+            )}
+
+            {activeTab === 'encyclopedia' && (
+              <motion.div key="encyclopedia" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
                 <Suspense fallback={<PageLoader />}>
                   <div className="flex h-full items-center justify-center text-[var(--text-bible-muted)]">
                     Coming soon...
