@@ -376,14 +376,18 @@ function AppContent() {
           }} 
         />
         
-        <BiblicalMenu
+<BiblicalMenu
           isOpen={isBiblicalMenuOpen}
           onClose={() => setIsBiblicalMenuOpen(false)}
           currentBook={currentBook}
           currentChapter={currentChapter}
-          onNavigate={(bookId: string, chapter: number) => {
+          onNavigate={(bookId, chapter) => {
             const book = BIBLE_BOOKS.find(b => b.id === bookId);
             if (book) handleSelect(book, chapter);
+          }}
+          onGoToBible={() => {
+            setIsBiblicalMenuOpen(false);
+            setActiveTab('bible');
           }}
         />
       </div>

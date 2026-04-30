@@ -17,6 +17,7 @@ interface BiblicalMenuProps {
   currentBook: Book;
   currentChapter: number;
   onNavigate: (bookId: string, chapter: number) => void;
+  onGoToBible: () => void;
 }
 
 export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
@@ -25,6 +26,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
   currentBook,
   currentChapter,
   onNavigate,
+  onGoToBible,
 }) => {
   const { availableVersions, currentVersion, selectVersion } = useAppContext();
   const [showVersions, setShowVersions] = useState(false);
@@ -52,6 +54,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
 
   const handleBookSelect = (book: Book) => {
     onNavigate(book.id, 1);
+    onGoToBible();
     setShowBooks(false);
     onClose();
   };
