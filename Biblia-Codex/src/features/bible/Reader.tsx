@@ -9,7 +9,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import DOMPurify from 'dompurify';
 import {
   Bookmark, Share2, MessageSquare,
-  Sparkles, Library, Layers, X, Volume2, Trash2, Tag, Copy, GitCompare, Highlighter
+  Sparkles, Library, Layers, X, Volume2, Trash2, Tag, Copy, GitCompare, Highlighter,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { DictionaryBottomSheet } from '../study/DictionaryBottomSheet';
@@ -427,7 +428,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
       }}
     >
         <div 
-          className={cn("max-w-4xl mx-auto pb-28", settings.navigation.horizontalScroll && "min-w-full flex-shrink-0 snap-center")}
+          className={cn("max-w-4xl mx-auto pb-36", settings.navigation.horizontalScroll && "min-w-full flex-shrink-0 snap-center")}
           role="region" 
           aria-label={`Leitura de ${book.name} capítulo ${chapter}`}
           aria-live="polite"
@@ -476,6 +477,40 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
               );
             })}
           </motion.div>
+        )}
+
+        {!loading && verses.length > 0 && (
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-[var(--border-bible)]/50">
+            <button
+              onClick={() => onNavigate?.(book.id, Math.max(1, chapter - 1))}
+              disabled={chapter <= 1}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all',
+                'text-[var(--text-bible)] hover:bg-[var(--surface-1)]',
+                'disabled:opacity-30 disabled:cursor-not-allowed'
+              )}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Anterior</span>
+            </button>
+
+            <span className="text-sm font-semibold text-[var(--text-bible-muted)]">
+              {book.name} {chapter}
+            </span>
+
+            <button
+              onClick={() => onNavigate?.(book.id, Math.min(book.chapters, chapter + 1))}
+              disabled={chapter >= book.chapters}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all',
+                'text-[var(--text-bible)] hover:bg-[var(--surface-1)]',
+                'disabled:opacity-30 disabled:cursor-not-allowed'
+              )}
+            >
+              <span className="hidden sm:inline">Próximo</span>
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
         )}
       </div>
 
