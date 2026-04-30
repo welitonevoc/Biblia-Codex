@@ -55,9 +55,9 @@ export const BookJumpMenu: React.FC<BookJumpMenuProps> = ({
               }}
               disabled={currentChapter <= 1}
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-xl transition-colors',
-                'text-[var(--text-bible-muted)] hover:bg-[var(--surface-hover)]',
-                'disabled:opacity-30 disabled:cursor-not-allowed'
+                'flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200',
+                'text-[var(--text-bible)] hover:bg-[var(--surface-1)] hover:scale-105',
+                'disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100'
               )}
             >
               <ChevronLeft className="h-5 w-5" />
@@ -65,7 +65,7 @@ export const BookJumpMenu: React.FC<BookJumpMenuProps> = ({
 
             <button
               onClick={onClose}
-              className="flex min-w-[140px] items-center justify-center gap-2 rounded-xl px-3 py-2 transition-colors hover:bg-[var(--surface-hover)]"
+              className="flex min-w-[140px] items-center justify-center gap-2 rounded-xl px-3 py-2.5 transition-all duration-200 hover:bg-[var(--surface-1)] hover:scale-105"
             >
               <BookIcon className="h-4 w-4 shrink-0 text-[var(--accent-bible)]" />
               <span className="truncate text-sm font-medium text-[var(--text-bible)]">
@@ -83,9 +83,9 @@ export const BookJumpMenu: React.FC<BookJumpMenuProps> = ({
               }}
               disabled={currentChapter >= currentBook.chapters}
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-xl transition-colors',
-                'text-[var(--text-bible-muted)] hover:bg-[var(--surface-hover)]',
-                'disabled:opacity-30 disabled:cursor-not-allowed'
+                'flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200',
+                'text-[var(--text-bible)] hover:bg-[var(--surface-1)] hover:scale-105',
+                'disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100'
               )}
             >
               <ChevronRight className="h-5 w-5" />

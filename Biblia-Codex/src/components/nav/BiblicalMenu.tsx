@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Globe, BookMarked, ChevronDown, ChevronLeft, ChevronRight, Check, Book as BookIcon } from 'lucide-react';
+import { Globe, BookMarked, ChevronLeft, ChevronRight } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { BIBLE_BOOKS } from '../../data/bibleMetadata';
@@ -56,16 +56,24 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
 
   const handleBookSelect = (book: Book) => {
     setSelectedBook(book);
+    setShowChapters(true);
   };
 
-  const handleChapterSelect = (chapter: number) => {
-    if (selectedBook) {
-      onNavigate(selectedBook.id, chapter);
-      onGoToBible();
-      setSelectedBook(null);
-      setShowBooks(false);
-      onClose();
+  useEffect(() => {
+    if (isOpen && selectedBook) {
+      setShowChapters(true);
     }
+  }, [selectedBook]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentBook, currentChapter]);
+
+  const handleChapterSelect = (chapter: number) => {
+    onNavigate((selectedBook || currentBook).id, chapter);
+    onGoToBible();
+    setSelectedBook(null);
+    setShowChapters(false);
   };
 
   const handleChapterSelectFromMain = (chapter: number) => {
@@ -99,7 +107,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className="p-2"
+                  className="p-3"
                 >
                   <button
                     onClick={() => setShowVersions(false)}
@@ -118,14 +126,13 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                           onClose();
                         }}
                         className={cn(
-                          'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm',
-                          'text-[var(--text-bible)] hover:bg-[var(--surface-hover)]',
-                          'transition-colors duration-150'
+                          'flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm transition-all duration-200',
+                          'text-[var(--text-bible)] hover:bg-[var(--surface-1)] hover:scale-[1.02]'
                         )}
                       >
                         <span className="truncate">{version.name}</span>
                         {currentVersion?.id === version.id && (
-                          <Check className="h-4 w-4 shrink-0 text-[var(--accent-bible)]" />
+                          <span className="h-2 w-2 rounded-full bg-[var(--accent-bible)]" />
                         )}
                       </button>
                     ))}
@@ -137,7 +144,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className="p-2"
+                  className="p-3"
                 >
                   <button
                     onClick={() => setShowBooks(false)}
@@ -146,14 +153,14 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     <ChevronLeft className="h-4 w-4" />
                     Livros
                   </button>
-                  <div className="mb-2 flex gap-1">
+                  <div className="mb-2 flex gap-2">
                     <button
                       onClick={() => setSelectedTestament('OT')}
                       className={cn(
-                        'flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+                        'flex-1 rounded-xl py-2 text-xs font-medium transition-all duration-200',
                         selectedTestament === 'OT'
                           ? 'bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)]'
-                          : 'text-[var(--text-bible-muted)] hover:bg-[var(--surface-hover)]'
+                          : 'text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
                       )}
                     >
                       VT
@@ -161,24 +168,23 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     <button
                       onClick={() => setSelectedTestament('NT')}
                       className={cn(
-                        'flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+                        'flex-1 rounded-xl py-2 text-xs font-medium transition-all duration-200',
                         selectedTestament === 'NT'
                           ? 'bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)]'
-                          : 'text-[var(--text-bible-muted)] hover:bg-[var(--surface-hover)]'
+                          : 'text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
                       )}
                     >
                       NT
                     </button>
                   </div>
-                  <div className="max-h-40 space-y-1 overflow-y-auto">
+                  <div className="max-h-40 overflow-y-auto">
                     {books.map((book) => (
                       <button
                         key={book.id}
                         onClick={() => handleBookSelect(book)}
                         className={cn(
-                          'flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm',
-                          'text-[var(--text-bible)] hover:bg-[var(--surface-hover)]',
-                          'transition-colors duration-150'
+                          'flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm transition-all duration-200',
+                          'text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
                         )}
                       >
                         <span className="truncate">{book.name}</span>
@@ -193,21 +199,20 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="p-2"
+                  className="p-3"
                 >
                   <button
                     onClick={() => setShowVersions(true)}
                     className={cn(
-                      'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm',
-                      'text-[var(--text-bible)] hover:bg-[var(--surface-hover)]',
-                      'transition-colors duration-150'
+                      'flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm transition-all duration-200',
+                      'text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
                     )}
                   >
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-3">
                       <Globe className="h-4 w-4 text-[var(--accent-bible)]" />
                       Versão
                     </span>
-                    <span className="text-xs text-[var(--text-bible-muted)] truncate max-w-[120px]">
+                    <span className="text-xs text-[var(--text-bible-muted)] truncate max-w-[100px]">
                       {currentVersion?.name || 'Selecionar'}
                     </span>
                   </button>
@@ -215,34 +220,27 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                   <button
                     onClick={() => setShowBooks(true)}
                     className={cn(
-                      'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm',
-                      'text-[var(--text-bible)] hover:bg-[var(--surface-hover)]',
-                      'transition-colors duration-150'
+                      'flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm transition-all duration-200',
+                      'text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
                     )}
                   >
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-3">
                       <BookMarked className="h-4 w-4 text-[var(--accent-bible)]" />
                       Livro
                     </span>
-                    <span className="flex items-center gap-1 text-[var(--text-bible-muted)]">
-                      <ChevronRight className="h-3 w-3" />
-                    </span>
+                    <ChevronRight className="h-4 w-4 text-[var(--text-bible-muted)]" />
                   </button>
 
-                  <div className="mt-1 flex items-center justify-between rounded-lg bg-[var(--surface-1)] px-3 py-2">
-                    <button
-                      onClick={() => setShowBooks(true)}
-                      className="flex items-center gap-2 text-sm text-[var(--text-bible)]"
-                    >
-                      <BookIcon className="h-4 w-4 text-[var(--accent-bible)]" />
+                  <div className="mt-1 flex items-center justify-between rounded-xl bg-[var(--surface-1)] px-4 py-3">
+                    <span className="flex items-center gap-3 text-sm text-[var(--text-bible)]">
                       {currentBook.name}
-                    </button>
+                    </span>
                     <button
                       onClick={handleShowChapters}
-                      className="flex items-center gap-1 text-sm font-medium text-[var(--accent-bible)] hover:underline"
+                      className="flex items-center gap-2 text-sm font-bold text-[var(--accent-bible)]"
                     >
                       {currentChapter}
-                      <ChevronRight className="h-3 w-3" />
+                      <ChevronRight className="h-4 w-4" />
                     </button>
                   </div>
                 </motion.div>
@@ -250,15 +248,14 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
             </AnimatePresence>
           </div>
 
-          {/* Chapter Selector Popup */}
           {(selectedBook || showChapters) && (
             <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
-              className="absolute left-full top-0 ml-2 rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)]/95 backdrop-blur-md shadow-lg shadow-black/10 overflow-hidden"
+              className="absolute left-full top-0 ml-2 rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)]/95 backdrop-blur-md shadow-lg shadow-black/10"
             >
-              <div className="p-2">
+              <div className="p-3">
                 <button
                   onClick={() => {
                     setShowChapters(false);
@@ -269,21 +266,15 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                   <ChevronLeft className="h-4 w-4" />
                   {(selectedBook || currentBook).name}
                 </button>
-                <div className="max-h-48 grid grid-cols-5 gap-1 overflow-y-auto">
+                <div className="max-h-48 grid grid-cols-5 gap-2">
                   {Array.from({ length: (selectedBook || currentBook).chapters }, (_, i) => i + 1).map((chapter) => (
                     <button
                       key={chapter}
-                      onClick={() => {
-                        onNavigate((selectedBook || currentBook).id, chapter);
-                        onGoToBible();
-                        setShowChapters(false);
-                        setSelectedBook(null);
-                        onClose();
-                      }}
+                      onClick={() => handleChapterSelect(chapter)}
                       className={cn(
-                        'flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium',
-                        'text-[var(--text-bible)] hover:bg-[var(--surface-hover)]',
-                        'transition-colors duration-150'
+                        'flex h-10 w-10 items-center justify-center rounded-xl text-base font-medium',
+                        'text-[var(--text-bible)] hover:bg-[var(--surface-1)]',
+                        'transition-all duration-150 hover:scale-110'
                       )}
                     >
                       {chapter}
