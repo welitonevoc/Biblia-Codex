@@ -174,14 +174,30 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     className="p-4 space-y-3"
                   >
                     <div className="flex items-center justify-between mb-2 px-1">
-                      <span className="text-xs font-black uppercase tracking-[0.2em] text-[var(--accent-bible)]/70">Navegação</span>
-                      <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full"><X size={16}/></button>
-                    </div>
+                       <span className="text-xs font-black uppercase tracking-[0.2em] text-[var(--accent-bible)]/70">Navegação</span>
+                       <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full"><X size={16}/></button>
+                     </div>
 
-                    <button
-                      onClick={() => setView('versions')}
-                      className="group w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
-                    >
+                     <button
+                       onClick={() => setView('typography')}
+                       className="group w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+                     >
+                       <div className="flex items-center gap-4">
+                         <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-purple-400">
+                           <Type size={20} />
+                         </div>
+                         <div className="text-left">
+                           <p className="text-xs font-medium text-white/50">Aparência do Texto</p>
+                           <p className="text-sm font-bold">Aa</p>
+                         </div>
+                       </div>
+                       <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+                     </button>
+
+                     <button
+                       onClick={() => setView('versions')}
+                       className="group w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+                     >
                       <div className="flex items-center gap-4">
                         <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 text-blue-400">
                           <Globe size={20} />
