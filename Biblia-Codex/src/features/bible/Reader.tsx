@@ -238,10 +238,10 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   const [selectedCommentaryVerse, setSelectedCommentaryVerse] = useState<Verse | null>(null);
   const [isCommentaryOpen, setIsCommentaryOpen] = useState(false);
   const [isXrefsOpen, setIsXrefsOpen] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
   const { config, settings, currentVersion } = useAppContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  const lastFetchRef = useRef<string>('');
 
   const {
     selectedVerses,
@@ -292,10 +292,6 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
 
   useEffect(() => {
     let cancelled = false;
-    const fetchKey = `${book.id}-${chapter}-${currentVersion?.id}-${JSON.stringify(settings.textDisplay)}`;
-
-    if (lastFetchRef.current === fetchKey) return;
-    lastFetchRef.current = fetchKey;
 
     const fetchVerses = async () => {
       setLoading(true);
@@ -345,7 +341,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     };
     fetchVerses();
     return () => { cancelled = true; };
-  }, [book.id, chapter, currentVersion?.id, settings.textDisplay]);
+  }, [book.id, chapter, currentVersion?.id, settings.textDisplay, retryNonce]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -463,8 +459,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
             <p className="text-sm text-bible-text-muted mb-6">Verifique sua conexão ou tente outra versão.</p>
             <button
               onClick={() => {
-                lastFetchRef.current = '';
-                window.location.reload();
+                setRetryNonce((value) => value + 1);
               }}
               className="px-6 py-2 bg-bible-accent text-white rounded-xl font-bold uppercase tracking-wider text-xs shadow-lg shadow-bible-accent/30"
             >
