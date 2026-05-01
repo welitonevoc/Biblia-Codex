@@ -143,9 +143,9 @@ const AlphabetBar: React.FC<{
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    className="premium-card-strong rounded-2xl border border-[var(--border-bible)] p-3 shadow-lg"
+    className="premium-card-strong rounded-2xl border border-[var(--border-bible)] p-2 sm:p-3 shadow-lg"
   >
-    <div className="flex flex-wrap justify-center gap-1">
+    <div className="flex overflow-x-auto no-scrollbar sm:flex-wrap sm:justify-center gap-1 pb-1 sm:pb-0">
       {ALPHABET.map((letter) => {
         const isAvailable = availableLetters.has(letter);
         const isSelected = selectedLetter === letter;
@@ -154,9 +154,9 @@ const AlphabetBar: React.FC<{
             key={letter}
             onClick={() => isAvailable && onLetterClick(letter)}
             disabled={!isAvailable}
-            className={`w-9 h-9 rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center justify-center ${
+            className={`min-w-[36px] h-9 rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center justify-center flex-shrink-0 ${
               isSelected
-                ? 'bg-[var(--accent-bible)] text-white shadow-md shadow-[var(--accent-bible)]/30 scale-110'
+                ? 'bg-[var(--accent-bible)] text-white shadow-md shadow-[var(--accent-bible)]/30 scale-105 sm:scale-110'
                 : isAvailable
                   ? 'bg-[var(--surface-1)] text-[var(--text-bible)] hover:bg-[var(--accent-bible)]/15 hover:text-[var(--accent-bible)] active:scale-95'
                   : 'text-[var(--text-bible-subtle)]/30 cursor-not-allowed opacity-30'
@@ -172,7 +172,7 @@ const AlphabetBar: React.FC<{
       <div className="flex justify-center mt-2 pt-2 border-t border-[var(--border-bible)]/50">
         <button
           onClick={onClear}
-          className="text-xs text-[var(--accent-bible)] hover:underline cursor-pointer"
+          className="text-[10px] sm:text-xs text-[var(--accent-bible)] font-bold uppercase tracking-wider hover:underline cursor-pointer"
         >
           Limpar filtro de letra
         </button>
@@ -529,31 +529,31 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
 
   /* ── Main view ── */
   return (
-    <div className="h-full bg-bible-bg flex flex-col">
+    <div className="h-full bg-bible-bg flex flex-col overflow-hidden">
       {/* Header Area */}
-      <div className="max-w-4xl mx-auto w-full px-4 pt-6 space-y-6 flex-shrink-0">
+      <div className="max-w-4xl mx-auto w-full px-4 pt-4 sm:pt-6 space-y-4 sm:space-y-6 flex-shrink-0">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-3"
         >
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-[var(--accent-bible)] to-[var(--accent-bible-strong)] shadow-lg shadow-[var(--accent-bible)]/20">
-            <BookA className="w-6 h-6 text-white" />
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-gradient-to-br from-[var(--accent-bible)] to-[var(--accent-bible-strong)] shadow-lg shadow-[var(--accent-bible)]/20">
+            <BookA className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-bible)]">Enciclopédia Bíblica</h1>
-            <p className="text-sm text-[var(--text-bible-muted)]">
-              {stats.total.toLocaleString('pt-BR')} verbetes disponíveis
+            <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-bible)]">Enciclopédia</h1>
+            <p className="text-[11px] sm:text-sm text-[var(--text-bible-muted)]">
+              {stats.total.toLocaleString('pt-BR')} verbetes
             </p>
           </div>
         </motion.div>
 
         {/* Stats Chips */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex overflow-x-auto no-scrollbar gap-2 pb-1">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
+            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-[10px] sm:text-xs text-[var(--text-bible-muted)]"
           >
             <BookOpen className="w-3 h-3 text-[var(--accent-bible)]" />
             <span className="font-semibold text-[var(--accent-bible)]">{stats.merrill.toLocaleString('pt-BR')}</span> Merrill
@@ -561,7 +561,7 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
+            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-[10px] sm:text-xs text-[var(--text-bible-muted)]"
           >
             <Hash className="w-3 h-3 text-purple-400" />
             <span className="font-semibold text-purple-400">{stats.vine.toLocaleString('pt-BR')}</span> Vine
@@ -570,7 +570,7 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-[10px] sm:text-xs text-[var(--text-bible-muted)]"
             >
               <User className="w-3 h-3 text-blue-400" />
               <span className="font-semibold text-blue-400">{stats.quemQuem.toLocaleString('pt-BR')}</span> Quem é Quem
@@ -580,15 +580,15 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
 
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-bible-muted)] pointer-events-none z-10" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-[var(--text-bible-muted)] pointer-events-none z-10" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
-            placeholder="Buscar verbetes, temas, palavras originais..."
-            className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-[var(--surface-1)] border border-[var(--border-bible)] text-[var(--text-bible)] placeholder:text-[var(--text-bible-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bible)]/30 focus:border-[var(--accent-bible)] transition-all"
+            placeholder="Pesquisar verbetes..."
+            className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 rounded-2xl bg-[var(--surface-1)] border border-[var(--border-bible)] text-sm sm:text-base text-[var(--text-bible)] placeholder:text-[var(--text-bible-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bible)]/30 focus:border-[var(--accent-bible)] transition-all"
           />
           <AnimatePresence>
             {showSuggestions && suggestions.length > 0 && (

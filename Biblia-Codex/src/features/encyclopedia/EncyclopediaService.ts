@@ -25,6 +25,10 @@ function normalizeText(text: string): string {
 }
 
 async function decompressGzip(data: Uint8Array): Promise<ArrayBuffer> {
+  if (typeof DecompressionStream === 'undefined') {
+    console.error('DecompressionStream not supported');
+    throw new Error('Seu dispositivo não suporta descompressão nativa (DecompressionStream). Por favor, atualize o Android System WebView nas configurações do seu celular.');
+  }
   const ds = new DecompressionStream('gzip');
   const writer = ds.writable.getWriter();
   writer.write(data);
@@ -34,32 +38,48 @@ async function decompressGzip(data: Uint8Array): Promise<ArrayBuffer> {
 }
 
 async function loadNDJSON<T>(filename: string): Promise<T[]> {
+  const cleanName = filename.replace(/^\//, '');
+
   // Try multiple URL strategies for compatibility with both Capacitor and web deployments
   const urls = [
-    getDataUrl(filename),              // New bundled path
-    filename,                          // absolute: /file.json.gz
-    `.${filename}`,                    // relative: ./file.json.gz
-    `${import.meta.env.BASE_URL}${filename.replace(/^\//, '')}`, // base-aware
+    `/data/${cleanName}`,              // Absolute path from root
+    `./data/${cleanName}`,             // Relative path
+    `data/${cleanName}`,               // Bare path
+    getDataUrl(filename),              // Utility path
+    `${window.location.origin}/data/${cleanName}`, // Fully absolute
   ];
 
   let lastError: Error | null = null;
+  console.log(`Encyclopedia: Attempting to load ${cleanName}`);
 
   for (const url of urls) {
     try {
-      const response = await fetch(url);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
+
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
         lastError = new Error(`HTTP ${response.status} for ${url}`);
         continue;
       }
 
       const buffer = await response.arrayBuffer();
-      
+      console.log(`Encyclopedia: Loaded buffer from ${url}, size: ${buffer.byteLength}`);
+
+      if (buffer.byteLength === 0) {
+        lastError = new Error(`Empty file at ${url}`);
+        continue;
+      }
+
       // Check if it's actually gzip data (magic bytes: 0x1f 0x8b)
       const bytes = new Uint8Array(buffer);
       let text: string;
       
       if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
         // It's gzip - decompress
+        console.log(`Encyclopedia: Decompressing ${cleanName}...`);
         const decompressed = await decompressGzip(bytes);
         text = new TextDecoder().decode(decompressed);
       } else {
@@ -68,14 +88,28 @@ async function loadNDJSON<T>(filename: string): Promise<T[]> {
       }
 
       const lines = text.trim().split('\n').filter(l => l.trim());
-      return lines.map(line => JSON.parse(line) as T);
+      console.log(`Encyclopedia: Successfully parsed ${lines.length} lines from ${cleanName}`);
+      return lines.map(line => {
+        try {
+          return JSON.parse(line) as T;
+        } catch (e) {
+          console.error(`Error parsing line in ${cleanName}:`, line.substring(0, 100));
+          throw e;
+        }
+      });
     } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.warn(`Encyclopedia: Timeout loading ${url}`);
+        lastError = new Error(`Tempo esgotado ao carregar ${cleanName}`);
+      } else {
+        console.warn(`Encyclopedia: Failed to load from ${url}:`, err);
+        lastError = err instanceof Error ? err : new Error(String(err));
+      }
       continue;
     }
   }
 
-  throw new Error(`Failed to load ${filename}: ${lastError?.message || 'Unknown error'}`);
+  throw lastError || new Error(`Não foi possível carregar o arquivo ${cleanName}. Verifique sua conexão.`);
 }
 
 async function loadMerrill(): Promise<EncyclopediaEntry[]> {
