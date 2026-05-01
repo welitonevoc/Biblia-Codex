@@ -352,6 +352,15 @@ body::before {
   text-shadow: 0 0 12px rgba(248, 113, 113, 0.2);
 }
 
+.pure_dark .bible-text,
+.royal_majesty .bible-text,
+.midnight_navy .bible-text,
+.obsidian_gold .bible-text,
+.emerald_sanctum .bible-text,
+.crimson_vignette .bible-text {
+  color: var(--text-bible) !important;
+}
+
 /* ─────────────────────────────────────────────
    PARTICLES & GLOW (LIVE EFFECTS)
    ───────────────────────────────────────────── */

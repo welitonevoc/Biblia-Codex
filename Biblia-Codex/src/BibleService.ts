@@ -14,6 +14,7 @@ const isWeb = !Capacitor.isNativePlatform();
 
 // Performance Cache for Premium Experience
 let sqlInstance: Awaited<ReturnType<typeof initSqlJs>> | null = null;
+let sqlPromise: Promise<Awaited<ReturnType<typeof initSqlJs>>> | null = null;
 const dbCache = new Map<string, CachedDB>();
 
 // Simple LRU Cache for browser (5 min TTL, 100 entries max)
@@ -54,18 +55,42 @@ class SimpleLRU<K, V> {
 
 const queryCache = new SimpleLRU<string, Verse[]>(100, 5 * 60 * 1000);
 
-export const getSqlInstance = async () => {
-  if (!sqlInstance) {
-    // sqlWasmUrl é resolvido pelo Vite em build time (funciona com base: './')
-    console.log('[BibleService] Carregando WASM de:', sqlWasmUrl);
-    const response = await fetch(sqlWasmUrl);
-    if (!response.ok) {
-      throw new Error(`Falha ao carregar ${sqlWasmUrl}: ${response.status} ${response.statusText}`);
-    }
-    const wasmBinary = await response.arrayBuffer();
-    sqlInstance = await initSqlJs({ wasmBinary });
+const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 15000) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timer);
+    return response;
+  } catch (error) {
+    clearTimeout(timer);
+    throw error;
   }
-  return sqlInstance;
+};
+
+export const getSqlInstance = async () => {
+  if (sqlInstance) return sqlInstance;
+  if (sqlPromise) return sqlPromise;
+
+  sqlPromise = (async () => {
+    try {
+      console.log('[BibleService] Carregando WASM de:', sqlWasmUrl);
+      const response = await fetchWithTimeout(sqlWasmUrl);
+      if (!response.ok) {
+        throw new Error(`Falha ao carregar ${sqlWasmUrl}: ${response.status} ${response.statusText}`);
+      }
+      const wasmBinary = await response.arrayBuffer();
+      const instance = await initSqlJs({ wasmBinary });
+      sqlInstance = instance;
+      return instance;
+    } catch (error) {
+      console.error('[BibleService] Erro ao inicializar SQL.js:', error);
+      sqlPromise = null;
+      throw error;
+    }
+  })();
+
+  return sqlPromise;
 };
 
 const detectSchema = (db: unknown): SQLiteSchema | null => {
@@ -96,7 +121,7 @@ const readModuleBinaryFromPublic = async (modulePath: string): Promise<Uint8Arra
   const fileName = modulePath.split('/').pop() || modulePath;
   try {
     const url = getDataUrl(fileName);
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url);
     if (!response.ok) throw new Error(`HTTP ${response.status} ao buscar ${fileName}`);
 
     // Verificar se recebemos HTML em vez de binário (404 fallback)

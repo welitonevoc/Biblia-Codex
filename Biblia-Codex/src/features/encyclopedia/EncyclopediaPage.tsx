@@ -529,7 +529,7 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
 
   /* ── Main view ── */
   return (
-    <div className="h-full bg-bible-bg flex flex-col overflow-hidden">
+    <div className="h-full bg-bible-bg overflow-y-auto">
       {/* Header Area */}
       <div className="max-w-4xl mx-auto w-full px-4 pt-4 sm:pt-6 space-y-4 sm:space-y-6 flex-shrink-0">
         <motion.div
@@ -654,8 +654,8 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
 
       {/* Main List Area (Virtual) */}
       <div 
-        ref={parentRef}
-        className="flex-1 overflow-y-auto scrollbar-thin mt-6"
+        
+        className="mt-6"
       >
         <div className="max-w-4xl mx-auto px-4 w-full">
           <div className="flex items-center justify-between text-sm text-[var(--text-bible-muted)] mb-3">

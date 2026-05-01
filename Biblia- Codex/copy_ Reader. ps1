@@ -1,0 +1,7 @@
+$src = "C:\Users\Jose Menezes\Documents\Biblia- Codex\Biblia- Codex\src\features\bible\Reader_ orig. t sx"
+$dst = "C:\Users\Jose Menezes\Documents\Biblia- Codex\Biblia- Codex\src\features\bible\Reader. t sx"
+if (Test- Path $src) {
+  $c = [System. IO. File]::ReadAllText($src)
+  [System. IO. File]::WriteAllText($dst, $c)
+  Write-Output "Size: $($c. Length)"
+} else { Write-Output "Source not found at: $src" }

@@ -1,0 +1,2 @@
+Copy-Item "src/features/bible/Reader_orig. t sx" "src/features/bible/Reader_ t sx"
+(Get-Item "src/features/bible/Reader_ t sx"). Length

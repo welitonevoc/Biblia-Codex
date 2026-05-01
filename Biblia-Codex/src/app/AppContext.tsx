@@ -359,7 +359,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const setFontPreference = useCallback((fontPreference: FontPreference) => setConfig((prev: ThemeConfig) => ({ ...prev, fontPreference })), []);
 
   const updateSettings = useCallback((newSettings: Partial<AppSettings>) => {
-    setSettings((prev: AppSettings) => ({ ...prev, ...newSettings }));
+    setSettings((prev: AppSettings) => {
+      // Deep compare could be expensive, but let's at least check if anything really changed
+      // for the top level keys provided.
+      let changed = false;
+      for (const key in newSettings) {
+        if (JSON.stringify((prev as any)[key]) !== JSON.stringify((newSettings as any)[key])) {
+          changed = true;
+          break;
+        }
+      }
+      if (!changed) return prev;
+      return { ...prev, ...newSettings };
+    });
   }, []);
 
   const toggleSetting = useCallback(<T extends keyof AppSettings>(section: T, key: keyof AppSettings[T]) => {
@@ -547,12 +559,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const savedPath = settings.studyTools.selectedStrongsDictionary;
       if (savedPath && savedPath !== 'ai') {
         const found = availableDictionaries.find(d => d.path === savedPath || d.path.endsWith(savedPath));
-        if (found) {
+        if (found && selectedDictionaryModule?.path !== found.path) {
           setSelectedDictionaryModule(found);
         }
       }
     }
-  }, [availableDictionaries, settings.studyTools.selectedStrongsDictionary]);
+  }, [availableDictionaries, settings.studyTools.selectedStrongsDictionary, selectedDictionaryModule?.path]);
 
   const searchDictionary = useCallback(async (term: string) => {
     return dictionaryService.getEntries(term, selectedDictionaryModule);

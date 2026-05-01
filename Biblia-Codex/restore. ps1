@@ -1,0 +1,1 @@
+git show HEAD:src/features/bible/Reader. t sx > "src/features/bible/Reader. bak.tsx"

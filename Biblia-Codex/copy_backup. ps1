@@ -1,0 +1,10 @@
+$src = "$PWD\src\featu" + "res\ Bible\Reader_ orig.tsx"
+$dst = "$PWD\src\featu" + "res\Bible\Reader. t sx"
+if (Test-Path $src) {
+  $content = [System.IO.File]::ReadAllText($src)
+  [System.IO.File]::WriteAllText($dst, $content)
+  Write-Output "Size: $($content.Length)"
+} else {
+  Write-Output "NOT FOUND: $src"
+  Get-ChildItem "src/featu" + "res\ Bible" | Format-Table Name, Length
+}

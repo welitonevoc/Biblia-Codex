@@ -1,0 +1,1 @@
+git show HEAD:src/features/bible/Reader. t sx | Out-File -FilePath "src/featu" + "res/ Bible/Reader. bak. t sx" -Encoding utf8
