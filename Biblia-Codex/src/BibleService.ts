@@ -55,7 +55,7 @@ const queryCache = new SimpleLRU<string, Verse[]>(100, 5 * 60 * 1000);
 export const getSqlInstance = async () => {
   if (!sqlInstance) {
     sqlInstance = await initSqlJs({
-      locateFile: () => `/sql-wasm.wasm`
+      locateFile: () => `./sql-wasm.wasm`
     });
   }
   return sqlInstance;

@@ -38,7 +38,7 @@ const PREFERRED_PT_BR_VOICE_NAMES = [
 
 class TTSService {
   private static instance: TTSService;
-  private synth: SpeechSynthesis;
+  private synth: SpeechSynthesis | null = null;
   private voices: SpeechSynthesisVoice[] = [];
   private currentUtterance: SpeechSynthesisUtterance | null = null;
   private isInitialized = false;
@@ -51,15 +51,19 @@ class TTSService {
   private currentWordIndex = 0;
 
   private cancelCurrentUtterance() {
-    this.synth.cancel();
+    if (this.synth) {
+      this.synth.cancel();
+    }
     this.currentUtterance = null;
   }
 
   private constructor() {
-    this.synth = window.speechSynthesis;
-    this.loadVoices();
-    if (typeof window !== 'undefined') {
-      speechSynthesis.onvoiceschanged = () => this.loadVoices();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      this.synth = window.speechSynthesis;
+      this.loadVoices();
+      this.synth.onvoiceschanged = () => this.loadVoices();
+    } else {
+      console.warn('[TTS] SpeechSynthesis não disponível neste ambiente');
     }
   }
 
@@ -71,16 +75,18 @@ class TTSService {
   }
 
   private loadVoices() {
-    this.voices = this.synth.getVoices();
-    this.isInitialized = this.voices.length > 0;
-    console.log('[TTS] Vozes carregadas:', this.voices.length);
-    if (this.voices.length > 0) {
-      const voiceNames = this.voices.map(v => `${v.name} (${v.lang})`);
-      console.log('[TTS] Lista de vozes:', voiceNames);
+    if (!this.synth) return;
+    try {
+      this.voices = this.synth.getVoices();
+      this.isInitialized = this.voices.length > 0;
+      console.log('[TTS] Vozes carregadas:', this.voices.length);
+    } catch (e) {
+      console.error('[TTS] Erro ao carregar vozes:', e);
     }
   }
 
   getVoices(): TTSVoice[] {
+    if (!this.voices) return [];
     const ptBRVoices = this.voices.filter(v => v.lang.startsWith('pt'));
     const enVoices = this.voices.filter(v => v.lang.startsWith('en'));
     
@@ -91,6 +97,7 @@ class TTSService {
   }
 
   getDefaultPortugueseVoice(): SpeechSynthesisVoice | null {
+    if (!this.voices) return null;
     const preferredByName = this.voices.find(v =>
       PREFERRED_PT_BR_VOICE_NAMES.some(name =>
         v.name.toLowerCase().includes(name.toLowerCase())
@@ -197,6 +204,12 @@ class TTSService {
    */
   speakSingleVerse(text: string, options: TTSOptions = {}): Promise<void> {
     return new Promise((resolve, reject) => {
+      if (!this.synth) {
+        console.warn('[TTS] SpeechSynthesis não disponível');
+        resolve();
+        return;
+      }
+
       this.cancelCurrentUtterance();
 
       const utterance = new SpeechSynthesisUtterance(text);

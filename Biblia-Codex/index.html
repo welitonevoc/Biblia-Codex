@@ -64,8 +64,24 @@
 
 <body>
   <div id="root"></div>
-  <script type="module" src="/src/app/main.tsx"></script>
-  <script src="/app.js"></script>
+  <script>
+    window.onerror = function(msg, url, lineNo, columnNo, error) {
+      var message = [
+        'Message: ' + msg,
+        'URL: ' + url,
+        'Line: ' + lineNo,
+        'Column: ' + columnNo,
+        'Error object: ' + JSON.stringify(error)
+      ].join(' - ');
+      alert("JavaScript Error: " + message);
+      return false;
+    };
+    window.onunhandledrejection = function(event) {
+      alert("Unhandled Promise Rejection: " + event.reason);
+    };
+  </script>
+  <script type="module" src="src/app/main.tsx"></script>
+  <script src="app.js"></script>
 </body>
 
 </html>

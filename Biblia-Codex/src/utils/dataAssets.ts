@@ -12,5 +12,5 @@ export function getDataUrl(filename: string): string {
   const cleanName = filename.split('/').pop() || filename;
   
   // Return the path to the data folder in public
-  return `/data/${cleanName}`;
+  return `./data/${cleanName}`;
 }
