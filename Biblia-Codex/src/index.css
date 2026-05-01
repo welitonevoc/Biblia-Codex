@@ -330,9 +330,10 @@ body::before {
   line-height: var(--font-bible-line-height);
   letter-spacing: var(--font-bible-letter-spacing);
   color: var(--text-bible);
-  width: 100%;
-  word-break: break-word;
+  width: auto;
+  word-break: normal;
   overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .words-of-jesus {
@@ -376,10 +377,10 @@ body::before {
    ───────────────────────────────────────────── */
 html, body {
   height: 100%;
-  overflow-x: hidden;
   background-color: var(--bg-bible);
-  width: 100vw;
+  width: 100%;
   position: relative;
+  overflow: hidden;
 }
 
 body {
@@ -389,16 +390,16 @@ body {
 
 #root { height: 100%; }
 
-::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(var(--accent-bible-rgb), 0.1);
+  background: rgba(var(--accent-bible-rgb), 0.25);
   border-radius: 10px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--accent-bible-rgb), 0.3);
+  background: rgba(var(--accent-bible-rgb), 0.45);
 }
 
 .no-scrollbar::-webkit-scrollbar {

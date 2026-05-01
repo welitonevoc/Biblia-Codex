@@ -76,10 +76,10 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Reprodutor de áudio */}
       {(readingMode === 'audio' || readingMode === 'both') && (
-        <div className="space-y-3">
+        <div className="shrink-0">
           <AudioPlayer
             track={{
               id: `${book.id}-${chapter}`,
@@ -96,23 +96,22 @@ export const ReaderWithAudio: React.FC<ReaderWithAudioProps> = ({
         </div>
       )}
 
-      {/* Mensagem de erro de áudio */}
-      {/* Removida temporariamente ou pode ser integrada ao player no futuro */}
-
       {/* Leitor de texto */}
       {(readingMode === 'text' || readingMode === 'both') && (
-        <Reader
-          book={book}
-          chapter={chapter}
-          targetVerse={targetVerse}
-          onTargetVerseReached={onTargetVerseReached}
-          onVerseSelect={onVerseSelect}
-          onNavigate={onNavigate}
-          onStudyOpen={onStudyOpen}
-          onToolOpen={onToolOpen}
-          onShare={onShare}
-          onBottomChange={onBottomChange}
-        />
+        <div className="flex-1 min-h-0">
+          <Reader
+            book={book}
+            chapter={chapter}
+            targetVerse={targetVerse}
+            onTargetVerseReached={onTargetVerseReached}
+            onVerseSelect={onVerseSelect}
+            onNavigate={onNavigate}
+            onStudyOpen={onStudyOpen}
+            onToolOpen={onToolOpen}
+            onShare={onShare}
+            onBottomChange={onBottomChange}
+          />
+        </div>
       )}
 
       {/* Mensagem quando apenas áudio está ativo */}

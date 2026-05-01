@@ -537,19 +537,14 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     const container = containerRef.current;
     if (!container) return;
 
-    const scrollToTop = () => {
+    container.scrollTop = 0;
+
+    // Pequeno delay para garantir que o scroll ocorra após a renderização
+    const raf = requestAnimationFrame(() => {
       container.scrollTop = 0;
-    };
-
-    scrollToTop();
-
-    const observer = new MutationObserver(scrollToTop);
-    observer.observe(container, { childList: true, subtree: true });
-
-    const raf = requestAnimationFrame(scrollToTop);
+    });
 
     return () => {
-      observer.disconnect();
       cancelAnimationFrame(raf);
     };
   }, [book.id, chapter]);
@@ -647,14 +642,14 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
       onClick={handleLinkClickOrig}
       className={cn(
         "h-full overflow-y-auto",
-        settings.navigation.horizontalScroll && "flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory"
+        settings.navigation.horizontalScroll && "flex overflow-x-auto snap-x snap-mandatory"
       )}
       style={{
         backgroundColor: 'var(--bg-bible)',
         color: 'var(--text-bible)',
         letterSpacing: `${config.letterSpacing}em`,
-        paddingLeft: !settings.navigation.horizontalScroll ? `clamp(12px, 5vw, ${config.horizontalMargin}px)` : undefined,
-        paddingRight: !settings.navigation.horizontalScroll ? `clamp(12px, 5vw, ${config.horizontalMargin}px)` : undefined,
+        paddingLeft: !settings.navigation.horizontalScroll ? `clamp(16px, 6vw, ${config.horizontalMargin}px)` : undefined,
+        paddingRight: !settings.navigation.horizontalScroll ? `clamp(16px, 6vw, ${config.horizontalMargin}px)` : undefined,
       }}
     >
         <div 
