@@ -10,9 +10,32 @@ import DOMPurify from 'dompurify';
 import {
   Bookmark, Share2, MessageSquare,
   Sparkles, Library, Layers, X, Volume2, Trash2, Tag, Copy, GitCompare, Highlighter,
-  ChevronLeft, ChevronRight, Users, MapPin, FileText,
+  ChevronLeft, ChevronRight, Users, MapPin, FileText, BookOpen
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+
+const ActionButton = ({ icon: Icon, label, onClick, active, danger, highlight }: any) => (
+  <button 
+    onClick={onClick}
+    className={cn(
+      "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all duration-300 min-w-[56px]",
+      active ? "bg-bible-accent text-white shadow-lg shadow-bible-accent/30 scale-105" : "hover:bg-bible-surface-strong text-bible-text-muted",
+      danger && "hover:text-red-500 hover:bg-red-500/10",
+      highlight && !active && "text-bible-accent bg-bible-accent/10 hover:bg-bible-accent/20"
+    )}
+  >
+    <Icon className={cn("w-5 h-5", active ? "stroke-[2.5px]" : "stroke-[1.8px]")} />
+    <span className="text-[9px] font-bold uppercase tracking-tighter">{label}</span>
+  </button>
+);
+
+const Plus = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+);
+
 import { DictionaryBottomSheet } from '../study/DictionaryBottomSheet';
 import { useReaderSelection } from '../../hooks/useReaderSelection';
 import { useReaderTTS } from '../../hooks/useReaderTTS';
@@ -651,94 +674,153 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
         )}
       </div>
 
-<AnimatePresence>
+      <AnimatePresence>
         {selectedVerses.length > 0 && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-transparent z-40" onClick={() => {}} />
-            <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }} className="fixed left-1/2 z-50 w-[min(calc(100vw-1.5rem),32rem)] -translate-x-1/2 bottom-6">
-              <div className="glass-panel px-4 py-4 shadow-2xl sm:px-6 sm:py-5 rounded-3xl">
-                <div className="flex items-start justify-between mb-3">
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 40, scale: 0.95 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed left-1/2 -translate-x-1/2 bottom-8 z-[100] w-[min(calc(100vw-2rem),40rem)]"
+          >
+            <div className="bg-bible-surface/95 backdrop-blur-2xl p-3 shadow-2xl rounded-[2.5rem] border border-bible-border/50">
+              {/* Header Info */}
+              <div className="px-4 py-2 flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-bible-accent/10 flex items-center justify-center">
+                    <BookOpen className="w-4 h-4 text-bible-accent" />
+                  </div>
                   <div>
-                    <div className="text-xs text-bible-text-muted font-semibold">Versículos Selecionados:</div>
-                    <div className="text-lg font-extrabold text-bible-text mt-0.5">{selectedReference}</div>
-                  </div>
-                  <button onClick={() => setSelectedVerses([])} className="p-2 bg-bible-surface rounded-full hover:bg-bible-surface-strong transition-colors"><X className="w-4 h-4" /></button>
-                </div>
-
-                <div className="divide-y divide-bible-border/50 border-y border-bible-border/50">
-                  <div className="py-3 flex items-center justify-between gap-3">
-                    <button onClick={() => setShowColorPicker(!showColorPicker)} className="flex items-center gap-3 text-bible-text hover:text-bible-accent transition-colors">
-                      <Highlighter className="w-5 h-5" />
-                      <span className="font-bold text-xl">Destaque</span>
-                    </button>
-                    <div className="flex items-center gap-2">
-                      {['#fef08a', '#bbf7d0', '#67e8f9', '#fdba74', '#f9a8d4'].map(c => (
-                        <button key={c} onClick={() => handleBookmark(c)} className="w-8 h-8 rounded-full border border-white/60 shadow-sm" style={{ backgroundColor: c }} />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="py-3">
-                    <button onClick={handleCopySelected} className="w-full flex items-center gap-3 text-bible-text hover:text-bible-accent transition-colors">
-                      <Copy className="w-5 h-5" />
-                      <span className="font-bold text-xl">Copiar</span>
-                    </button>
-                  </div>
-
-<div className="py-3">
-                    <button onClick={handleStudy} className="w-full flex items-center gap-3 text-bible-text hover:text-bible-accent transition-colors">
-                      <GitCompare className="w-5 h-5" />
-                      <span className="font-bold text-xl">Análise Teológica Codex</span>
-                    </button>
-                  </div>
-
-                  <div className="py-3">
-                    <button
-                      onClick={() => onShare(
-                        selectedVerseData.map((v) => ({ verse: v.verse, text: v.text })),
-                        selectedReference
-                      )}
-                      className="w-full flex items-center gap-3 text-bible-text hover:text-bible-accent transition-colors"
-                    >
-                      <Share2 className="w-5 h-5" />
-                      <span className="font-bold text-xl">Compartilhar</span>
-                    </button>
+                    <div className="text-[10px] text-bible-text-muted font-bold uppercase tracking-widest">Selecionados</div>
+                    <div className="text-sm font-extrabold text-bible-text leading-tight">{selectedReference}</div>
                   </div>
                 </div>
-
-                <div className="pt-3 flex items-center justify-between">
-                  <button onClick={() => setShowTagEditor(!showTagEditor)} className="flex items-center gap-2 text-xs font-semibold text-bible-text-muted hover:text-bible-text">
-                    <Tag className="w-4 h-4" /> Etiquetas
-                  </button>
-                  {isTTSSupported && (
-                    <button onClick={() => toggleTTS(selectedVerses)} className="flex items-center gap-2 text-xs font-semibold text-bible-text-muted hover:text-bible-text">
-                      <Volume2 className={cn("w-4 h-4", isSpeakingTTS && "animate-pulse")} />
-                      {isSpeakingTTS ? 'Parar leitura' : 'Ouvir seleção'}
-                    </button>
-                  )}
-                  <button onClick={handleDeleteBookmarks} className="flex items-center gap-2 text-xs font-semibold text-red-500 hover:text-red-600">
-                    <Trash2 className="w-4 h-4" /> Remover
-                  </button>
-                </div>
-                {showColorPicker && (
-                  <div className="flex justify-center gap-2 mt-4 p-2 glass-panel">
-                    {['#fef08a', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fbcfe8'].map(c => (
-                      <button key={c} onClick={() => handleBookmark(c)} className="w-8 h-8 rounded-full border-2 border-white shadow-md" style={{ backgroundColor: c }} />
-                    ))}
-                    <button onClick={() => handleBookmark(null)} className="w-8 h-8 rounded-full border-2 border-bible-border flex items-center justify-center"><X className="w-4 h-4" /></button>
-                  </div>
-                )}
-                {showTagEditor && (
-                  <div className="mt-4 p-2">
-                    <input type="text" value={currentTags} onChange={(e) => setCurrentTags(e.target.value)} placeholder="Etiquetas..." className="w-full p-2 rounded-lg border border-bible-border bg-bible-surface text-xs focus:ring-2 focus:ring-bible-accent outline-none" />
-                    <div className="flex gap-2 mt-2">
-                      <button onClick={handleSaveTags} className="flex-1 p-2 bg-bible-accent text-white text-xs font-bold rounded-lg">Salvar</button>
-                    </div>
-                  </div>
-                )}
+                <button 
+                  onClick={() => setSelectedVerses([])}
+                  className="p-2 hover:bg-bible-surface-strong rounded-full transition-colors text-bible-text-muted"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-            </motion.div>
-          </>
+
+              {/* Action Bar */}
+              <div className="flex items-center justify-around gap-1 p-1 bg-bible-surface/50 rounded-2xl border border-bible-border/30">
+                <ActionButton 
+                  icon={Highlighter} 
+                  label="Marcar" 
+                  onClick={() => setShowColorPicker(!showColorPicker)} 
+                  active={showColorPicker}
+                />
+                <ActionButton 
+                  icon={Copy} 
+                  label="Copiar" 
+                  onClick={handleCopySelected} 
+                />
+                <ActionButton 
+                  icon={Sparkles} 
+                  label="Codex" 
+                  onClick={handleStudy} 
+                  highlight
+                />
+                <ActionButton 
+                  icon={Share2} 
+                  label="Enviar" 
+                  onClick={() => onShare(selectedVerseData.map(v => ({ verse: v.verse, text: v.text })), selectedReference)} 
+                />
+                <ActionButton 
+                  icon={Tag} 
+                  label="Etiquetas" 
+                  onClick={() => setShowTagEditor(!showTagEditor)} 
+                  active={showTagEditor}
+                />
+                {isTTSSupported && (
+                  <ActionButton 
+                    icon={Volume2} 
+                    label="Ouvir" 
+                    onClick={() => toggleTTS(selectedVerses)}
+                    active={isSpeakingTTS}
+                  />
+                )}
+                <ActionButton 
+                  icon={Trash2} 
+                  label="Limpar" 
+                  onClick={handleDeleteBookmarks} 
+                  danger
+                />
+              </div>
+
+              {/* Expanded Pickers */}
+              <AnimatePresence>
+                {showColorPicker && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-4 px-2 pb-2">
+                      <div className="flex flex-wrap justify-center gap-2.5 p-3 rounded-2xl bg-bible-surface/30 border border-bible-border/20">
+                        {['#fef08a', '#bbf7d0', '#bfdbfe', '#fbcfe8', '#e9d5ff', '#fed7aa', '#99f6e4', '#e2e8f0'].map(c => (
+                          <motion.button 
+                            key={c} 
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleBookmark(c)} 
+                            className="w-9 h-9 rounded-full border-2 border-white shadow-sm transition-transform" 
+                            style={{ backgroundColor: c }} 
+                          />
+                        ))}
+                        <div className="w-px h-8 bg-bible-border/30 mx-1" />
+                        <label className="w-9 h-9 rounded-full border-2 border-dashed border-bible-border flex items-center justify-center cursor-pointer hover:bg-bible-surface transition-colors relative">
+                          <Plus className="w-4 h-4 text-bible-text-muted" />
+                          <input 
+                            type="color" 
+                            className="absolute inset-0 opacity-0 cursor-pointer" 
+                            onChange={(e) => handleBookmark(e.target.value)}
+                          />
+                        </label>
+                        <button 
+                          onClick={() => handleBookmark(null)} 
+                          className="w-9 h-9 rounded-full border-2 border-bible-border flex items-center justify-center hover:bg-red-500/10 hover:border-red-500/30 transition-all group"
+                        >
+                          <X className="w-4 h-4 text-bible-text-muted group-hover:text-red-500" />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {showTagEditor && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-4 px-2 pb-2">
+                      <div className="p-3 rounded-2xl bg-bible-surface/30 border border-bible-border/20 space-y-3">
+                        <input 
+                          type="text" 
+                          value={currentTags} 
+                          onChange={(e) => setCurrentTags(e.target.value)} 
+                          placeholder="Digite etiquetas separadas por vírgula..." 
+                          className="w-full h-11 px-4 rounded-xl border border-bible-border bg-bible-surface text-sm focus:ring-2 focus:ring-bible-accent outline-none placeholder:text-bible-text-muted/50" 
+                        />
+                        <button 
+                          onClick={handleSaveTags} 
+                          className="w-full h-11 bg-bible-accent text-white text-sm font-bold rounded-xl shadow-lg shadow-bible-accent/20 active:scale-[0.98] transition-transform"
+                        >
+                          Salvar Etiquetas
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 

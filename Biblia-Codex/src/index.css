@@ -241,6 +241,13 @@ body::before {
 /* ─────────────────────────────────────────────
    VITAL COMPONENTS
    ───────────────────────────────────────────── */
+.glass-panel {
+  background: rgba(var(--surface-rgb), 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(var(--accent-bible-rgb), 0.1);
+  box-shadow: var(--shadow-md);
+}
+
 .premium-card {
   background: var(--surface-1);
   box-shadow: var(--shadow-sm);
