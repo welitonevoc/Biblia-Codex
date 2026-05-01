@@ -172,7 +172,7 @@ function AppContent() {
           {/* Navigation via FloatingDock */}
 
         <main id="main-content" className={cn('flex-1 overflow-hidden relative')}>
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="sync">
             {activeTab === 'profile' && (
               <motion.div
                 key="profile"
