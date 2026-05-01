@@ -6,7 +6,7 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!.*\\.(?:json\\.gz|gz|db|wasm|mybible|zip|sqlite3|svg|js|css|png|jpg|jpeg|gif|ico|txt|html|webp|woff|woff2|ttf|eot)$).*)",
       "destination": "/index.html"
     }
   ],
@@ -17,6 +17,19 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.json\\.gz",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/gzip"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
         }
       ]
     }

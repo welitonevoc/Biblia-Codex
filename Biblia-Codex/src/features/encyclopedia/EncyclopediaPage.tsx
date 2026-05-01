@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, BookOpen, Loader, BookA, Languages, Hash, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Search, BookOpen, Loader, BookA, Languages, Hash, ChevronRight, ChevronLeft, Library, RefreshCw, AlertCircle, Type } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import {
   loadEncyclopediaEntries,
   searchEntries,
   getEntriesByCategory,
+  getEntriesByLetter,
+  getAvailableLetters,
   getEntryById,
   getStats,
   getCategories,
@@ -13,20 +15,56 @@ import {
 } from './EncyclopediaService';
 import type { EncyclopediaEntry } from '../../types';
 
-function cnFallback(...classes: (string | boolean | undefined | null)[]) {
-  return classes.filter(Boolean).join(' ');
-}
+/* ── helpers ────────────────────────────────────────────── */
 
 function renderMarkdown(text: string): string {
   return text
-    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-[var(--text-bible)] mt-4 mb-2">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-[var(--text-bible)] mt-5 mb-3">$1</h2>')
-    .replace(/^---$/gm, '<hr class="border-[var(--border-bible)] my-4" />')
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-    .replace(/\[HEB:(.+?)\]/g, '<span class="font-semibold text-[var(--accent-bible)]" dir="rtl">$1</span>')
-    .replace(/→/g, '<span class="text-[var(--accent-bible)]">→</span>')
+    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-[var(--text-bible)] mt-6 mb-2">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-[var(--text-bible)] mt-7 mb-3">$1</h2>')
+    .replace(/^---$/gm, '<hr class="border-[var(--border-bible)] my-5 opacity-40" />')
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-[var(--text-bible)]">$1</strong>')
+    .replace(/\[HEB:(.+?)\]/g, '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 font-semibold text-base" dir="rtl">$1</span>')
+    .replace(/\b([HG]\d{1,5})\b/g, '<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-[var(--accent-bible)]/10 text-[var(--accent-bible)] text-xs font-mono font-medium">$1</span>')
+    .replace(/→/g, '<span class="text-[var(--accent-bible)] mx-0.5">→</span>')
+    .replace(/\n\n/g, '</p><p class="mb-3 leading-relaxed">')
     .replace(/\n/g, '<br />');
 }
+
+/** Maps category iconId → Lucide component */
+function CategoryIcon({ iconId, className }: { iconId: string; className?: string }) {
+  switch (iconId) {
+    case 'library': return <Library className={className} />;
+    case 'book-open': return <BookOpen className={className} />;
+    case 'hebrew': return <Type className={className} />;
+    case 'greek': return <Languages className={className} />;
+    default: return <BookA className={className} />;
+  }
+}
+
+/** Language badge with Lucide icon instead of emoji flag */
+function LanguageBadge({ language }: { language?: string }) {
+  if (!language) return null;
+  const isHebrew = language === 'hebrew';
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs ${isHebrew ? 'text-amber-400' : 'text-emerald-400'}`}>
+      {isHebrew ? <Type className="w-3 h-3" /> : <Languages className="w-3 h-3" />}
+      {isHebrew ? 'Hebraico' : 'Grego'}
+    </span>
+  );
+}
+
+/** Source badge */
+function SourceBadge({ source, size = 'sm' }: { source: string; size?: 'sm' | 'xs' }) {
+  const isMerrill = source === 'merrill';
+  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-1.5 py-0.5 text-[10px]';
+  return (
+    <span className={`${sizeClasses} rounded-full font-medium ${isMerrill ? 'bg-[var(--accent-bible)]/10 text-[var(--accent-bible)]' : 'bg-purple-500/10 text-purple-400'}`}>
+      {isMerrill ? 'Merrill' : 'Vine'}
+    </span>
+  );
+}
+
+/* ── Detail View ───────────────────────────────────────── */
 
 interface EncyclopediaDetailViewProps {
   entry: EncyclopediaEntry;
@@ -44,11 +82,12 @@ const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, 
       transition={{ type: 'spring', damping: 28, stiffness: 260 }}
       className="h-full bg-[var(--bg-bible)] overflow-y-auto scrollbar-thin"
     >
+      {/* Sticky Header */}
       <div className="sticky top-0 z-10 backdrop-blur-xl bg-[var(--bg-bible)]/80 border-b border-[var(--border-bible)]">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-2 rounded-xl hover:bg-[var(--surface-hover)] transition-colors"
+            className="p-2.5 rounded-xl hover:bg-[var(--surface-hover)] transition-colors cursor-pointer active:scale-95"
             aria-label="Voltar"
           >
             <ChevronLeft className="w-5 h-5 text-[var(--text-bible)]" />
@@ -56,23 +95,14 @@ const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, 
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold text-[var(--text-bible)] truncate">{entry.word}</h1>
             <div className="flex items-center gap-2 text-xs text-[var(--text-bible-muted)]">
-              <span className={cnFallback(
-                'px-2 py-0.5 rounded-full font-medium',
-                entry.source === 'merrill' ? 'bg-[var(--accent-bible)]/10 text-[var(--accent-bible)]' : 'bg-purple-500/10 text-purple-400'
-              )}>
-                {entry.source === 'merrill' ? 'Merrill' : 'Vine'}
-              </span>
-              {entry.language && (
-                <span className="flex items-center gap-1">
-                  <Languages className="w-3 h-3" />
-                  {entry.language === 'hebrew' ? 'Hebraico' : 'Grego'}
-                </span>
-              )}
+              <SourceBadge source={entry.source} />
+              <LanguageBadge language={entry.language} />
             </div>
           </div>
         </div>
       </div>
 
+      {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-6 pb-28">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -81,8 +111,8 @@ const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, 
           className="glass-card rounded-2xl p-6 space-y-4"
         >
           <div
-            className="prose prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
+            className="prose prose-invert max-w-none text-[var(--text-bible-muted)] leading-relaxed text-[15px]"
+            dangerouslySetInnerHTML={{ __html: `<p class="mb-3 leading-relaxed">${htmlContent}</p>` }}
           />
         </motion.div>
       </div>
@@ -90,27 +120,37 @@ const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, 
   );
 };
 
+/* ── Main Page ─────────────────────────────────────────── */
+
 interface EncyclopediaPageProps {
   onBack?: () => void;
 }
 
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
 export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [entries, setEntries] = useState<EncyclopediaEntry[]>([]);
   const [displayEntries, setDisplayEntries] = useState<EncyclopediaEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<EncyclopediaEntry | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
   const [suggestions, setSuggestions] = useState<EncyclopediaEntry[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [retryCount, setRetryCount] = useState(0);
 
   const categories = getCategories();
+  const availableLetters = useMemo(() => getAvailableLetters(selectedCategory), [selectedCategory, entries]);
   const stats = getStats();
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setLoadError(null);
     loadEncyclopediaEntries().then(allEntries => {
       if (!cancelled) {
         setEntries(allEntries);
@@ -119,36 +159,63 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
       }
     }).catch(err => {
       console.error('Failed to load encyclopedia:', err);
-      if (!cancelled) setLoading(false);
+      if (!cancelled) {
+        setLoadError(err?.message || 'Erro desconhecido ao carregar dados');
+        setLoading(false);
+      }
     });
     return () => { cancelled = true; };
+  }, [retryCount]);
+
+  const handleRetry = useCallback(() => {
+    setRetryCount(prev => prev + 1);
   }, []);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
+    setSelectedLetter(null);
     setHighlightedIndex(-1);
-    if (query.trim().length < 2) {
+    if (query.trim().length < 1) {
       setDisplayEntries(getEntriesByCategory(selectedCategory, 50));
       setShowSuggestions(false);
       setSuggestions([]);
       return;
     }
-    const sug = getSuggestions(query, 8);
+    // Mostrar sugestões a partir de 1 caractere
+    const sug = getSuggestions(query, 10);
     setSuggestions(sug);
     setShowSuggestions(sug.length > 0);
-    setSearching(true);
-    const results = searchEntries(query, 50);
-    setDisplayEntries(results);
-    setSearching(false);
+    // Atualizar resultados a partir de 2 caracteres
+    if (query.trim().length >= 2) {
+      setSearching(true);
+      const results = searchEntries(query, 50);
+      setDisplayEntries(results);
+      setSearching(false);
+    }
   }, [selectedCategory]);
 
   const handleCategoryChange = useCallback((catId: string) => {
     setSelectedCategory(catId);
     setSearchQuery('');
+    setSelectedLetter(null);
     setShowSuggestions(false);
     setSuggestions([]);
     setDisplayEntries(getEntriesByCategory(catId, 50));
   }, []);
+
+  const handleLetterClick = useCallback((letter: string) => {
+    if (selectedLetter === letter) {
+      // Desselecionar: voltar para todos
+      setSelectedLetter(null);
+      setDisplayEntries(getEntriesByCategory(selectedCategory, 50));
+    } else {
+      setSelectedLetter(letter);
+      setSearchQuery('');
+      setShowSuggestions(false);
+      setSuggestions([]);
+      setDisplayEntries(getEntriesByLetter(letter, selectedCategory));
+    }
+  }, [selectedLetter, selectedCategory]);
 
   const handleSuggestionClick = useCallback((entry: EncyclopediaEntry) => {
     setSearchQuery(entry.word);
@@ -175,17 +242,67 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
     setTimeout(() => setShowSuggestions(false), 200);
   }, []);
 
+  /* ── Loading state ── */
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center bg-[var(--bg-bible)]">
-        <div className="flex flex-col items-center gap-4">
-          <Loader className="w-8 h-8 animate-spin text-[var(--accent-bible)]" />
-          <span className="text-[var(--text-bible-muted)]">Carregando enciclopédias...</span>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--accent-bible)] to-[var(--accent-bible-strong)] flex items-center justify-center shadow-lg shadow-[var(--accent-bible)]/20">
+              <BookA className="w-7 h-7 text-white" />
+            </div>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[var(--surface-1)] border-2 border-[var(--bg-bible)] flex items-center justify-center"
+            >
+              <Loader className="w-3.5 h-3.5 text-[var(--accent-bible)]" />
+            </motion.div>
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-medium text-[var(--text-bible)]">Carregando enciclopédias</p>
+            <p className="text-xs text-[var(--text-bible-muted)] mt-1">21.000+ verbetes sendo preparados...</p>
+          </div>
+        </motion.div>
       </div>
     );
   }
 
+  /* ── Error state ── */
+  if (loadError) {
+    return (
+      <div className="h-full flex items-center justify-center bg-[var(--bg-bible)]">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center gap-5 text-center px-6 max-w-sm"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center">
+            <AlertCircle className="w-8 h-8 text-red-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-[var(--text-bible)]">Erro ao carregar enciclopédia</h2>
+            <p className="text-sm text-[var(--text-bible-muted)] mt-2 leading-relaxed">
+              Não foi possível carregar os dados. Verifique sua conexão e tente novamente.
+            </p>
+          </div>
+          <button
+            onClick={handleRetry}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--accent-bible)] text-white font-medium hover:opacity-90 transition-all cursor-pointer active:scale-95"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Tentar novamente
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  /* ── Detail view ── */
   if (selectedEntry) {
     return (
       <EncyclopediaDetailView
@@ -195,6 +312,7 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
     );
   }
 
+  /* ── Main view ── */
   return (
     <div className="h-full bg-[var(--bg-bible)] overflow-y-auto scrollbar-thin">
       <div className="max-w-4xl mx-auto px-4 py-6 pb-28 space-y-6">
@@ -205,7 +323,7 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
           className="space-y-4"
         >
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-[var(--accent-bible)] to-[var(--accent-bible-strong)] shadow-lg">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-[var(--accent-bible)] to-[var(--accent-bible-strong)] shadow-lg shadow-[var(--accent-bible)]/20">
               <BookA className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -222,16 +340,18 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.05 }}
-              className="px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
             >
+              <BookOpen className="w-3 h-3 text-[var(--accent-bible)]" />
               <span className="font-semibold text-[var(--accent-bible)]">{stats.merrill.toLocaleString('pt-BR')}</span> Merrill
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
-              className="px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
             >
+              <Hash className="w-3 h-3 text-purple-400" />
               <span className="font-semibold text-purple-400">{stats.vine.toLocaleString('pt-BR')}</span> Vine
             </motion.div>
             {stats.hebrew > 0 && (
@@ -239,8 +359,9 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.15 }}
-                className="px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
               >
+                <Type className="w-3 h-3 text-amber-400" />
                 <span className="font-semibold text-amber-400">{stats.hebrew.toLocaleString('pt-BR')}</span> Hebraico
               </motion.div>
             )}
@@ -249,8 +370,9 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2 }}
-                className="px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
               >
+                <Languages className="w-3 h-3 text-emerald-400" />
                 <span className="font-semibold text-emerald-400">{stats.greek.toLocaleString('pt-BR')}</span> Grego
               </motion.div>
             )}
@@ -292,25 +414,23 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
                   <button
                     key={entry.id}
                     onClick={() => handleSuggestionClick(entry)}
-                    className={cnFallback(
-                      'w-full text-left px-4 py-3 flex items-center gap-3 transition-colors border-b border-[var(--border-bible)]/50 last:border-b-0',
+                    className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors border-b border-[var(--border-bible)]/50 last:border-b-0 cursor-pointer ${
                       index === highlightedIndex
                         ? 'bg-[var(--accent-bible)]/10'
                         : 'hover:bg-[var(--surface-hover)]'
-                    )}
+                    }`}
                     role="option"
                     aria-selected={index === highlightedIndex}
                   >
-                    <BookOpen className={cnFallback(
-                      'w-4 h-4 flex-shrink-0',
+                    <BookOpen className={`w-4 h-4 flex-shrink-0 ${
                       entry.source === 'merrill' ? 'text-[var(--accent-bible)]' : 'text-purple-400'
-                    )} />
+                    }`} />
                     <div className="flex-1 min-w-0">
                       <span className="text-sm font-medium text-[var(--text-bible)] truncate block">
                         {entry.word}
                       </span>
                       <span className="text-xs text-[var(--text-bible-subtle)] truncate block">
-                        {entry.source === 'merrill' ? 'Merrill' : `Vine ${entry.language === 'hebrew' ? 'Hebraico' : 'Grego'}`}
+                        {entry.source === 'merrill' ? 'Enciclopédia Merrill' : `Vine ${entry.language === 'hebrew' ? 'Hebraico' : 'Grego'}`}
                       </span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-[var(--text-bible-subtle)]" />
@@ -332,24 +452,72 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
             <button
               key={cat.id}
               onClick={() => handleCategoryChange(cat.id)}
-              className={cnFallback(
-                'flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap text-sm font-medium transition-all',
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap text-sm font-medium transition-all cursor-pointer active:scale-95 ${
                 selectedCategory === cat.id
                   ? 'bg-[var(--accent-bible)] text-white shadow-lg shadow-[var(--accent-bible)]/20'
                   : 'bg-[var(--surface-1)] border border-[var(--border-bible)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-hover)]'
-              )}
+              }`}
             >
-              <span>{cat.icon}</span>
+              <CategoryIcon iconId={cat.iconId} className="w-4 h-4" />
               <span>{cat.label}</span>
             </button>
           ))}
+        </motion.div>
+
+        {/* Alphabet Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="glass-card rounded-2xl border border-[var(--border-bible)] p-3"
+        >
+          <div className="flex flex-wrap justify-center gap-1">
+            {ALPHABET.map((letter) => {
+              const isAvailable = availableLetters.has(letter);
+              const isSelected = selectedLetter === letter;
+              return (
+                <button
+                  key={letter}
+                  onClick={() => isAvailable && handleLetterClick(letter)}
+                  disabled={!isAvailable}
+                  className={`w-9 h-9 rounded-lg text-sm font-semibold transition-all cursor-pointer flex items-center justify-center ${
+                    isSelected
+                      ? 'bg-[var(--accent-bible)] text-white shadow-md shadow-[var(--accent-bible)]/30 scale-110'
+                      : isAvailable
+                        ? 'bg-[var(--surface-1)] text-[var(--text-bible)] hover:bg-[var(--accent-bible)]/15 hover:text-[var(--accent-bible)] active:scale-95'
+                        : 'text-[var(--text-bible-subtle)]/30 cursor-not-allowed opacity-30'
+                  }`}
+                  aria-label={`Filtrar por letra ${letter}`}
+                >
+                  {letter}
+                </button>
+              );
+            })}
+          </div>
+          {selectedLetter && (
+            <div className="flex justify-center mt-2 pt-2 border-t border-[var(--border-bible)]/50">
+              <button
+                onClick={() => {
+                  setSelectedLetter(null);
+                  setDisplayEntries(getEntriesByCategory(selectedCategory, 50));
+                }}
+                className="text-xs text-[var(--accent-bible)] hover:underline cursor-pointer"
+              >
+                Limpar filtro de letra
+              </button>
+            </div>
+          )}
         </motion.div>
 
         {/* Results */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm text-[var(--text-bible-muted)]">
             <span>
-              {searchQuery.trim() ? `Resultados para "${searchQuery}"` : 'Verbetes em destaque'}
+              {searchQuery.trim()
+                ? `Resultados para "${searchQuery}"`
+                : selectedLetter
+                  ? `Verbetes com a letra "${selectedLetter}"`
+                  : 'Verbetes em destaque'}
             </span>
             <span className="text-xs">{displayEntries.length} verbetes</span>
           </div>
@@ -364,18 +532,19 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
                 transition={{ delay: index * 0.02, type: 'spring', stiffness: 400, damping: 25 }}
                 onClick={() => setSelectedEntry(entry)}
                 whileHover={{ scale: 1.01, y: -2 }}
-                whileTap={{ scale: 0.99 }}
-                className="w-full text-left glass-card rounded-xl p-4 border border-[var(--border-bible)] hover:border-[var(--accent-bible)]/30 transition-colors group"
+                whileTap={{ scale: 0.98 }}
+                className="w-full text-left glass-card rounded-xl p-4 border border-[var(--border-bible)] hover:border-[var(--accent-bible)]/30 transition-colors group cursor-pointer"
               >
                 <div className="flex items-start gap-3">
-                  <div className={cnFallback(
-                    'p-2 rounded-xl flex-shrink-0',
+                  <div className={`p-2.5 rounded-xl flex-shrink-0 ${
                     entry.source === 'merrill'
                       ? 'bg-[var(--accent-bible)]/10 text-[var(--accent-bible)]'
                       : 'bg-purple-500/10 text-purple-400'
-                  )}>
+                  }`}>
                     {entry.language ? (
-                      <Languages className="w-4 h-4" />
+                      entry.language === 'hebrew'
+                        ? <Type className="w-4 h-4" />
+                        : <Languages className="w-4 h-4" />
                     ) : entry.source === 'merrill' ? (
                       <BookOpen className="w-4 h-4" />
                     ) : (
@@ -389,19 +558,12 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
                       </h3>
                       <ChevronRight className="w-4 h-4 text-[var(--text-bible-subtle)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                     </div>
-                    <p className="text-sm text-[var(--text-bible-muted)] line-clamp-2 mt-1">
-                      {entry.text.replace(/[#*\[\]→]/g, '').substring(0, 120)}...
+                    <p className="text-sm text-[var(--text-bible-muted)] line-clamp-2 mt-1 leading-relaxed">
+                      {entry.text.replace(/[#*\[\]→]/g, '').replace(/\b[HG]\d+\b/g, '').substring(0, 140).trim()}...
                     </p>
-                    <div className="flex items-center gap-2 mt-2 text-xs text-[var(--text-bible-subtle)]">
-                      <span className={cnFallback(
-                        'px-1.5 py-0.5 rounded font-medium',
-                        entry.source === 'merrill' ? 'bg-[var(--accent-bible)]/10 text-[var(--accent-bible)]' : 'bg-purple-500/10 text-purple-400'
-                      )}>
-                        {entry.source === 'merrill' ? 'Merrill' : 'Vine'}
-                      </span>
-                      {entry.language && (
-                        <span>{entry.language === 'hebrew' ? '🇮🇱 Hebraico' : '🇬🇷 Grego'}</span>
-                      )}
+                    <div className="flex items-center gap-2 mt-2">
+                      <SourceBadge source={entry.source} size="xs" />
+                      <LanguageBadge language={entry.language} />
                     </div>
                   </div>
                 </div>
@@ -413,11 +575,13 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-12"
+              className="text-center py-16"
             >
-              <BookA className="w-12 h-12 mx-auto text-[var(--text-bible-subtle)] mb-3" />
-              <p className="text-[var(--text-bible-muted)]">Nenhum verbete encontrado</p>
-              <p className="text-sm text-[var(--text-bible-subtle)]">Tente buscar com outros termos</p>
+              <div className="w-16 h-16 rounded-2xl bg-[var(--surface-1)] flex items-center justify-center mx-auto mb-4">
+                <Search className="w-7 h-7 text-[var(--text-bible-subtle)]" />
+              </div>
+              <p className="text-[var(--text-bible-muted)] font-medium">Nenhum verbete encontrado</p>
+              <p className="text-sm text-[var(--text-bible-subtle)] mt-1">Tente buscar com outros termos</p>
             </motion.div>
           )}
         </div>

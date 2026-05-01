@@ -4,10 +4,10 @@ interface MerrillRaw { w: string; t: string }
 interface VineRaw { w: string; l: string; t: string }
 
 const CATEGORIES = [
-  { id: 'all', label: 'Todos', icon: '📚' },
-  { id: 'merrill', label: 'Enciclopédia Merrill', icon: '📖' },
-  { id: 'vine-hebrew', label: 'Vine Hebraico', icon: '🔤' },
-  { id: 'vine-greek', label: 'Vine Grego', icon: '🔠' },
+  { id: 'all', label: 'Todos', iconId: 'library' },
+  { id: 'merrill', label: 'Enciclopédia Merrill', iconId: 'book-open' },
+  { id: 'vine-hebrew', label: 'Vine Hebraico', iconId: 'hebrew' },
+  { id: 'vine-greek', label: 'Vine Grego', iconId: 'greek' },
 ];
 
 let cachedEntries: EncyclopediaEntry[] | null = null;
@@ -22,13 +22,57 @@ function normalizeText(text: string): string {
     .replace(/[^\w\s]/g, '');
 }
 
-async function loadNDJSON<T>(url: string): Promise<T[]> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to load ${url}: ${response.status}`);
+async function decompressGzip(data: Uint8Array): Promise<ArrayBuffer> {
+  const ds = new DecompressionStream('gzip');
+  const writer = ds.writable.getWriter();
+  writer.write(data);
+  writer.close();
+  const response = new Response(ds.readable);
+  return response.arrayBuffer();
+}
 
-  const decompressedStream = response.body!.pipeThrough(new DecompressionStream('gzip'));
-  const text = await new Response(decompressedStream).text();
-  return text.trim().split('\n').map(line => JSON.parse(line) as T);
+async function loadNDJSON<T>(filename: string): Promise<T[]> {
+  // Try multiple URL strategies for compatibility with both Capacitor and web deployments
+  const urls = [
+    filename,                          // absolute: /file.json.gz
+    `.${filename}`,                    // relative: ./file.json.gz
+    `${import.meta.env.BASE_URL}${filename.replace(/^\//, '')}`, // base-aware
+  ];
+
+  let lastError: Error | null = null;
+
+  for (const url of urls) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        lastError = new Error(`HTTP ${response.status} for ${url}`);
+        continue;
+      }
+
+      const buffer = await response.arrayBuffer();
+      
+      // Check if it's actually gzip data (magic bytes: 0x1f 0x8b)
+      const bytes = new Uint8Array(buffer);
+      let text: string;
+      
+      if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
+        // It's gzip - decompress
+        const decompressed = await decompressGzip(bytes);
+        text = new TextDecoder().decode(decompressed);
+      } else {
+        // Not gzip (maybe server already decompressed it) - use as-is
+        text = new TextDecoder().decode(buffer);
+      }
+
+      const lines = text.trim().split('\n').filter(l => l.trim());
+      return lines.map(line => JSON.parse(line) as T);
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      continue;
+    }
+  }
+
+  throw new Error(`Failed to load ${filename}: ${lastError?.message || 'Unknown error'}`);
 }
 
 async function loadMerrill(): Promise<EncyclopediaEntry[]> {
@@ -65,17 +109,23 @@ export async function loadEncyclopediaEntries(): Promise<EncyclopediaEntry[]> {
   if (loadingPromise) return loadingPromise;
 
   loadingPromise = (async () => {
-    const [merrill, vine] = await Promise.all([
-      loadMerrill(),
-      loadVine(),
-    ]);
-    cachedEntries = [...merrill, ...vine];
-    searchIndex = cachedEntries.map(entry => ({
-      word: normalizeText(entry.word),
-      text: entry.searchIndex || '',
-      entry,
-    }));
-    return cachedEntries;
+    try {
+      const [merrill, vine] = await Promise.all([
+        loadMerrill(),
+        loadVine(),
+      ]);
+      cachedEntries = [...merrill, ...vine];
+      searchIndex = cachedEntries.map(entry => ({
+        word: normalizeText(entry.word),
+        text: entry.searchIndex || '',
+        entry,
+      }));
+      return cachedEntries;
+    } catch (err) {
+      // Reset so next call can retry instead of returning a rejected promise forever
+      loadingPromise = null;
+      throw err;
+    }
   })();
 
   return loadingPromise;
@@ -122,27 +172,73 @@ export function getEntryById(id: string): EncyclopediaEntry | undefined {
   return cachedEntries?.find(e => e.id === id);
 }
 
+export function getEntriesByLetter(letter: string, category = 'all'): EncyclopediaEntry[] {
+  if (!cachedEntries) return [];
+  const upperLetter = letter.toUpperCase();
+  return cachedEntries.filter(e => {
+    const firstChar = e.word.charAt(0).toUpperCase();
+    const matchesLetter = firstChar === upperLetter;
+    if (category === 'all') return matchesLetter;
+    return matchesLetter && e.category === category;
+  });
+}
+
+export function getAvailableLetters(category = 'all'): Set<string> {
+  if (!cachedEntries) return new Set();
+  const letters = new Set<string>();
+  for (const entry of cachedEntries) {
+    if (category !== 'all' && entry.category !== category) continue;
+    const firstChar = entry.word.charAt(0).toUpperCase();
+    if (/[A-ZÀ-Ú]/.test(firstChar)) {
+      letters.add(firstChar);
+    }
+  }
+  return letters;
+}
+
 export function getSuggestions(query: string, limit = 8): EncyclopediaEntry[] {
   if (!searchIndex || !query.trim()) return [];
   
   const normalizedQuery = normalizeText(query);
+  const seen = new Set<string>();
   
-  const matched = searchIndex
+  // Prioridade 1: palavras que começam exatamente com a query
+  const startsWithMatches = searchIndex
     .filter(({ word }) => word.startsWith(normalizedQuery))
-    .sort((a, b) => a.word.localeCompare(b.word))
-    .slice(0, limit)
-    .map(({ entry }) => entry);
-  
-  if (matched.length < limit) {
-    const remaining = searchIndex
-      .filter(({ word }) => word.includes(normalizedQuery) && !word.startsWith(normalizedQuery))
-      .sort((a, b) => a.word.localeCompare(b.word))
-      .slice(0, limit - matched.length)
-      .map(({ entry }) => entry);
-    matched.push(...remaining);
+    .sort((a, b) => {
+      // Exact match first, then shorter words first
+      if (a.word === normalizedQuery) return -1;
+      if (b.word === normalizedQuery) return 1;
+      return a.word.length - b.word.length || a.word.localeCompare(b.word);
+    });
+
+  const matched: EncyclopediaEntry[] = [];
+  for (const { entry } of startsWithMatches) {
+    const key = entry.word.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      matched.push(entry);
+      if (matched.length >= limit) break;
+    }
   }
   
-  return matched.slice(0, limit);
+  // Prioridade 2: palavras que contêm a query
+  if (matched.length < limit) {
+    const containsMatches = searchIndex
+      .filter(({ word }) => word.includes(normalizedQuery) && !word.startsWith(normalizedQuery))
+      .sort((a, b) => a.word.length - b.word.length || a.word.localeCompare(b.word));
+
+    for (const { entry } of containsMatches) {
+      const key = entry.word.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        matched.push(entry);
+        if (matched.length >= limit) break;
+      }
+    }
+  }
+  
+  return matched;
 }
 
 export function getStats() {
@@ -155,3 +251,4 @@ export function getStats() {
     greek: cachedEntries.filter(e => e.language === 'greek').length,
   };
 }
+
