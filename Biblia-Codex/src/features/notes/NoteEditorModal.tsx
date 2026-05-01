@@ -7,13 +7,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X, Minus, Maximize2, Minimize2, Volume2, VolumeX, Pin, PinOff,
-  Save, Tag as TagIcon, Download, Share2, Trash2, Sparkles, Play, Pause,
+  Save, Download, Share2, Trash2, Sparkles, Play, Pause,
   Clock, Bold, Italic, Underline, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, CheckSquare, Link2, Palette, Highlighter, Code, Quote,
   AlignLeft, AlignCenter, AlignRight, Undo, Redo, Link, BookOpen,
   ExternalLink, Copy, Trash, Edit3
 } from 'lucide-react';
-import { Note, Tag } from '../types';
+import { Note } from '../types';
 import { storage } from '../StorageService';
 import { speakText, stopSpeaking, isTTSSupported, isCurrentlySpeaking } from '../services/ttsService';
 import { clsx } from 'clsx';
@@ -67,7 +67,6 @@ interface NoteEditorModalProps {
   onClose: () => void;
   onSave: (note: Note) => void;
   onDelete?: (noteId: string) => void;
-  availableTags?: Tag[];
 }
 
 type WindowState = 'normal' | 'maximized' | 'minimized';
@@ -77,14 +76,12 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  onDelete,
-  availableTags = []
+  onDelete
 }) => {
   const [windowState, setWindowState] = useState<WindowState>('normal');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [htmlContent, setHtmlContent] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [pinned, setPinned] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [activeTab, setActiveTab] = useState<'edit' | 'tts'>('edit');
@@ -104,14 +101,12 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
       setTitle(note.title || '');
       setContent(note.content || '');
       setHtmlContent(note.content || '');
-      setSelectedTags(note.tags || []);
       setPinned(note.pinned || false);
       setLastSaved(note.updatedAt ? new Date(note.updatedAt) : null);
     } else {
       setTitle('');
       setContent('');
       setHtmlContent('');
-      setSelectedTags([]);
       setPinned(false);
       setLastSaved(null);
     }
@@ -293,7 +288,7 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
         ...note,
         title: title || 'Sem título',
         content: contentText,
-        tags: selectedTags,
+        tags: [],
         pinned,
         updatedAt: Date.now()
       };
@@ -403,21 +398,21 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
           className={cn(
             "relative rounded-2xl overflow-hidden flex flex-col",
             "transition-all duration-300 pointer-events-auto",
-            isMaximized ? "w-screen h-screen rounded-none" : "w-[90vw] h-[85vh] max-w-5xl",
+            isMaximized ? "w-screen h-screen rounded-none" : "w-screen h-[100dvh] rounded-none sm:w-[92vw] sm:h-[88dvh] sm:max-w-5xl sm:rounded-2xl",
             isMinimized ? "fixed bottom-24 right-6 w-14 h-14 rounded-full bg-[var(--accent-bible)] shadow-[0_10px_40px_rgba(0,0,0,0.3)] cursor-pointer hover:scale-110 z-50 text-white flex items-center justify-center" : "fixed bg-[var(--bg-bible)] shadow-2xl"
           )}
           onKeyDown={handleKeyDown}
         >
           {!isMinimized && (
             <>
-              <div className="flex items-center justify-between px-3 py-2 bg-[var(--surface-1)] border-b border-[var(--border-bible)] shrink-0">
+              <div className="flex items-center justify-between gap-2 px-3 py-2 bg-[var(--surface-1)] border-b border-[var(--border-bible)] shrink-0">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Título da nota..."
-                    className="flex-1 bg-transparent text-base sm:text-lg font-semibold text-[var(--text-bible)] placeholder:text-[var(--text-bible-muted)] focus:outline-none truncate"
+                    className="min-w-0 flex-1 bg-transparent text-base sm:text-lg font-semibold text-[var(--text-bible)] placeholder:text-[var(--text-bible-muted)] focus:outline-none truncate"
                   />
                   {lastSaved && !isMaximized && (
                     <span className="hidden sm:flex text-[10px] text-[var(--text-bible-muted)] items-center gap-1 whitespace-nowrap">
@@ -427,24 +422,24 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
                   )}
                 </div>
                 
-                <div className="flex items-center gap-0.5 ml-2">
-                  <button onClick={toggleMinimize} className="p-1.5 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Minimizar">
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={toggleMinimize} className="grid h-10 w-10 place-items-center rounded-lg hover:bg-[var(--surface-2)] transition-colors sm:h-9 sm:w-9" title="Minimizar" aria-label="Minimizar nota">
                     <Minus className="w-4 h-4 text-[var(--text-bible-muted)]" />
                   </button>
-                  <button onClick={toggleMaximize} className="hidden sm:block p-1.5 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title={isMaximized ? "Restaurar" : "Maximizar"}>
+                  <button onClick={toggleMaximize} className="hidden h-9 w-9 place-items-center rounded-lg hover:bg-[var(--surface-2)] transition-colors sm:grid" title={isMaximized ? "Restaurar" : "Maximizar"} aria-label={isMaximized ? "Restaurar nota" : "Maximizar nota"}>
                     {isMaximized ? <Minimize2 className="w-4 h-4 text-[var(--text-bible-muted)]" /> : <Maximize2 className="w-4 h-4 text-[var(--text-bible-muted)]" />}
                   </button>
-                  <button onClick={handleClose} className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Fechar">
+                  <button onClick={handleClose} className="grid h-10 w-10 place-items-center rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors sm:h-9 sm:w-9" title="Fechar" aria-label="Fechar nota">
                     <X className="w-4 h-4 text-red-500" />
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 px-4 py-1.5 bg-[var(--surface-1)] border-b border-[var(--border-bible)] shrink-0">
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-[var(--surface-1)] border-b border-[var(--border-bible)] shrink-0 sm:px-4">
                 <button
                   onClick={() => setActiveTab('edit')}
                   className={cn(
-                    "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors",
+                    "min-h-9 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors",
                     activeTab === 'edit' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)]"
                   )}
                 >
@@ -453,7 +448,7 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
                 <button
                   onClick={() => setActiveTab('tts')}
                   className={cn(
-                    "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5",
+                    "min-h-9 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5",
                     activeTab === 'tts' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)]"
                   )}
                 >
@@ -463,8 +458,8 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
               </div>
               {activeTab === 'edit' ? (
                 <>
-                  <div className="flex items-center justify-between bg-[var(--surface-1)] border-b border-[var(--border-bible)] overflow-hidden">
-                    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-2 px-3 flex-1">
+                  <div className="flex flex-col bg-[var(--surface-1)] border-b border-[var(--border-bible)] overflow-hidden sm:flex-row sm:items-stretch">
+                    <div className="flex flex-1 items-center gap-1 overflow-x-auto no-scrollbar px-2 py-2 sm:px-3 [&>button]:grid [&>button]:h-11 [&>button]:w-11 [&>button]:shrink-0 [&>button]:place-items-center [&>button]:sm:h-10 [&>button]:sm:w-10">
                       <button onClick={handleUndo} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Desfazer">
                         <Undo className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
@@ -556,7 +551,7 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
                       </button>
                     </div>
                     
-                    <div className="flex items-center gap-1 px-3 border-l border-[var(--border-bible)] bg-[var(--surface-1)]">
+                    <div className="flex items-center gap-1 overflow-x-auto border-t border-[var(--border-bible)] bg-[var(--surface-1)] px-2 py-2 sm:border-l sm:border-t-0 sm:px-3 [&>button:not(:last-child)]:grid [&>button:not(:last-child)]:h-11 [&>button:not(:last-child)]:w-11 [&>button:not(:last-child)]:shrink-0 [&>button:not(:last-child)]:place-items-center [&>button:not(:last-child)]:sm:h-10 [&>button:not(:last-child)]:sm:w-10">
                       <button
                         onClick={() => setPinned(!pinned)}
                         className={cn(
@@ -567,26 +562,7 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
                       >
                         {pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
                       </button>
-                      
-                      {availableTags.length > 0 && (
-                        <div className="flex items-center gap-1 ml-2">
-                          <TagIcon className="w-4 h-4 text-[var(--text-bible-muted)]" />
-                          {availableTags.slice(0, 5).map(tag => (
-                            <button
-                              key={tag.id}
-                              onClick={() => setSelectedTags(prev => prev.includes(tag.id) ? prev.filter(t => t !== tag.id) : [...prev, tag.id])}
-                              className={cn(
-                                "px-2 py-1 rounded-full text-xs font-semibold transition-all",
-                                selectedTags.includes(tag.id) ? "ring-2 ring-offset-1" : "opacity-60 hover:opacity-100"
-                              )}
-                              style={{ backgroundColor: tag.background, color: tag.textColor }}
-                            >
-                              {tag.name}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                      
+
                       {isTTSSupported && (
                         <button
                           onClick={toggleTTS}
@@ -613,7 +589,7 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
                       <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="flex items-center gap-2 px-3 py-2 bg-[var(--accent-bible)] text-white rounded-lg text-sm font-semibold hover:bg-[var(--accent-bible-strong)] transition-colors disabled:opacity-50"
+                        className="ml-auto flex h-11 min-w-[7rem] shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--accent-bible)] px-3 text-sm font-semibold text-white hover:bg-[var(--accent-bible-strong)] transition-colors disabled:opacity-50 sm:h-10"
                       >
                         <Save className="w-4 h-4" />
                         {isSaving ? 'Salvando...' : 'Salvar'}
@@ -621,7 +597,7 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex-1 overflow-hidden p-4">
+                  <div className="flex-1 overflow-hidden p-3 sm:p-4">
                     <div
                       ref={editorRef}
                       contentEditable
