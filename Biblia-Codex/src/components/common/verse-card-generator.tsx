@@ -4,7 +4,7 @@ import {
   X, Download, Share2, Palette, Type, 
   Layout, Sparkles, Image as ImageIcon,
   Check, ChevronLeft, ChevronRight, Copy,
-  Maximize2, Smartphone, Monitor, Instagram, Send,
+  Maximize2, Smartphone, Monitor, Send,
   Layers, Hexagon, Wand2
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
@@ -93,7 +93,7 @@ const FONTS = [
 
 const FORMATS = [
   { id: 'square', name: '1:1 Square', icon: Smartphone, aspect: '1/1' },
-  { id: 'story', name: '9:16 Story', icon: Instagram, aspect: '9/16' },
+  { id: 'story', name: '9:16 Story', icon: Smartphone, aspect: '9/16' },
   { id: 'post', name: '4:5 Portrait', icon: Smartphone, aspect: '4/5' }
 ];
 

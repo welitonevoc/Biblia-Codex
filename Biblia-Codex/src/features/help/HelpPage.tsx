@@ -1,8 +1,8 @@
 import React from 'react';
 import { 
   HelpCircle, MessageSquare, BookOpen, ExternalLink, 
-  Mail, Github, Twitter, Globe, Shield, FileText,
-  ChevronRight, Search, Zap, Star, ChevronLeft
+  Mail, Globe, Shield, FileText, Code,
+  ChevronRight, Search, Zap, Star, ChevronLeft, Send
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -106,12 +106,12 @@ export const HelpPage: React.FC = () => {
             <span className="ui-text text-xs font-bold uppercase tracking-widest">Obrigado por usar o Codex</span>
           </div>
           <div className="flex items-center space-x-6">
-            <button className="p-2 hover:bg-bible-accent/5 rounded-full transition-colors opacity-40 hover:opacity-100">
-              <Twitter className="w-5 h-5" />
-            </button>
-            <button className="p-2 hover:bg-bible-accent/5 rounded-full transition-colors opacity-40 hover:opacity-100">
-              <Github className="w-5 h-5" />
-            </button>
+             <button className="p-2 hover:bg-bible-accent/5 rounded-full transition-colors opacity-40 hover:opacity-100">
+               <Send className="w-5 h-5" />
+             </button>
+             <button className="p-2 hover:bg-bible-accent/5 rounded-full transition-colors opacity-40 hover:opacity-100">
+               <Code className="w-5 h-5" />
+             </button>
             <button className="p-2 hover:bg-bible-accent/5 rounded-full transition-colors opacity-40 hover:opacity-100">
               <Globe className="w-5 h-5" />
             </button>
