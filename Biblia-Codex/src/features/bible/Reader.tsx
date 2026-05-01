@@ -511,6 +511,12 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   }, [onToolOpen]);
 
   useEffect(() => {
+    console.log('[Reader] useEffect deps:', { 
+      bookId: book.id, 
+      chapter, 
+      versionId: currentVersion?.id, 
+      textDisplay: JSON.stringify(settings.textDisplay) 
+    });
     let cancelled = false;
     const fetchVerses = async () => {
       setLoading(true);
