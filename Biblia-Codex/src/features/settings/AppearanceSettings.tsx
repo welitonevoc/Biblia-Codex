@@ -132,7 +132,7 @@ export const AppearanceSettings: React.FC = () => {
         >
           <SectionHeader icon={Sun} title="Tema" description="Escolha o esquema de cores" />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-            {THEME_OPTIONS.slice(0, 12).map((theme, i) => (
+            {THEME_OPTIONS.map((theme, i) => (
               <motion.button
                 key={theme.id}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -219,7 +219,7 @@ export const AppearanceSettings: React.FC = () => {
               <p
                 style={{
                   fontSize: `${config.fontSize}px`,
-                  fontFamily: config.fontFamily === 'Sans Serif' ? 'system-ui, sans-serif' : config.fontFamily === 'Serif' ? 'Georgia, serif' : 'inherit'
+                  fontFamily: config.fontFamily === 'Sans Serif' ? '"Inter", sans-serif' : config.fontFamily === 'Serif' ? '"EB Garamond", serif' : config.fontFamily === 'Untitled Serif' ? '"Libre Baskerville", serif' : 'inherit'
                 }}
                 className="text-bible-text transition-all duration-200"
               >

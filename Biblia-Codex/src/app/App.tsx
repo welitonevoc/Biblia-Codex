@@ -77,7 +77,7 @@ function PageLoader() {
 }
 
 function AppContent() {
-  const { settings, activeTab: contextActiveTab, setActiveTab: contextSetActiveTab } = useAppContext();
+  const { config, settings, activeTab: contextActiveTab, setActiveTab: contextSetActiveTab } = useAppContext();
   const useAnimations = settings?.navigation?.navAnimation ?? true;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const activeTab = contextActiveTab as TabType;
@@ -132,7 +132,14 @@ function AppContent() {
 
   return (
     <div
-      className="app-shell flex h-[100dvh] w-full overflow-hidden text-bible-text selection:bg-bible-accent/20"
+      className={cn(
+        "app-shell flex h-[100dvh] w-full overflow-hidden text-bible-text selection:bg-bible-accent/20",
+        config.mode,
+        `geom-${config.uiGeometry}`,
+        `nav-${config.navigationStyle}`,
+        settings.animation.enableGlow && "enable-glow",
+        settings.animation.enableParticles && "enable-particles"
+      )}
       style={{ minHeight: '100svh' }}
       role="application"
       aria-label="Bíblia Codex - Aplicativo de estudo bíblico"

@@ -175,22 +175,18 @@ export interface BibleModule {
   isVirtual?: boolean;
 }
 
-export type ThemeMode =
-  | 'day'
-  | 'dusk'
-  | 'ocean'
-  | 'forest'
-  | 'rose'
-  | 'violet'
-  | 'night'
-  | 'ember'
-  | 'abyss'
-  | 'emerald'
-  | 'neon'
-  | 'frost';
+  | 'pure_light'
+  | 'pure_dark'
+  | 'paper_sepia'
+  | 'royal_majesty'
+  | 'midnight_navy'
+  | 'ethereal_light'   // Novo: Luz etérea com glow azulado
+  | 'obsidian_gold'     // Novo: Preto profundo com acentos dourados
+  | 'emerald_sanctum'   // Novo: Verde esmeralda profundo
+  | 'crimson_vignette'; // Novo: Vermelho escuro com vinheta
 
-export type UIGeometry = 'sharp' | 'soft' | 'pill' | 'minimal' | 'geometric' | 'premium' | 'circle' | 'soft-square' | 'glass' | 'neon' | 'brutal' | 'elegant' | 'cyber' | 'vintage';
-export type NavigationStyle = 'floating' | 'asymmetric' | 'bottom' | 'sidebar' | 'top' | 'hybrid' | 'compact' | 'dock' | 'minimal';
+export type UIGeometry = 'soft' | 'sharp' | 'pill' | 'minimal' | 'geometric' | 'premium' | 'circle' | 'soft-square' | 'glass' | 'neon' | 'brutal' | 'elegant' | 'cyber' | 'vintage';
+export type NavigationStyle = 'bottom' | 'floating' | 'asymmetric' | 'sidebar' | 'top' | 'hybrid' | 'compact' | 'dock' | 'minimal';
 export type FontPreference = 'sans' | 'serif' | 'mono';
 
 export interface ThemeConfig {
