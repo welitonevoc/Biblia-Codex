@@ -77,7 +77,12 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
       const dbData = new Uint8Array(dbBuffer);
       
       const SQL = await initSqlJs({
-        locateFile: () => '/sql-wasm.wasm'
+        locateFile: () => new URL('sql-wasm.wasm', import.meta.url).pathname
+      }).catch(async () => {
+        const response = await fetch('sql-wasm.wasm');
+        if (!response.ok) throw new Error('Falha ao carregar sql-wasm.wasm');
+        const wasmBinary = await response.arrayBuffer();
+        return initSqlJs({ wasmBinary });
       });
       const db = new SQL.Database(dbData);
 

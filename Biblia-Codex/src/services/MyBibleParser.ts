@@ -5,7 +5,12 @@ export class MyBibleParser {
   private db: Database | null = null;
 
   async loadDatabase(data: ArrayBuffer): Promise<void> {
-    const SQL = await initSqlJs({ locateFile: () => '/sql-wasm.wasm' });
+    const SQL = await initSqlJs({ locateFile: () => new URL('sql-wasm.wasm', import.meta.url).pathname }).catch(async () => {
+      const response = await fetch('sql-wasm.wasm');
+      if (!response.ok) throw new Error('Falha ao carregar sql-wasm.wasm');
+      const wasmBinary = await response.arrayBuffer();
+      return initSqlJs({ wasmBinary });
+    });
     this.db = new SQL.Database(new Uint8Array(data));
   }
 

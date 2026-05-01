@@ -28,7 +28,13 @@ async function loadModule(modulePath: string): Promise<DevotionalModuleData> {
   }
 
   const SQL = await initSqlJs({
-    locateFile: () => '/sql-wasm.wasm',
+    locateFile: () => new URL('sql-wasm.wasm', import.meta.url).pathname,
+  }).catch(async () => {
+    // Fallback: tenta carregar do public
+    const response = await fetch('sql-wasm.wasm');
+    if (!response.ok) throw new Error('Falha ao carregar sql-wasm.wasm');
+    const wasmBinary = await response.arrayBuffer();
+    return initSqlJs({ wasmBinary });
   });
 
   const binaryData = await readModuleBinary(modulePath);
