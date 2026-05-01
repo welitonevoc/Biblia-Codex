@@ -37,12 +37,29 @@ export const useReaderSelection = ({
     return map;
   }, [bookmarks, book.id, chapter]);
 
-  const toggleVerseSelection = useCallback((verseNum: number) => {
+  const toggleVerseSelection = useCallback((verseNum: number, event?: React.MouseEvent | React.KeyboardEvent) => {
     setSelectedVerses(prev => {
+      // Range selection with Shift key
+      if (event && 'shiftKey' in event && event.shiftKey && prev.length > 0) {
+        const lastSelected = prev[prev.length - 1];
+        const start = Math.min(lastSelected, verseNum);
+        const end = Math.max(lastSelected, verseNum);
+        
+        // Obter todos os números de versículos no intervalo
+        const range: number[] = [];
+        for (let i = start; i <= end; i++) {
+          range.push(i);
+        }
+        
+        // Adiciona o intervalo à seleção atual, removendo duplicatas
+        return Array.from(new Set([...prev, ...range])).sort((a, b) => a - b);
+      }
+
+      // Toggle simples (padrão)
       const newSelected = prev.includes(verseNum)
         ? prev.filter(v => v !== verseNum)
         : [...prev, verseNum];
-      console.log('toggleVerseSelection result:', prev, '->', newSelected);
+      
       return newSelected;
     });
   }, []);

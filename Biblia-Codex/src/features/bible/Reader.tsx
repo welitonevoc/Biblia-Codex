@@ -132,8 +132,8 @@ interface ReaderProps {
           // Modo Parágrafo: inline com destaque sutil
           <span
             id={`verse-${v.verse}`}
-            onClick={() => toggleVerseSelection(v.verse)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleVerseSelection(v.verse); } }}
+            onClick={(e) => toggleVerseSelection(v.verse, e)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleVerseSelection(v.verse, e); } }}
             role="button"
             tabIndex={0}
             aria-label={`Versículo ${v.verse}`}
@@ -164,8 +164,8 @@ interface ReaderProps {
           // Modo Versículo: Card Premium vibrante
           <div
             id={`verse-${v.verse}`}
-            onClick={() => toggleVerseSelection(v.verse)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleVerseSelection(v.verse); } }}
+            onClick={(e) => toggleVerseSelection(v.verse, e)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleVerseSelection(v.verse, e); } }}
             role="button"
             tabIndex={0}
             aria-label={`Versículo ${v.verse}`}
@@ -695,12 +695,20 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
                     <div className="text-sm font-extrabold text-bible-text leading-tight">{selectedReference}</div>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setSelectedVerses([])}
-                  className="p-2 hover:bg-bible-surface-strong rounded-full transition-colors text-bible-text-muted"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button 
+                    onClick={() => setSelectedVerses(verses.map(v => v.verse).filter(n => n > 0))}
+                    className="px-2 py-1 text-[10px] font-bold text-bible-accent hover:bg-bible-accent/10 rounded-lg transition-colors uppercase tracking-tight"
+                  >
+                    Tudo
+                  </button>
+                  <button 
+                    onClick={() => setSelectedVerses([])}
+                    className="p-2 hover:bg-bible-surface-strong rounded-full transition-colors text-bible-text-muted"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* Action Bar */}
