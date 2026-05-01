@@ -8,6 +8,7 @@ const CATEGORIES = [
   { id: 'merrill', label: 'Enciclopédia Merrill', iconId: 'book-open' },
   { id: 'vine-hebrew', label: 'Vine Hebraico', iconId: 'hebrew' },
   { id: 'vine-greek', label: 'Vine Grego', iconId: 'greek' },
+  { id: 'quem-quem', label: 'Quem é Quem', iconId: 'user' },
 ];
 
 let cachedEntries: EncyclopediaEntry[] | null = null;
@@ -87,6 +88,18 @@ async function loadMerrill(): Promise<EncyclopediaEntry[]> {
   }));
 }
 
+async function loadQuemQuem(): Promise<EncyclopediaEntry[]> {
+  const raw = await loadNDJSON<MerrillRaw>('/QuemQuem_clean.json.gz');
+  return raw.map((item, idx) => ({
+    id: `quem-quem-${idx}`,
+    word: item.w,
+    text: item.t,
+    source: 'quem-quem' as const,
+    category: 'quem-quem',
+    searchIndex: `${normalizeText(item.w)} ${normalizeText(item.t)}`,
+  }));
+}
+
 async function loadVine(): Promise<EncyclopediaEntry[]> {
   const raw = await loadNDJSON<VineRaw>('/VinePro_clean.json.gz');
   return raw.map((item, idx) => {
@@ -110,11 +123,12 @@ export async function loadEncyclopediaEntries(): Promise<EncyclopediaEntry[]> {
 
   loadingPromise = (async () => {
     try {
-      const [merrill, vine] = await Promise.all([
+      const [merrill, vine, quemQuem] = await Promise.all([
         loadMerrill(),
         loadVine(),
+        loadQuemQuem(),
       ]);
-      cachedEntries = [...merrill, ...vine];
+      cachedEntries = [...merrill, ...vine, ...quemQuem];
       searchIndex = cachedEntries.map(entry => ({
         word: normalizeText(entry.word),
         text: entry.searchIndex || '',
@@ -242,13 +256,14 @@ export function getSuggestions(query: string, limit = 8): EncyclopediaEntry[] {
 }
 
 export function getStats() {
-  if (!cachedEntries) return { total: 0, merrill: 0, vine: 0, hebrew: 0, greek: 0 };
+  if (!cachedEntries) return { total: 0, merrill: 0, vine: 0, hebrew: 0, greek: 0, quemQuem: 0 };
   return {
     total: cachedEntries.length,
     merrill: cachedEntries.filter(e => e.source === 'merrill').length,
     vine: cachedEntries.filter(e => e.source === 'vine').length,
     hebrew: cachedEntries.filter(e => e.language === 'hebrew').length,
     greek: cachedEntries.filter(e => e.language === 'greek').length,
+    quemQuem: cachedEntries.filter(e => e.source === 'quem-quem').length,
   };
 }
 

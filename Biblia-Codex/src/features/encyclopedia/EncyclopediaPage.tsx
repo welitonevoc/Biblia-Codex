@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, BookOpen, Loader, BookA, Languages, Hash, ChevronRight, ChevronLeft, Library, RefreshCw, AlertCircle, Type } from 'lucide-react';
+import { Search, BookOpen, Loader, BookA, Languages, Hash, ChevronRight, ChevronLeft, Library, RefreshCw, AlertCircle, Type, User } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import {
   loadEncyclopediaEntries,
@@ -13,12 +13,16 @@ import {
   getCategories,
   getSuggestions,
 } from './EncyclopediaService';
-import type { EncyclopediaEntry } from '../../types';
+import type { EncyclopediaEntry, Verse } from '../../types';
+import { getBibleReferenceRegex, normalizeReference } from '../../utils/bibleReferenceRegex';
+import { useAppContext } from '../AppContext';
+import { BibleService } from '../BibleService';
+import { BIBLE_BOOKS } from '../../data/bibleMetadata';
 
 /* ── helpers ────────────────────────────────────────────── */
 
 function renderMarkdown(text: string): string {
-  return text
+  let rendered = text
     .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-[var(--text-bible)] mt-6 mb-2">$1</h3>')
     .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-[var(--text-bible)] mt-7 mb-3">$1</h2>')
     .replace(/^---$/gm, '<hr class="border-[var(--border-bible)] my-5 opacity-40" />')
@@ -28,6 +32,16 @@ function renderMarkdown(text: string): string {
     .replace(/→/g, '<span class="text-[var(--accent-bible)] mx-0.5">→</span>')
     .replace(/\n\n/g, '</p><p class="mb-3 leading-relaxed">')
     .replace(/\n/g, '<br />');
+
+  // Bible verse recognition
+  const bibleRegex = getBibleReferenceRegex();
+  rendered = rendered.replace(bibleRegex, (match, book, chapter, verse) => {
+    const norm = normalizeReference(book, chapter, verse);
+    if (!norm) return match;
+    return `<span class="bible-ref text-[var(--accent-bible)] font-medium underline underline-offset-4 decoration-[var(--accent-bible)]/30 hover:decoration-[var(--accent-bible)] cursor-pointer transition-all" data-book="${norm.bookId}" data-chapter="${norm.chapter}" data-verse="${norm.verse}">${match}</span>`;
+  });
+
+  return rendered;
 }
 
 /** Maps category iconId → Lucide component */
@@ -37,6 +51,7 @@ function CategoryIcon({ iconId, className }: { iconId: string; className?: strin
     case 'book-open': return <BookOpen className={className} />;
     case 'hebrew': return <Type className={className} />;
     case 'greek': return <Languages className={className} />;
+    case 'user': return <User className={className} />;
     default: return <BookA className={className} />;
   }
 }
@@ -55,13 +70,15 @@ function LanguageBadge({ language }: { language?: string }) {
 
 /** Source badge */
 function SourceBadge({ source, size = 'sm' }: { source: string; size?: 'sm' | 'xs' }) {
-  const isMerrill = source === 'merrill';
   const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-1.5 py-0.5 text-[10px]';
-  return (
-    <span className={`${sizeClasses} rounded-full font-medium ${isMerrill ? 'bg-[var(--accent-bible)]/10 text-[var(--accent-bible)]' : 'bg-purple-500/10 text-purple-400'}`}>
-      {isMerrill ? 'Merrill' : 'Vine'}
-    </span>
-  );
+  
+  if (source === 'merrill') {
+    return <span className={`${sizeClasses} rounded-full font-medium bg-[var(--accent-bible)]/10 text-[var(--accent-bible)]`}>Merrill</span>;
+  }
+  if (source === 'quem-quem') {
+    return <span className={`${sizeClasses} rounded-full font-medium bg-blue-500/10 text-blue-400`}>Quem é Quem</span>;
+  }
+  return <span className={`${sizeClasses} rounded-full font-medium bg-purple-500/10 text-purple-400`}>Vine</span>;
 }
 
 /* ── Detail View ───────────────────────────────────────── */
@@ -72,7 +89,44 @@ interface EncyclopediaDetailViewProps {
 }
 
 const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, onBack }) => {
+  const { currentVersion } = useAppContext();
   const htmlContent = useMemo(() => renderMarkdown(entry.text), [entry.text]);
+  const [previewVerse, setPreviewVerse] = useState<Verse | null>(null);
+  const [previewAnchor, setPreviewAnchor] = useState<{ x: number; y: number } | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+
+  const handleMouseOver = useCallback(async (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const refSpan = target.closest('.bible-ref') as HTMLElement;
+    
+    if (refSpan) {
+      const bookId = refSpan.dataset.book;
+      const chapter = parseInt(refSpan.dataset.chapter || '0');
+      const verse = parseInt(refSpan.dataset.verse || '0');
+      
+      if (bookId && chapter && verse) {
+        setPreviewAnchor({ x: e.clientX, y: e.clientY });
+        setLoadingPreview(true);
+        
+        try {
+          const verses = await BibleService.getVerses(bookId, chapter, currentVersion || undefined);
+          const found = verses.find(v => v.verse === verse);
+          if (found) {
+            setPreviewVerse(found);
+          }
+        } catch (err) {
+          console.error('Error fetching verse for preview:', err);
+        } finally {
+          setLoadingPreview(false);
+        }
+      }
+    }
+  }, [currentVersion]);
+
+  const handleMouseLeave = useCallback(() => {
+    setPreviewVerse(null);
+    setLoadingPreview(false);
+  }, []);
 
   return (
     <motion.div
@@ -80,7 +134,7 @@ const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, 
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 40 }}
       transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-      className="h-full bg-[var(--bg-bible)] overflow-y-auto scrollbar-thin"
+      className="h-full bg-[var(--bg-bible)] overflow-y-auto scrollbar-thin relative"
     >
       {/* Sticky Header */}
       <div className="sticky top-0 z-10 backdrop-blur-xl bg-[var(--bg-bible)]/80 border-b border-[var(--border-bible)]">
@@ -109,6 +163,8 @@ const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, 
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="glass-card rounded-2xl p-6 space-y-4"
+          onMouseOver={handleMouseOver}
+          onMouseLeave={handleMouseLeave}
         >
           <div
             className="prose prose-invert max-w-none text-[var(--text-bible-muted)] leading-relaxed text-[15px]"
@@ -116,6 +172,52 @@ const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, 
           />
         </motion.div>
       </div>
+
+      {/* Hover Preview Tooltip */}
+      <AnimatePresence>
+        {(previewVerse || loadingPreview) && previewAnchor && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed z-50 w-[min(90vw,400px)] pointer-events-none"
+            style={{
+              left: Math.min(previewAnchor.x + 15, window.innerWidth - 415),
+              top: Math.min(previewAnchor.y + 15, window.innerHeight - 200),
+            }}
+          >
+            <div className="glass-card p-4 border border-[var(--accent-bible)]/30 shadow-2xl rounded-2xl backdrop-blur-2xl bg-[var(--bg-bible)]/90">
+              {loadingPreview ? (
+                <div className="flex items-center gap-3 py-2">
+                  <Loader className="w-4 h-4 text-[var(--accent-bible)] animate-spin" />
+                  <span className="text-xs text-[var(--text-bible-muted)] font-medium">Carregando versículo...</span>
+                </div>
+              ) : previewVerse && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-3.5 h-3.5 text-[var(--accent-bible)]" />
+                    <span className="text-[11px] font-bold text-[var(--accent-bible)] uppercase tracking-wider">
+                      {BIBLE_BOOKS.find(b => b.id === previewVerse.bookId)?.name} {previewVerse.chapter}:{previewVerse.verse}
+                    </span>
+                  </div>
+                  <p className="text-sm text-[var(--text-bible)] leading-relaxed line-clamp-6">
+                    {previewVerse.text.replace(/<[^>]+>/g, '')}
+                  </p>
+                  <div className="pt-2 border-t border-[var(--border-bible)]/30 flex justify-between items-center">
+                    <span className="text-[10px] text-[var(--text-bible-muted)] uppercase font-semibold">
+                      {currentVersion?.name || 'Bíblia'}
+                    </span>
+                    <div className="flex gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-bible)]/40" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-bible)]/20" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
@@ -372,8 +474,18 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
                 transition={{ delay: 0.2 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
               >
-                <Languages className="w-3 h-3 text-emerald-400" />
                 <span className="font-semibold text-emerald-400">{stats.greek.toLocaleString('pt-BR')}</span> Grego
+              </motion.div>
+            )}
+            {stats.quemQuem > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.25 }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-1)] border border-[var(--border-bible)] text-xs text-[var(--text-bible-muted)]"
+              >
+                <User className="w-3 h-3 text-blue-400" />
+                <span className="font-semibold text-blue-400">{stats.quemQuem.toLocaleString('pt-BR')}</span> Quem é Quem
               </motion.div>
             )}
           </div>
@@ -430,7 +542,7 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
                         {entry.word}
                       </span>
                       <span className="text-xs text-[var(--text-bible-subtle)] truncate block">
-                        {entry.source === 'merrill' ? 'Enciclopédia Merrill' : `Vine ${entry.language === 'hebrew' ? 'Hebraico' : 'Grego'}`}
+                        {entry.source === 'merrill' ? 'Enciclopédia Merrill' : entry.source === 'quem-quem' ? 'Quem é Quem' : `Vine ${entry.language === 'hebrew' ? 'Hebraico' : 'Grego'}`}
                       </span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-[var(--text-bible-subtle)]" />
@@ -539,7 +651,9 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
                   <div className={`p-2.5 rounded-xl flex-shrink-0 ${
                     entry.source === 'merrill'
                       ? 'bg-[var(--accent-bible)]/10 text-[var(--accent-bible)]'
-                      : 'bg-purple-500/10 text-purple-400'
+                      : entry.source === 'quem-quem'
+                        ? 'bg-blue-500/10 text-blue-400'
+                        : 'bg-purple-500/10 text-purple-400'
                   }`}>
                     {entry.language ? (
                       entry.language === 'hebrew'
@@ -547,6 +661,8 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
                         : <Languages className="w-4 h-4" />
                     ) : entry.source === 'merrill' ? (
                       <BookOpen className="w-4 h-4" />
+                    ) : entry.source === 'quem-quem' ? (
+                      <User className="w-4 h-4" />
                     ) : (
                       <Hash className="w-4 h-4" />
                     )}
