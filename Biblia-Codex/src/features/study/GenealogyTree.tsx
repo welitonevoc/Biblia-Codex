@@ -487,129 +487,96 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     );
   };
 
-  return (
-    <div 
-      className="flex flex-col h-full relative"
+      <div 
+      className="flex flex-col h-full relative overflow-hidden"
       style={{ backgroundColor: 'var(--bg-bible)' }}
       ref={containerRef}
     >
+      {/* Background Decorator Premium */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl"
-          style={{ backgroundColor: 'var(--accent-bible)', opacity: 0.05 }}
-        />
-        <div 
-          className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl"
-          style={{ backgroundColor: '#8b5cf6', opacity: 0.05 }}
-        />
+        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-bible-accent/10 blur-[100px]" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-purple-500/10 blur-[100px]" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(var(--text-bible) 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }} />
       </div>
-
+      
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="shrink-0 relative px-4 py-4 z-10"
+        className="shrink-0 relative z-20 px-6 py-5 backdrop-blur-xl bg-bible-bg/80 border-b border-bible-border/50 shadow-sm"
       >
-        <div 
-          className="absolute inset-0 border-b"
-          style={{ borderColor: 'var(--border-bible)' }}
-        />
-        
-        <div className="relative">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Users className="w-4 h-4" style={{ color: 'var(--accent-bible)' }} />
-                <span 
-                  className="text-[10px] font-bold uppercase tracking-widest"
-                  style={{ color: 'var(--accent-bible)' }}
-                >
-                  Genealogy
+        <div className="flex items-start justify-between mb-5">
+          <div className="flex-1">
+            <div className="flex items-center gap-2.5 mb-2">
+              <div className="p-2 rounded-lg bg-bible-accent/10">
+                <Users className="w-4 h-4 text-bible-accent" />
+              </div>
+              <span className="premium-kicker">Estudo Biográfico</span>
+            </div>
+            <h1 className="text-2xl font-black text-bible-text tracking-tight">
+              {showTree ? 'Linhagem Bíblica' : 'Pessoas Bíblicas'}
+            </h1>
+            <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-bible-surface-strong/50 border border-bible-border/50 shadow-inner">
+                <Users className="w-3 h-3 text-bible-accent" />
+                <span className="text-[11px] font-bold text-bible-text-muted">
+                  {filteredPeople.length} <span className="opacity-60">Registros</span>
                 </span>
               </div>
-              <h1 
-                className="text-lg font-bold"
-                style={{ color: 'var(--text-bible)', fontFamily: 'var(--font-display)' }}
-              >
-                {showTree ? 'Árvore Genealógica' : 'Pessoas'}
-              </h1>
-              <div className="flex items-center gap-2 mt-1.5">
-                <div 
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-md"
-                  style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)' }}
-                >
-                  <Users className="w-3 h-3" style={{ color: 'var(--text-bible-muted)' }} />
-                  <span className="text-xs" style={{ color: 'var(--text-bible-muted)' }}>
-                    {filteredPeople.length} pessoas
-                  </span>
-                </div>
-              </div>
             </div>
-            {onClose && (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={onClose}
-                className="p-2 rounded-lg transition-colors"
-                style={{ 
-                  backgroundColor: 'var(--surface-1)', 
-                  border: '1px solid var(--border-bible)' 
-                }}
-              >
-                <X className="w-4 h-4" style={{ color: 'var(--text-bible-muted)' }} />
-              </motion.button>
-            )}
           </div>
+          
+          {onClose && (
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 90 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={onClose}
+              className="premium-icon-button"
+            >
+              <X className="w-4 h-4" />
+            </motion.button>
+          )}
+        </div>
 
-          <div className="relative mb-3">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1 group">
             <Search 
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" 
-              style={{ color: 'var(--text-bible-subtle)' }} 
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-text-subtle transition-colors group-focus-within:text-bible-accent" 
             />
             <input
               type="text"
-              placeholder="Buscar..."
+              placeholder="Buscar personagem..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm transition-colors"
-              style={{ 
-                backgroundColor: 'var(--surface-1)', 
-                border: '1px solid var(--border-bible)',
-                color: 'var(--text-bible)',
-              }}
+              className="w-full pl-11 pr-4 py-3 rounded-2xl text-sm bg-bible-surface-strong/50 border border-bible-border/50 focus:border-bible-accent/50 focus:ring-4 focus:ring-bible-accent/10 transition-all outline-none"
             />
           </div>
 
-          <div className="flex gap-2 flex-wrap">
-            <div 
-              className="flex gap-0.5 p-1 rounded-lg"
-              style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)' }}
-            >
+          <div className="flex gap-2 shrink-0">
+            <div className="flex p-1 rounded-2xl bg-bible-surface-strong/50 border border-bible-border/50">
               {[
-                { id: 'all' as const, icon: Users },
-                { id: 'M' as const, icon: Heart },
-                { id: 'F' as const, icon: Star },
+                { id: 'all' as const, icon: Users, label: 'Todos' },
+                { id: 'M' as const, icon: User, label: 'Homens' },
+                { id: 'F' as const, icon: Heart, label: 'Mulheres' },
               ].map((filter) => (
-                <motion.button
-                  key={filter.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setFilterGender(filter.id)}
-                  className={cn(
-                    'p-2 rounded-md transition-colors',
-                    filterGender === filter.id
-                      ? 'bg-[var(--accent-bible)] text-white'
-                      : 'text-[var(--text-bible-muted)]'
-                  )}
-                >
-                  <filter.icon className="w-3.5 h-3.5" />
-                </motion.button>
+                <ReaderTooltip key={filter.id} label={filter.label}>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setFilterGender(filter.id)}
+                    className={cn(
+                      'p-2.5 rounded-xl transition-all duration-300',
+                      filterGender === filter.id
+                        ? 'bg-bible-accent text-white shadow-lg shadow-bible-accent/25'
+                        : 'text-bible-text-muted hover:bg-bible-accent/10'
+                    )}
+                  >
+                    <filter.icon className="w-4 h-4" />
+                  </motion.button>
+                </ReaderTooltip>
               ))}
             </div>
 
-            <div 
-              className="flex gap-0.5 p-1 rounded-lg"
-              style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)' }}
-            >
+            <div className="flex p-1 rounded-2xl bg-bible-surface-strong/50 border border-bible-border/50">
               {[
                 { id: false as const, icon: List, label: 'Lista' },
                 { id: true as const, icon: GitBranch, label: 'Árvore' },
@@ -620,54 +587,50 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     setShowTree(mode.id);
-                    if (mode.id) {
-                      setSelectedPerson(null);
-                    }
+                    if (mode.id) setSelectedPerson(null);
                   }}
                   className={cn(
-                    'flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors',
+                    'flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all duration-300',
                     showTree === mode.id
-                      ? 'bg-[var(--accent-bible)] text-white'
-                      : 'text-[var(--text-bible-muted)]'
+                      ? 'bg-bible-accent text-white shadow-lg shadow-bible-accent/25'
+                      : 'text-bible-text-muted hover:bg-bible-accent/10'
                   )}
                 >
-                  <mode.icon className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{mode.label}</span>
+                  <mode.icon className="w-4 h-4" />
+                  <span className="hidden md:inline uppercase tracking-widest">{mode.label}</span>
                 </motion.button>
               ))}
             </div>
 
             {showTree && (
-              <div 
-                className="flex gap-0.5 p-1 rounded-lg"
-                style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)' }}
-              >
+              <div className="flex p-1 rounded-2xl bg-bible-surface-strong/50 border border-bible-border/50 items-center">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => setZoom(z => Math.max(0.3, z - 0.1))}
-                  className="p-2 rounded-md transition-colors text-[var(--text-bible-muted)]"
+                  className="p-2.5 rounded-xl text-bible-text-muted hover:bg-bible-accent/10"
                 >
-                  <Minus className="w-3.5 h-3.5" />
+                  <Minus className="w-4 h-4" />
                 </motion.button>
-                <span className="px-2 py-1.5 text-xs font-medium text-[var(--text-bible-muted)]">
+                <span className="px-3 text-[10px] font-black text-bible-accent min-w-[45px] text-center">
                   {Math.round(zoom * 100)}%
                 </span>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => setZoom(z => Math.min(2, z + 0.1))}
-                  className="p-2 rounded-md transition-colors text-[var(--text-bible-muted)]"
+                  className="p-2.5 rounded-xl text-bible-text-muted hover:bg-bible-accent/10"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-4 h-4" />
                 </motion.button>
+                <div className="w-px h-4 bg-bible-border/50 mx-1" />
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => setZoom(1)}
-                  className="p-2 rounded-md transition-colors text-[var(--text-bible-muted)]"
+                  className="p-2.5 rounded-xl text-bible-text-muted hover:bg-bible-accent/10"
                 >
-                  <Maximize2 className="w-3.5 h-3.5" />
+                  <Maximize2 className="w-4 h-4" />
                 </motion.button>
               </div>
             )}
@@ -683,18 +646,23 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="h-full overflow-y-auto p-4"
+            className="h-full overflow-y-auto p-6"
           >
             {filteredPeople.length === 0 ? (
-              <div className="text-center py-12">
-                <User className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--text-bible-subtle)' }} />
-                <p className="text-sm" style={{ color: 'var(--text-bible-muted)' }}>
-                  {searchQuery ? 'Nenhuma pessoa encontrada' : 'Nenhuma pessoa'}
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="w-20 h-20 rounded-full bg-bible-surface-strong/50 flex items-center justify-center mb-4 border border-bible-border/50">
+                  <User className="w-8 h-8 text-bible-text-subtle" />
+                </div>
+                <p className="text-base font-bold text-bible-text">
+                  {searchQuery ? 'Ninguém por aqui' : 'Nenhuma pessoa'}
+                </p>
+                <p className="text-sm text-bible-text-muted mt-1 max-w-[200px]">
+                  {searchQuery ? 'Tente buscar por outro nome bíblico.' : 'Este versículo não menciona pessoas específicas.'}
                 </p>
               </div>
             ) : (
-              <div className="space-y-2">
-                <AnimatePresence>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <AnimatePresence mode="popLayout">
                   {filteredPeople.map((person, idx) => {
                     const isMale = person.gender === 'M';
                     const isSelected = selectedPerson?.id === person.id;
@@ -702,67 +670,69 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
                     return (
                       <motion.button
                         key={person.id || idx}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ delay: idx * 0.03 }}
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ delay: idx * 0.02 }}
+                        whileHover={{ y: -4, scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onMouseEnter={() => setIsHoveringCard(person.id)}
                         onMouseLeave={() => setIsHoveringCard(null)}
                         onClick={() => setSelectedPerson(person)}
                         className={cn(
-                          'w-full flex items-center gap-3 p-4 rounded-xl text-left transition-all border'
+                          'w-full flex items-center gap-4 p-5 rounded-2xl text-left transition-all border group relative overflow-hidden',
+                          isSelected ? "bg-bible-surface-strong border-bible-accent shadow-lg" : "bg-bible-bg border-bible-border/50 hover:border-bible-accent/30 shadow-sm"
                         )}
-                        style={{
-                          backgroundColor: isSelected ? 'var(--surface-2)' : 'var(--surface-1)',
-                          borderColor: isSelected ? 'var(--accent-bible)' : 'var(--border-bible)',
-                        }}
                       >
+                        {isSelected && (
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-bible-accent/5 rounded-full -translate-y-12 translate-x-12 blur-2xl" />
+                        )}
+
                         <div 
-                          className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                          className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-inner relative"
                           style={{ 
-                            backgroundColor: isMale ? 'var(--accent-bible)' : '#8b5cf6',
-                            opacity: 0.15 
+                            backgroundColor: isMale ? 'rgba(var(--accent-bible-rgb), 0.1)' : 'rgba(139, 92, 246, 0.1)',
                           }}
                         >
                           <span 
-                            className="text-xl"
+                            className="text-2xl font-bold"
                             style={{ color: isMale ? 'var(--accent-bible)' : '#8b5cf6' }}
                           >
                             {isMale ? '♂' : '♀'}
                           </span>
+                          <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-bible-bg border-2 border-white flex items-center justify-center">
+                            <div className="w-2.5 h-2.5 rounded-full bg-bible-accent animate-pulse" />
+                          </div>
                         </div>
                         
                         <div className="flex-1 min-w-0">
                           <h3 
-                            className="text-base font-semibold"
-                            style={{ color: 'var(--text-bible)' }}
+                            className="text-base font-black text-bible-text tracking-tight group-hover:text-bible-accent transition-colors"
                           >
                             {person.name}
                           </h3>
                           {(person.birthyear || person.deathyear) && (
-                            <p 
-                              className="text-xs mt-0.5"
-                              style={{ color: 'var(--text-bible-muted)' }}
-                            >
-                              {person.birthyear || '?'} – {person.deathyear || '?'}
-                            </p>
+                            <div className="flex items-center gap-1.5 mt-1 text-bible-text-muted">
+                              <Calendar className="w-3 h-3 opacity-60" />
+                              <span className="text-[11px] font-bold">
+                                {person.birthyear || '?'} – {person.deathyear || '?'}
+                              </span>
+                            </div>
                           )}
                           {person.verses && (
-                            <p 
-                              className="text-xs mt-1 truncate"
-                              style={{ color: 'var(--accent-bible)' }}
-                            >
-                              {person.verses.split(',').length} referência(s) bíblica(s)
-                            </p>
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                              <BookOpen className="w-3 h-3 text-bible-accent opacity-60" />
+                              <span className="text-[10px] font-black uppercase tracking-widest text-bible-accent/70">
+                                {person.verses.split(',').length} Referências
+                              </span>
+                            </div>
                           )}
                         </div>
                         
-                        <ChevronRight 
-                          className="w-5 h-5 shrink-0" 
-                          style={{ color: 'var(--text-bible-subtle)' }} 
-                        />
+                        <div className="shrink-0 w-8 h-8 rounded-full bg-bible-surface-strong flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all border border-bible-border/50">
+                          <ChevronRight className="w-4 h-4 text-bible-accent" />
+                        </div>
                       </motion.button>
                     );
                   })}
@@ -845,160 +815,107 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
             className="absolute bottom-0 left-0 right-0 z-50"
           >
             <div 
-              className="rounded-t-2xl p-5 max-h-[70vh] overflow-y-auto"
-              style={{ 
-                backgroundColor: 'var(--bg-bible)',
-                borderTop: '1px solid var(--border-bible)'
-              }}
+              className="rounded-t-[32px] p-6 max-h-[85vh] overflow-y-auto backdrop-blur-2xl bg-bible-bg/95 shadow-2xl border-t border-bible-border/50"
             >
-              <div className="flex justify-center mb-4">
-                <div 
-                  className="w-10 h-1 rounded-full" 
-                  style={{ backgroundColor: 'var(--border-bible-strong)' }} 
-                />
+              <div className="flex justify-center mb-6">
+                <div className="w-12 h-1.5 rounded-full bg-bible-border/50" />
               </div>
               
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
+              <div className="flex justify-between items-start mb-8">
+                <div className="flex items-center gap-5">
                   <div 
-                    className="w-14 h-14 rounded-xl flex items-center justify-center border"
+                    className="w-20 h-20 rounded-[24px] flex items-center justify-center border-2 shadow-lg relative overflow-hidden group/avatar"
                     style={{ 
-                      backgroundColor: selectedPerson.gender === 'M' ? 'var(--accent-bible)' : '#8b5cf6',
-                      opacity: 0.15,
-                      borderColor: selectedPerson.gender === 'M' ? 'var(--accent-bible)' : '#8b5cf6'
+                      backgroundColor: selectedPerson.gender === 'M' ? 'rgba(var(--accent-bible-rgb), 0.1)' : 'rgba(139, 92, 246, 0.1)',
+                      borderColor: selectedPerson.gender === 'M' ? 'rgba(var(--accent-bible-rgb), 0.2)' : 'rgba(139, 92, 246, 0.2)'
                     }}
                   >
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
                     <span 
-                      className="text-3xl"
+                      className="text-4xl font-black relative z-10 transition-transform group-hover/avatar:scale-110 duration-500"
                       style={{ color: selectedPerson.gender === 'M' ? 'var(--accent-bible)' : '#8b5cf6' }}
                     >
                       {selectedPerson.gender === 'M' ? '♂' : '♀'}
                     </span>
                   </div>
                   <div>
-                    <h2 
-                      className="text-xl font-bold"
-                      style={{ color: 'var(--text-bible)' }}
-                    >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="premium-kicker">Personagem Bíblico</span>
+                    </div>
+                    <h2 className="text-3xl font-black text-bible-text tracking-tight">
                       {selectedPerson.name}
                     </h2>
                     {selectedPerson.tree_id && (
-                      <span 
-                        className="text-xs"
-                        style={{ color: 'var(--accent-bible)' }}
-                      >
-                        Árvore #{selectedPerson.tree_id}
-                      </span>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <GitBranch className="w-3.5 h-3.5 text-bible-accent" />
+                        <span className="text-xs font-bold text-bible-accent/70 uppercase tracking-widest">
+                          Linhagem #{selectedPerson.tree_id}
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
+                  whileHover={{ scale: 1.1, rotate: 90 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setSelectedPerson(null)}
-                  className="p-2 rounded-lg border"
-                  style={{ 
-                    backgroundColor: 'var(--surface-1)',
-                    borderColor: 'var(--border-bible)'
-                  }}
+                  className="premium-icon-button"
                 >
-                  <X className="w-4 h-4" style={{ color: 'var(--text-bible-muted)' }} />
+                  <X className="w-4 h-4" />
                 </motion.button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div 
-                  className="p-3 rounded-xl border"
-                  style={{ 
-                    backgroundColor: 'var(--surface-1)',
-                    borderColor: 'var(--border-bible)'
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="w-3.5 h-3.5" style={{ color: 'var(--text-bible-muted)' }} />
-                    <span 
-                      className="text-[10px] font-medium uppercase tracking-wider"
-                      style={{ color: 'var(--text-bible-muted)' }}
-                    >
-                      Nascimento
-                    </span>
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="premium-card p-5 border-bible-border/30 bg-bible-surface-strong/30">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="p-1.5 rounded-lg bg-emerald-500/10">
+                      <Calendar className="w-4 h-4 text-emerald-500" />
+                    </div>
+                    <span className="text-[11px] font-black uppercase tracking-widest text-bible-text-muted">Nascimento</span>
                   </div>
-                  <p 
-                    className="text-sm font-medium"
-                    style={{ color: 'var(--text-bible)' }}
-                  >
-                    {selectedPerson.birthyear || '?'}
+                  <p className="text-lg font-black text-bible-text">
+                    {selectedPerson.birthyear || 'Período Desconhecido'}
                   </p>
                   {selectedPerson.birthplace && (
-                    <p 
-                      className="text-xs mt-1"
-                      style={{ color: 'var(--text-bible-muted)' }}
-                    >
-                      {selectedPerson.birthplace}
-                    </p>
+                    <div className="flex items-center gap-1.5 mt-2 text-bible-text-muted">
+                      <MapPin className="w-3 h-3 opacity-60" />
+                      <span className="text-xs font-medium">{selectedPerson.birthplace}</span>
+                    </div>
                   )}
                 </div>
                 
-                <div 
-                  className="p-3 rounded-xl border"
-                  style={{ 
-                    backgroundColor: 'var(--surface-1)',
-                    borderColor: 'var(--border-bible)'
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <MapPin className="w-3.5 h-3.5" style={{ color: 'var(--text-bible-muted)' }} />
-                    <span 
-                      className="text-[10px] font-medium uppercase tracking-wider"
-                      style={{ color: 'var(--text-bible-muted)' }}
-                    >
-                      Falecimento
-                    </span>
+                <div className="premium-card p-5 border-bible-border/30 bg-bible-surface-strong/30">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="p-1.5 rounded-lg bg-red-500/10">
+                      <History className="w-4 h-4 text-red-500" />
+                    </div>
+                    <span className="text-[11px] font-black uppercase tracking-widest text-bible-text-muted">Falecimento</span>
                   </div>
-                  <p 
-                    className="text-sm font-medium"
-                    style={{ color: 'var(--text-bible)' }}
-                  >
-                    {selectedPerson.deathyear || '?'}
+                  <p className="text-lg font-black text-bible-text">
+                    {selectedPerson.deathyear || 'Período Desconhecido'}
                   </p>
                   {selectedPerson.deathplace && (
-                    <p 
-                      className="text-xs mt-1"
-                      style={{ color: 'var(--text-bible-muted)' }}
-                    >
-                      {selectedPerson.deathplace}
-                    </p>
+                    <div className="flex items-center gap-1.5 mt-2 text-bible-text-muted">
+                      <MapPin className="w-3 h-3 opacity-60" />
+                      <span className="text-xs font-medium">{selectedPerson.deathplace}</span>
+                    </div>
                   )}
                 </div>
               </div>
 
               {selectedPerson.verses && (
-                <div 
-                  className="p-4 rounded-xl border mb-4"
-                  style={{ 
-                    backgroundColor: 'var(--surface-1)',
-                    borderColor: 'var(--border-bible)'
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <BookOpen className="w-4 h-4" style={{ color: 'var(--accent-bible)' }} />
-                    <span 
-                      className="text-xs font-bold uppercase tracking-wider"
-                      style={{ color: 'var(--text-bible-muted)' }}
-                    >
-                      Referências Bíblicas
-                    </span>
+                <div className="premium-card p-6 border-bible-border/30 bg-bible-surface-strong/20 mb-8">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="p-2 rounded-xl bg-bible-accent/10">
+                      <BookOpen className="w-4 h-4 text-bible-accent" />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-widest text-bible-text-muted">Onde encontrar na Bíblia</span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     {selectedPerson.verses.split(',').map((verse, idx) => (
                       <span
                         key={idx}
-                        className="px-3 py-2 rounded-lg text-sm font-medium border"
-                        style={{ 
-                          backgroundColor: 'var(--surface-2)',
-                          borderColor: 'var(--border-bible)',
-                          color: 'var(--text-bible)'
-                        }}
+                        className="px-4 py-2.5 rounded-xl text-sm font-bold bg-bible-bg border border-bible-border/50 text-bible-text hover:border-bible-accent hover:text-bible-accent transition-all cursor-default shadow-sm"
                       >
                         {verse.trim()}
                       </span>
@@ -1012,14 +929,10 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowTree(true)}
-                  className="w-full flex items-center justify-center gap-2 p-4 rounded-xl font-semibold transition-all"
-                  style={{ 
-                    backgroundColor: 'var(--accent-bible)',
-                    color: 'white'
-                  }}
+                  className="w-full flex items-center justify-center gap-3 p-5 rounded-[20px] font-black uppercase tracking-widest text-sm transition-all bg-gradient-to-r from-bible-accent to-bible-accent-dark text-white shadow-xl shadow-bible-accent/20"
                 >
                   <GitBranch className="w-5 h-5" />
                   Ver Árvore Genealógica

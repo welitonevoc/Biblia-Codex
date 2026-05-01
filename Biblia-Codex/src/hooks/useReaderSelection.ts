@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { Verse, Book, Bookmark as BookmarkType, Tag as TagType } from '../types';
 import { storage } from '../StorageService';
 import { TagService } from '../services/TagService';
+import { stripTags } from '../utils/textUtils';
 
 export interface UseReaderSelectionProps {
   book: Book;
@@ -65,11 +66,9 @@ export const useReaderSelection = ({
   }, []);
 
   const handleStudy = useCallback(() => {
-    console.log('handleStudy called, selectedVerses:', selectedVerses);
     const selected = verses
       .filter(v => selectedVerses.includes(v.verse))
-      .map(v => ({ verse: v.verse, text: v.text }));
-    console.log('handleStudy selected:', selected);
+      .map(v => ({ verse: v.verse, text: stripTags(v.text) }));
     onStudyOpen(selected);
   }, [verses, selectedVerses, onStudyOpen]);
 

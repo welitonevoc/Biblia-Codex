@@ -13,20 +13,54 @@ import {
   ChevronLeft, ChevronRight, Users, MapPin, FileText, BookOpen
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { Toast, ToastType } from '../../components/ui/toast';
+import { stripTags } from '../../utils/textUtils';
+
+const ReaderTooltip = ({ label, children }: { label: string; children: React.ReactNode }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  
+  return (
+    <div 
+      className="relative flex items-center justify-center"
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={() => setIsVisible(false)}
+    >
+      {children}
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: -4, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="absolute bottom-full mb-2 px-3 py-1.5 rounded-lg bg-bible-surface-strong/90 backdrop-blur-md border border-white/10 shadow-xl z-50 pointer-events-none whitespace-nowrap"
+          >
+            <span className="text-[10px] font-black uppercase tracking-widest text-white">{label}</span>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-bible-surface-strong/90 border-r border-b border-white/10" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const ActionButton = ({ icon: Icon, label, onClick, active, danger, highlight }: any) => (
-  <button 
-    onClick={onClick}
-    className={cn(
-      "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all duration-300 min-w-[56px]",
-      active ? "bg-bible-accent text-white shadow-lg shadow-bible-accent/30 scale-105" : "hover:bg-bible-surface-strong text-bible-text-muted",
-      danger && "hover:text-red-500 hover:bg-red-500/10",
-      highlight && !active && "text-bible-accent bg-bible-accent/10 hover:bg-bible-accent/20"
-    )}
-  >
-    <Icon className={cn("w-5 h-5", active ? "stroke-[2.5px]" : "stroke-[1.8px]")} />
-    <span className="text-[9px] font-bold uppercase tracking-tighter">{label}</span>
-  </button>
+  <ReaderTooltip label={label}>
+    <button 
+      onClick={onClick}
+      className={cn(
+        "flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all duration-300 min-w-[56px] relative group",
+        active ? "bg-bible-accent text-white shadow-lg shadow-bible-accent/30 scale-105" : "hover:bg-bible-surface-strong text-bible-text-muted",
+        danger && "hover:text-red-500 hover:bg-red-500/10",
+        highlight && !active && "text-bible-accent bg-bible-accent/10 hover:bg-bible-accent/20"
+      )}
+    >
+      {highlight && !active && (
+        <div className="absolute inset-0 rounded-xl bg-bible-accent/5 animate-pulse" />
+      )}
+      <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110", active ? "stroke-[2.5px]" : "stroke-[1.8px]")} />
+      <span className="text-[9px] font-bold uppercase tracking-tighter opacity-70 group-hover:opacity-100">{label}</span>
+    </button>
+  </ReaderTooltip>
 );
 
 const Plus = ({ className }: { className?: string }) => (
@@ -225,34 +259,48 @@ interface ReaderProps {
 
             <div className="flex items-center gap-1 mt-3 pt-3 border-t border-[var(--border-bible)]/30">
               {settings.modules.commentary && (
-                <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'commentary'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Abrir comentário">
-                  <MessageSquare className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                </button>
+                <ReaderTooltip label="Comentário">
+                  <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'commentary'); }} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Abrir comentário">
+                    <MessageSquare className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                  </button>
+                </ReaderTooltip>
               )}
               {settings.modules.dictionary && (
-                <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'dictionary'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Abrir dicionário">
-                  <Library className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                </button>
+                <ReaderTooltip label="Dicionário">
+                  <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'dictionary'); }} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Abrir dicionário">
+                    <Library className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                  </button>
+                </ReaderTooltip>
               )}
               {settings.modules.xrefs && settings.visualResources.crossRefs && (
-                <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'xrefs'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver referências cruzadas">
-                  <Layers className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                </button>
+                <ReaderTooltip label="Ref. Cruzadas">
+                  <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'xrefs'); }} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver referências cruzadas">
+                    <Layers className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                  </button>
+                </ReaderTooltip>
               )}
-              <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'people'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver pessoas">
-                <Users className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'places'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver lugares">
-                <MapPin className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-              </button>
+              <ReaderTooltip label="Pessoas">
+                <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'people'); }} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver pessoas">
+                  <Users className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                </button>
+              </ReaderTooltip>
+              <ReaderTooltip label="Lugares">
+                <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'places'); }} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver lugares">
+                  <MapPin className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                </button>
+              </ReaderTooltip>
               {settings.textDisplay.footnotes && (
-                <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'footnotes'); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver notas de rodapé">
-                  <FileText className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                </button>
+                <ReaderTooltip label="Notas">
+                  <button onClick={(e) => { e.stopPropagation(); onToolOpen(v, 'footnotes'); }} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool" aria-label="Ver notas de rodapé">
+                    <FileText className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                  </button>
+                </ReaderTooltip>
               )}
-              <button onClick={(e) => { e.stopPropagation(); onShare(v); }} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool ml-auto" aria-label="Compartilhar versículo">
-                <Share2 className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-              </button>
+              <ReaderTooltip label="Compartilhar">
+                <button onClick={(e) => { e.stopPropagation(); onShare(v); }} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)] group/tool ml-auto" aria-label="Compartilhar versículo">
+                  <Share2 className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                </button>
+              </ReaderTooltip>
             </div>
           </div>
         )}
@@ -262,34 +310,48 @@ interface ReaderProps {
                 "inline-flex items-center ml-2 space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-bible-accent/7 backdrop-blur-sm rounded-full px-2 py-1 border border-bible-accent/10",
               )}>
                 {settings.modules.commentary && (
-                  <button onClick={() => onToolOpen(v, 'commentary')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Abrir comentário">
-                    <MessageSquare className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                  </button>
+                  <ReaderTooltip label="Comentário">
+                    <button onClick={() => onToolOpen(v, 'commentary')} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Abrir comentário">
+                      <MessageSquare className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                    </button>
+                  </ReaderTooltip>
                 )}
                 {settings.modules.dictionary && (
-                  <button onClick={() => onToolOpen(v, 'dictionary')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Abrir dicionário">
-                    <Library className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                  </button>
+                  <ReaderTooltip label="Dicionário">
+                    <button onClick={() => onToolOpen(v, 'dictionary')} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Abrir dicionário">
+                      <Library className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                    </button>
+                  </ReaderTooltip>
                 )}
                 {settings.modules.xrefs && settings.visualResources.crossRefs && (
-                  <button onClick={() => onToolOpen(v, 'xrefs')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver referências cruzadas">
-                    <Layers className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                  </button>
+                  <ReaderTooltip label="Ref. Cruzadas">
+                    <button onClick={() => onToolOpen(v, 'xrefs')} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver referências cruzadas">
+                      <Layers className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                    </button>
+                  </ReaderTooltip>
                 )}
-                <button onClick={() => onToolOpen(v, 'people')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver pessoas">
-                  <Users className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                </button>
-                <button onClick={() => onToolOpen(v, 'places')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver lugares">
-                  <MapPin className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                </button>
+                <ReaderTooltip label="Pessoas">
+                  <button onClick={() => onToolOpen(v, 'people')} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver pessoas">
+                    <Users className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                  </button>
+                </ReaderTooltip>
+                <ReaderTooltip label="Lugares">
+                  <button onClick={() => onToolOpen(v, 'places')} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver lugares">
+                    <MapPin className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                  </button>
+                </ReaderTooltip>
                 {settings.textDisplay.footnotes && (
-                  <button onClick={() => onToolOpen(v, 'footnotes')} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver notas de rodapé">
-                    <FileText className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                  </button>
+                  <ReaderTooltip label="Notas">
+                    <button onClick={() => onToolOpen(v, 'footnotes')} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Ver notas de rodapé">
+                      <FileText className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                    </button>
+                  </ReaderTooltip>
                 )}
-                <button onClick={() => onShare(v)} className="min-w-11 min-h-11 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Compartilhar versículo">
-                  <Share2 className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                </button>
+                <ReaderTooltip label="Compartilhar">
+                  <button onClick={() => onShare(v)} className="min-w-10 min-h-10 p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]" aria-label="Compartilhar versículo">
+                    <Share2 className="w-4 h-4 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
+                  </button>
+                </ReaderTooltip>
               </div>
             )}
       </div>
@@ -324,6 +386,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   const containerRef = useRef<HTMLDivElement>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const [isAtBottom, setIsAtBottom] = useState(false);
+  const [toast, setToast] = useState<{ message: string, type: ToastType } | null>(null);
 
   const checkIfAtBottom = useCallback(() => {
     const container = containerRef.current;
@@ -419,13 +482,16 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
 
   const handleCopySelected = useCallback(async () => {
     if (selectedVerseData.length === 0) return;
-    const text = `${selectedReference} - ${selectedVerseData.map((v) => `${v.verse} ${v.text}`).join(' ')}`;
+    const text = `${selectedReference} - ${selectedVerseData.map((v) => `${v.verse} ${stripTags(v.text)}`).join(' ')}`;
     try {
       await navigator.clipboard.writeText(text);
+      setToast({ message: 'Copiado para a área de transferência', type: 'success' });
+      setSelectedVerses([]);
     } catch (error) {
       console.error('Erro ao copiar versículos selecionados:', error);
+      setToast({ message: 'Erro ao copiar texto', type: 'error' });
     }
-  }, [selectedVerseData, selectedReference]);
+  }, [selectedVerseData, selectedReference, setSelectedVerses]);
 
   const handleToolOpen = useCallback((v: Verse, type: string) => {
     if (type === 'commentary') {
@@ -733,7 +799,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
                 <ActionButton 
                   icon={Share2} 
                   label="Enviar" 
-                  onClick={() => onShare(selectedVerseData.map(v => ({ verse: v.verse, text: v.text })), selectedReference)} 
+                  onClick={() => onShare(selectedVerseData.map(v => ({ verse: v.verse, text: stripTags(v.text) })), selectedReference)} 
                 />
                 <ActionButton 
                   icon={Tag} 
@@ -848,6 +914,13 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
         chapter={selectedCommentaryVerse?.chapter || 0}
         verse={selectedCommentaryVerse?.verse || 0}
         onNavigate={onNavigate}
+      />
+
+      <Toast 
+        isVisible={!!toast} 
+        message={toast?.message || ''} 
+        type={toast?.type || 'success'} 
+        onClose={() => setToast(null)} 
       />
     </div>
   );

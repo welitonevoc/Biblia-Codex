@@ -165,40 +165,59 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
   }
 
   return (
-    <div className="flex flex-col h-full relative" style={{ backgroundColor: 'var(--bg-bible)' }}>
+    <div className="flex flex-col h-full relative overflow-hidden" style={{ backgroundColor: 'var(--bg-bible)' }}>
+      {/* Background Decorator Premium */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: 'var(--accent-bible)', opacity: 0.05 }} />
-        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: '#8b5cf6', opacity: 0.05 }} />
+        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-bible-accent/10 blur-[100px]" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-blue-500/10 blur-[100px]" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(var(--text-bible) 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }} />
       </div>
 
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="shrink-0 relative px-4 py-4 z-10">
-        <div className="absolute inset-0 border-b" style={{ borderColor: 'var(--border-bible)' }} />
-        
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        className="shrink-0 relative z-20 px-6 py-5 backdrop-blur-xl bg-bible-bg/80 border-b border-bible-border/50 shadow-sm"
+      >
         <div className="relative">
-          <div className="flex items-start justify-between mb-3">
+          <div className="flex items-start justify-between mb-5">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <MapPin className="w-4 h-4" style={{ color: 'var(--accent-bible)' }} />
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--accent-bible)' }}>Geografia</span>
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="p-2 rounded-lg bg-bible-accent/10">
+                  <MapPin className="w-4 h-4 text-bible-accent" />
+                </div>
+                <span className="premium-kicker">Geografia Bíblica</span>
               </div>
-              <h1 className="text-lg font-bold" style={{ color: 'var(--text-bible)', fontFamily: 'var(--font-display)' }}>Lugares Bíblicos</h1>
-              <div className="flex items-center gap-2 mt-1.5">
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)' }}>
-                  <MapPin className="w-3 h-3" style={{ color: 'var(--text-bible-muted)' }} />
-                  <span className="text-xs" style={{ color: 'var(--text-bible-muted)' }}>{filteredPlaces.length} lugares</span>
+              <h1 className="text-2xl font-black text-bible-text tracking-tight">Cenários Bíblicos</h1>
+              <div className="flex items-center gap-3 mt-2">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-bible-surface-strong/50 border border-bible-border/50 shadow-inner">
+                  <MapPin className="w-3 h-3 text-bible-accent" />
+                  <span className="text-[11px] font-bold text-bible-text-muted">
+                    {filteredPlaces.length} <span className="opacity-60">Locais</span>
+                  </span>
                 </div>
               </div>
             </div>
             {onClose && (
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onClose} className="p-2 rounded-lg transition-colors" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)' }}>
-                <X className="w-4 h-4" style={{ color: 'var(--text-bible-muted)' }} />
+              <motion.button 
+                whileHover={{ scale: 1.1, rotate: 90 }} 
+                whileTap={{ scale: 0.9 }} 
+                onClick={onClose} 
+                className="premium-icon-button"
+              >
+                <X className="w-4 h-4" />
               </motion.button>
             )}
           </div>
 
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-bible-subtle)' }} />
-            <input type="text" placeholder="Buscar lugar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border-bible)', color: 'var(--text-bible)' }} />
+          <div className="relative group">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-bible-text-subtle transition-colors group-focus-within:text-bible-accent" />
+            <input 
+              type="text" 
+              placeholder="Buscar cidade, monte, rio..." 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+              className="w-full pl-11 pr-4 py-3 rounded-2xl text-sm bg-bible-surface-strong/50 border border-bible-border/50 focus:border-bible-accent/50 focus:ring-4 focus:ring-bible-accent/10 transition-all outline-none" 
+            />
           </div>
         </div>
       </motion.div>

@@ -88,9 +88,9 @@ function AppContent() {
 
   const { currentBook, currentChapter, targetVerse, setTargetVerse, handleSelect } = useReaderState();
   const { tracks: audioTracks, hasSupport: hasAudioSupport } = useAudioTracks(currentBook, currentChapter);
-  const { isNavOpen, isSettingsOpen, isStudyOpen, isHamburgerOpen, isShareOpen, isToolOpen, setIsNavOpen, setIsSettingsOpen, setIsStudyOpen, setIsHamburgerOpen, setIsShareOpen, setIsToolOpen, closeNav, closeSettings, closeStudy, closeHamburger, closeShare, closeTool } = useUIState();
-  const { selectedVersesForStudy, setIsStudyOpen: setStudyOpen, openStudyPanel } = useStudyPanel();
-  const { shareData, setIsShareOpen: setShareOpen, openShare } = useShare();
+  const { isNavOpen, isSettingsOpen, isHamburgerOpen, isToolOpen, setIsNavOpen, setIsSettingsOpen, setIsHamburgerOpen, setIsToolOpen, closeNav, closeSettings, closeHamburger, closeTool } = useUIState();
+  const { selectedVersesForStudy, isStudyOpen, setIsStudyOpen, openStudyPanel } = useStudyPanel();
+  const { shareData, isShareOpen, setIsShareOpen, openShare } = useShare();
   const [isBiblicalMenuOpen, setIsBiblicalMenuOpen] = useState(false);
   const [isReaderAtBottom, setIsReaderAtBottom] = useState(false);
   

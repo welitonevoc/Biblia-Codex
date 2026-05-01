@@ -473,7 +473,7 @@ Responda apenas com o JSON, sem texto adicional.
 `;
 
   try {
-    const response = await callAI(READING_PLAN_SYSTEM_PROMPT, userPrompt, provider);
+    const response = await callAI(READING_PLAN_SYSTEM_PROMPT, userPrompt, apiKey);
     
     if (response.startsWith('Erro') || response.includes('não configurada') || response.includes('Tente novamente')) {
       return { success: false, error: response };

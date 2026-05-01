@@ -1,13 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, Download, Share2, Palette, Type, 
   Layout, Sparkles, Image as ImageIcon,
-  Check, ChevronLeft, ChevronRight, Copy
+  Check, ChevronLeft, ChevronRight, Copy,
+  Maximize2, Smartphone, Monitor, Instagram, Send
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { cn } from '../../utils/cn';
 import { useAppContext } from '../../app/AppContext';
+import { stripTags } from '../../utils/textUtils';
 
 interface VerseCardGeneratorProps {
   verses: { verse: number; text: string }[];
@@ -24,73 +26,74 @@ type CardTheme = {
   textColor: string;
   accentColor: string;
   overlay?: string;
+  glass?: boolean;
 };
 
 const THEMES: CardTheme[] = [
   {
-    id: 'minimal-light',
-    name: 'Minimal Light',
-    className: 'bg-white',
-    gradient: 'linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)',
-    textColor: '#1f2937',
-    accentColor: '#3b82f6'
-  },
-  {
-    id: 'minimal-dark',
-    name: 'Minimal Dark',
-    className: 'bg-gray-900',
-    gradient: 'linear-gradient(135deg, #111827 0%, #1f2937 100%)',
-    textColor: '#f9fafb',
-    accentColor: '#60a5fa'
-  },
-  {
-    id: 'golden-hour',
-    name: 'Golden Hour',
-    className: 'bg-orange-500',
-    gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+    id: 'insta-gradient-1',
+    name: 'Vibrant Sunset',
+    className: 'bg-gradient-to-tr from-[#f09433] via-[#e6683c] to-[#bc1888]',
+    gradient: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
     textColor: '#ffffff',
-    accentColor: '#fef3c7'
+    accentColor: '#ffffff',
+    glass: true
   },
   {
-    id: 'midnight-grace',
-    name: 'Midnight Grace',
-    className: 'bg-indigo-900',
-    gradient: 'linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)',
-    textColor: '#e0e7ff',
-    accentColor: '#818cf8',
-    overlay: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'1\' fill=\'white\' fill-opacity=\'0.2\'/%3E%3C/svg%3E")'
+    id: 'whatsapp-dark',
+    name: 'WhatsApp Night',
+    className: 'bg-[#0b141a]',
+    gradient: 'linear-gradient(135deg, #0b141a 0%, #111b21 100%)',
+    textColor: '#e9edef',
+    accentColor: '#00a884'
   },
   {
-    id: 'emerald-peace',
-    name: 'Emerald Peace',
-    className: 'bg-emerald-800',
-    gradient: 'linear-gradient(135deg, #065f46 0%, #064e3b 100%)',
-    textColor: '#d1fae5',
-    accentColor: '#34d399'
+    id: 'royal-gold',
+    name: 'Obsidian Gold',
+    className: 'bg-[#0f172a]',
+    gradient: 'radial-gradient(circle at top left, #1e293b 0%, #020617 100%)',
+    textColor: '#f8fafc',
+    accentColor: '#fbbf24',
+    overlay: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M0 0h20v20H0z\' fill=\'none\'/%3E%3Ccircle cx=\'10\' cy=\'10\' r=\'0.5\' fill=\'rgba(251, 191, 36, 0.1)\'/%3E%3C/svg%3E")'
   },
   {
-    id: 'deep-ocean',
-    name: 'Deep Ocean',
-    className: 'bg-blue-900',
-    gradient: 'linear-gradient(135deg, #1e3a8a 0%, #172554 100%)',
-    textColor: '#dbeafe',
-    accentColor: '#60a5fa'
-  },
-  {
-    id: 'sunset-psalms',
-    name: 'Sunset',
-    className: 'bg-rose-600',
-    gradient: 'linear-gradient(135deg, #e11d48 0%, #fb923c 100%)',
+    id: 'ethereal-blue',
+    name: 'Ethereal',
+    className: 'bg-[#0ea5e9]',
+    gradient: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
     textColor: '#ffffff',
-    accentColor: '#ffe4e6'
+    accentColor: '#e0f2fe',
+    glass: true
+  },
+  {
+    id: 'minimal-noir',
+    name: 'Minimal Noir',
+    className: 'bg-black',
+    gradient: 'linear-gradient(180deg, #000000 0%, #1a1a1a 100%)',
+    textColor: '#ffffff',
+    accentColor: '#525252'
+  },
+  {
+    id: 'soft-sakura',
+    name: 'Sakura',
+    className: 'bg-[#fdf2f8]',
+    gradient: 'linear-gradient(135deg, #fdf2f8 0%, #fbcfe8 100%)',
+    textColor: '#831843',
+    accentColor: '#be185d'
   }
 ];
 
 const FONTS = [
-  { id: 'serif', name: 'Untitled Serif', className: 'font-serif' },
-  { id: 'sans', name: 'Sans Serif', className: 'font-sans' },
-  { id: 'mono', name: 'Monospace', className: 'font-mono' },
-  { id: 'display', name: 'Display', className: 'font-display' }
+  { id: 'serif', name: 'Premium Serif', className: 'font-serif tracking-tight' },
+  { id: 'sans', name: 'Modern Sans', className: 'font-sans font-black' },
+  { id: 'display', name: 'Elegant Display', className: 'font-display italic' },
+  { id: 'system', name: 'System Bold', className: 'font-sans font-bold' }
+];
+
+const FORMATS = [
+  { id: 'square', name: '1:1 Square', icon: Smartphone, aspect: '1/1' },
+  { id: 'story', name: '9:16 Story', icon: Instagram, aspect: '9/16' },
+  { id: 'post', name: '4:5 Portrait', icon: Smartphone, aspect: '4/5' }
 ];
 
 export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
@@ -102,37 +105,27 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
   const { currentVersion } = useAppContext();
   const [currentTheme, setCurrentTheme] = useState(THEMES[0]);
   const [currentFont, setCurrentFont] = useState(FONTS[0]);
+  const [currentFormat, setCurrentFormat] = useState(FORMATS[0]);
   const [showReference, setShowReference] = useState(true);
   const [fontSize, setFontSize] = useState(24);
   const [isExporting, setIsExporting] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const cleanShareText = (text: string) =>
-    text
-      .replace(/<TS\d*>/gi, '')
-      .replace(/<\/?TS>/gi, '')
-      .replace(/<W[HG]\d+>/gi, '')
-      .replace(/<S>\s*[HG]?\d+\s*<\/S>/gi, '')
-      .replace(/<S\d+>/gi, '')
-      .replace(/<[^>]+>/g, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
-
-  const fullText = verses.map(v => cleanShareText(v.text)).join(' ');
+  const fullText = verses.map(v => stripTags(v.text)).join(' ');
   const versionLabel = currentVersion?.abbreviation || currentVersion?.id || '';
   const referenceWithVersion = versionLabel && !reference.includes(versionLabel)
     ? `${reference} ${versionLabel}`
     : reference;
-  const singleLineShareText = `${referenceWithVersion}: ${fullText}`;
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
     setIsExporting(true);
     try {
       const canvas = await html2canvas(cardRef.current, {
-        scale: 3, // High quality
+        scale: 4, 
         backgroundColor: null,
-        useCORS: true
+        useCORS: true,
+        logging: false
       } as any);
       const link = document.createElement('a');
       link.download = `Codex-${reference.replace(/\s/g, '-')}.png`;
@@ -149,12 +142,12 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
     if (!cardRef.current) return;
     setIsExporting(true);
     try {
-      const canvas = await html2canvas(cardRef.current, { scale: 2 } as any);
+      const canvas = await html2canvas(cardRef.current, { scale: 3 } as any);
       canvas.toBlob(async (blob) => {
         if (blob) {
           const item = new ClipboardItem({ 'image/png': blob });
           await navigator.clipboard.write([item]);
-          alert('Imagem copiada para a área de transferência!');
+          // Toast feedback would be nice here
         }
       });
     } catch (err) {
@@ -172,165 +165,224 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        className="fixed inset-0 z-[500] flex flex-col md:flex-row items-stretch bg-black overflow-hidden"
       >
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
-        
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 20 }}
-          className="relative bg-[var(--surface-0)] w-full max-w-5xl rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden border border-white/10"
+        {/* Close Button Floating */}
+        <button 
+          onClick={onClose}
+          className="absolute top-6 right-6 z-[600] w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all active:scale-90"
         >
-          {/* Preview Area */}
-          <div className="flex-1 p-8 bg-black/20 flex items-center justify-center min-h-[400px]">
+          <X className="w-6 h-6 text-white" />
+        </button>
+
+        {/* Left: Preview Area (Instagram Style) */}
+        <div className="flex-1 relative flex items-center justify-center p-4 md:p-12 overflow-hidden bg-[#121212]">
+          <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+            <div className="absolute top-1/4 -left-1/4 w-[80%] h-[80%] bg-bible-accent/20 blur-[120px] rounded-full animate-pulse" />
+            <div className="absolute bottom-1/4 -right-1/4 w-[80%] h-[80%] bg-purple-500/10 blur-[120px] rounded-full" />
+          </div>
+
+          <motion.div 
+            layout
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="relative z-10 flex items-center justify-center w-full h-full max-h-[85vh]"
+          >
             <div 
               ref={cardRef}
               className={cn(
-                "relative w-[400px] h-[400px] shadow-2xl overflow-hidden flex flex-col items-center justify-center p-10 text-center",
+                "relative shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col items-center justify-center p-12 text-center",
                 currentTheme.className,
                 currentFont.className
               )}
-              style={{ background: currentTheme.gradient }}
+              style={{ 
+                background: currentTheme.gradient,
+                aspectRatio: currentFormat.aspect,
+                height: '100%',
+                maxHeight: '100%',
+                width: 'auto'
+              }}
             >
               {currentTheme.overlay && (
                 <div className="absolute inset-0 z-0" style={{ backgroundImage: currentTheme.overlay }} />
               )}
               
-              <div className="relative z-10 space-y-6 flex flex-col items-center">
-                <Sparkles className="w-8 h-8 opacity-40 mb-2" style={{ color: currentTheme.accentColor }} />
+              <div className="relative z-10 flex flex-col items-center gap-10 max-w-[80%]">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center rotate-12">
+                  <Sparkles className="w-6 h-6" style={{ color: currentTheme.accentColor }} />
+                </div>
                 
                 <p 
-                  className="leading-relaxed font-medium"
+                  className="leading-[1.4] font-bold"
                   style={{ color: currentTheme.textColor, fontSize: `${fontSize}px` }}
                 >
-                  {singleLineShareText}
+                  “{fullText}”
                 </p>
                 
                 {showReference && (
-                  <div className="pt-6 flex flex-col items-center gap-2">
-                    <div className="w-6 h-px opacity-30" style={{ backgroundColor: currentTheme.textColor }} />
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-[2px] rounded-full opacity-40" style={{ backgroundColor: currentTheme.textColor }} />
                     <span 
-                      className="text-sm font-bold uppercase tracking-[0.2em]"
+                      className="text-sm font-black uppercase tracking-[0.3em]"
                       style={{ color: currentTheme.accentColor }}
                     >
                       {referenceWithVersion}
                     </span>
                   </div>
                 )}
+              </div>
 
-                <div className="absolute bottom-6 opacity-20 text-[10px] uppercase tracking-widest" style={{ color: currentTheme.textColor }}>
-                  Codex Bible App
+              {/* Branding Footer */}
+              <div className="absolute bottom-12 flex items-center gap-3 opacity-30">
+                <div className="w-6 h-6 rounded-lg bg-white/20 border border-white/20 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
                 </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: currentTheme.textColor }}>
+                  Codex • Biblia Digital
+                </span>
               </div>
             </div>
+          </motion.div>
+        </div>
+
+        {/* Right: Controls Panel (Mobile-First Sheet style on small screens) */}
+        <div className="w-full md:w-[420px] bg-bible-bg border-l border-white/5 flex flex-col z-[550]">
+          {/* Header */}
+          <div className="p-8 border-b border-bible-border/50">
+            <h2 className="text-2xl font-black text-bible-text tracking-tight flex items-center gap-3">
+              <Share2 className="w-6 h-6 text-bible-accent" />
+              Compartilhar Versículo
+            </h2>
+            <p className="text-xs text-bible-text-muted mt-2 font-bold uppercase tracking-widest">Estilize sua mensagem</p>
           </div>
 
-          {/* Controls Area */}
-          <div className="w-full md:w-80 p-6 space-y-8 bg-[var(--surface-1)] border-l border-white/5 overflow-y-auto">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-bold text-[var(--text-bible)]">Gerador de Card</h2>
-              <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
-                <X className="w-5 h-5 text-[var(--text-bible-muted)]" />
-              </button>
-            </div>
-
-            {/* Themes */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-bible-accent/70 uppercase tracking-wider">
-                <Palette className="w-4 h-4" /> Temas
+          <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
+            {/* Formats */}
+            <section className="space-y-4">
+              <div className="text-[10px] font-black text-bible-accent uppercase tracking-[0.2em] mb-4">Formato da Rede Social</div>
+              <div className="flex gap-3">
+                {FORMATS.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setCurrentFormat(f)}
+                    className={cn(
+                      "flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all group",
+                      currentFormat.id === f.id 
+                        ? "bg-bible-accent/10 border-bible-accent" 
+                        : "bg-bible-surface border-transparent hover:bg-bible-surface-strong"
+                    )}
+                  >
+                    <f.icon className={cn("w-5 h-5 transition-transform group-hover:scale-110", currentFormat.id === f.id ? "text-bible-accent" : "text-bible-text-muted")} />
+                    <span className="text-[10px] font-bold uppercase tracking-tight">{f.name}</span>
+                  </button>
+                ))}
               </div>
-              <div className="grid grid-cols-2 gap-2">
+            </section>
+
+            {/* Themes Grid */}
+            <section className="space-y-4">
+              <div className="text-[10px] font-black text-bible-accent uppercase tracking-[0.2em] mb-4">Temas & Ambientes</div>
+              <div className="grid grid-cols-3 gap-3">
                 {THEMES.map(theme => (
                   <button
                     key={theme.id}
                     onClick={() => setCurrentTheme(theme)}
                     className={cn(
-                      "group p-3 rounded-xl border flex flex-col gap-2 transition-all",
+                      "aspect-square rounded-2xl border-4 transition-all overflow-hidden relative group",
                       currentTheme.id === theme.id 
-                        ? "bg-bible-accent/10 border-bible-accent shadow-inner-glow" 
-                        : "bg-white/5 border-transparent hover:bg-white/10"
+                        ? "border-bible-accent scale-105 shadow-xl shadow-bible-accent/20" 
+                        : "border-transparent opacity-60 hover:opacity-100"
                     )}
                   >
-                    <div 
-                      className="w-full h-8 rounded-lg shadow-sm"
-                      style={{ background: theme.gradient }}
-                    />
-                    <span className="text-[10px] font-medium text-[var(--text-bible)]">{theme.name}</span>
+                    <div className={cn("absolute inset-0", theme.className)} />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Palette className="w-5 h-5 text-white" />
+                    </div>
                   </button>
                 ))}
               </div>
-            </div>
+              <div className="text-center pt-2">
+                <span className="text-xs font-bold text-bible-text-muted">{currentTheme.name}</span>
+              </div>
+            </section>
 
             {/* Typography */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-bible-accent/70 uppercase tracking-wider">
-                <Type className="w-4 h-4" /> Tipografia
-              </div>
-              <div className="flex flex-wrap gap-2">
+            <section className="space-y-6">
+              <div className="text-[10px] font-black text-bible-accent uppercase tracking-[0.2em] mb-4">Tipografia & Escala</div>
+              <div className="grid grid-cols-2 gap-3">
                 {FONTS.map(font => (
                   <button
                     key={font.id}
                     onClick={() => setCurrentFont(font)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs transition-all",
+                      "p-3 rounded-xl border transition-all text-sm font-bold",
                       currentFont.id === font.id
-                        ? "bg-bible-accent text-white"
-                        : "bg-white/5 text-[var(--text-bible-muted)] hover:bg-white/10"
+                        ? "bg-bible-text text-bible-bg border-bible-text"
+                        : "bg-bible-surface text-bible-text border-transparent hover:bg-bible-surface-strong"
                     )}
                   >
                     {font.name}
                   </button>
                 ))}
               </div>
-              <div className="pt-2">
-                <label className="text-[10px] text-[var(--text-bible-muted)] mb-2 block uppercase tracking-widest">Tamanho da Fonte</label>
+              <div className="bg-bible-surface p-6 rounded-2xl space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-widest text-bible-text-muted">Escala Visual</span>
+                  <span className="text-xs font-black text-bible-accent">{fontSize}px</span>
+                </div>
                 <input 
                   type="range" 
                   min="16" 
-                  max="40" 
+                  max="60" 
                   value={fontSize} 
                   onChange={(e) => setFontSize(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-bible-accent/20 rounded-lg appearance-none cursor-pointer accent-bible-accent"
+                  className="w-full h-2 bg-bible-bg rounded-lg appearance-none cursor-pointer accent-bible-accent"
                 />
               </div>
-            </div>
+            </section>
 
-            {/* Options */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-bible-accent/70 uppercase tracking-wider">
-                <Layout className="w-4 h-4" /> Layout
-              </div>
-              <label className="flex items-center gap-3 p-3 rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
-                <input 
-                  type="checkbox" 
-                  checked={showReference} 
-                  onChange={(e) => setShowReference(e.target.checked)}
-                  className="w-4 h-4 rounded border-white/20 bg-transparent text-bible-accent focus:ring-bible-accent"
-                />
-                <span className="text-sm text-[var(--text-bible)]">Mostrar Referência</span>
-              </label>
-            </div>
-
-            {/* Actions */}
-            <div className="pt-4 grid grid-cols-2 gap-3">
-              <button
-                onClick={handleCopy}
-                disabled={isExporting}
-                className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-white/5 border border-white/10 text-[var(--text-bible)] hover:bg-white/10 transition-all font-semibold text-sm disabled:opacity-50"
+            {/* Layout Options */}
+            <section className="space-y-4 pb-20">
+              <div className="text-[10px] font-black text-bible-accent uppercase tracking-[0.2em] mb-4">Visibilidade</div>
+              <button 
+                onClick={() => setShowReference(!showReference)}
+                className="w-full flex items-center justify-between p-4 rounded-2xl bg-bible-surface hover:bg-bible-surface-strong transition-all"
               >
-                <Copy className="w-4 h-4" /> Copiar
+                <div className="flex items-center gap-3">
+                  <Layout className="w-5 h-5 text-bible-accent" />
+                  <span className="text-sm font-bold">Mostrar Referência Bíblica</span>
+                </div>
+                <div className={cn(
+                  "w-12 h-6 rounded-full transition-colors relative flex items-center",
+                  showReference ? "bg-bible-accent" : "bg-bible-bg border border-bible-border"
+                )}>
+                  <div className={cn(
+                    "w-4 h-4 rounded-full bg-white shadow-sm transition-transform",
+                    showReference ? "translate-x-7" : "translate-x-1"
+                  )} />
+                </div>
               </button>
-              <button
-                onClick={handleDownload}
-                disabled={isExporting}
-                className="flex items-center justify-center gap-2 p-3 rounded-2xl bg-bible-accent text-white shadow-lg shadow-bible-accent/25 hover:bg-bible-accent-strong transition-all font-bold text-sm disabled:opacity-50"
-              >
-                <Download className="w-4 h-4" /> {isExporting ? 'Salvando...' : 'Salvar PNG'}
-              </button>
-            </div>
+            </section>
           </div>
-        </motion.div>
+
+          {/* Action Footer */}
+          <div className="p-8 bg-bible-surface/50 backdrop-blur-xl border-t border-bible-border/50 grid grid-cols-2 gap-4">
+            <button
+              onClick={handleCopy}
+              disabled={isExporting}
+              className="h-14 rounded-2xl bg-bible-surface border border-bible-border flex items-center justify-center gap-3 font-black text-sm uppercase tracking-tight hover:bg-bible-surface-strong transition-all active:scale-95 disabled:opacity-50"
+            >
+              <Copy className="w-5 h-5" /> Copiar
+            </button>
+            <button
+              onClick={handleDownload}
+              disabled={isExporting}
+              className="h-14 rounded-2xl bg-bible-accent text-white flex items-center justify-center gap-3 font-black text-sm uppercase tracking-tight shadow-xl shadow-bible-accent/30 hover:brightness-110 transition-all active:scale-95 disabled:opacity-50"
+            >
+              <Download className="w-5 h-5" /> {isExporting ? 'Salvando...' : 'Salvar PNG'}
+            </button>
+          </div>
+        </div>
       </motion.div>
     </AnimatePresence>
   );
