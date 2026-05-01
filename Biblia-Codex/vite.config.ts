@@ -16,8 +16,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     optimizeDeps: {
-      include: ['lucide-react', '@google/genai', 'sql.js'],
-      exclude: ['firebase'],
+      include: ['lucide-react', '@google/genai'],
+      exclude: ['firebase', 'sql.js'],
     },
     // ✅ CAPACITOR: caminhos relativos para funcionar no WebView do Android
     base: './',
@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       chunkSizeWarningLimit: 2000,
       cssMinify: false, // Evita minificação com Lightning CSS
+      assetsInlineLimit: 0, // Não inline WASM
     },
     server: {
       host: '0.0.0.0',
@@ -40,7 +41,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     publicDir: 'public',
-    assetsInclude: ['**/*.json.gz'],
+    assetsInclude: ['**/*.wasm', '**/*.json.gz'],
     preview: {
       port: 4173,
     },

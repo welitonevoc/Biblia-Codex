@@ -5,6 +5,7 @@ import { readModuleBinary } from './services/moduleService';
 import { BookNumberConverter } from './services/BookNumberConverter';
 import { footnoteService } from './services/FootnoteService';
 import initSqlJs from 'sql.js';
+import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 import { getGeminiExplanation, getAIResponse } from './services/geminiService';
 import { getDataUrl } from './utils/dataAssets';
 import { Capacitor } from '@capacitor/core';
@@ -55,14 +56,14 @@ const queryCache = new SimpleLRU<string, Verse[]>(100, 5 * 60 * 1000);
 
 export const getSqlInstance = async () => {
   if (!sqlInstance) {
-    sqlInstance = await initSqlJs({
-      locateFile: (file) => {
-        // Garantir que estamos buscando da raiz do servidor local
-        const path = `${window.location.origin}/${file}`;
-        console.log(`[BibleService] Iniciando motor SQL. Buscando WASM em: ${path}`);
-        return path;
-      }
-    });
+    // sqlWasmUrl é resolvido pelo Vite em build time (funciona com base: './')
+    console.log('[BibleService] Carregando WASM de:', sqlWasmUrl);
+    const response = await fetch(sqlWasmUrl);
+    if (!response.ok) {
+      throw new Error(`Falha ao carregar ${sqlWasmUrl}: ${response.status} ${response.statusText}`);
+    }
+    const wasmBinary = await response.arrayBuffer();
+    sqlInstance = await initSqlJs({ wasmBinary });
   }
   return sqlInstance;
 };
