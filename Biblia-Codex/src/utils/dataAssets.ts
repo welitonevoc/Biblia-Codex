@@ -1,30 +1,16 @@
 /**
  * This utility maps data filenames to their bundled URLs.
- * Since the data files were moved to node_modules, we use Vite's glob import
- * to ensure they are correctly processed and available during both dev and production.
+ * Files are copied to public/data/ during build preparation.
  */
-
-// Import all files in the data directory as URLs
-const dataAssets = import.meta.glob('/node_modules/@biblia-codex/data/*', { 
-  query: '?url', 
-  eager: true 
-}) as Record<string, { default: string }>;
 
 /**
  * Returns the correct URL for a data file given its original filename.
+ * Looks in /data/ (public folder) for the file.
  */
 export function getDataUrl(filename: string): string {
-  // filename might be "/Merrill.json.gz" or "Merrill.json.gz"
-  const cleanName = filename.startsWith('/') ? filename.substring(1) : filename;
+  // Clean the filename - remove any path prefixes
+  const cleanName = filename.split('/').pop() || filename;
   
-  // The glob keys look like "/node_modules/@biblia-codex/data/Merrill.json.gz"
-  const assetKey = `/node_modules/@biblia-codex/data/${cleanName}`;
-  const asset = dataAssets[assetKey];
-  
-  if (asset) {
-    return asset.default;
-  }
-  
-  // Fallback to original path if not found (might still be in public)
-  return filename;
+  // Return the path to the data folder in public
+  return `/data/${cleanName}`;
 }
