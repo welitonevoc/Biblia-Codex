@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { ReaderTooltip } from '../bible/Reader';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
@@ -198,14 +199,16 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
               </div>
             </div>
             {onClose && (
-              <motion.button 
-                whileHover={{ scale: 1.1, rotate: 90 }} 
-                whileTap={{ scale: 0.9 }} 
-                onClick={onClose} 
-                className="premium-icon-button"
-              >
-                <X className="w-4 h-4" />
-              </motion.button>
+              <ReaderTooltip label="Fechar">
+                <motion.button 
+                  whileHover={{ scale: 1.1, rotate: 90 }} 
+                  whileTap={{ scale: 0.9 }} 
+                  onClick={onClose} 
+                  className="premium-icon-button"
+                >
+                  <X className="w-4 h-4" />
+                </motion.button>
+              </ReaderTooltip>
             )}
           </div>
 
@@ -240,66 +243,67 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                   const hasImage = images.length > 0;
                   
                   return (
-                    <motion.button 
-                      key={place.id || place.location || idx} 
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }} 
-                      animate={{ opacity: 1, scale: 1 }} 
-                      exit={{ opacity: 0, scale: 0.9 }} 
-                      transition={{ delay: idx * 0.02 }} 
-                      whileHover={{ y: -4, scale: 1.02 }} 
-                      whileTap={{ scale: 0.98 }} 
-                      onClick={() => { setSelectedPlace(place); setCurrentImageIndex(0); }} 
-                      className="w-full flex items-stretch gap-4 p-4 rounded-2xl text-left transition-all border group bg-bible-bg border-bible-border/50 hover:border-bible-accent/30 shadow-sm"
-                    >
-                      <div className="w-24 h-24 rounded-xl shrink-0 overflow-hidden bg-bible-surface-strong/50 border border-bible-border/30 relative">
-                        {hasImage ? (
-                          <>
-                            <img 
-                              src={images[0]} 
-                              alt={place.location} 
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                          </>
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-bible-accent/5">
-                            <MapPin className="w-8 h-8 text-bible-accent/30" />
-                          </div>
-                        )}
-                        {images.length > 1 && (
-                          <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-[9px] font-black text-white uppercase tracking-tighter">
-                            +{images.length - 1} fotos
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex-1 flex flex-col justify-center min-w-0 py-1">
-                        <h3 className="text-base font-black text-bible-text tracking-tight group-hover:text-bible-accent transition-colors truncate">{place.location}</h3>
-                        {place.modernName && (
-                          <p className="text-[11px] font-bold mt-0.5 flex items-center gap-1.5 text-bible-text-muted truncate">
-                            <MapPin className="w-3 h-3 text-bible-accent/60" /> 
-                            {place.modernName}
-                          </p>
-                        )}
-                        {place.verses && (
-                          <div className="flex items-center gap-1.5 mt-2.5">
-                            <div className="px-2 py-0.5 rounded-md bg-bible-accent/10 border border-bible-accent/20">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-bible-accent">
-                                {place.verses.split(',').length} Ref. Bíblicas
-                              </span>
+                    <ReaderTooltip key={place.id || place.location || idx} label={`Explorar ${place.location}`}>
+                      <motion.button 
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }} 
+                        animate={{ opacity: 1, scale: 1 }} 
+                        exit={{ opacity: 0, scale: 0.9 }} 
+                        transition={{ delay: idx * 0.02 }} 
+                        whileHover={{ y: -4, scale: 1.02 }} 
+                        whileTap={{ scale: 0.98 }} 
+                        onClick={() => { setSelectedPlace(place); setCurrentImageIndex(0); }} 
+                        className="w-full flex items-stretch gap-4 p-4 rounded-2xl text-left transition-all border group bg-bible-bg border-bible-border/50 hover:border-bible-accent/30 shadow-sm"
+                      >
+                        <div className="w-24 h-24 rounded-xl shrink-0 overflow-hidden bg-bible-surface-strong/50 border border-bible-border/30 relative">
+                          {hasImage ? (
+                            <>
+                              <img 
+                                src={images[0]} 
+                                alt={place.location} 
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                            </>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-bible-accent/5">
+                              <MapPin className="w-8 h-8 text-bible-accent/30" />
                             </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="shrink-0 flex items-center pr-1">
-                        <div className="w-8 h-8 rounded-full bg-bible-surface-strong flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all border border-bible-border/50">
-                          <ChevronRight className="w-4 h-4 text-bible-accent" />
+                          )}
+                          {images.length > 1 && (
+                            <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/50 backdrop-blur-md text-[9px] font-black text-white uppercase tracking-tighter">
+                              +{images.length - 1} fotos
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    </motion.button>
+                        
+                        <div className="flex-1 flex flex-col justify-center min-w-0 py-1">
+                          <h3 className="text-base font-black text-bible-text tracking-tight group-hover:text-bible-accent transition-colors truncate">{place.location}</h3>
+                          {place.modernName && (
+                            <p className="text-[11px] font-bold mt-0.5 flex items-center gap-1.5 text-bible-text-muted truncate">
+                              <MapPin className="w-3 h-3 text-bible-accent/60" /> 
+                              {place.modernName}
+                            </p>
+                          )}
+                          {place.verses && (
+                            <div className="flex items-center gap-1.5 mt-2.5">
+                              <div className="px-2 py-0.5 rounded-md bg-bible-accent/10 border border-bible-accent/20">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-bible-accent">
+                                  {place.verses.split(',').length} Ref. Bíblicas
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="shrink-0 flex items-center pr-1">
+                          <div className="w-8 h-8 rounded-full bg-bible-surface-strong flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all border border-bible-border/50">
+                            <ChevronRight className="w-4 h-4 text-bible-accent" />
+                          </div>
+                        </div>
+                      </motion.button>
+                    </ReaderTooltip>
                   );
                 })}
               </AnimatePresence>

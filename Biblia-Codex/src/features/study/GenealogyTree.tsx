@@ -528,14 +528,16 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
           </div>
           
           {onClose && (
-            <motion.button
-              whileHover={{ scale: 1.1, rotate: 90 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={onClose}
-              className="premium-icon-button"
-            >
-              <X className="w-4 h-4" />
-            </motion.button>
+            <ReaderTooltip label="Fechar">
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onClose}
+                className="premium-icon-button"
+              >
+                <X className="w-4 h-4" />
+              </motion.button>
+            </ReaderTooltip>
           )}
         </div>
 
@@ -580,27 +582,28 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
 
             <div className="flex p-1 rounded-2xl bg-bible-surface-strong/50 border border-bible-border/50">
               {[
-                { id: false as const, icon: List, label: 'Lista' },
-                { id: true as const, icon: GitBranch, label: 'Árvore' },
+                { id: false as const, icon: List, label: 'Visualizar Lista' },
+                { id: true as const, icon: GitBranch, label: 'Visualizar Árvore' },
               ].map((mode) => (
-                <motion.button
-                  key={String(mode.id)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    setShowTree(mode.id);
-                    if (mode.id) setSelectedPerson(null);
-                  }}
-                  className={cn(
-                    'flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all duration-300',
-                    showTree === mode.id
-                      ? 'bg-bible-accent text-white shadow-lg shadow-bible-accent/25'
-                      : 'text-bible-text-muted hover:bg-bible-accent/10'
-                  )}
-                >
-                  <mode.icon className="w-4 h-4" />
-                  <span className="hidden md:inline uppercase tracking-widest">{mode.label}</span>
-                </motion.button>
+                <ReaderTooltip key={String(mode.id)} label={mode.label}>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setShowTree(mode.id);
+                      if (mode.id) setSelectedPerson(null);
+                    }}
+                    className={cn(
+                      'flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all duration-300',
+                      showTree === mode.id
+                        ? 'bg-bible-accent text-white shadow-lg shadow-bible-accent/25'
+                        : 'text-bible-text-muted hover:bg-bible-accent/10'
+                    )}
+                  >
+                    <mode.icon className="w-4 h-4" />
+                    <span className="hidden md:inline uppercase tracking-widest">{mode.label.replace('Visualizar ', '')}</span>
+                  </motion.button>
+                </ReaderTooltip>
               ))}
             </div>
 

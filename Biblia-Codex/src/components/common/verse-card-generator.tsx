@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, Download, Share2, Palette, Type, 
   Layout, Sparkles, Image as ImageIcon,
   Check, ChevronLeft, ChevronRight, Copy,
-  Maximize2, Smartphone, Monitor, Instagram, Send
+  Maximize2, Smartphone, Monitor, Instagram, Send,
+  Layers, Hexagon, Wand2
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { cn } from '../../utils/cn';
@@ -74,12 +75,12 @@ const THEMES: CardTheme[] = [
     accentColor: '#525252'
   },
   {
-    id: 'soft-sakura',
-    name: 'Sakura',
-    className: 'bg-[#fdf2f8]',
-    gradient: 'linear-gradient(135deg, #fdf2f8 0%, #fbcfe8 100%)',
-    textColor: '#831843',
-    accentColor: '#be185d'
+    id: 'divine-light',
+    name: 'Divine Light',
+    className: 'bg-white',
+    gradient: 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)',
+    textColor: '#0f172a',
+    accentColor: '#2563eb'
   }
 ];
 
@@ -87,7 +88,7 @@ const FONTS = [
   { id: 'serif', name: 'Premium Serif', className: 'font-serif tracking-tight' },
   { id: 'sans', name: 'Modern Sans', className: 'font-sans font-black' },
   { id: 'display', name: 'Elegant Display', className: 'font-display italic' },
-  { id: 'system', name: 'System Bold', className: 'font-sans font-bold' }
+  { id: 'mono', name: 'Codex Mono', className: 'font-mono' }
 ];
 
 const FORMATS = [
@@ -147,7 +148,6 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
         if (blob) {
           const item = new ClipboardItem({ 'image/png': blob });
           await navigator.clipboard.write([item]);
-          // Toast feedback would be nice here
         }
       });
     } catch (err) {
@@ -167,31 +167,32 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[500] flex flex-col md:flex-row items-stretch bg-black overflow-hidden"
       >
-        {/* Close Button Floating */}
+        {/* Background Decorative Blur */}
+        <div className="absolute inset-0 opacity-40 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 -left-1/4 w-[80%] h-[80%] bg-bible-accent/10 blur-[150px] rounded-full" />
+          <div className="absolute bottom-0 -right-1/4 w-[80%] h-[80%] bg-purple-500/10 blur-[150px] rounded-full" />
+        </div>
+
+        {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-6 right-6 z-[600] w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all active:scale-90"
+          className="absolute top-6 right-6 z-[600] w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-white/20 hover:rotate-90 transition-all duration-500 active:scale-90"
         >
           <X className="w-6 h-6 text-white" />
         </button>
 
-        {/* Left: Preview Area (Instagram Style) */}
-        <div className="flex-1 relative flex items-center justify-center p-4 md:p-12 overflow-hidden bg-[#121212]">
-          <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
-            <div className="absolute top-1/4 -left-1/4 w-[80%] h-[80%] bg-bible-accent/20 blur-[120px] rounded-full animate-pulse" />
-            <div className="absolute bottom-1/4 -right-1/4 w-[80%] h-[80%] bg-purple-500/10 blur-[120px] rounded-full" />
-          </div>
-
+        {/* Left: Preview Area */}
+        <div className="flex-1 relative flex items-center justify-center p-6 md:p-12 overflow-hidden">
           <motion.div 
             layout
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="relative z-10 flex items-center justify-center w-full h-full max-h-[85vh]"
+            className="relative z-10 flex items-center justify-center w-full h-full max-h-[85vh] drop-shadow-[0_40px_80px_rgba(0,0,0,0.6)]"
           >
             <div 
               ref={cardRef}
               className={cn(
-                "relative shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col items-center justify-center p-12 text-center",
+                "relative overflow-hidden flex flex-col items-center justify-center p-12 text-center transition-all duration-700",
                 currentTheme.className,
                 currentFont.className
               )}
@@ -204,16 +205,28 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
               }}
             >
               {currentTheme.overlay && (
-                <div className="absolute inset-0 z-0" style={{ backgroundImage: currentTheme.overlay }} />
+                <div className="absolute inset-0 z-0 opacity-30" style={{ backgroundImage: currentTheme.overlay }} />
               )}
               
-              <div className="relative z-10 flex flex-col items-center gap-10 max-w-[80%]">
-                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center rotate-12">
-                  <Sparkles className="w-6 h-6" style={{ color: currentTheme.accentColor }} />
-                </div>
+              {/* Glassmorphism Elements if theme supports */}
+              {currentTheme.glass && (
+                <>
+                  <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/10 blur-[60px] rounded-full" />
+                  <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-white/5 blur-[60px] rounded-full" />
+                </>
+              )}
+
+              <div className="relative z-10 flex flex-col items-center gap-10 max-w-[85%]">
+                <motion.div 
+                  animate={{ rotate: [0, 12, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-14 h-14 rounded-[20px] bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-lg"
+                >
+                  <Sparkles className="w-7 h-7" style={{ color: currentTheme.accentColor }} />
+                </motion.div>
                 
                 <p 
-                  className="leading-[1.4] font-bold"
+                  className="leading-[1.5] font-black"
                   style={{ color: currentTheme.textColor, fontSize: `${fontSize}px` }}
                 >
                   “{fullText}”
@@ -221,9 +234,9 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
                 
                 {showReference && (
                   <div className="flex flex-col items-center gap-4">
-                    <div className="w-10 h-[2px] rounded-full opacity-40" style={{ backgroundColor: currentTheme.textColor }} />
+                    <div className="w-12 h-[2px] rounded-full opacity-30" style={{ backgroundColor: currentTheme.textColor }} />
                     <span 
-                      className="text-sm font-black uppercase tracking-[0.3em]"
+                      className="text-sm font-black uppercase tracking-[0.4em]"
                       style={{ color: currentTheme.accentColor }}
                     >
                       {referenceWithVersion}
@@ -232,12 +245,12 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
                 )}
               </div>
 
-              {/* Branding Footer */}
-              <div className="absolute bottom-12 flex items-center gap-3 opacity-30">
-                <div className="w-6 h-6 rounded-lg bg-white/20 border border-white/20 flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              {/* Minimal Branding */}
+              <div className="absolute bottom-12 flex items-center gap-3 opacity-40">
+                <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden">
+                  <div className="w-2.5 h-2.5 rounded-full bg-white/80 animate-pulse" />
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: currentTheme.textColor }}>
+                <span className="text-[9px] font-black uppercase tracking-[0.5em]" style={{ color: currentTheme.textColor }}>
                   Codex • Biblia Digital
                 </span>
               </div>
@@ -245,142 +258,162 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
           </motion.div>
         </div>
 
-        {/* Right: Controls Panel (Mobile-First Sheet style on small screens) */}
-        <div className="w-full md:w-[420px] bg-bible-bg border-l border-white/5 flex flex-col z-[550]">
-          {/* Header */}
-          <div className="p-8 border-b border-bible-border/50">
-            <h2 className="text-2xl font-black text-bible-text tracking-tight flex items-center gap-3">
-              <Share2 className="w-6 h-6 text-bible-accent" />
-              Compartilhar Versículo
-            </h2>
-            <p className="text-xs text-bible-text-muted mt-2 font-bold uppercase tracking-widest">Estilize sua mensagem</p>
+        {/* Right: Controls Panel */}
+        <div className="w-full md:w-[460px] bg-[#0a0a0a]/80 backdrop-blur-3xl border-l border-white/5 flex flex-col z-[550] shadow-2xl">
+          <div className="p-8 pb-4">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="p-2 rounded-xl bg-bible-accent/10">
+                <Wand2 className="w-5 h-5 text-bible-accent" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-bible-accent">Codex Studio</span>
+            </div>
+            <h2 className="text-3xl font-black text-white tracking-tight">Estilizar</h2>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-8 pt-4 space-y-12 custom-scrollbar">
             {/* Formats */}
-            <section className="space-y-4">
-              <div className="text-[10px] font-black text-bible-accent uppercase tracking-[0.2em] mb-4">Formato da Rede Social</div>
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Layout className="w-4 h-4 text-white/40" />
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Tamanho da Tela</span>
+              </div>
               <div className="flex gap-3">
                 {FORMATS.map(f => (
                   <button
                     key={f.id}
                     onClick={() => setCurrentFormat(f)}
                     className={cn(
-                      "flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all group",
+                      "flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300",
                       currentFormat.id === f.id 
-                        ? "bg-bible-accent/10 border-bible-accent" 
-                        : "bg-bible-surface border-transparent hover:bg-bible-surface-strong"
+                        ? "bg-bible-accent/20 border-bible-accent text-white" 
+                        : "bg-white/5 border-transparent text-white/40 hover:bg-white/10"
                     )}
                   >
-                    <f.icon className={cn("w-5 h-5 transition-transform group-hover:scale-110", currentFormat.id === f.id ? "text-bible-accent" : "text-bible-text-muted")} />
-                    <span className="text-[10px] font-bold uppercase tracking-tight">{f.name}</span>
+                    <f.icon className="w-5 h-5" />
+                    <span className="text-[10px] font-black uppercase tracking-tight">{f.name}</span>
                   </button>
                 ))}
               </div>
             </section>
 
-            {/* Themes Grid */}
-            <section className="space-y-4">
-              <div className="text-[10px] font-black text-bible-accent uppercase tracking-[0.2em] mb-4">Temas & Ambientes</div>
-              <div className="grid grid-cols-3 gap-3">
+            {/* Themes Selection */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Palette className="w-4 h-4 text-white/40" />
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Esquema de Cores</span>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
                 {THEMES.map(theme => (
-                  <button
+                  <motion.button
                     key={theme.id}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setCurrentTheme(theme)}
                     className={cn(
-                      "aspect-square rounded-2xl border-4 transition-all overflow-hidden relative group",
+                      "aspect-square rounded-[24px] border-4 transition-all relative overflow-hidden",
                       currentTheme.id === theme.id 
-                        ? "border-bible-accent scale-105 shadow-xl shadow-bible-accent/20" 
-                        : "border-transparent opacity-60 hover:opacity-100"
+                        ? "border-bible-accent shadow-lg shadow-bible-accent/40" 
+                        : "border-white/5 opacity-70 hover:opacity-100"
                     )}
                   >
                     <div className={cn("absolute inset-0", theme.className)} />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Palette className="w-5 h-5 text-white" />
-                    </div>
-                  </button>
+                    {currentTheme.id === theme.id && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-bible-accent/20 backdrop-blur-[2px]">
+                        <Check className="w-6 h-6 text-white" />
+                      </div>
+                    )}
+                  </motion.button>
                 ))}
-              </div>
-              <div className="text-center pt-2">
-                <span className="text-xs font-bold text-bible-text-muted">{currentTheme.name}</span>
               </div>
             </section>
 
             {/* Typography */}
-            <section className="space-y-6">
-              <div className="text-[10px] font-black text-bible-accent uppercase tracking-[0.2em] mb-4">Tipografia & Escala</div>
-              <div className="grid grid-cols-2 gap-3">
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <Type className="w-4 h-4 text-white/40" />
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Tipografia & Estilo</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-6">
                 {FONTS.map(font => (
                   <button
                     key={font.id}
                     onClick={() => setCurrentFont(font)}
                     className={cn(
-                      "p-3 rounded-xl border transition-all text-sm font-bold",
+                      "p-4 rounded-2xl border-2 transition-all text-xs font-black uppercase tracking-widest",
                       currentFont.id === font.id
-                        ? "bg-bible-text text-bible-bg border-bible-text"
-                        : "bg-bible-surface text-bible-text border-transparent hover:bg-bible-surface-strong"
+                        ? "bg-white text-black border-white"
+                        : "bg-white/5 text-white/60 border-transparent hover:bg-white/10"
                     )}
                   >
                     {font.name}
                   </button>
                 ))}
               </div>
-              <div className="bg-bible-surface p-6 rounded-2xl space-y-4">
+              <div className="bg-white/5 p-6 rounded-[28px] border border-white/5 space-y-5">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold uppercase tracking-widest text-bible-text-muted">Escala Visual</span>
-                  <span className="text-xs font-black text-bible-accent">{fontSize}px</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Tamanho da Fonte</span>
+                  <span className="text-sm font-black text-bible-accent">{fontSize}px</span>
                 </div>
                 <input 
                   type="range" 
                   min="16" 
-                  max="60" 
+                  max="72" 
                   value={fontSize} 
                   onChange={(e) => setFontSize(parseInt(e.target.value))}
-                  className="w-full h-2 bg-bible-bg rounded-lg appearance-none cursor-pointer accent-bible-accent"
+                  className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-bible-accent"
                 />
               </div>
             </section>
 
-            {/* Layout Options */}
-            <section className="space-y-4 pb-20">
-              <div className="text-[10px] font-black text-bible-accent uppercase tracking-[0.2em] mb-4">Visibilidade</div>
+            {/* Layout Toggles */}
+            <section className="pb-32">
+              <div className="flex items-center gap-2 mb-4">
+                <Layers className="w-4 h-4 text-white/40" />
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Opções de Layout</span>
+              </div>
               <button 
                 onClick={() => setShowReference(!showReference)}
-                className="w-full flex items-center justify-between p-4 rounded-2xl bg-bible-surface hover:bg-bible-surface-strong transition-all"
+                className="w-full flex items-center justify-between p-5 rounded-[28px] bg-white/5 border border-white/5 hover:bg-white/10 transition-all group"
               >
-                <div className="flex items-center gap-3">
-                  <Layout className="w-5 h-5 text-bible-accent" />
-                  <span className="text-sm font-bold">Mostrar Referência Bíblica</span>
+                <div className="flex items-center gap-4">
+                  <div className={cn("p-2 rounded-xl transition-colors", showReference ? "bg-bible-accent/20 text-bible-accent" : "bg-white/5 text-white/40")}>
+                    <Hexagon className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold text-white/80">Referência Bíblica</span>
                 </div>
                 <div className={cn(
-                  "w-12 h-6 rounded-full transition-colors relative flex items-center",
-                  showReference ? "bg-bible-accent" : "bg-bible-bg border border-bible-border"
+                  "w-14 h-7 rounded-full transition-all duration-500 relative flex items-center px-1",
+                  showReference ? "bg-bible-accent" : "bg-white/10"
                 )}>
-                  <div className={cn(
-                    "w-4 h-4 rounded-full bg-white shadow-sm transition-transform",
-                    showReference ? "translate-x-7" : "translate-x-1"
-                  )} />
+                  <motion.div 
+                    animate={{ x: showReference ? 28 : 0 }}
+                    className="w-5 h-5 rounded-full bg-white shadow-xl" 
+                  />
                 </div>
               </button>
             </section>
           </div>
 
-          {/* Action Footer */}
-          <div className="p-8 bg-bible-surface/50 backdrop-blur-xl border-t border-bible-border/50 grid grid-cols-2 gap-4">
-            <button
+          {/* Actions Bottom Bar */}
+          <div className="p-8 bg-black/60 backdrop-blur-2xl border-t border-white/10 grid grid-cols-2 gap-4">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleCopy}
               disabled={isExporting}
-              className="h-14 rounded-2xl bg-bible-surface border border-bible-border flex items-center justify-center gap-3 font-black text-sm uppercase tracking-tight hover:bg-bible-surface-strong transition-all active:scale-95 disabled:opacity-50"
+              className="h-16 rounded-[24px] bg-white/5 border border-white/10 text-white flex items-center justify-center gap-3 font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all disabled:opacity-50"
             >
               <Copy className="w-5 h-5" /> Copiar
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleDownload}
               disabled={isExporting}
-              className="h-14 rounded-2xl bg-bible-accent text-white flex items-center justify-center gap-3 font-black text-sm uppercase tracking-tight shadow-xl shadow-bible-accent/30 hover:brightness-110 transition-all active:scale-95 disabled:opacity-50"
+              className="h-16 rounded-[24px] bg-bible-accent text-white flex items-center justify-center gap-3 font-black text-xs uppercase tracking-widest shadow-2xl shadow-bible-accent/40 hover:brightness-110 transition-all disabled:opacity-50"
             >
-              <Download className="w-5 h-5" /> {isExporting ? 'Salvando...' : 'Salvar PNG'}
-            </button>
+              <Download className="w-5 h-5" /> {isExporting ? 'Processando...' : 'Salvar'}
+            </motion.button>
           </div>
         </div>
       </motion.div>
