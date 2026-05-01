@@ -72,15 +72,17 @@ export const Home: React.FC<HomeProps> = React.memo(({
     { bookId: 'JHN', chapter: 3, verse: 16, text: 'Porque Deus amou o mundo de tal maneira...' },
   ], []);
 
-  const weekDays = useMemo(() => [
-    { label: 'S', state: 'read' },
-    { label: 'T', state: 'read' },
-    { label: 'Q', state: 'read' },
-    { label: 'Q', state: 'freeze' },
-    { label: 'S', state: 'miss' },
-    { label: 'S', state: 'read' },
-    { label: 'D', state: isReadToday ? 'read' : 'today' },
-  ], [isReadToday]);
+  const weekDays = useMemo(() => {
+    const dayOfWeek = new Date().getDay();
+    const dayLabels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+    const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    
+    return dayLabels.map((label, index) => ({
+      label,
+      fullName: dayNames[index],
+      state: index < dayOfWeek ? 'read' : index === dayOfWeek ? (isReadToday ? 'read' : 'today') : 'upcoming'
+    }));
+  }, [isReadToday]);
 
   const handleVerseClick = useCallback((verse: { bookId: string, chapter: number, verse?: number }) => {
     const book = BIBLE_BOOKS.find((entry) => entry.id === verse.bookId);
@@ -465,26 +467,28 @@ export const Home: React.FC<HomeProps> = React.memo(({
                  "premium-card-strong"
                )}
              >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold text-[var(--text-bible)]">
-                  Semana de Leitura
-                </h2>
-                <span className="text-xs font-medium text-[var(--text-bible-muted)]">
-                  4 de 7 dias
-                </span>
-              </div>
+               <div className="flex items-center justify-between mb-4">
+                 <h2 className="text-base font-bold text-[var(--text-bible)]">
+                   Semana de Leitura
+                 </h2>
+                 <span className="text-xs font-medium text-[var(--text-bible-muted)]">
+                   {weekDays.filter(d => d.state === 'read').length} de 7 dias
+                 </span>
+               </div>
               
-              <div className="flex justify-between gap-2">
+              <div className="flex justify-between gap-1">
                 {weekDays.map((day, i) => (
-                  <div key={i} className="flex flex-col items-center gap-2">
+                  <div key={i} className="flex flex-col items-center gap-1 flex-1">
+                    <span className="text-[10px] font-medium text-[var(--text-bible-muted)] mb-1">
+                      {day.fullName}
+                    </span>
                     <motion.div
                       whileHover={{ scale: 1.1 }}
                       className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold",
+                        "w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold",
                         day.state === 'read' && "bg-[var(--success-bible)] text-white",
-                        day.state === 'today' && "bg-[var(--accent-bible)] text-white animate-pulse",
-                        day.state === 'freeze' && "bg-blue-400/20 text-blue-400 border border-blue-400/30",
-                        day.state === 'miss' && "bg-red-400/20 text-red-400 border border-red-400/30"
+                        day.state === 'today' && "bg-[var(--accent-bible)] text-white animate-pulse ring-2 ring-[var(--accent-bible)] ring-offset-2 ring-offset-[var(--bg-bible)]",
+                        day.state === 'upcoming' && "bg-[var(--surface-2)] text-[var(--text-bible-muted)] border border-[var(--border-bible-strong)]/30"
                       )}
                     >
                       {day.label}
