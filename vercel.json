@@ -1,12 +1,16 @@
 {
-  "buildCommand": "cd Biblia-Codex && npm install && npx vite build",
+  "buildCommand": "cd Biblia-Codex && npm ci && npx vite build",
   "outputDirectory": "Biblia-Codex/dist",
   "devCommand": "cd Biblia-Codex && npm run dev",
-  "installCommand": "cd Biblia-Codex && npm install",
+  "installCommand": "cd Biblia-Codex && npm ci",
   "framework": "vite",
+  "github": {
+    "enabled": true,
+    "autoAlias": true
+  },
   "rewrites": [
     {
-      "source": "/((?!.*\\.(?:json\\.gz|gz|db|wasm|mybible|zip|sqlite3|svg|js|css|png|jpg|jpeg|gif|ico|txt|html|webp|woff|woff2|ttf|eot)$).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
@@ -30,6 +34,24 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.css",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }
