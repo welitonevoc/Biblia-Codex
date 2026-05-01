@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { ReaderTooltip } from '../bible/Reader';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
   return twMerge(clsx(inputs));
@@ -487,7 +488,8 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     );
   };
 
-      <div 
+  return (
+    <div 
       className="flex flex-col h-full relative overflow-hidden"
       style={{ backgroundColor: 'var(--bg-bible)' }}
       ref={containerRef}

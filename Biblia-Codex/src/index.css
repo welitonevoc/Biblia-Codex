@@ -252,11 +252,26 @@ body::before {
   background: var(--surface-1);
   box-shadow: var(--shadow-sm);
   padding: 24px;
+  border: 1px solid var(--border-bible);
+  transition: all 0.4s var(--ease-out-expo);
 }
 
 .premium-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
+  border-color: rgba(var(--accent-bible-rgb), 0.2);
+}
+
+.premium-kicker {
+  font-[Outfit] font-black text-[10px] uppercase tracking-[0.2em] text-bible-accent/70 bg-bible-accent/5 px-2.5 py-1 rounded-md border border-bible-accent/10;
+}
+
+.premium-icon-button {
+  @apply flex items-center justify-center p-2.5 rounded-2xl bg-bible-bg border border-bible-border/50 text-bible-text-muted hover:text-bible-accent hover:border-bible-accent/30 hover:bg-bible-surface-strong shadow-sm hover:shadow-md transition-all duration-300;
+}
+
+.shadow-float {
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .premium-button {

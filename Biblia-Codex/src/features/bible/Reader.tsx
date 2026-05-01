@@ -16,7 +16,7 @@ import { cn } from '../../utils/cn';
 import { Toast, ToastType } from '../../components/ui/toast';
 import { stripTags } from '../../utils/textUtils';
 
-const ReaderTooltip = ({ label, children }: { label: string; children: React.ReactNode }) => {
+export const ReaderTooltip = ({ label, children }: { label: string; children: React.ReactNode }) => {
   const [isVisible, setIsVisible] = useState(false);
   
   return (
