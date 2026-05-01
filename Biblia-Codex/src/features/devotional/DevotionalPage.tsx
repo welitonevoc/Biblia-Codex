@@ -8,7 +8,7 @@ import {
 import { cn } from '../utils/cn';
 import DOMPurify from 'dompurify';
 import initSqlJs from 'sql.js';
-import { getDataUrl } from '../utils/dataAssets';
+import { getDataUrl } from '../../utils/dataAssets';
 
 interface DevotionalModule {
   id: string;

@@ -1,8 +1,8 @@
 {
-  "buildCommand": "cd Biblia-Codex && npm ci && npx vite build",
+  "buildCommand": "cd Biblia-Codex && npm install && npx vite build",
   "outputDirectory": "Biblia-Codex/dist",
   "devCommand": "cd Biblia-Codex && npm run dev",
-  "installCommand": "cd Biblia-Codex && npm ci",
+  "installCommand": "cd Biblia-Codex && npm install",
   "framework": "vite",
   "github": {
     "enabled": true,

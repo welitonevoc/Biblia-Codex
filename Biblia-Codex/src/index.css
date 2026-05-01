@@ -15,6 +15,7 @@
   --color-bible-accent-contrast: var(--accent-contrast-bible);
   --color-bible-border: var(--border-bible);
   --color-bible-border-strong: var(--border-strong-bible);
+  --shadow-float: 0 20px 50px -12px rgba(0, 0, 0, 0.25), 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 :root {
@@ -263,15 +264,11 @@ body::before {
 }
 
 .premium-kicker {
-  font-[Outfit] font-black text-[10px] uppercase tracking-[0.2em] text-bible-accent/70 bg-bible-accent/5 px-2.5 py-1 rounded-md border border-bible-accent/10;
+  @apply font-[Outfit] font-black text-[10px] uppercase tracking-[0.2em] text-bible-accent/70 bg-bible-accent/5 px-2.5 py-1 rounded-md border border-bible-accent/10;
 }
 
 .premium-icon-button {
   @apply flex items-center justify-center p-2.5 rounded-2xl bg-bible-bg border border-bible-border/50 text-bible-text-muted hover:text-bible-accent hover:border-bible-accent/30 hover:bg-bible-surface-strong shadow-sm hover:shadow-md transition-all duration-300;
-}
-
-.shadow-float {
-  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.25), 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .premium-dock {

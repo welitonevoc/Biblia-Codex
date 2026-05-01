@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Loader2, ChevronRight } from 'lucide-react';
-import { getDataUrl } from '../utils/dataAssets';
+import { getDataUrl } from '../../utils/dataAssets';
 
 interface MagazineReaderProps {
   onBack: () => void;
