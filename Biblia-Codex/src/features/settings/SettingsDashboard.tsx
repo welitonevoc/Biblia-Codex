@@ -13,6 +13,7 @@ import { useAppContext } from '../AppContext';
 import { cn } from '../utils/cn';
 import { AppearanceSettings } from './AppearanceSettings';
 import { TTSSettings } from './TTSSettings';
+import { SyncSection } from './SyncSection';
 
   const SettingCard: React.FC<{
     icon: React.ElementType;
@@ -54,12 +55,9 @@ import { TTSSettings } from './TTSSettings';
   );
 
 export const SettingsDashboard: React.FC = () => {
-  const { setActiveTab, syncNow, settings } = useAppContext();
+  const { setActiveTab, settings } = useAppContext();
   const [activeSubSection, setActiveSubSection] = useState<string | null>(null);
   const [showVersionModal, setShowVersionModal] = useState(false);
-
-  // Expose syncNow to window for SettingCard onClick if needed (hacky but works without refactoring sections)
-  (window as any).AppContextSyncNow = syncNow;
 
   // Go back to main reader view
   const handleClose = () => setActiveTab('bible');
@@ -215,24 +213,7 @@ export const SettingsDashboard: React.FC = () => {
         }
       ]
     },
-    {
-      id: 'sync',
-      title: 'Sincronização',
-      icon: Cloud,
-      description: 'Mantenha seus dados seguros na nuvem',
-      items: [
-        {
-          id: 'cloud-sync',
-          title: 'Sincronizar Agora',
-          description: settings.syncConfig?.lastSyncedAt 
-            ? `Última sincronização: ${new Date(settings.syncConfig.lastSyncedAt).toLocaleString()}`
-            : 'Forçar sincronização de notas e marcadores',
-          icon: RefreshCw,
-          badge: settings.syncConfig?.status === 'syncing' ? 'Sincronizando...' : undefined,
-          onClick: () => (window as any).AppContextSyncNow?.()
-        }
-      ]
-    },
+    // Sync section is rendered separately below
     {
       id: 'support',
       title: 'Suporte',
@@ -320,6 +301,9 @@ export const SettingsDashboard: React.FC = () => {
             </div>
           </motion.section>
         ))}
+
+        {/* Sync Section - Separate component with full functionality */}
+        <SyncSection />
 
         {/* Footer */}
         <motion.div

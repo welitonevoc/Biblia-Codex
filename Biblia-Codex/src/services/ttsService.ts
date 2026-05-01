@@ -266,12 +266,12 @@ class TTSService {
   }
 
   pause() {
-    this.synth.pause();
+    if (this.synth) this.synth.pause();
     this.isPlaying = false;
   }
 
   resume() {
-    this.synth.resume();
+    if (this.synth) this.synth.resume();
     this.isPlaying = true;
   }
 
@@ -283,11 +283,11 @@ class TTSService {
   }
 
   isSpeaking(): boolean {
-    return this.synth.speaking;
+    return this.synth ? this.synth.speaking : false;
   }
 
   isPaused(): boolean {
-    return this.synth.paused;
+    return this.synth ? this.synth.paused : false;
   }
 
   isPlayingTTS(): boolean {
@@ -295,7 +295,7 @@ class TTSService {
   }
 
   isAvailable(): boolean {
-    return 'speechSynthesis' in window;
+    return !!this.synth;
   }
 
   getCurrentVerseIndex(): number {

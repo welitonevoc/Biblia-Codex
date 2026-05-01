@@ -6,3 +6,4 @@ export { AISettingsPage } from './AISettingsPage';
 export { TTSSettings } from './TTSSettings';
 export { AppearanceSettings } from './AppearanceSettings';
 export { ProfilePage } from './ProfilePage';
+export { SyncSection } from './SyncSection';
