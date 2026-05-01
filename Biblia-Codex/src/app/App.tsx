@@ -101,7 +101,7 @@ function AppContent() {
   );
 
   useEffect(() => {
-    console.log('App: isReaderAtBottom changed to', isReaderAtBottom);
+    // removed debug log
   }, [isReaderAtBottom]);
 
   useEffect(() => {

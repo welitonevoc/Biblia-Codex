@@ -417,8 +417,11 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   }, [checkIfAtBottom]);
 
   useEffect(() => {
-    onBottomChange?.(isAtBottom);
-  }, [isAtBottom, onBottomChange]);
+    // Only call onBottomChange when loading is complete to avoid loop
+    if (!loading) {
+      onBottomChange?.(isAtBottom);
+    }
+  }, [isAtBottom, onBottomChange, loading]);
 
   const {
     selectedVerses,
@@ -508,26 +511,16 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   }, [onToolOpen]);
 
   useEffect(() => {
-    console.log('[Reader] useEffect triggered:', { bookId: book.id, chapter, versionId: currentVersion?.id });
     let cancelled = false;
-    let effectId = Math.random().toString(36).slice(2, 8);
-    console.log(`[Reader] Effect ${effectId} starting`);
     const fetchVerses = async () => {
       setLoading(true);
-      console.log(`[Reader] Effect ${effectId} - loading true`);
       try {
         const data = await BibleService.getVerses(book.id, chapter, currentVersion || undefined, settings.textDisplay);
-        if (!cancelled) {
-          console.log(`[Reader] Effect ${effectId} - got verses:`, data.length);
-          setVerses(data);
-        }
+        if (!cancelled) setVerses(data);
       } catch (error) {
         if (!cancelled) console.error("Erro ao carregar versículos:", error);
       } finally {
-        if (!cancelled) {
-          console.log(`[Reader] Effect ${effectId} - loading false`);
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
 
       const [savedBookmarks, savedTags] = await Promise.all([
@@ -540,10 +533,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
       }
     };
     fetchVerses();
-    return () => {
-      console.log(`[Reader] Effect ${effectId} cleanup`);
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [book.id, chapter, currentVersion?.id, settings.textDisplay]);
 
   useLayoutEffect(() => {
