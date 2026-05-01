@@ -7,8 +7,9 @@ import { footnoteService } from './services/FootnoteService';
 import initSqlJs from 'sql.js';
 import { getGeminiExplanation, getAIResponse } from './services/geminiService';
 import { getDataUrl } from './utils/dataAssets';
+import { Capacitor } from '@capacitor/core';
 
-const isWeb = typeof window !== 'undefined' && !(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
+const isWeb = !Capacitor.isNativePlatform();
 
 // Performance Cache for Premium Experience
 let sqlInstance: Awaited<ReturnType<typeof initSqlJs>> | null = null;
@@ -55,7 +56,12 @@ const queryCache = new SimpleLRU<string, Verse[]>(100, 5 * 60 * 1000);
 export const getSqlInstance = async () => {
   if (!sqlInstance) {
     sqlInstance = await initSqlJs({
-      locateFile: () => `./sql-wasm.wasm`
+      locateFile: (file) => {
+        // Garantir que estamos buscando da raiz do servidor local
+        const path = `${window.location.origin}/${file}`;
+        console.log(`[BibleService] Iniciando motor SQL. Buscando WASM em: ${path}`);
+        return path;
+      }
     });
   }
   return sqlInstance;
@@ -91,6 +97,13 @@ const readModuleBinaryFromPublic = async (modulePath: string): Promise<Uint8Arra
     const url = getDataUrl(fileName);
     const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP ${response.status} ao buscar ${fileName}`);
+
+    // Verificar se recebemos HTML em vez de binário (404 fallback)
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+       throw new Error(`Arquivo não encontrado (recebeu HTML): ${fileName}`);
+    }
+
     const buffer = await response.arrayBuffer();
     if (buffer.byteLength === 0) {
       console.error(`[BibleService] Arquivo vazio: ${fileName}`);
@@ -126,7 +139,8 @@ const readModuleBinaryFromAssets = async (modulePath: string): Promise<Uint8Arra
   } catch (e: unknown) {
     console.log('[Assets] Error, trying HTTP fallback:', fileName);
     try {
-      const response = await fetch(`https://biblia-codex.vercel.app/${fileName}`);
+      const origin = window.location.origin;
+      const response = await fetch(`${origin}/data/${fileName}`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const buffer = await response.arrayBuffer();
       return new Uint8Array(buffer);

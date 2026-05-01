@@ -462,8 +462,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
      if (refreshModulesRunning.current) return;
      refreshModulesRunning.current = true;
      try {
-       const isNative = typeof window !== 'undefined' && (window as unknown as CapacitorWindow).Capacitor?.isNativePlatform?.();
-       const scanned = isNative ? [] : await scanForBibleModules();
+       const scanned = await scanForBibleModules();
        const installedRaw = await import('../services/moduleService').then(m => m.listInstalledModules());
 
       const allInstalled: BibleModule[] = installedRaw.map((m: ModuleInfo) => ({

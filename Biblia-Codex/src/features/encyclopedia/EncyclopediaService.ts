@@ -1,5 +1,6 @@
 import type { EncyclopediaEntry } from '../types';
 import { getDataUrl } from '../../utils/dataAssets';
+import { Capacitor } from '@capacitor/core';
 
 interface MerrillRaw { w: string; t: string }
 interface VineRaw { w: string; l: string; t: string }
@@ -40,17 +41,26 @@ async function decompressGzip(data: Uint8Array): Promise<ArrayBuffer> {
 async function loadNDJSON<T>(filename: string): Promise<T[]> {
   const cleanName = filename.replace(/^\//, '');
 
-  // Try multiple URL strategies for compatibility with both Capacitor and web deployments
-  const urls = [
-    `/data/${cleanName}`,              // Absolute path from root
-    `./data/${cleanName}`,             // Relative path
-    `data/${cleanName}`,               // Bare path
-    getDataUrl(filename),              // Utility path
-    `${window.location.origin}/data/${cleanName}`, // Fully absolute
-  ];
+  // In Capacitor, we should use the bridge to check where we are
+  const isNative = Capacitor.isNativePlatform();
+
+  // Try multiple URL strategies for compatibility
+  const urls = isNative
+    ? [
+        `https://localhost/data/${cleanName}`,
+        `capacitor://localhost/data/${cleanName}`,
+        `./data/${cleanName}`,
+        `data/${cleanName}`,
+        `/data/${cleanName}`
+      ]
+    : [
+        `/data/${cleanName}`,
+        `./data/${cleanName}`,
+        getDataUrl(filename)
+      ];
 
   let lastError: Error | null = null;
-  console.log(`Encyclopedia: Attempting to load ${cleanName}`);
+  console.log(`Encyclopedia: Platform: ${Capacitor.getPlatform()}, Native: ${isNative}, Loading: ${cleanName}`);
 
   for (const url of urls) {
     try {
@@ -63,6 +73,13 @@ async function loadNDJSON<T>(filename: string): Promise<T[]> {
       if (!response.ok) {
         lastError = new Error(`HTTP ${response.status} for ${url}`);
         continue;
+      }
+
+      // Check for HTML fallback (404 redirected to index.html)
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+         console.warn(`Encyclopedia: Received HTML instead of data from ${url}. Skipping.`);
+         continue;
       }
 
       const buffer = await response.arrayBuffer();
@@ -302,4 +319,3 @@ export function getStats() {
     quemQuem: cachedEntries.filter(e => e.source === 'quem-quem').length,
   };
 }
-

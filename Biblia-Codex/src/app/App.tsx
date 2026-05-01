@@ -93,7 +93,13 @@ function AppContent() {
   const { shareData, isShareOpen, setIsShareOpen, openShare } = useShare();
   const [isBiblicalMenuOpen, setIsBiblicalMenuOpen] = useState(false);
   const [isReaderAtBottom, setIsReaderAtBottom] = useState(false);
-  
+
+  const Page = ({ name, children }: { name: string; children: React.ReactNode }) => (
+    <ErrorBoundary pageName={name}>
+      {children}
+    </ErrorBoundary>
+  );
+
   useEffect(() => {
     console.log('App: isReaderAtBottom changed to', isReaderAtBottom);
   }, [isReaderAtBottom]);
@@ -175,9 +181,11 @@ function AppContent() {
                 exit={useAnimations ? { opacity: 0, y: -10 } : {}}
                 className="h-full w-full"
               >
-                <Suspense fallback={<PageLoader />}>
-                  <ProfilePage />
-                </Suspense>
+                <Page name="Profile">
+                  <Suspense fallback={<PageLoader />}>
+                    <ProfilePage />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
@@ -189,24 +197,26 @@ function AppContent() {
                 exit={useAnimations ? { opacity: 0 } : {}}
                 className="h-full w-full"
               >
-                <ReaderWithAudio
-                  book={currentBook}
-                  chapter={currentChapter}
-                  targetVerse={targetVerse}
-                  onTargetVerseReached={() => setTargetVerse(undefined)}
-                  onStudyOpen={handleStudyOpen}
-                  onToolOpen={handleToolOpen}
-                  onShare={handleShare}
-                  onNavigate={(bookId: string, chapter: number, verse?: number) => {
-                    const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
-                    if (book) handleSelect(book, chapter, verse);
-                  }}
-                  audioTracks={audioTracks}
-                  hasAudioSupport={hasAudioSupport}
-                  readingMode={readingMode}
-                  onReadingModeChange={setReadingMode}
-                  onBottomChange={setIsReaderAtBottom}
-                />
+                <Page name="Bible Reader">
+                  <ReaderWithAudio
+                    book={currentBook}
+                    chapter={currentChapter}
+                    targetVerse={targetVerse}
+                    onTargetVerseReached={() => setTargetVerse(undefined)}
+                    onStudyOpen={handleStudyOpen}
+                    onToolOpen={handleToolOpen}
+                    onShare={handleShare}
+                    onNavigate={(bookId: string, chapter: number, verse?: number) => {
+                      const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
+                      if (book) handleSelect(book, chapter, verse);
+                    }}
+                    audioTracks={audioTracks}
+                    hasAudioSupport={hasAudioSupport}
+                    readingMode={readingMode}
+                    onReadingModeChange={setReadingMode}
+                    onBottomChange={setIsReaderAtBottom}
+                  />
+                </Page>
               </motion.div>
             )}
 
@@ -218,190 +228,226 @@ function AppContent() {
                 exit={useAnimations ? { opacity: 0 } : {}}
                 className="h-full"
               >
-                <Suspense fallback={<PageLoader />}>
-                  <HomePage
-                     onNavigate={(book: Book, chapter: number, verse?: number) => handleSelect(book, chapter, verse || 1)}
-                     goToReadingPlans={() => setActiveTab('reading-plans')}
-                    goToDevocional={() => setActiveTab('devocional')}
-                    goToAI={() => setActiveTab('ai-assistant')}
-                    goToNotes={() => setActiveTab('notes')}
-                    goToBookmarks={() => setActiveTab('bookmarks')}
-                    goToTags={() => setActiveTab('tags')}
-                    goToSearch={() => setActiveTab('search')}
-                    goToEBD={() => setActiveTab('ebd')}
-                    goToMaps={() => setActiveTab('maps')}
-                    goToDictionaries={() => setActiveTab('dictionaries')}
-                    goToSettings={() => setActiveTab('settings')}
-                    goToBible={() => setActiveTab('bible')}
-                  />
-                </Suspense>
+                <Page name="Home">
+                  <Suspense fallback={<PageLoader />}>
+                    <HomePage
+                       onNavigate={(book: Book, chapter: number, verse?: number) => handleSelect(book, chapter, verse || 1)}
+                       goToReadingPlans={() => setActiveTab('reading-plans')}
+                      goToDevocional={() => setActiveTab('devocional')}
+                      goToAI={() => setActiveTab('ai-assistant')}
+                      goToNotes={() => setActiveTab('notes')}
+                      goToBookmarks={() => setActiveTab('bookmarks')}
+                      goToTags={() => setActiveTab('tags')}
+                      goToSearch={() => setActiveTab('search')}
+                      goToEBD={() => setActiveTab('ebd')}
+                      goToMaps={() => setActiveTab('maps')}
+                      goToDictionaries={() => setActiveTab('dictionaries')}
+                      goToSettings={() => setActiveTab('settings')}
+                      goToBible={() => setActiveTab('bible')}
+                    />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             <div className={activeTab === 'notes' ? "h-full" : "h-0 overflow-hidden"}>
-              <Suspense fallback={<PageLoader />}>
-                <NotesPage isActive={activeTab === 'notes'} />
-              </Suspense>
+              <Page name="Notes">
+                <Suspense fallback={<PageLoader />}>
+                  <NotesPage isActive={activeTab === 'notes'} />
+                </Suspense>
+              </Page>
             </div>
 
             {activeTab === 'settings' && (
               <motion.div key="settings" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <SettingsDashboardPage />
-                </Suspense>
+                <Page name="Settings Dashboard">
+                  <Suspense fallback={<PageLoader />}>
+                    <SettingsDashboardPage />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'tts' && (
               <motion.div key="tts" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <SettingsPage />
-                </Suspense>
+                <Page name="Settings">
+                  <Suspense fallback={<PageLoader />}>
+                    <SettingsPage />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'support' && (
               <motion.div key="support" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <HelpPage />
-                </Suspense>
+                <Page name="Help/Support">
+                  <Suspense fallback={<PageLoader />}>
+                    <HelpPage />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'dictionaries' && (
               <motion.div key="dictionaries" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <DictionaryViewPage />
-                </Suspense>
+                <Page name="Dictionaries">
+                  <Suspense fallback={<PageLoader />}>
+                    <DictionaryViewPage />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'commentary' && (
               <motion.div key="commentary" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <div className="flex h-full items-center justify-center text-[var(--text-bible-muted)]">
-                    Coming soon...
-                  </div>
-                </Suspense>
+                <Page name="Commentary">
+                  <Suspense fallback={<PageLoader />}>
+                    <div className="flex h-full items-center justify-center text-[var(--text-bible-muted)]">
+                      Coming soon...
+                    </div>
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'encyclopedia' && (
               <motion.div key="encyclopedia" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <EncyclopediaPage />
-                </Suspense>
+                <Page name="Encyclopedia">
+                  <Suspense fallback={<PageLoader />}>
+                    <EncyclopediaPage />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'modules' && (
               <motion.div key="modules" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <ModuleManagementPage />
-                </Suspense>
+                <Page name="Module Management">
+                  <Suspense fallback={<PageLoader />}>
+                    <ModuleManagementPage />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'tags' && (
               <motion.div key="tags" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <TagsPage />
-                </Suspense>
+                <Page name="Tags">
+                  <Suspense fallback={<PageLoader />}>
+                    <TagsPage />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'devocional' && (
               <motion.div key="devocional" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <DevotionalPage
-                    onNavigate={(bookId: string | number, chapter: number, verse?: number) => {
-                      const book = BIBLE_BOOKS.find((candidate) => candidate.id === String(bookId));
-                      if (book) handleSelect(book, chapter, verse);
-                    }}
-                  />
-                </Suspense>
+                <Page name="Devotional">
+                  <Suspense fallback={<PageLoader />}>
+                    <DevotionalPage
+                      onNavigate={(bookId: string | number, chapter: number, verse?: number) => {
+                        const book = BIBLE_BOOKS.find((candidate) => candidate.id === String(bookId));
+                        if (book) handleSelect(book, chapter, verse);
+                      }}
+                    />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'reading-plans' && (
               <motion.div key="reading-plans" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <ReadingPlansPage
-                    onNavigate={(bookId: string, chapter: number, verse?: number) => {
-                      const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
-                      if (book) handleSelect(book, chapter, verse);
-                    }}
-                    availableVersions={availableVersions}
-                  />
-                </Suspense>
+                <Page name="Reading Plans">
+                  <Suspense fallback={<PageLoader />}>
+                    <ReadingPlansPage
+                      onNavigate={(bookId: string, chapter: number, verse?: number) => {
+                        const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
+                        if (book) handleSelect(book, chapter, verse);
+                      }}
+                      availableVersions={availableVersions}
+                    />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'bookmarks' && (
               <motion.div key="bookmarks" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <BookmarksPage
-                    onNavigate={(bookId: string, chapter: number, verse?: number) => {
-                      const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
-                      if (book) handleSelect(book, chapter, verse);
-                    }}
-                    onBack={() => setActiveTab('bible')}
-                  />
-                </Suspense>
+                <Page name="Bookmarks">
+                  <Suspense fallback={<PageLoader />}>
+                    <BookmarksPage
+                      onNavigate={(bookId: string, chapter: number, verse?: number) => {
+                        const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
+                        if (book) handleSelect(book, chapter, verse);
+                      }}
+                      onBack={() => setActiveTab('bible')}
+                    />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'search' && (
               <motion.div key="search" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <SearchView
-                  onNavigate={(bookId: string, chapter: number, verse?: number) => {
-                    setActiveTab('bible');
-                    const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
-                    if (book) handleSelect(book, chapter, verse);
-                  }}
-                />
+                <Page name="Search">
+                  <SearchView
+                    onNavigate={(bookId: string, chapter: number, verse?: number) => {
+                      setActiveTab('bible');
+                      const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
+                      if (book) handleSelect(book, chapter, verse);
+                    }}
+                  />
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'maps' && (
               <motion.div key="maps" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <MapsPage
-                    onNavigate={(bookId: string, chapter: number, verse?: number) => {
-                      const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
-                      if (book) handleSelect(book, chapter, verse);
-                    }}
-                  />
-                </Suspense>
+                <Page name="Maps">
+                  <Suspense fallback={<PageLoader />}>
+                    <MapsPage
+                      onNavigate={(bookId: string, chapter: number, verse?: number) => {
+                        const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
+                        if (book) handleSelect(book, chapter, verse);
+                      }}
+                    />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'xrefs' && (
               <motion.div key="xrefs" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <XRefsPage
-                    onNavigate={(bookId: string, chapter: number, verse?: number) => {
-                      const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
-                      if (book) handleSelect(book, chapter, verse);
-                    }}
-                  />
-                </Suspense>
+                <Page name="Cross References">
+                  <Suspense fallback={<PageLoader />}>
+                    <XRefsPage
+                      onNavigate={(bookId: string, chapter: number, verse?: number) => {
+                        const book = BIBLE_BOOKS.find((candidate) => candidate.id === bookId);
+                        if (book) handleSelect(book, chapter, verse);
+                      }}
+                    />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'ebd' && (
               <motion.div key="ebd" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <EBDPage />
-                </Suspense>
+                <Page name="EBD">
+                  <Suspense fallback={<PageLoader />}>
+                    <EBDPage />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
 
             {activeTab === 'ai-assistant' && (
               <motion.div key="ai-assistant" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <AISettingsPage />
-                </Suspense>
+                <Page name="AI Assistant">
+                  <Suspense fallback={<PageLoader />}>
+                    <AISettingsPage />
+                  </Suspense>
+                </Page>
               </motion.div>
             )}
           </AnimatePresence>

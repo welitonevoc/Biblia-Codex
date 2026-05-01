@@ -17,34 +17,36 @@ const PUBLIC_DICTIONARIES = [
 ];
 
 export const scanForBibleModules = async (): Promise<BibleModule[]> => {
+  // Always include public modules as built-in options
+  const bibleModules = PUBLIC_MODULES.map(m => ({
+    id: m.file,
+    name: m.name,
+    abbreviation: m.abbreviation || m.name.substring(0, 4).toUpperCase(),
+    type: 'bible' as const,
+    format: 'mybible' as any,
+    category: 'mybible' as any,
+    path: m.file,
+    language: 'pt-BR'
+  }));
+
+  const dictModules = PUBLIC_DICTIONARIES.map(m => ({
+    id: m.file,
+    name: m.name,
+    abbreviation: m.name.substring(0, 4).toUpperCase(),
+    type: 'dictionary' as const,
+    format: (m.category || 'mybible') as any,
+    category: 'mybible' as any,
+    path: m.file,
+    language: 'pt-BR'
+  }));
+
   if (isWeb) {
-    // Inclui tanto bíblias quanto dicionários públicos no web
-    const bibleModules = PUBLIC_MODULES.map(m => ({
-      id: m.file,
-      name: m.name,
-      abbreviation: m.abbreviation || m.name.substring(0, 4).toUpperCase(),
-      type: 'bible' as const,
-      format: 'mybible' as any,
-      category: 'mybible' as any,
-      path: m.file,
-      language: 'pt-BR'
-    }));
-const dictModules = PUBLIC_DICTIONARIES.map(m => ({
-  id: m.file,
-  name: m.name,
-  abbreviation: m.name.substring(0, 4).toUpperCase(),
-  type: 'dictionary' as const,
-  format: (m.category || 'mybible') as any,
-  category: 'mybible' as any,
-  path: m.file,
-  language: 'pt-BR'
-}));
     return [...bibleModules, ...dictModules];
   }
 
   const BASE_PATH = 'Codex/modules/installed';
   const SUB_DIRS = ['mybible', 'mysword', 'sword', 'epub'];
-  const allModules: BibleModule[] = [];
+  const allModules: BibleModule[] = [...bibleModules, ...dictModules];
 
   for (const subDir of SUB_DIRS) {
     try {

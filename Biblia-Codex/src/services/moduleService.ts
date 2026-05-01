@@ -185,10 +185,38 @@ export const readModuleBinary = async (modulePath: string): Promise<Uint8Array> 
     } catch (firstError) {
       if (resolved.explicit) throw firstError;
 
-      contents = await Filesystem.readFile({
-        directory: Directory.Data,
-        path: resolved.path,
-      });
+      try {
+        contents = await Filesystem.readFile({
+          directory: Directory.Data,
+          path: resolved.path,
+        });
+      } catch (secondError) {
+        // Fallback para assets públicos (bundled) se não for um caminho explícito
+        console.log(`[ModuleService] Fallback para asset público: ${resolved.path}`);
+
+        // Em Capacitor Android, assets estão em ./data/ ou ./
+        const fileName = resolved.path.split('/').pop() || resolved.path;
+        const urls = [
+          `./data/${fileName}`,
+          `./${fileName}`,
+          `https://localhost/data/${fileName}`,
+          `capacitor://localhost/data/${fileName}`
+        ];
+
+        for (const url of urls) {
+          try {
+            const response = await fetch(url);
+            if (response.ok) {
+              const buffer = await response.arrayBuffer();
+              return new Uint8Array(buffer);
+            }
+          } catch (e) {
+            // Tenta próxima URL
+          }
+        }
+
+        throw secondError;
+      }
     }
     
     const raw = contents.data;
