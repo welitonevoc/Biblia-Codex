@@ -7,11 +7,19 @@ import {
   Undo, Redo, Superscript, Subscript,
   Palette, Highlighter, Indent, Outdent,
   RemoveFormatting, MessageSquare, AlertTriangle, CheckCircle,
-  Eye, EyeOff, Footprints,
+  Eye, EyeOff, Footprints, Plus
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface RichTextEditorProps {
   title?: string;
+  onTitleChange?: (title: string) => void;
   content?: string;
   html?: string;
   onChange?: (content: string) => void;
@@ -45,7 +53,9 @@ const FONTS = [
 
 export function RichTextEditor({
   title,
+  onTitleChange,
   content,
+  html,
   onChange,
   onStatsChange,
   theme,
@@ -101,13 +111,13 @@ export function RichTextEditor({
   // Atualiza o editor quando o conteúdo muda externamente
   useEffect(() => {
     const editor = editorRef.current;
-    const html = content ?? '';
-    if (editor && editor.innerHTML !== html) {
+    const val = html ?? content ?? '';
+    if (editor && editor.innerHTML !== val) {
       isUpdatingFromProp.current = true;
-      editor.innerHTML = html;
+      editor.innerHTML = val;
       setTimeout(() => { isUpdatingFromProp.current = false; }, 0);
     }
-  }, [content]);
+  }, [content, html]);
 
   // Save selection
   const saveSelection = useCallback(() => {
@@ -364,217 +374,223 @@ export function RichTextEditor({
   }, []);
 
   // Theme classes
-  const sepClass = isDark ? 'bg-bible-accent/20' : 'bg-gray-300';
-  const btnBase = `flex items-center justify-center w-7 h-7 rounded transition-colors ${isDark ? 'hover:bg-bible-accent/20 text-white/70 hover:text-white' : 'hover:bg-gray-200 text-gray-600 hover:text-gray-900'}`;
-  const btnActive = isDark ? 'bg-bible-accent/30 text-bible-accent' : 'bg-blue-100 text-blue-700';
-  const selectClass = `h-7 rounded border px-2 text-xs cursor-pointer outline-none transition-colors ${isDark ? 'border-bible-accent/20 bg-bible-surface text-white focus:border-bible-accent' : 'border-gray-300 bg-white text-gray-900 focus:border-blue-500'}`;
-  const modalBg = isDark ? 'bg-[#1F1D24] border-[#373450]' : 'bg-white border-gray-200';
-  const inputClass = `w-full h-9 px-3 rounded border text-sm outline-none ${isDark ? 'border-bible-accent/20 bg-bible-surface text-white focus:border-bible-accent' : 'border-gray-300 bg-white text-gray-900 focus:border-blue-500'}`;
+  const btnBase = `flex items-center justify-center h-8 px-2 rounded-lg transition-all duration-200 ${isDark ? 'hover:bg-bible-accent/20 text-bible-text-muted hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`;
+  const btnActive = isDark ? 'bg-bible-accent text-white shadow-lg shadow-bible-accent/20' : 'bg-gray-200 text-gray-900 font-bold';
+  const selectClass = `h-8 rounded-lg border px-3 text-[11px] font-bold cursor-pointer outline-none transition-all ${isDark ? 'border-bible-border/50 bg-bible-surface text-white focus:border-bible-accent' : 'border-gray-200 bg-white text-gray-700 focus:border-blue-500 shadow-sm'}`;
+  const modalBg = isDark ? 'bg-bible-surface border-bible-border/50' : 'bg-white border-gray-200';
+  const inputClass = `w-full h-10 px-4 rounded-xl border text-sm outline-none transition-all ${isDark ? 'border-bible-border/50 bg-bible-bg text-white focus:border-bible-accent' : 'border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20'}`;
 
   return (
-    <div className={`flex h-full flex-col ${isDark ? 'bg-bible-surface/30' : 'bg-white'}`}>
-      {/* Toolbar */}
-      <div className={`flex flex-wrap items-center gap-0.5 border-b p-1.5 ${isDark ? 'border-bible-accent/10' : 'border-gray-200'}`}>
-        {/* Undo/Redo */}
-        <button onClick={() => execCmd('undo')} className={btnBase} title="Desfazer (Ctrl+Z)"><Undo size={14} /></button>
-        <button onClick={() => execCmd('redo')} className={btnBase} title="Refazer (Ctrl+Y)"><Redo size={14} /></button>
-        <div className={`mx-1 h-5 w-px ${sepClass}`} />
+    <div className={`flex h-full flex-col ${isDark ? 'bg-bible-bg' : 'bg-[#F8F9FA]'}`}>
+      {/* Toolbar - Google Docs Style */}
+      <div className={`shrink-0 z-30 flex items-center justify-center p-2 border-b ${isDark ? 'bg-bible-surface/80 border-bible-border/30' : 'bg-white border-gray-200 shadow-sm'} backdrop-blur-xl sticky top-0`}>
+        <div className="flex items-center gap-1 max-w-[1000px] w-full overflow-x-auto no-scrollbar">
+          
+          {/* History Group */}
+          <div className="flex items-center gap-0.5 pr-2 border-r border-bible-border/30">
+            <button onClick={() => execCmd('undo')} className={btnBase} title="Desfazer (Ctrl+Z)"><Undo size={16} /></button>
+            <button onClick={() => execCmd('redo')} className={btnBase} title="Refazer (Ctrl+Y)"><Redo size={16} /></button>
+          </div>
 
-        {/* Font */}
-        <select value={currentFontFamily} onChange={(e) => onFontFamilyChange?.(e.target.value)} className={selectClass} title="Fonte">
-          {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-        </select>
-        <input type="number" value={currentFontSize} min={8} max={96} onChange={(e) => handleFontSizeInput(e.target.value)} className={`w-14 text-center ${selectClass}`} title="Tamanho (px)" />
-        <div className={`mx-1 h-5 w-px ${sepClass}`} />
-
-        {/* Block format */}
-        <select onChange={(e) => setBlockFormat(e.target.value)} className={selectClass} defaultValue="p">
-          <option value="p">Parágrafo</option>
-          <option value="h1">Título H1</option>
-          <option value="h2">Título H2</option>
-          <option value="h3">Título H3</option>
-          <option value="pre">Código bloco</option>
-          <option value="blockquote">Citação</option>
-        </select>
-        <div className={`mx-1 h-5 w-px ${sepClass}`} />
-
-        {/* Inline formatting */}
-        <button onClick={() => execCmd('bold')} className={btnBase} title="Negrito (Ctrl+B)"><Bold size={14} /></button>
-        <button onClick={() => execCmd('italic')} className={btnBase} title="Itálico (Ctrl+I)"><Italic size={14} /></button>
-        <button onClick={() => execCmd('underline')} className={btnBase} title="Sublinhado (Ctrl+U)"><Underline size={14} /></button>
-        <button onClick={() => execCmd('strikeThrough')} className={btnBase} title="Tachado"><Strikethrough size={14} /></button>
-        <button onClick={() => execCmd('superscript')} className={btnBase} title="Sobrescrito"><Superscript size={14} /></button>
-        <button onClick={() => execCmd('subscript')} className={btnBase} title="Subscrito"><Subscript size={14} /></button>
-        <div className={`mx-1 h-5 w-px ${sepClass}`} />
-
-        {/* Colors */}
-        <div className="relative">
-          <button onClick={() => { saveSelection(); }} className={btnBase} title="Cor do texto">
-            <Palette size={14} />
-            <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-3 h-1 rounded-full" style={{ background: fgColor }} />
-          </button>
-          <input type="color" value={fgColor} onChange={(e) => applyFgColor(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
-        </div>
-        <div className="relative">
-          <button onClick={() => { saveSelection(); setShowHlPalette(!showHlPalette); }} className={btnBase} title="Destaque">
-            <Highlighter size={14} />
-          </button>
-          {showHlPalette && (
-            <div className={`absolute top-full left-0 mt-1 p-2 rounded-lg border shadow-lg z-50 flex gap-1.5 ${modalBg}`}>
-              {HIGHLIGHT_COLORS.map(hl => (
-                <button key={hl.cls} onClick={() => applyHighlight(hl.cls)}
-                  className="w-5 h-5 rounded transition-transform hover:scale-110 border"
-                  style={{ background: hl.color === 'transparent' ? (isDark ? '#272530' : '#f0f0f0') : hl.color + '55', borderColor: hl.color === 'transparent' ? (isDark ? '#373450' : '#ddd') : hl.color }}
-                  title={hl.name} />
-              ))}
+          {/* Typography Group */}
+          <div className="flex items-center gap-2 px-2 border-r border-bible-border/30">
+            <select value={currentFontFamily} onChange={(e) => onFontFamilyChange?.(e.target.value)} className={cn(selectClass, "min-w-[120px]")}>
+              {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+            </select>
+            <div className="flex items-center bg-bible-surface/50 border border-bible-border/30 rounded-lg p-0.5">
+              <button onClick={() => handleFontSizeInput((currentFontSize - 1).toString())} className="w-6 h-6 flex items-center justify-center hover:bg-bible-accent/10 rounded-md text-bible-text-muted"><Minus size={12} /></button>
+              <input type="number" value={currentFontSize} onChange={(e) => handleFontSizeInput(e.target.value)} className="w-10 text-center bg-transparent text-[11px] font-black outline-none" />
+              <button onClick={() => handleFontSizeInput((currentFontSize + 1).toString())} className="w-6 h-6 flex items-center justify-center hover:bg-bible-accent/10 rounded-md text-bible-text-muted"><Plus size={12} /></button>
             </div>
-          )}
-        </div>
-        <div className={`mx-1 h-5 w-px ${sepClass}`} />
+          </div>
 
-        {/* Alignment */}
-        <button onClick={() => execCmd('justifyLeft')} className={btnBase} title="Alinhar à esquerda"><AlignLeft size={14} /></button>
-        <button onClick={() => execCmd('justifyCenter')} className={btnBase} title="Centralizar"><AlignCenter size={14} /></button>
-        <button onClick={() => execCmd('justifyRight')} className={btnBase} title="Alinhar à direita"><AlignRight size={14} /></button>
-        <button onClick={() => execCmd('justifyFull')} className={btnBase} title="Justificar"><AlignJustify size={14} /></button>
-        <div className={`mx-1 h-5 w-px ${sepClass}`} />
+          {/* Formatting Group */}
+          <div className="flex items-center gap-0.5 px-2 border-r border-bible-border/30">
+            <button onClick={() => execCmd('bold')} className={btnBase} title="Negrito"><Bold size={16} /></button>
+            <button onClick={() => execCmd('italic')} className={btnBase} title="Itálico"><Italic size={16} /></button>
+            <button onClick={() => execCmd('underline')} className={btnBase} title="Sublinhado"><Underline size={16} /></button>
+            
+            <div className="relative mx-1">
+              <button onClick={() => { saveSelection(); }} className={btnBase} title="Cor do texto">
+                <div className="flex flex-col items-center">
+                  <Palette size={16} />
+                  <div className="w-3.5 h-1 rounded-full mt-0.5" style={{ background: fgColor }} />
+                </div>
+              </button>
+              <input type="color" value={fgColor} onChange={(e) => applyFgColor(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
+            </div>
 
-        {/* Lists */}
-        <button onClick={() => execCmd('insertUnorderedList')} className={btnBase} title="Lista com marcadores"><List size={14} /></button>
-        <button onClick={() => execCmd('insertOrderedList')} className={btnBase} title="Lista numerada"><ListOrdered size={14} /></button>
-        <button onClick={insertChecklist} className={btnBase} title="Checklist"><CheckSquare size={14} /></button>
-        <div className={`mx-1 h-5 w-px ${sepClass}`} />
+            <div className="relative">
+              <button onClick={() => { saveSelection(); setShowHlPalette(!showHlPalette); }} className={cn(btnBase, showHlPalette && btnActive)} title="Destaque">
+                <Highlighter size={16} />
+              </button>
+              <AnimatePresence>
+                {showHlPalette && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className={`absolute top-full left-0 mt-2 p-3 rounded-2xl border shadow-2xl z-50 flex gap-2 ${modalBg}`}
+                  >
+                    {HIGHLIGHT_COLORS.map(hl => (
+                      <button key={hl.cls} onClick={() => applyHighlight(hl.cls)}
+                        className="w-6 h-6 rounded-lg transition-transform hover:scale-110 border border-white/10"
+                        style={{ background: hl.color === 'transparent' ? (isDark ? '#272530' : '#f0f0f0') : hl.color, borderColor: hl.color === 'transparent' ? (isDark ? '#373450' : '#ddd') : 'transparent' }}
+                        title={hl.name} />
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
 
-        {/* Insertions */}
-        <button onClick={insertCodeInline} className={btnBase} title="Código inline"><Code size={14} /></button>
-        <button onClick={() => execCmd('insertHorizontalRule')} className={btnBase} title="Linha horizontal"><Minus size={14} /></button>
-        <button onClick={() => { saveSelection(); setShowTableModal(true); }} className={btnBase} title="Tabela"><Table size={14} /></button>
-        <button onClick={() => { saveSelection(); setShowLinkModal(true); }} className={btnBase} title="Link (Ctrl+K)"><Link size={14} /></button>
-        <div className={`mx-1 h-5 w-px ${sepClass}`} />
+          {/* Alignment Group */}
+          <div className="flex items-center gap-0.5 px-2 border-r border-bible-border/30">
+            <button onClick={() => execCmd('justifyLeft')} className={btnBase}><AlignLeft size={16} /></button>
+            <button onClick={() => execCmd('justifyCenter')} className={btnBase}><AlignCenter size={16} /></button>
+            <button onClick={() => execCmd('justifyRight')} className={btnBase}><AlignRight size={16} /></button>
+          </div>
 
-        {/* Callouts */}
-        <button onClick={() => insertCallout('note', 'ℹ️', 'callout-note')} className={btnBase} title="Callout - Nota"><MessageSquare size={14} /></button>
-        <button onClick={() => insertCallout('warn', '⚠️', 'callout-warn')} className={btnBase} title="Callout - Aviso"><AlertTriangle size={14} /></button>
-        <button onClick={() => insertCallout('ok', '✅', 'callout-ok')} className={btnBase} title="Callout - Sucesso"><CheckCircle size={14} /></button>
-        <div className={`mx-1 h-5 w-px ${sepClass}`} />
+          {/* Lists Group */}
+          <div className="flex items-center gap-0.5 px-2 border-r border-bible-border/30">
+            <button onClick={() => execCmd('insertUnorderedList')} className={btnBase}><List size={16} /></button>
+            <button onClick={() => execCmd('insertOrderedList')} className={btnBase}><ListOrdered size={16} /></button>
+          </div>
 
-        {/* Extras */}
-        <button onClick={insertSpoiler} className={btnBase} title="Spoiler"><Eye size={14} /></button>
-        <button onClick={insertFootnote} className={btnBase} title="Rodapé"><Footprints size={14} /></button>
-        <button onClick={() => execCmd('indent')} className={btnBase} title="Aumentar recuo"><Indent size={14} /></button>
-        <button onClick={() => execCmd('outdent')} className={btnBase} title="Diminuir recuo"><Outdent size={14} /></button>
-        <button onClick={() => execCmd('removeFormat')} className={btnBase} title="Limpar formatação"><RemoveFormatting size={14} /></button>
-
-        <div className="ml-auto">
-          <button onClick={() => onThemeChange?.(isDark ? 'light' : 'dark')} className={btnBase} title={isDark ? 'Modo claro' : 'Modo escuro'}>
-            {isDark ? '☀️' : '🌙'}
-          </button>
+          {/* Insertions Group */}
+          <div className="flex items-center gap-0.5 pl-2">
+            <button onClick={() => { saveSelection(); setShowLinkModal(true); }} className={btnBase} title="Link"><Link size={16} /></button>
+            <button onClick={() => { saveSelection(); setShowTableModal(true); }} className={btnBase} title="Tabela"><Table size={16} /></button>
+            <button onClick={insertChecklist} className={btnBase} title="Checklist"><CheckSquare size={16} /></button>
+            <button onClick={() => execCmd('removeFormat')} className={btnBase} title="Limpar Formatação"><RemoveFormatting size={16} /></button>
+          </div>
         </div>
       </div>
 
-      {/* Editor */}
-      <div
-        ref={editorRef}
-        contentEditable
-        onInput={handleInput}
-        onKeyDown={handleKeyDown}
-        onPaste={handlePaste}
-        onClick={() => setShowHlPalette(false)}
-        className={`flex-1 overflow-y-auto p-6 outline-none ${isDark ? 'text-white' : 'text-gray-900'}`}
-        style={{ fontFamily: currentFontFamily, fontSize: `${currentFontSize}px`, lineHeight: '1.8', minHeight: '200px', caretColor: isDark ? '#BCA0F5' : '#7C5FC8' }}
-        data-placeholder="Escreva sua nota aqui..."
-        suppressContentEditableWarning
-      />
+      {/* Editor Canvas - The "Paper" Experience */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-10 flex flex-col items-center bg-inherit">
+        <div 
+          className={cn(
+            "w-full max-w-[850px] min-h-[1056px] shadow-2xl rounded-[4px] p-[80px] transition-all duration-500 flex flex-col",
+            isDark ? "bg-[#1E1E1E] shadow-black/40 ring-1 ring-white/5" : "bg-white shadow-gray-200 ring-1 ring-gray-100"
+          )}
+          style={{ 
+            fontFamily: currentFontFamily, 
+            fontSize: `${currentFontSize}px`,
+            lineHeight: '1.6',
+          }}
+        >
+          {/* Document Title - Studio Style */}
+          <div className="flex flex-col mb-12 w-full shrink-0">
+            <input 
+              type="text"
+              value={title}
+              onChange={(e) => onTitleChange?.(e.target.value)}
+              className="bg-transparent text-5xl font-black text-bible-text outline-none placeholder:opacity-10 mb-4 tracking-tighter"
+              placeholder="Documento sem título"
+            />
+            <div className="h-[2px] w-20 bg-bible-accent/30 rounded-full" />
+          </div>
+
+          <div
+            ref={editorRef}
+            contentEditable
+            onInput={handleInput}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            onClick={() => setShowHlPalette(false)}
+            className="outline-none min-h-full"
+            style={{ caretColor: isDark ? '#BCA0F5' : '#4285F4' }}
+            data-placeholder="Comece a escrever seu documento..."
+            suppressContentEditableWarning
+          />
+        </div>
+
+        {/* Floating Page Status */}
+        <div className="mt-8 px-4 py-2 rounded-full bg-bible-surface/30 border border-bible-border/30 backdrop-blur-md text-[10px] font-bold text-bible-text-muted tracking-widest uppercase opacity-40 hover:opacity-100 transition-opacity mb-20">
+          Visualização de Impressão • A4 • {currentFontFamily.split(',')[0].replace(/"/g, '')}
+        </div>
+      </div>
 
       {/* Styles */}
       <style>{`
         [contenteditable]:empty:before {
           content: attr(data-placeholder);
-          color: ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
+          color: ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
           pointer-events: none;
         }
-        .hl-yellow { background: #E5C07B33; border-radius: 3px; padding: 0 2px; }
-        .hl-green { background: #6FC49A33; border-radius: 3px; padding: 0 2px; }
-        .hl-blue { background: #61AFEF33; border-radius: 3px; padding: 0 2px; }
-        .hl-pink { background: #E06C7533; border-radius: 3px; padding: 0 2px; }
-        .hl-purple { background: #BCA0F533; border-radius: 3px; padding: 0 2px; }
-        .spoiler {
-          background: ${isDark ? '#E2DEEE' : '#2A2520'};
-          color: ${isDark ? '#E2DEEE' : '#2A2520'};
-          border-radius: 3px;
-          padding: 0 3px;
-          cursor: pointer;
-          user-select: none;
-          transition: all 0.2s;
-        }
-        .spoiler:hover, .spoiler.revealed {
-          background: ${isDark ? '#272530' : '#f0f0f0'};
-          color: ${isDark ? '#E2DEEE' : '#2A2520'};
-        }
-        .callout {
-          display: flex;
-          gap: 10px;
-          padding: 12px 16px;
-          border-radius: 8px;
-          margin: 12px 0;
-          font-size: 0.93em;
-          align-items: flex-start;
-        }
-        .callout-note { background: rgba(97,175,239,0.1); border: 1px solid rgba(97,175,239,0.3); }
-        .callout-warn { background: rgba(229,192,123,0.1); border: 1px solid rgba(229,192,123,0.3); }
-        .callout-ok { background: rgba(111,196,154,0.1); border: 1px solid rgba(111,196,154,0.3); }
-        .callout-icon { font-size: 1em; flex-shrink: 0; margin-top: 1px; }
-        .checklist { list-style: none; padding-left: 4px; }
-        .checklist li { display: flex; align-items: flex-start; gap: 8px; margin: 4px 0; cursor: pointer; }
-        .checklist li input[type=checkbox] { margin-top: 4px; flex-shrink: 0; accent-color: #BCA0F5; width: 15px; height: 15px; cursor: pointer; }
-        .checklist li.done span { text-decoration: line-through; color: ${isDark ? '#5F5C78' : '#999'}; }
-        .footnote-ref { color: #BCA0F5; cursor: pointer; }
-        .footnote-text { font-size: 0.8em; color: ${isDark ? '#9895B0' : '#666'}; border-top: 1px solid ${isDark ? '#373450' : '#ddd'}; padding-top: 6px; margin-top: 16px; }
-        code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: ${isDark ? '#272530' : '#f0f0f0'}; border: 1px solid ${isDark ? '#373450' : '#ddd'}; border-radius: 4px; padding: 1px 5px; color: ${isDark ? '#BCA0F5' : '#7C5FC8'}; }
-        table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 0.9em; }
-        th { background: ${isDark ? '#272530' : '#f0f0f0'}; border: 1px solid ${isDark ? '#373450' : '#ddd'}; padding: 8px 12px; text-align: left; font-weight: 600; }
-        td { border: 1px solid ${isDark ? '#373450' : '#ddd'}; padding: 7px 12px; }
-        blockquote { border-left: 3px solid #BCA0F5; margin: 12px 0; padding: 10px 18px; background: rgba(188,160,245,0.08); border-radius: 0 6px 6px 0; color: ${isDark ? '#9895B0' : '#666'}; font-style: italic; }
-        pre { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: ${isDark ? '#272530' : '#f0f0f0'}; border: 1px solid ${isDark ? '#373450' : '#ddd'}; border-left: 3px solid #BCA0F5; border-radius: 6px; padding: 14px 18px; margin: 12px 0; overflow-x: auto; white-space: pre-wrap; }
-        hr { border: none; border-top: 1px solid ${isDark ? '#373450' : '#ddd'}; margin: 20px 0; }
-        a { color: #61AFEF; text-decoration: underline; text-underline-offset: 3px; }
+        .hl-yellow { background: #E5C07B; color: #000; border-radius: 2px; }
+        .hl-green { background: #6FC49A; color: #000; border-radius: 2px; }
+        .hl-blue { background: #61AFEF; color: #000; border-radius: 2px; }
+        .hl-pink { background: #E06C75; color: #fff; border-radius: 2px; }
+        .hl-purple { background: #BCA0F5; color: #000; border-radius: 2px; }
+        
+        table { border-collapse: collapse; width: 100%; margin: 24px 0; border: 1px solid ${isDark ? '#333' : '#eee'}; }
+        th { background: ${isDark ? '#2a2a2a' : '#f8f9fa'}; padding: 12px; border: 1px solid ${isDark ? '#333' : '#eee'}; text-align: left; }
+        td { padding: 10px; border: 1px solid ${isDark ? '#333' : '#eee'}; }
+        
+        blockquote { border-left: 4px solid #BCA0F5; margin: 24px 0; padding: 12px 24px; background: ${isDark ? '#252525' : '#f9f9f9'}; font-style: italic; color: ${isDark ? '#aaa' : '#555'}; }
+        pre { font-family: 'JetBrains Mono', monospace; background: ${isDark ? '#1a1a1a' : '#f4f4f4'}; padding: 16px; border-radius: 8px; margin: 20px 0; overflow-x: auto; font-size: 0.9em; }
+        code { font-family: 'JetBrains Mono', monospace; background: ${isDark ? '#333' : '#eee'}; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        
+        .checklist { list-style: none; padding-left: 0; }
+        .checklist li { display: flex; gap: 12px; margin: 8px 0; }
+        .checklist li input[type=checkbox] { width: 18px; height: 18px; margin-top: 3px; accent-color: #BCA0F5; }
+        
+        .footnote-ref { color: #BCA0F5; font-size: 0.7em; vertical-align: super; margin-left: 2px; }
+        .footnote-text { font-size: 0.85em; border-top: 1px solid ${isDark ? '#333' : '#eee'}; padding-top: 12px; margin-top: 32px; color: ${isDark ? '#888' : '#666'}; }
+        
+        a { color: #4285F4; text-decoration: underline; }
+        hr { border: none; border-top: 1px solid ${isDark ? '#333' : '#eee'}; margin: 32px 0; }
       `}</style>
 
-      {/* Link Modal */}
+      {/* Modals Pro Max */}
       {showLinkModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setShowLinkModal(false)}>
-          <div className={`rounded-lg border p-6 w-80 shadow-xl ${modalBg}`} onClick={e => e.stopPropagation()}>
-            <h3 className={`text-sm font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Inserir link</h3>
-            <input type="text" value={linkText} onChange={e => setLinkText(e.target.value)} placeholder="Texto do link" className={`mb-3 ${inputClass}`} />
-            <input type="url" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://..." className={`mb-4 ${inputClass}`} />
-            <div className="flex gap-2 justify-end">
-              <button onClick={() => setShowLinkModal(false)} className={`h-8 px-3 rounded border text-xs ${isDark ? 'border-bible-accent/20 text-white/70 hover:bg-bible-accent/10' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}>Cancelar</button>
-              <button onClick={insertLink} className="h-8 px-4 rounded bg-bible-accent text-bible-bg text-xs font-bold hover:opacity-90">Inserir</button>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowLinkModal(false)}>
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className={`rounded-[32px] border p-8 w-full max-w-md shadow-2xl ${modalBg}`} 
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-black text-bible-text mb-6 tracking-tighter">Inserir Hiperlink</h3>
+            <div className="space-y-4 mb-8">
+              <input type="text" value={linkText} onChange={e => setLinkText(e.target.value)} placeholder="Texto para exibição" className={inputClass} />
+              <input type="url" value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="Endereço (https://...)" className={inputClass} />
             </div>
-          </div>
+            <div className="flex gap-3">
+              <button onClick={() => setShowLinkModal(false)} className="flex-1 h-12 rounded-2xl border border-bible-border/50 text-sm font-bold text-bible-text-muted hover:bg-bible-surface transition-all">Cancelar</button>
+              <button onClick={insertLink} className="flex-1 h-12 rounded-2xl bg-bible-accent text-white shadow-lg shadow-bible-accent/20 text-sm font-bold">Aplicar Link</button>
+            </div>
+          </motion.div>
         </div>
       )}
 
-      {/* Table Modal */}
+      {/* Table Modal Pro Max */}
       {showTableModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setShowTableModal(false)}>
-          <div className={`rounded-lg border p-6 w-80 shadow-xl ${modalBg}`} onClick={e => e.stopPropagation()}>
-            <h3 className={`text-sm font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Inserir tabela</h3>
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div>
-                <label className={`block text-xs mb-1 ${isDark ? 'text-white/60' : 'text-gray-500'}`}>Colunas</label>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowTableModal(false)}>
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className={`rounded-[32px] border p-8 w-full max-w-md shadow-2xl ${modalBg}`} 
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-black text-bible-text mb-6 tracking-tighter">Configurar Tabela</h3>
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-bible-text-muted pl-1">Colunas</label>
                 <input type="number" value={tableCols} min={1} max={10} onChange={e => setTableCols(parseInt(e.target.value) || 3)} className={inputClass} />
               </div>
-              <div>
-                <label className={`block text-xs mb-1 ${isDark ? 'text-white/60' : 'text-gray-500'}`}>Linhas</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-bible-text-muted pl-1">Linhas</label>
                 <input type="number" value={tableRows} min={1} max={20} onChange={e => setTableRows(parseInt(e.target.value) || 3)} className={inputClass} />
               </div>
             </div>
-            <div className="flex gap-2 justify-end">
-              <button onClick={() => setShowTableModal(false)} className={`h-8 px-3 rounded border text-xs ${isDark ? 'border-bible-accent/20 text-white/70 hover:bg-bible-accent/10' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}>Cancelar</button>
-              <button onClick={insertTable} className="h-8 px-4 rounded bg-bible-accent text-bible-bg text-xs font-bold hover:opacity-90">Inserir</button>
+            <div className="flex gap-3">
+              <button onClick={() => setShowTableModal(false)} className="flex-1 h-12 rounded-2xl border border-bible-border/50 text-sm font-bold text-bible-text-muted hover:bg-bible-surface transition-all">Cancelar</button>
+              <button onClick={insertTable} className="flex-1 h-12 rounded-2xl bg-bible-accent text-white shadow-lg shadow-bible-accent/20 text-sm font-bold">Criar Tabela</button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

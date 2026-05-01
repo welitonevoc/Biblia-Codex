@@ -175,6 +175,7 @@ export interface BibleModule {
   isVirtual?: boolean;
 }
 
+export type ThemeMode =
   | 'pure_light'
   | 'pure_dark'
   | 'paper_sepia'

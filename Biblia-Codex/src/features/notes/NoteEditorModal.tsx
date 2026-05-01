@@ -11,7 +11,7 @@ import {
   Clock, Bold, Italic, Underline, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, CheckSquare, Link2, Palette, Highlighter, Code, Quote,
   AlignLeft, AlignCenter, AlignRight, Undo, Redo, Link, BookOpen,
-  ExternalLink, Copy, Trash
+  ExternalLink, Copy, Trash, Edit3
 } from 'lucide-react';
 import { Note, Tag } from '../types';
 import { storage } from '../StorageService';
@@ -386,82 +386,81 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center"
+        className={cn("fixed inset-0 z-50 flex items-center justify-center", isMinimized ? "pointer-events-none" : "")}
       >
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
+        <div className={cn("absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity", isMinimized ? "opacity-0" : "opacity-100")} onClick={handleClose} />
         
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ 
-            scale: isMinimized ? 0.5 : 1, 
+            scale: 1, 
             opacity: 1,
-            x: isMinimized ? '100vw' : 0,
-            y: isMinimized ? '100vh' : 0
+            x: 0,
+            y: 0
           }}
           exit={{ scale: 0.9, opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className={cn(
-            "relative bg-[var(--bg-bible)] rounded-2xl shadow-2xl overflow-hidden flex flex-col",
-            "transition-all duration-300",
+            "relative rounded-2xl overflow-hidden flex flex-col",
+            "transition-all duration-300 pointer-events-auto",
             isMaximized ? "w-screen h-screen rounded-none" : "w-[90vw] h-[85vh] max-w-5xl",
-            isMinimized ? "fixed bottom-4 right-4 w-80 h-12 rounded-xl" : "fixed"
+            isMinimized ? "fixed bottom-24 right-6 w-14 h-14 rounded-full bg-[var(--accent-bible)] shadow-[0_10px_40px_rgba(0,0,0,0.3)] cursor-pointer hover:scale-110 z-50 text-white flex items-center justify-center" : "fixed bg-[var(--bg-bible)] shadow-2xl"
           )}
           onKeyDown={handleKeyDown}
         >
-          <div className="flex items-center justify-between px-4 py-3 bg-[var(--surface-1)] border-b border-[var(--border-bible)]">
-            <div className="flex items-center gap-3 flex-1">
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Título da nota..."
-                className="flex-1 bg-transparent text-lg font-semibold text-[var(--text-bible)] placeholder:text-[var(--text-bible-muted)] focus:outline-none"
-              />
-              {lastSaved && (
-                <span className="text-xs text-[var(--text-bible-muted)] flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {lastSaved.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <button onClick={toggleMinimize} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Minimizar">
-                <Minus className="w-4 h-4 text-[var(--text-bible-muted)]" />
-              </button>
-              <button onClick={toggleMaximize} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title={isMaximized ? "Restaurar" : "Maximizar"}>
-                {isMaximized ? <Minimize2 className="w-4 h-4 text-[var(--text-bible-muted)]" /> : <Maximize2 className="w-4 h-4 text-[var(--text-bible-muted)]" />}
-              </button>
-              <button onClick={handleClose} className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Fechar">
-                <X className="w-4 h-4 text-red-500" />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1 px-4 py-2 bg-[var(--surface-1)] border-b border-[var(--border-bible)]">
-            <button
-              onClick={() => setActiveTab('edit')}
-              className={cn(
-                "px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
-                activeTab === 'edit' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-3)]"
-              )}
-            >
-              Editar
-            </button>
-            <button
-              onClick={() => setActiveTab('tts')}
-              className={cn(
-                "px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2",
-                activeTab === 'tts' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-3)]"
-              )}
-            >
-              <Volume2 className="w-4 h-4" />
-              TTS
-            </button>
-          </div>
-
           {!isMinimized && (
             <>
+              <div className="flex items-center justify-between px-4 py-3 bg-[var(--surface-1)] border-b border-[var(--border-bible)]">
+                <div className="flex items-center gap-3 flex-1">
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Título da nota..."
+                    className="flex-1 bg-transparent text-lg font-semibold text-[var(--text-bible)] placeholder:text-[var(--text-bible-muted)] focus:outline-none"
+                  />
+                  {lastSaved && (
+                    <span className="text-xs text-[var(--text-bible-muted)] flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {lastSaved.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <button onClick={toggleMinimize} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Minimizar">
+                    <Minus className="w-4 h-4 text-[var(--text-bible-muted)]" />
+                  </button>
+                  <button onClick={toggleMaximize} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title={isMaximized ? "Restaurar" : "Maximizar"}>
+                    {isMaximized ? <Minimize2 className="w-4 h-4 text-[var(--text-bible-muted)]" /> : <Maximize2 className="w-4 h-4 text-[var(--text-bible-muted)]" />}
+                  </button>
+                  <button onClick={handleClose} className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Fechar">
+                    <X className="w-4 h-4 text-red-500" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 px-4 py-2 bg-[var(--surface-1)] border-b border-[var(--border-bible)]">
+                <button
+                  onClick={() => setActiveTab('edit')}
+                  className={cn(
+                    "px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
+                    activeTab === 'edit' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-3)]"
+                  )}
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => setActiveTab('tts')}
+                  className={cn(
+                    "px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2",
+                    activeTab === 'tts' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-3)]"
+                  )}
+                >
+                  <Volume2 className="w-4 h-4" />
+                  TTS
+                </button>
+              </div>
               {activeTab === 'edit' ? (
                 <>
                   <div className="flex items-center justify-between px-2 py-2 bg-[var(--surface-1)] border-b border-[var(--border-bible)]">
@@ -663,14 +662,13 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
           )}
 
           {isMinimized && (
-            <div className="flex items-center justify-between px-4">
-              <span className="text-sm font-semibold text-[var(--text-bible)] truncate">{title || 'Nota'}</span>
-              <div className="flex items-center gap-2">
-                {isSpeaking && <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />}
-                <button onClick={toggleMaximize} className="p-1 hover:bg-[var(--surface-2)] rounded transition-colors">
-                  <Maximize2 className="w-4 h-4 text-[var(--text-bible-muted)]" />
-                </button>
-              </div>
+            <div 
+              className="w-full h-full flex items-center justify-center"
+              onClick={toggleMaximize}
+              title={title || 'Nota Minimizada'}
+            >
+              <Edit3 className="w-6 h-6 text-white" />
+              {isSpeaking && <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-orange-500 border-2 border-[var(--accent-bible)] animate-pulse" />}
             </div>
           )}
         </motion.div>

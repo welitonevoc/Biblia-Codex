@@ -43,6 +43,7 @@ import { Note, Tag } from '../types';
 import { storage } from '../StorageService';
 import { RichTextEditor } from './RichTextEditor';
 import { useAppContext } from '../AppContext';
+import { getThemePreset } from '../theme/presets';
 import { getStoredGoogleAccessToken, loginWithGoogle } from '../firebase';
 import { exportNoteToGoogleDocs } from '../services/googleDocsService';
 import { exportNote, type ExportFormat } from '../services/ExportService';
@@ -197,7 +198,27 @@ const buildExcerpt = (note: Note) => {
   return text ? text.slice(0, 120) : 'Sem conteudo ainda';
 };
 
-export const Notes: React.FC = () => {
+const ActionButton = ({ icon: Icon, active, onClick, label, disabled }: any) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={cn(
+      "p-2.5 rounded-xl transition-all group relative flex items-center justify-center",
+      active ? "bg-bible-accent text-white shadow-lg shadow-bible-accent/20" : "text-bible-text-muted hover:bg-bible-surface hover:text-bible-text disabled:opacity-50"
+    )}
+  >
+    <Icon className="w-4 h-4" />
+    <span className="absolute -bottom-8 bg-bible-bg border border-bible-border/50 text-[10px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+      {label}
+    </span>
+  </button>
+);
+
+interface NotesProps {
+  isActive?: boolean;
+}
+
+export const Notes: React.FC<NotesProps> = ({ isActive = true }) => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [draftNote, setDraftNote] = useState<Note | null>(null);
@@ -221,7 +242,7 @@ export const Notes: React.FC = () => {
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const autosaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dirtyRef = useRef(false);
-  const { user } = useAppContext();
+  const { user, config } = useAppContext();
 
   // Load data
   useEffect(() => {
@@ -412,8 +433,10 @@ export const Notes: React.FC = () => {
       setTimeout(() => setGoogleDocsState('idle'), 3000);
     } catch (error: any) {
       console.error('Google Docs export error:', error);
-      setGoogleDocsError(error.message || 'Erro ao exportar para Google Docs');
+      const msg = error.message || 'Erro ao exportar para Google Docs';
+      setGoogleDocsError(msg);
       setGoogleDocsState('error');
+      alert(`Falha na exportação para o Google Drive:\n\n${msg}\n\n(Verifique se o Firebase está configurado)`);
     }
   };
 
@@ -459,8 +482,9 @@ export const Notes: React.FC = () => {
 
   // RENDERIZAÇÃO COM VISUAL PREMIUM + TODAS FUNCIONALIDADES
   return (
-    <div className="h-full overflow-hidden">
-      <div className="grid h-full grid-cols-1 xl:grid-cols-[340px_1fr] overflow-hidden">
+    <>
+      <div className={cn("h-full overflow-hidden", !isActive && "hidden")}>
+        <div className="grid h-full grid-cols-1 xl:grid-cols-[340px_1fr] overflow-hidden">
         {/* Sidebar Premium */}
         <aside className="shrink-0 border-r border-bible-border/50 bg-bible-bg/50 flex flex-col">
           {/* Header Dashboard Style */}
@@ -728,12 +752,22 @@ export const Notes: React.FC = () => {
                   className="h-full p-6"
                 >
                   <RichTextEditor
+                    theme={
+                      (config?.mode === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) || 
+                      (config?.mode !== 'system' && getThemePreset(config?.mode || 'default').family === 'dark') 
+                        ? 'dark' : 'light'
+                    }
                     html={draftNote.content}
                     onChange={(html) => {
                       setDraftNote((prev) => (prev ? { ...prev, content: html } : null));
                       dirtyRef.current = true;
                     }}
-                    he              {/* Footer Pro Max com Tags */}
+                    height="100%"
+                  />
+                </motion.div>
+              </div>
+
+              {/* Footer Pro Max com Tags */}
               <div className="shrink-0 border-t border-bible-border/30 bg-bible-bg/40 px-10 py-6 backdrop-blur-xl relative z-10">
                 <div className="flex items-center gap-8">
                   {/* Stats Pro Max */}
@@ -887,10 +921,6 @@ export const Notes: React.FC = () => {
                   )}
                 </AnimatePresence>
               </div>
-ion.div>
-                  )}
-                </AnimatePresence>
-              </div>
             </>
           ) : (
             /* Empty State Premium */
@@ -931,6 +961,7 @@ ion.div>
           )}
         </section>
       </div>
+      </div>
 
       {/* Note Editor Modal */}
       <NoteEditorModal
@@ -941,7 +972,6 @@ ion.div>
         onDelete={handleModalDelete}
         availableTags={allTags}
       />
-
-      </div>
+    </>
   );
 };

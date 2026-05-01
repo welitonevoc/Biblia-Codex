@@ -238,13 +238,11 @@ function AppContent() {
               </motion.div>
             )}
 
-            {activeTab === 'notes' && (
-              <motion.div key="notes" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
-                <Suspense fallback={<PageLoader />}>
-                  <NotesPage />
-                </Suspense>
-              </motion.div>
-            )}
+            <div className={activeTab === 'notes' ? "h-full" : "h-0 overflow-hidden"}>
+              <Suspense fallback={<PageLoader />}>
+                <NotesPage isActive={activeTab === 'notes'} />
+              </Suspense>
+            </div>
 
             {activeTab === 'settings' && (
               <motion.div key="settings" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
