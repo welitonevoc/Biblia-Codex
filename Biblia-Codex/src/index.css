@@ -330,7 +330,9 @@ body::before {
   line-height: var(--font-bible-line-height);
   letter-spacing: var(--font-bible-letter-spacing);
   color: var(--text-bible);
-  padding: 0 var(--horizontal-margin);
+  width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .words-of-jesus {
@@ -374,8 +376,10 @@ body::before {
    ───────────────────────────────────────────── */
 html, body {
   height: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
   background-color: var(--bg-bible);
+  width: 100vw;
+  position: relative;
 }
 
 body {
@@ -451,8 +455,8 @@ body {
   color: var(--text-bible);
   line-height: 1.3;
   letter-spacing: -0.01em;
-  margin-top: 2.5rem;
-  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
   text-wrap: balance;
 }
 
@@ -460,9 +464,9 @@ body {
   font-size: 1.85rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  padding-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
   border-bottom: 2px solid var(--accent-bible);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: var(--text-bible);
 }
 

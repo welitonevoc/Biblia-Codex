@@ -1,12 +1,13 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
-  Volume2, Settings2, ChevronLeft, Play, Pause, SkipForward,
-  Mic, Speaker, Zap, Check, Loader2
+  Volume2, Settings2, ChevronLeft, Play, Pause, SkipBack, SkipForward,
+  VolumeX, Volume1, Mic, Speaker, Languages, Zap, Check, AlertCircle,
+  Loader2, Volume, Radio, Waves
 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { cn } from '../../utils/cn';
-import { ttsService, TTSOptions, getAvailableVoices } from '../../services/ttsService';
+import { ttsService, TTSOptions } from '../../services/ttsService';
 
 interface VoiceOption {
   id: string;
@@ -29,10 +30,13 @@ export const TTSSettings: React.FC = () => {
     pitch: 1.0,
     volume: 0.8,
   });
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
+  // Load available voices
   useEffect(() => {
     const loadVoices = () => {
-      const availableVoices = getAvailableVoices();
+      const availableVoices = ttsService.getVoices();
       const mappedVoices: VoiceOption[] = availableVoices.map(v => ({
         id: v.voice.name,
         name: v.voice.name.split(' ')[0] || v.voice.name,
@@ -43,14 +47,16 @@ export const TTSSettings: React.FC = () => {
         flag: getFlag(v.lang)
       }));
 
+      // If no voices loaded yet, use defaults
       if (mappedVoices.length === 0) {
         setVoices([
-          { id: 'pt-BR-Female', name: 'Maria', language: 'Portugues (Brasil)', langCode: 'pt-BR', gender: 'female', quality: 'neural', flag: '🇧🇧' },
-          { id: 'pt-BR-Male', name: 'Joao', language: 'Portugues (Brasil)', langCode: 'pt-BR', gender: 'male', quality: 'neural', flag: '🇧🇧' },
+          { id: 'pt-BR-Female', name: 'Maria', language: 'Português (Brasil)', langCode: 'pt-BR', gender: 'female', quality: 'neural', flag: '🇧🇷' },
+          { id: 'pt-BR-Male', name: 'João', language: 'Português (Brasil)', langCode: 'pt-BR', gender: 'male', quality: 'neural', flag: '🇧🇷' },
           { id: 'en-US-Female', name: 'Emma', language: 'English (US)', langCode: 'en-US', gender: 'female', quality: 'standard', flag: '🇺🇸' },
         ]);
       } else {
         setVoices(mappedVoices);
+        // Auto-select PT-BR voice
         const ptVoice = mappedVoices.find(v => v.langCode.startsWith('pt'));
         if (ptVoice && !selectedVoice) {
           setSelectedVoice(ptVoice);
@@ -66,18 +72,18 @@ export const TTSSettings: React.FC = () => {
 
   const getLanguageName = (lang: string): string => {
     const langs: Record<string, string> = {
-      'pt': 'Portugues',
-      'pt-BR': 'Portugues (Brasil)',
+      'pt': 'Português',
+      'pt-BR': 'Português (Brasil)',
       'en': 'English',
       'en-US': 'English (US)',
-      'es': 'Espanol',
-      'fr': 'Francais',
+      'es': 'Español',
+      'fr': 'Français',
     };
     return langs[lang] || lang;
   };
 
   const getFlag = (lang: string): string => {
-    if (lang.startsWith('pt')) return '🇧🇧';
+    if (lang.startsWith('pt')) return '🇧🇷';
     if (lang.startsWith('en')) return '🇺🇸';
     if (lang.startsWith('es')) return '🇪🇸';
     if (lang.startsWith('fr')) return '🇫🇷';
@@ -105,7 +111,7 @@ export const TTSSettings: React.FC = () => {
     setIsPlaying(true);
 
     try {
-      const text = "Joao 3:16 - Porque Deus amou o mundo de tal maneira que deu o seu Filho unigenito, para que todo aquele que nele cre nao pereca, mas tenha a vida eterna.";
+      const text = "João 3:16 - Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna.";
 
       const options: TTSOptions = {
         rate: ttsSettings.rate,
@@ -114,7 +120,7 @@ export const TTSSettings: React.FC = () => {
       };
 
       if (selectedVoice) {
-        const voiceObj = getAvailableVoices().find(v => v.voice.name === selectedVoice.id);
+        const voiceObj = ttsService.getVoices().find(v => v.voice.name === selectedVoice.id);
         if (voiceObj) {
           options.voice = voiceObj.voice;
         }
@@ -144,6 +150,14 @@ export const TTSSettings: React.FC = () => {
     setActiveTab('settings');
   };
 
+  const getVolumeIcon = () => {
+    if (ttsSettings.volume === 0) return VolumeX;
+    if (ttsSettings.volume < 0.5) return Volume1;
+    return Volume;
+  };
+
+  const VolumeIcon = getVolumeIcon();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -169,7 +183,7 @@ export const TTSSettings: React.FC = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-[var(--text-bible)]" style={{ fontFamily: 'var(--font-display)' }}>Text-to-Speech</h1>
-              <p className="text-sm text-[var(--text-bible-muted)]">Configure a leitura por voz da Biblia</p>
+              <p className="text-sm text-[var(--text-bible-muted)]">Configure a leitura por voz da Bíblia</p>
             </div>
           </div>
         </motion.div>
@@ -187,7 +201,7 @@ export const TTSSettings: React.FC = () => {
                 <Mic className="w-4 h-4 text-[var(--accent-bible)]" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-[var(--text-bible)]">Selecao de Voz</h2>
+                <h2 className="text-sm font-bold text-[var(--text-bible)]">Seleção de Voz</h2>
                 <p className="text-xs text-[var(--text-bible-muted)]">Escolha a voz para leitura</p>
               </div>
             </div>
@@ -213,7 +227,6 @@ export const TTSSettings: React.FC = () => {
                       ? "border-[var(--accent-bible)] bg-[var(--accent-bible)]/5 shadow-[0_0_20px_rgba(var(--accent-bible-rgb),0.15)]"
                       : "border-[var(--border-bible)] bg-[var(--surface-bible)] hover:border-[var(--accent-bible)]/30"
                   )}
-                  aria-label={`Selecionar voz ${voice.name}`}
                 >
                   <div className={cn(
                     "p-3 rounded-xl",
@@ -249,7 +262,7 @@ export const TTSSettings: React.FC = () => {
                         voice.quality === 'premium' && "bg-amber-500/10 text-amber-500",
                         voice.quality === 'standard' && "bg-slate-500/10 text-slate-500"
                       )}>
-                        {voice.quality === 'neural' ? 'Neural' : voice.quality === 'premium' ? 'Premium' : 'Padrao'}
+                        {voice.quality === 'neural' ? 'Neural' : voice.quality === 'premium' ? 'Premium' : 'Padrão'}
                       </span>
                     </div>
                   </div>
@@ -272,7 +285,6 @@ export const TTSSettings: React.FC = () => {
                       ? "bg-red-500 text-white hover:bg-red-600 shadow-[0_0_20px_rgba(239,68,68,0.3)]"
                       : "bg-[var(--accent-bible)] text-white hover:bg-[var(--accent-bible)]/90 shadow-[0_0_20px_rgba(var(--accent-bible-rgb),0.3)]"
                   )}
-                  aria-label={isPlaying ? "Parar reproducao" : "Ouvir amostra"}
                 >
                   {isPlaying ? (
                     <>
@@ -288,7 +300,7 @@ export const TTSSettings: React.FC = () => {
                 </motion.button>
               </div>
               <p className="text-xs text-[var(--text-bible-muted)] italic">
-                "Joao 3:16 - Porque Deus amou o mundo de tal maneira que deu o seu Filho unigenito..."
+                "João 3:16 - Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito..."
               </p>
             </div>
           </div>
@@ -307,7 +319,7 @@ export const TTSSettings: React.FC = () => {
                 <Settings2 className="w-4 h-4 text-[var(--accent-bible)]" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-[var(--text-bible)]">Configuracoes de Audio</h2>
+                <h2 className="text-sm font-bold text-[var(--text-bible)]">Configurações de Áudio</h2>
                 <p className="text-xs text-[var(--text-bible-muted)]">Ajuste velocidade, tom e volume</p>
               </div>
             </div>
@@ -318,7 +330,7 @@ export const TTSSettings: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <SkipForward className="w-4 h-4 text-[var(--accent-bible)]" />
+                  <Waves className="w-4 h-4 text-[var(--accent-bible)]" />
                   <span className="text-sm font-medium text-[var(--text-bible)]">Velocidade</span>
                 </div>
                 <span className="text-sm font-bold text-[var(--accent-bible)] bg-[var(--accent-bible)]/10 px-3 py-1 rounded-lg">
@@ -333,12 +345,14 @@ export const TTSSettings: React.FC = () => {
                 value={ttsSettings.rate}
                 onChange={(e) => setTtsSettings(prev => ({ ...prev, rate: parseFloat(e.target.value) }))}
                 className="w-full h-2 bg-[var(--surface-bible-strong)] rounded-full appearance-none cursor-pointer slider"
-                aria-label="Velocidade de leitura"
+                style={{
+                  background: `linear-gradient(to right, var(--accent-bible) ${(ttsSettings.rate - 0.5) / 1.5 * 100}%, var(--surface-bible-strong) ${(ttsSettings.rate - 0.5) / 1.5 * 100}%)`
+                }}
               />
               <div className="flex justify-between text-xs text-[var(--text-bible-muted)]">
                 <span>Lento</span>
                 <span>Normal</span>
-                <span>Rapido</span>
+                <span>Rápido</span>
               </div>
             </div>
 
@@ -346,7 +360,7 @@ export const TTSSettings: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Mic className="w-4 h-4 text-[var(--accent-bible)]" />
+                  <Radio className="w-4 h-4 text-[var(--accent-bible)]" />
                   <span className="text-sm font-medium text-[var(--text-bible)]">Tom de Voz</span>
                 </div>
                 <span className="text-sm font-bold text-[var(--accent-bible)] bg-[var(--accent-bible)]/10 px-3 py-1 rounded-lg">
@@ -361,7 +375,9 @@ export const TTSSettings: React.FC = () => {
                 value={ttsSettings.pitch}
                 onChange={(e) => setTtsSettings(prev => ({ ...prev, pitch: parseFloat(e.target.value) }))}
                 className="w-full h-2 bg-[var(--surface-bible-strong)] rounded-full appearance-none cursor-pointer slider"
-                aria-label="Tom de voz"
+                style={{
+                  background: `linear-gradient(to right, var(--accent-bible) ${(ttsSettings.pitch - 0.5) / 1.5 * 100}%, var(--surface-bible-strong) ${(ttsSettings.pitch - 0.5) / 1.5 * 100}%)`
+                }}
               />
               <div className="flex justify-between text-xs text-[var(--text-bible-muted)]">
                 <span>Grave</span>
@@ -374,7 +390,7 @@ export const TTSSettings: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Volume2 className="w-4 h-4 text-[var(--accent-bible)]" />
+                  <VolumeIcon className="w-4 h-4 text-[var(--accent-bible)]" />
                   <span className="text-sm font-medium text-[var(--text-bible)]">Volume</span>
                 </div>
                 <span className="text-sm font-bold text-[var(--accent-bible)] bg-[var(--accent-bible)]/10 px-3 py-1 rounded-lg">
@@ -389,12 +405,14 @@ export const TTSSettings: React.FC = () => {
                 value={ttsSettings.volume}
                 onChange={(e) => setTtsSettings(prev => ({ ...prev, volume: parseFloat(e.target.value) }))}
                 className="w-full h-2 bg-[var(--surface-bible-strong)] rounded-full appearance-none cursor-pointer slider"
-                aria-label="Volume de leitura"
+                style={{
+                  background: `linear-gradient(to right, var(--accent-bible) ${ttsSettings.volume * 100}%, var(--surface-bible-strong) ${ttsSettings.volume * 100}%)`
+                }}
               />
               <div className="flex justify-between text-xs text-[var(--text-bible-muted)]">
                 <span>Mudo</span>
-                <span>Medio</span>
-                <span>Maximo</span>
+                <span>Médio</span>
+                <span>Máximo</span>
               </div>
             </div>
           </div>
@@ -413,7 +431,7 @@ export const TTSSettings: React.FC = () => {
                 <Zap className="w-4 h-4 text-[var(--accent-bible)]" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-[var(--text-bible)]">Recursos Disponiveis</h2>
+                <h2 className="text-sm font-bold text-[var(--text-bible)]">Recursos Disponíveis</h2>
                 <p className="text-xs text-[var(--text-bible-muted)]">Funcionalidades da leitura por voz</p>
               </div>
             </div>
@@ -423,24 +441,31 @@ export const TTSSettings: React.FC = () => {
             {[
               {
                 icon: Play,
-                title: 'Leitura Automatica',
-                description: 'Avanca automaticamente versiculo por versiculo',
+                title: 'Leitura Automática',
+                description: 'Avança automaticamente versículo por versículo',
                 color: 'text-green-500',
                 bg: 'bg-green-500/10'
               },
               {
                 icon: SkipForward,
-                title: 'Controles de Navegacao',
-                description: 'Pule versiculos ou capitulos facilmente',
+                title: 'Controles de Navegação',
+                description: 'Pule versículos ou capítulos facilmente',
                 color: 'text-blue-500',
                 bg: 'bg-blue-500/10'
               },
               {
                 icon: Speaker,
                 title: 'Funciona Offline',
-                description: 'Leitura disponivel mesmo sem internet',
+                description: 'Leitura disponível mesmo sem internet',
                 color: 'text-purple-500',
                 bg: 'bg-purple-500/10'
+              },
+              {
+                icon: Waves,
+                title: 'Múltiplos Idiomas',
+                description: 'Suporte a português, inglês, espanhol e mais',
+                color: 'text-amber-500',
+                bg: 'bg-amber-500/10'
               }
             ].map((feature, index) => (
               <motion.div
@@ -476,7 +501,7 @@ export const TTSSettings: React.FC = () => {
             onClick={handleSave}
             className="px-10 py-3.5 rounded-2xl bg-[var(--accent-bible)] text-white font-semibold shadow-[0_0_30px_rgba(var(--accent-bible-rgb),0.3)] hover:shadow-[0_0_40px_rgba(var(--accent-bible-rgb),0.4)] transition-all duration-200 cursor-pointer"
           >
-            Salvar Configuracoes
+            Salvar Configurações
           </motion.button>
         </motion.div>
       </div>

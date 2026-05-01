@@ -192,12 +192,12 @@ export const Home: React.FC<HomeProps> = React.memo(({
         Pular para o conteúdo
       </a>
 
-      <div id="main-content" className="max-w-4xl mx-auto px-4 py-6 pb-28 space-y-8">
+      <div id="main-content" className="max-w-4xl mx-auto px-2 sm:px-4 py-6 pb-28 space-y-6 sm:space-y-8">
         
         {loading ? (
           <div className="space-y-6 animate-pulse">
             <div className="h-40 bg-[var(--surface-2)] rounded-2xl" />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
               {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-[var(--surface-1)] rounded-xl" />)}
             </div>
           </div>
@@ -208,7 +208,7 @@ export const Home: React.FC<HomeProps> = React.memo(({
                  initial={{ opacity: 0, y: -10 }}
                  animate={{ opacity: 1, y: 0 }}
                  className={cn(
-                   "relative overflow-hidden rounded-2xl p-6",
+                   "relative overflow-hidden rounded-2xl p-4 sm:p-6",
                    "premium-card-strong transition-all duration-300",
                    "hover:shadow-xl hover:border-[var(--accent-bible)]/20"
                  )}
@@ -283,7 +283,7 @@ export const Home: React.FC<HomeProps> = React.memo(({
                  animate={{ opacity: 1, scale: 1 }}
                  transition={{ delay: 0.1 }}
                  className={cn(
-                   "relative overflow-hidden rounded-3xl p-8 text-center",
+                   "relative overflow-hidden rounded-3xl p-4 sm:p-8 text-center",
                    "premium-card-strong border border-[var(--border-bible-strong)]/20",
                    "shadow-xl hover:shadow-2xl transition-all duration-300"
                  )}
@@ -314,7 +314,7 @@ export const Home: React.FC<HomeProps> = React.memo(({
             </motion.div>
 
             {/* Quick Actions */}
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                  {quickActions.map((action, index) => {
                    const Icon = action.icon;
                    return (
@@ -368,7 +368,7 @@ export const Home: React.FC<HomeProps> = React.memo(({
                <h2 className="premium-section-title !text-[11px] mb-3">
                  Ferramentas de Estudo
                </h2>
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                  {secondaryActions.map((action, index) => {
                    const Icon = action.icon;
                    return (
@@ -417,7 +417,7 @@ export const Home: React.FC<HomeProps> = React.memo(({
                <h2 className="premium-section-title !text-[11px] mb-3">
                  Explorar
                </h2>
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                  {explorerActions.map((action, index) => {
                    const Icon = action.icon;
                    return (

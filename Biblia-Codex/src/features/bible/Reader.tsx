@@ -149,7 +149,7 @@ interface ReaderProps {
         className={cn(
           "group relative",
           hasHeadingBlock && "basis-full w-full",
-          !settings.textDisplay.paragraphMode && "block w-full mb-3"
+          !settings.textDisplay.paragraphMode && "block w-full mb-1"
         )}
       >
         {headingsHtml && (
@@ -204,7 +204,7 @@ interface ReaderProps {
             tabIndex={0}
             aria-label={`Versículo ${v.verse}`}
             className={cn(
-              "premium-card-soft p-4 cursor-pointer transition-all duration-300",
+              "premium-card-soft p-3 sm:p-4 cursor-pointer transition-all duration-300",
               "hover:shadow-md hover:bg-[var(--surface-2)]",
               isSelected && "ring-2 ring-[var(--accent-bible)] bg-[var(--accent-bible)]/8 shadow-md",
               isHighlighted && "ring-2 ring-yellow-400/50 bg-yellow-400/20",
@@ -653,8 +653,8 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
         backgroundColor: 'var(--bg-bible)',
         color: 'var(--text-bible)',
         letterSpacing: `${config.letterSpacing}em`,
-        paddingLeft: !settings.navigation.horizontalScroll ? `${config.horizontalMargin}px` : undefined,
-        paddingRight: !settings.navigation.horizontalScroll ? `${config.horizontalMargin}px` : undefined,
+        paddingLeft: !settings.navigation.horizontalScroll ? `clamp(12px, 5vw, ${config.horizontalMargin}px)` : undefined,
+        paddingRight: !settings.navigation.horizontalScroll ? `clamp(12px, 5vw, ${config.horizontalMargin}px)` : undefined,
       }}
     >
         <div 
@@ -673,7 +673,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
           <motion.div
             initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
             animate={{ opacity: 1 }}
-            className={cn("space-y-4", settings.textDisplay.paragraphMode ? "flex flex-wrap items-baseline gap-x-1.5" : "flex flex-col")}
+            className={cn(settings.textDisplay.paragraphMode ? "flex flex-wrap items-baseline gap-x-1.5" : "flex flex-col space-y-2")}
             style={{ fontSize: `${config.fontSize}px`, lineHeight: config.lineHeight, fontFamily: 'var(--font-bible-family)' }}
           >
             {processedVerses.map(({ verse: v, headingsHtml, bodyHtml }) => {

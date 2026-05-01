@@ -30,7 +30,7 @@ const mobilePriorityIds = ['home', 'bible', 'search', 'settings'];
 export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showExtra, setShowExtra] = useState(false);
-  const { isMobile, isTablet } = useBreakpoint();
+  const { isSmallMobile, isMobile, isTablet } = useBreakpoint();
   const dockRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -81,10 +81,10 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
     ? navItems.filter(item => !mobilePriorityIds.includes(item.id))
     : [];
 
-  const buttonSize = isMobile ? 'h-12 w-12' : 'h-14 w-14';
-  const iconSize = isMobile ? 20 : 22;
-  const gapSize = isMobile ? 'gap-1' : 'gap-2';
-  const containerPadding = isMobile ? 'px-2 py-2' : 'px-3 py-3';
+  const buttonSize = isSmallMobile ? 'h-10 w-10' : isMobile ? 'h-12 w-12' : 'h-14 w-14';
+  const iconSize = isSmallMobile ? 18 : isMobile ? 20 : 22;
+  const gapSize = isSmallMobile ? 'gap-0.5' : isMobile ? 'gap-1' : 'gap-2';
+  const containerPadding = isSmallMobile ? 'px-1 py-1' : isMobile ? 'px-2 py-2' : 'px-3 py-3';
 
   const handleTabChange = (tab: string) => {
     onTabChange(tab);

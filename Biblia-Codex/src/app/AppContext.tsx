@@ -104,7 +104,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       lineHeight: 1.5,
       letterSpacing: 0,
       fontFamily: 'Untitled Serif',
-      horizontalMargin: 32,
+      horizontalMargin: window.innerWidth < 400 ? 16 : 32,
       accentColor: defaultPreset.colors.accent,
       contrast: 1,
       uiGeometry: 'soft',
