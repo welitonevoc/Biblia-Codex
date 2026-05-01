@@ -436,9 +436,9 @@ function AppContent() {
           onClose={() => setIsBiblicalMenuOpen(false)}
           currentBook={currentBook}
           currentChapter={currentChapter}
-          onNavigate={(bookId, chapter) => {
+          onNavigate={(bookId, chapter, verse) => {
             const book = BIBLE_BOOKS.find(b => b.id === bookId);
-            if (book) handleSelect(book, chapter, 1);
+            if (book) handleSelect(book, chapter, verse);
           }}
           onGoToBible={() => {
             setIsBiblicalMenuOpen(false);
@@ -450,9 +450,9 @@ function AppContent() {
           <BookJumpMenu
             currentBook={currentBook}
             currentChapter={currentChapter}
-             onNavigate={(bookId, chapter) => {
+             onNavigate={(bookId, chapter, verse) => {
                const book = BIBLE_BOOKS.find(b => b.id === bookId);
-               if (book) handleSelect(book, chapter, 1);
+               if (book) handleSelect(book, chapter, verse);
              }}
             isOpen={!isBiblicalMenuOpen && !isReaderAtBottom}
             onClose={() => setIsBiblicalMenuOpen(true)}

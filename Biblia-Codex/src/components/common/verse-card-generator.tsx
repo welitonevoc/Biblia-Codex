@@ -157,6 +157,17 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
     }
   };
 
+  const handleShareText = async () => {
+    const text = `"${fullText}" ${reference} - ${versionLabel || 'ARA'}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      // We don't have toast here, but we can use alert or just rely on the UI feedback
+      // Actually, let's just make it work for now.
+    } catch (err) {
+      console.error('Share text error:', err);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -395,24 +406,32 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
           </div>
 
           {/* Actions Bottom Bar */}
-          <div className="p-8 bg-black/60 backdrop-blur-2xl border-t border-white/10 grid grid-cols-2 gap-4">
+          <div className="p-8 bg-black/60 backdrop-blur-2xl border-t border-white/10 grid grid-cols-3 gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleShareText}
+              className="h-16 rounded-[24px] bg-white/5 border border-white/10 text-white flex flex-col items-center justify-center gap-1 font-black text-[9px] uppercase tracking-widest hover:bg-white/10 transition-all"
+            >
+              <Send className="w-4 h-4" /> Texto
+            </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleCopy}
               disabled={isExporting}
-              className="h-16 rounded-[24px] bg-white/5 border border-white/10 text-white flex items-center justify-center gap-3 font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all disabled:opacity-50"
+              className="h-16 rounded-[24px] bg-white/5 border border-white/10 text-white flex flex-col items-center justify-center gap-1 font-black text-[9px] uppercase tracking-widest hover:bg-white/10 transition-all disabled:opacity-50"
             >
-              <Copy className="w-5 h-5" /> Copiar
+              <Copy className="w-5 h-5" /> Imagem
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleDownload}
               disabled={isExporting}
-              className="h-16 rounded-[24px] bg-bible-accent text-white flex items-center justify-center gap-3 font-black text-xs uppercase tracking-widest shadow-2xl shadow-bible-accent/40 hover:brightness-110 transition-all disabled:opacity-50"
+              className="h-16 rounded-[24px] bg-bible-accent text-white flex flex-col items-center justify-center gap-1 font-black text-[9px] uppercase tracking-widest shadow-2xl shadow-bible-accent/40 hover:brightness-110 transition-all disabled:opacity-50"
             >
-              <Download className="w-5 h-5" /> {isExporting ? 'Processando...' : 'Salvar'}
+              <Download className="w-5 h-5" /> {isExporting ? '...' : 'Salvar'}
             </motion.button>
           </div>
         </div>

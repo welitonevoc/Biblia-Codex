@@ -385,6 +385,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   const { config, settings, currentVersion } = useAppContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [navHighlight, setNavHighlight] = useState<number | null>(null);
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [toast, setToast] = useState<{ message: string, type: ToastType } | null>(null);
 
@@ -476,13 +477,12 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     }
     segments.push(start === prev ? `${start}` : `${start}-${prev}`);
 
-    const versionLabel = currentVersion?.abbreviation || currentVersion?.id || '';
-    return `${book.name} ${chapter}:${segments.join(',')}${versionLabel ? ` ${versionLabel}` : ''}`;
+    return `${book.name} ${chapter}:${segments.join(',')}`;
   }, [selectedVerses, book.name, chapter, currentVersion]);
 
   const handleCopySelected = useCallback(async () => {
     if (selectedVerseData.length === 0) return;
-    const text = `${selectedReference} - ${selectedVerseData.map((v) => `${v.verse} ${stripTags(v.text)}`).join(' ')}`;
+    const text = `"${selectedVerseData.map((v) => stripTags(v.text)).join(' ')}" ${selectedReference} - ${currentVersion?.abbreviation || 'ARA'}`;
     try {
       await navigator.clipboard.writeText(text);
       setToast({ message: 'Copiado para a área de transferência', type: 'success' });
@@ -561,8 +561,12 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     if (verseElement) {
       setTimeout(() => {
         verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setNavHighlight(targetVerse);
         onTargetVerseReached?.();
-      }, 100);
+        
+        // Clear highlight after 3 seconds
+        setTimeout(() => setNavHighlight(null), 3000);
+      }, 150);
     }
   }, [targetVerse, book.id, chapter, onTargetVerseReached]);
 
@@ -691,7 +695,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
                   chapterHeaderHtml={chapterHeaderHtml}
                   hasHeadingBlock={hasHeadingBlock}
                   selectedVerses={selectedVerses}
-                  currentHighlightedVerse={currentHighlightedVerse}
+                  currentHighlightedVerse={currentHighlightedVerse || navHighlight}
                   settings={settings}
                   allTags={allTags}
                   toggleVerseSelection={toggleVerseSelection}

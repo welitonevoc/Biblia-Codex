@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Home, BookOpen, Search, Heart, Settings, Library, MessageSquarePlus, BookA, ChevronRight, X } from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
+import { Home, BookOpen, Search, Heart, Settings, Library, MessageSquarePlus, BookA, ChevronRight, X, Sparkles, ChevronLeft } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useBreakpoint } from '../../hooks/useMediaQuery';
@@ -32,6 +32,9 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
   const [showExtra, setShowExtra] = useState(false);
   const { isMobile, isTablet } = useBreakpoint();
   const dockRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -50,6 +53,24 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
     if (isOpen) setShowExtra(false);
   }, [isOpen]);
 
+  // Check scrollability for extra items
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 5);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+    }
+  };
+
+  useEffect(() => {
+    if (showExtra) {
+      checkScroll();
+      // Add a small delay to ensure DOM is updated
+      const timer = setTimeout(checkScroll, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showExtra]);
+
   const visibleItems = isMobile
     ? navItems.filter(item => mobilePriorityIds.includes(item.id))
     : isTablet
@@ -60,10 +81,10 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
     ? navItems.filter(item => !mobilePriorityIds.includes(item.id))
     : [];
 
-  const buttonSize = isMobile ? 'h-11 w-11' : 'h-12 w-12';
-  const iconSize = isMobile ? 18 : 20;
-  const gapSize = isMobile ? 'gap-0.5' : 'gap-1';
-  const containerPadding = isMobile ? 'px-1.5 py-1.5' : 'px-2 py-2';
+  const buttonSize = isMobile ? 'h-12 w-12' : 'h-14 w-14';
+  const iconSize = isMobile ? 20 : 22;
+  const gapSize = isMobile ? 'gap-1' : 'gap-2';
+  const containerPadding = isMobile ? 'px-2 py-2' : 'px-3 py-3';
 
   const handleTabChange = (tab: string) => {
     onTabChange(tab);
@@ -77,35 +98,54 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
     return (
       <motion.button
         key={item.id}
-        initial={extra ? { opacity: 0, x: 12 } : { opacity: 0, y: 12 }}
+        initial={extra ? { opacity: 0, x: 20 } : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, [extra ? 'x' : 'y']: 0 }}
-        exit={{ opacity: 0, [extra ? 'x' : 'y']: extra ? 12 : 12 }}
-        transition={{ delay: index * 0.03, type: 'spring', stiffness: 400, damping: 25 }}
+        exit={{ opacity: 0, [extra ? 'x' : 'y']: 20 }}
+        transition={{ 
+          delay: index * 0.05, 
+          type: 'spring', 
+          stiffness: 300, 
+          damping: 25,
+          mass: 0.8
+        }}
         onClick={() => handleTabChange(item.id)}
         className={cn(
-          'group relative flex shrink-0 items-center justify-center rounded-xl cursor-pointer transition-all duration-300',
+          'group relative flex shrink-0 items-center justify-center rounded-2xl cursor-pointer transition-all duration-500',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]',
           buttonSize,
           isActive
             ? 'text-white'
-            : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]'
+            : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] hover:bg-[var(--surface-1)]/50'
         )}
         title={item.label}
+        whileHover={{ scale: 1.05, y: -2 }}
+        whileTap={{ scale: 0.95 }}
       >
-        <motion.div
-          animate={{ scale: isActive ? 1.1 : 1, y: isActive ? -2 : 0 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-        >
-          <Icon size={iconSize} strokeWidth={1.5} />
-        </motion.div>
+        <div className="relative z-10 flex flex-col items-center gap-1">
+          <Icon size={iconSize} strokeWidth={isActive ? 2 : 1.5} className="transition-all duration-300" />
+          {isActive && !isMobile && (
+            <motion.span 
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-[10px] font-bold uppercase tracking-tighter"
+            >
+              {item.label}
+            </motion.span>
+          )}
+        </div>
+        
         {isActive && (
           <motion.div
-            layoutId={extra ? `dock-extra-${item.id}` : 'dock-active-bg'}
-            className="absolute inset-0 rounded-xl bg-gradient-to-b from-[var(--accent-bible)] to-[var(--accent-bible-strong)]"
+            layoutId={extra ? `dock-extra-bg` : 'dock-active-bg'}
+            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[var(--accent-bible)] to-[var(--accent-strong-bible)] shadow-lg shadow-[var(--accent-bible)]/40"
             initial={false}
-            transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-            style={{ zIndex: -1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            style={{ zIndex: 0 }}
           />
+        )}
+        
+        {!isActive && (
+          <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--surface-1)]/80 -z-10" />
         )}
       </motion.button>
     );
@@ -114,69 +154,71 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
   return (
     <div
       ref={dockRef}
-      className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 flex flex-col items-center"
+      className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 flex flex-col items-center w-full max-w-fit px-4"
       style={{ paddingBottom: 'max(var(--sab), 24px)' }}
     >
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30, mass: 0.6 }}
-            className={cn('mb-3 rounded-full premium-toolbar shadow-float border border-[var(--border-bible)]', containerPadding)}
+            initial={{ opacity: 0, y: 40, scale: 0.8, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: 40, scale: 0.8, filter: 'blur(10px)' }}
+            transition={{ type: 'spring', stiffness: 350, damping: 25, mass: 0.8 }}
+            className={cn(
+              'mb-4 rounded-[32px] premium-dock border border-white/20 dark:border-white/10 overflow-hidden',
+              containerPadding
+            )}
           >
-            <div className={cn('flex items-center', gapSize)}>
+            <div className={cn('flex items-center justify-center', gapSize)}>
               <AnimatePresence mode="popLayout">
                 {visibleItems.map((item, index) => renderNavItem(item, index))}
               </AnimatePresence>
 
               {isMobile && extraItems.length > 0 && (
                 <motion.button
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: visibleItems.length * 0.03, type: 'spring', stiffness: 400, damping: 25 }}
                   onClick={() => setShowExtra(!showExtra)}
                   className={cn(
-                    'group relative flex shrink-0 items-center justify-center rounded-xl cursor-pointer transition-all duration-300',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]',
+                    'group relative flex shrink-0 items-center justify-center rounded-2xl cursor-pointer transition-all duration-500',
                     buttonSize,
                     showExtra
                       ? 'text-white'
-                      : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]'
+                      : 'text-[var(--text-bible-muted)] hover:text-[var(--text-bible)] bg-[var(--surface-1)]/30'
                   )}
-                  title="Mais opções"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   <motion.div
-                    animate={{ scale: showExtra ? 1.1 : 1, rotate: showExtra ? 90 : 0 }}
+                    animate={{ rotate: showExtra ? 180 : 0, scale: showExtra ? 1.2 : 1 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                   >
-                    <ChevronRight size={iconSize} strokeWidth={2} />
+                    <ChevronRight size={iconSize} strokeWidth={2.5} />
                   </motion.div>
                   {showExtra && (
                     <motion.div
-                      layoutId="dock-active-more"
-                      className="absolute inset-0 rounded-xl bg-gradient-to-b from-[var(--accent-bible)] to-[var(--accent-bible-strong)]"
-                      initial={false}
-                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                      style={{ zIndex: -1 }}
+                      layoutId="dock-extra-toggle-bg"
+                      className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[var(--accent-bible)] to-[var(--accent-strong-bible)] shadow-lg shadow-[var(--accent-bible)]/40 -z-10"
                     />
                   )}
                 </motion.button>
               )}
 
               {!isMobile && (
+                <div className="w-[1px] h-8 bg-white/10 mx-1" />
+              )}
+
+              {!isMobile && (
                 <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => setIsOpen(false)}
                   className={cn(
                     'flex shrink-0 items-center justify-center rounded-xl cursor-pointer transition-all ml-1',
-                    'h-8 w-8 text-[var(--text-bible-subtle)] hover:text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
+                    'h-10 w-10 text-[var(--text-bible-subtle)]'
                   )}
-                  title="Fechar"
                 >
-                  <X size={14} strokeWidth={2} />
+                  <X size={18} strokeWidth={2.5} />
                 </motion.button>
               )}
             </div>
@@ -184,19 +226,56 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
             <AnimatePresence>
                {showExtra && extraItems.length > 0 && (
                  <motion.div
-                   initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                   animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
-                   exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                   transition={{ duration: 0.2 }}
-                   className="overflow-hidden"
+                   initial={{ height: 0, opacity: 0 }}
+                   animate={{ height: 'auto', opacity: 1 }}
+                   exit={{ height: 0, opacity: 0 }}
+                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                   className="mt-3 pt-3 border-t border-white/10"
                  >
-                    <div className="relative">
-                      <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-thin pb-1 pt-1 border-t border-[var(--border-bible)]/50 px-2">
-                        {extraItems.map((item, index) => renderNavItem(item, index, true))}
+                    <div className="relative group/extra">
+                      {/* Left Gradient/Indicator */}
+                      <AnimatePresence>
+                        {canScrollLeft && (
+                          <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute left-0 top-0 bottom-0 w-8 z-20 bg-gradient-to-r from-[var(--surface-1)] to-transparent pointer-events-none flex items-center justify-start"
+                          >
+                            <ChevronLeft size={16} className="text-[var(--accent-bible)] ml-1" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <div 
+                        ref={scrollRef}
+                        onScroll={checkScroll}
+                        className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 px-1 scroll-smooth"
+                        style={{ WebkitOverflowScrolling: 'touch' }}
+                      >
+                        <div className="flex items-center gap-2 min-w-max">
+                          {extraItems.map((item, index) => renderNavItem(item, index, true))}
+                        </div>
                       </div>
-                      <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[var(--surface-2)] to-transparent pointer-events-none flex items-center justify-end pr-2">
-                        <ChevronRight size={16} className="text-[var(--accent-bible)] animate-pulse" />
-                      </div>
+
+                      {/* Right Gradient/Indicator */}
+                      <AnimatePresence>
+                        {canScrollRight && (
+                          <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute right-0 top-0 bottom-0 w-12 z-20 bg-gradient-to-l from-[var(--surface-1)] to-transparent pointer-events-none flex items-center justify-end"
+                          >
+                            <motion.div
+                              animate={{ x: [0, 4, 0] }}
+                              transition={{ repeat: Infinity, duration: 1.5 }}
+                            >
+                              <ChevronRight size={20} className="text-[var(--accent-bible)] mr-1 drop-shadow-glow" />
+                            </motion.div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                  </motion.div>
                )}
@@ -208,31 +287,50 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'relative rounded-full cursor-pointer transition-all',
+          'relative rounded-full cursor-pointer overflow-hidden',
           'flex items-center justify-center',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bible)]',
-          isOpen ? 'min-h-11 min-w-11' : 'min-h-11 w-12'
+          'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent-bible)]/30',
+          'h-14 w-14 shadow-2xl transition-all duration-500'
         )}
+        whileHover={{ scale: 1.1, y: -4 }}
+        whileTap={{ scale: 0.9 }}
         style={{
           background: isOpen
             ? 'var(--accent-bible)'
-            : 'linear-gradient(0deg, rgba(255,255,255,0.15) 0%, transparent 100%)',
-          backdropFilter: 'blur(8px)',
-          boxShadow: isOpen
-            ? '0 0 8px var(--accent-bible)'
-            : '0 4px 12px rgba(0,0,0,0.15)',
-          transition: 'all 0.3s ease',
+            : 'rgba(var(--accent-bible-rgb), 0.1)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(var(--accent-bible-rgb), 0.2)',
         }}
-        aria-label={isOpen ? 'Fechar menu' : 'Abrir menu'}
       >
-        {isOpen && (
-          <motion.div
-            className="absolute inset-0 rounded-full bg-[var(--accent-bible)]"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {isOpen ? (
+            <motion.div
+              key="open"
+              initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
+              animate={{ rotate: 0, opacity: 1, scale: 1 }}
+              exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+            >
+              <X className="text-white" size={24} strokeWidth={2.5} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="closed"
+              initial={{ rotate: 90, opacity: 0, scale: 0.5 }}
+              animate={{ rotate: 0, opacity: 1, scale: 1 }}
+              exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+              className="relative flex items-center justify-center"
+            >
+              <Sparkles className="text-[var(--accent-bible)]" size={24} strokeWidth={2} />
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="absolute inset-0 bg-[var(--accent-bible)]/20 rounded-full blur-md"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.button>
     </div>
   );

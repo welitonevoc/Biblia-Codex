@@ -1,11 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Globe, BookMarked, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Globe, BookMarked, ChevronLeft, ChevronRight, Search, X, Check, Type, Minus, Plus as PlusIcon, AlignLeft, Settings2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { BIBLE_BOOKS } from '../../data/bibleMetadata';
 import { useAppContext } from '../../app/AppContext';
 import { useBreakpoint } from '../../hooks/useMediaQuery';
+import { BibleService } from '../../BibleService';
 import type { Book } from '../../types';
 
 function cn(...inputs: (string | false | null | undefined)[]) {
@@ -21,6 +22,8 @@ interface BiblicalMenuProps {
   onClose: () => void;
 }
 
+type ViewKey = 'main' | 'versions' | 'books' | 'chapters' | 'verses' | 'typography';
+
 export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
   isOpen,
   onClose,
@@ -29,11 +32,20 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
   onNavigate,
   onGoToBible,
 }) => {
-  const { availableVersions, currentVersion, selectVersion } = useAppContext();
-  const [showVersions, setShowVersions] = useState(false);
-  const [showBooks, setShowBooks] = useState(false);
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const { 
+    availableVersions, currentVersion, selectVersion,
+    config, settings, 
+    setFontSize, setLineHeight, setLetterSpacing, setFontPreference,
+    toggleSetting 
+  } = useAppContext();
+  const [view, setView] = useState<ViewKey>('main');
+  const [selectedBook, setSelectedBook] = useState<Book>(currentBook);
+  const [selectedChapter, setSelectedChapter] = useState<number>(currentChapter);
   const [selectedTestament, setSelectedTestament] = useState<'OT' | 'NT'>(currentBook.testament as 'OT' | 'NT');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [verseCount, setVerseCount] = useState(30);
+  const [isLoadingVerses, setIsLoadingVerses] = useState(false);
+  
   const menuRef = useRef<HTMLDivElement>(null);
   const { isMobile, isTablet } = useBreakpoint();
 
@@ -49,245 +61,505 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onClose]);
 
+  // Reset view when opening
   useEffect(() => {
-    setSelectedTestament(currentBook.testament as 'OT' | 'NT');
-  }, [currentBook]);
+    if (isOpen) {
+      setView('main');
+      setSelectedBook(currentBook);
+      setSelectedChapter(currentChapter);
+      setSelectedTestament(currentBook.testament as 'OT' | 'NT');
+      setSearchQuery('');
+    }
+  }, [isOpen, currentBook, currentChapter]);
 
-  const books = BIBLE_BOOKS.filter((book) => book.testament === selectedTestament);
+  const filteredBooks = useMemo(() => {
+    return BIBLE_BOOKS.filter(book => {
+      const matchesTestament = book.testament === selectedTestament;
+      const matchesSearch = book.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           book.abbreviation?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesTestament && matchesSearch;
+    });
+  }, [selectedTestament, searchQuery]);
 
   const handleBookSelect = (book: Book) => {
     setSelectedBook(book);
+    setView('chapters');
   };
 
-  useEffect(() => {
-    if (isOpen && selectedBook) {
-      setShowBooks(false);
+  const handleChapterSelect = async (chapter: number) => {
+    setSelectedChapter(chapter);
+    setIsLoadingVerses(true);
+    setView('verses');
+    
+    try {
+      // Fetch exact verse count
+      const verses = await BibleService.getVerses(selectedBook.id, chapter, currentVersion || undefined);
+      setVerseCount(verses.length > 0 ? verses[verses.length - 1].verse : 30);
+    } catch (error) {
+      setVerseCount(30);
+    } finally {
+      setIsLoadingVerses(false);
     }
-  }, [selectedBook]);
+  };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [currentBook, currentChapter]);
-
-  const handleChapterSelect = (chapter: number) => {
-    onNavigate((selectedBook || currentBook).id, chapter, 1);
+  const handleVerseSelect = (verse: number) => {
+    onNavigate(selectedBook.id, selectedChapter, verse);
     onGoToBible();
-    setSelectedBook(null);
-    setShowBooks(false);
     onClose();
   };
 
-  const handleShowChapters = () => {
-    setSelectedBook(currentBook);
+  const gridCols = isMobile ? 'grid-cols-4' : isTablet ? 'grid-cols-6' : 'grid-cols-8';
+  const menuWidth = isMobile ? 'w-[92vw] max-w-[400px]' : 'w-[450px]';
+
+  const renderHeader = (title: string, onBack: () => void) => (
+    <div className="flex items-center justify-between p-4 border-b border-white/10">
+      <button 
+        onClick={onBack}
+        className="p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors"
+      >
+        <ChevronLeft size={20} />
+      </button>
+      <h3 className="text-base font-bold tracking-tight">{title}</h3>
+      <button 
+        onClick={onClose}
+        className="p-2 -mr-2 rounded-xl hover:bg-white/10 transition-colors"
+      >
+        <X size={20} />
+      </button>
+    </div>
+  );
+
+  const containerVariants = {
+    initial: { opacity: 0, y: 20, scale: 0.95 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: 20, scale: 0.95 }
   };
 
-  const chapterCols = isMobile ? 'grid-cols-4' : isTablet ? 'grid-cols-5' : 'grid-cols-6';
-  const chapterBtnSize = isMobile ? 'h-9 w-9 text-sm' : 'h-10 w-10 text-base';
-  const menuMaxWidth = isMobile ? 'max-w-[90vw] w-[280px]' : 'w-[320px]';
-
-  const viewKey = selectedBook ? 'chapters' : showBooks ? 'books' : showVersions ? 'versions' : 'main';
+  const viewVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 100 : -100,
+      opacity: 0
+    }),
+    center: {
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? 100 : -100,
+      opacity: 0
+    })
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
           ref={menuRef}
-          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className={cn('fixed bottom-24 left-1/2 z-50 -translate-x-1/2', menuMaxWidth)}
+          variants={containerVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className={cn('fixed bottom-24 left-1/2 z-50 -translate-x-1/2', menuWidth)}
           style={{ paddingBottom: 'max(var(--sab), 24px)' }}
         >
-           <div className="rounded-2xl premium-card-strong border border-[var(--border-bible)] shadow-lg shadow-black/10 overflow-hidden">
-            <AnimatePresence mode="wait">
-              {viewKey === 'versions' && (
-                <motion.div
-                  key="versions"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="p-3"
-                >
-                   <button
-                     onClick={() => setShowVersions(false)}
-                     className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--text-bible)] cursor-pointer premium-kicker !py-1.5 !px-2.5"
-                     aria-label="Voltar para menu principal"
-                   >
-                     <ChevronLeft className="h-4 w-4" />
-                     Versões
-                   </button>
-                  <div className="max-h-48 space-y-1 overflow-y-auto">
-                    {availableVersions.map((version) => (
-                       <button
-                         key={version.id}
-                         onClick={() => {
-                           selectVersion(version);
-                           setShowVersions(false);
-                           onClose();
-                         }}
-                         className={cn(
-                           'flex w-full items-center justify-between rounded-xl px-4 min-h-11 text-sm transition-all duration-200 cursor-pointer',
-                           'text-[var(--text-bible)] hover:bg-[var(--surface-1)] premium-card-soft'
-                         )}
-                         aria-label={`Selecionar versão ${version.name}`}
+          <div className="premium-dock rounded-[32px] overflow-hidden border border-white/20 shadow-2xl backdrop-blur-3xl bg-white/5 dark:bg-black/40">
+            <div className="relative overflow-hidden min-h-[300px]">
+              <AnimatePresence mode="wait" initial={false}>
+                {view === 'main' && (
+                  <motion.div
+                    key="main"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="p-4 space-y-3"
+                  >
+                    <div className="flex items-center justify-between mb-2 px-1">
+                      <span className="text-xs font-black uppercase tracking-[0.2em] text-[var(--accent-bible)]/70">Navegação</span>
+                      <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full"><X size={16}/></button>
+                    </div>
+
+                    <button
+                      onClick={() => setView('versions')}
+                      className="group w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 text-blue-400">
+                          <Globe size={20} />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-xs font-medium text-white/50">Versão da Bíblia</p>
+                          <p className="text-sm font-bold truncate max-w-[180px]">{currentVersion?.name || 'Selecionar'}</p>
+                        </div>
+                      </div>
+                      <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+                    </button>
+
+                    <button
+                      onClick={() => setView('books')}
+                      className="group w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 text-emerald-400">
+                          <BookMarked size={20} />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-xs font-medium text-white/50">Livro & Capítulo</p>
+                          <p className="text-sm font-bold">{currentBook.name} {currentChapter}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-1 rounded-md bg-white/10 text-[10px] font-bold uppercase tracking-wider text-white/70">Trocar</span>
+                        <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+                      </div>
+                    </button>
+
+                    <div className="pt-2 grid grid-cols-2 gap-3">
+                       <button 
+                        onClick={() => { setSelectedBook(currentBook); setView('chapters'); }}
+                        className="p-3 rounded-2xl bg-[var(--accent-bible)] text-white font-bold text-sm shadow-lg shadow-[var(--accent-bible)]/30 hover:brightness-110 active:scale-95 transition-all"
                        >
-                         <span className="truncate">{version.name}</span>
-                         {currentVersion?.id === version.id && (
-                           <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent-bible)] shadow-[0_0_8px_var(--accent-bible)]" />
-                         )}
+                         Capítulos
                        </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
+                       <button 
+                        onClick={() => { setSelectedBook(currentBook); setSelectedChapter(currentChapter); handleChapterSelect(currentChapter); }}
+                        className="p-3 rounded-2xl bg-white/10 text-white font-bold text-sm border border-white/10 hover:bg-white/20 transition-all"
+                       >
+                         Versículos
+                       </button>
+                    </div>
+                  </motion.div>
+                )}
 
-              {viewKey === 'books' && (
-                <motion.div
-                  key="books"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="p-3"
-                >
-                  <button
-                    onClick={() => setShowBooks(false)}
-                    className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--text-bible)]"
+                {view === 'versions' && (
+                  <motion.div
+                    key="versions"
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -20, opacity: 0 }}
+                    className="flex flex-col h-full"
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                    Livros
-                  </button>
-                  <div className="mb-2 flex gap-2">
-                    <button
-                      onClick={() => setSelectedTestament('OT')}
-                      className={cn(
-                        'flex-1 rounded-xl py-2 text-xs font-medium transition-all duration-200',
-                        selectedTestament === 'OT'
-                          ? 'bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)]'
-                          : 'text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
-                      )}
-                    >
-                      VT
-                    </button>
-                    <button
-                      onClick={() => setSelectedTestament('NT')}
-                      className={cn(
-                        'flex-1 rounded-xl py-2 text-xs font-medium transition-all duration-200',
-                        selectedTestament === 'NT'
-                          ? 'bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)]'
-                          : 'text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
-                      )}
-                    >
-                      NT
-                    </button>
-                  </div>
-                  <div className="max-h-40 overflow-y-auto">
-                    {books.map((book) => (
-                      <button
-                        key={book.id}
-                        onClick={() => handleBookSelect(book)}
-                        className={cn(
-                          'flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm transition-all duration-200',
-                          'text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
-                        )}
+                    {renderHeader('Selecionar Versão', () => setView('main'))}
+                    <div className="p-2 max-h-[350px] overflow-y-auto space-y-1 custom-scrollbar">
+                      {availableVersions.map((version) => {
+                        const isActive = currentVersion?.id === version.id;
+                        return (
+                          <button
+                            key={version.id}
+                            onClick={() => {
+                              selectVersion(version);
+                              onClose();
+                            }}
+                            className={cn(
+                              'w-full flex items-center justify-between p-4 rounded-2xl transition-all group',
+                              isActive ? 'bg-[var(--accent-bible)] text-white' : 'hover:bg-white/5'
+                            )}
+                          >
+                            <span className={cn('text-sm font-medium', isActive ? 'font-bold' : '')}>{version.name}</span>
+                            {isActive ? <Check size={18} /> : <div className="w-2 h-2 rounded-full bg-white/10 group-hover:bg-white/30" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+
+                {view === 'books' && (
+                  <motion.div
+                    key="books"
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -20, opacity: 0 }}
+                    className="flex flex-col h-full"
+                  >
+                    {renderHeader('Selecionar Livro', () => setView('main'))}
+                    
+                    <div className="p-3 space-y-3">
+                      {/* Typography Button */}
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setView('typography')}
+                        className="w-full flex items-center justify-between p-4 rounded-2xl bg-bible-surface border border-bible-border/50 hover:bg-bible-surface-strong transition-all group"
                       >
-                        <span className="truncate">{book.name}</span>
-                        <span className="text-xs text-[var(--text-bible-muted)]">{book.chapters}</span>
-                      </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-bible-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Type className="w-5 h-5 text-bible-accent" />
+                          </div>
+                          <div className="text-left">
+                            <div className="text-sm font-bold text-bible-text">Aparência do Texto</div>
+                            <div className="text-[10px] text-bible-text-muted font-bold uppercase tracking-widest opacity-60">Fontes, Tamanho e Estilo</div>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-bible-text-muted" />
+                      </motion.button>
 
-              {viewKey === 'chapters' && selectedBook && (
-                <motion.div
-                  key="chapters"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="p-3"
-                >
-                  <button
-                    onClick={() => {
-                      setSelectedBook(null);
-                      setShowBooks(true);
-                    }}
-                    className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--text-bible)]"
+                      {/* Search & Tabs */}
+                      <div className="relative">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+                        <input 
+                          type="text" 
+                          placeholder="Buscar livro..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-bible)]/50 transition-all"
+                        />
+                      </div>
+
+                      <div className="flex p-1 bg-white/5 rounded-xl border border-white/5">
+                        {['OT', 'NT'].map((testament) => (
+                          <button
+                            key={testament}
+                            onClick={() => setSelectedTestament(testament as 'OT' | 'NT')}
+                            className={cn(
+                              'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
+                              selectedTestament === testament 
+                                ? 'bg-[var(--accent-bible)] text-white shadow-md' 
+                                : 'text-white/50 hover:text-white'
+                            )}
+                          >
+                            {testament === 'OT' ? 'Velho Testamento' : 'Novo Testamento'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="px-2 pb-2 max-h-[300px] overflow-y-auto grid grid-cols-1 gap-1 custom-scrollbar">
+                      {filteredBooks.map((book) => (
+                        <button
+                          key={book.id}
+                          onClick={() => handleBookSelect(book)}
+                          className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 group transition-all"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-[10px] font-black group-hover:bg-[var(--accent-bible)]/20 group-hover:text-[var(--accent-bible)] transition-colors">
+                              {book.abbreviation}
+                            </span>
+                            <span className="text-sm font-medium">{book.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-white/30">{book.chapters} cap</span>
+                            <ChevronRight size={16} className="text-white/20" />
+                          </div>
+                        </button>
+                      ))}
+                      {filteredBooks.length === 0 && (
+                        <div className="py-10 text-center text-white/30 text-sm">Nenhum livro encontrado</div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+
+                {view === 'typography' && (
+                  <motion.div
+                    key="typography"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex flex-col h-full p-4"
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                    {selectedBook.name}
-                  </button>
-                  <div className={cn('max-h-48 overflow-y-auto grid gap-2', chapterCols)}>
-                    {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapter) => (
-                      <button
-                        key={chapter}
-                        onClick={() => handleChapterSelect(chapter)}
-                        className={cn(
-                          'flex items-center justify-center rounded-xl font-medium text-[var(--text-bible)]',
-                          'hover:bg-[var(--surface-1)] transition-all duration-150 hover:scale-110',
-                          chapterBtnSize
-                        )}
+                    <div className="flex items-center gap-3 mb-6">
+                      <button 
+                        onClick={() => setView('books')}
+                        className="p-2 rounded-xl hover:bg-bible-surface transition-colors"
                       >
-                        {chapter}
+                        <ChevronLeft className="w-5 h-5 text-bible-text" />
                       </button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
+                      <h2 className="text-xl font-black text-bible-text tracking-tight">Aparência</h2>
+                    </div>
 
-              {viewKey === 'main' && (
-                <motion.div
-                  key="main"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="p-3"
-                >
-                  <button
-                    onClick={() => setShowVersions(true)}
-                    className={cn(
-                      'flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm transition-all duration-200',
-                      'text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
-                    )}
+                    <div className="flex-1 overflow-y-auto space-y-8 pr-2 custom-scrollbar">
+                      <section className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-bible-text-muted">Tamanho da Fonte</span>
+                          <span className="text-sm font-bold text-bible-accent">{config.fontSize}px</span>
+                        </div>
+                        <div className="flex items-center gap-4 bg-bible-surface p-3 rounded-2xl border border-bible-border/30">
+                          <button 
+                            onClick={() => setFontSize(Math.max(12, config.fontSize - 1))}
+                            className="p-2 rounded-lg hover:bg-bible-accent/10 text-bible-text-muted hover:text-bible-accent transition-colors"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <input 
+                            type="range"
+                            min="12"
+                            max="32"
+                            value={config.fontSize}
+                            onChange={(e) => setFontSize(parseInt(e.target.value))}
+                            className="flex-1 accent-bible-accent h-1.5 rounded-full"
+                          />
+                          <button 
+                            onClick={() => setFontSize(Math.min(32, config.fontSize + 1))}
+                            className="p-2 rounded-lg hover:bg-bible-accent/10 text-bible-text-muted hover:text-bible-accent transition-colors"
+                          >
+                            <PlusIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </section>
+
+                      <section className="space-y-4">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-bible-text-muted">Estilo da Fonte</span>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { id: 'serif', label: 'Serifada', icon: BookMarked },
+                            { id: 'sans', label: 'Moderna', icon: Type },
+                            { id: 'mono', label: 'Foco', icon: AlignLeft },
+                          ].map((style) => (
+                            <button
+                              key={style.id}
+                              onClick={() => setFontPreference(style.id as any)}
+                              className={cn(
+                                "flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all",
+                                config.fontPreference === style.id
+                                  ? "bg-bible-accent border-bible-accent text-white shadow-lg shadow-bible-accent/20"
+                                  : "bg-bible-surface border-bible-border/50 text-bible-text-muted hover:border-bible-accent/30"
+                              )}
+                            >
+                              <style.icon className="w-5 h-5" />
+                              <span className="text-[10px] font-black uppercase tracking-tighter">{style.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </section>
+
+                      {/* Spacing Controls */}
+                      <section className="grid grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-bible-text-muted">Entrelinha</span>
+                          <div className="flex items-center gap-2 bg-bible-surface p-2 rounded-xl border border-bible-border/30">
+                            <input 
+                              type="range"
+                              min="1"
+                              max="2.5"
+                              step="0.1"
+                              value={config.lineHeight}
+                              onChange={(e) => setLineHeight(parseFloat(e.target.value))}
+                              className="w-full accent-bible-accent"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-bible-text-muted">Espaçamento</span>
+                          <div className="flex items-center gap-2 bg-bible-surface p-2 rounded-xl border border-bible-border/30">
+                            <input 
+                              type="range"
+                              min="-0.05"
+                              max="0.2"
+                              step="0.01"
+                              value={config.letterSpacing}
+                              onChange={(e) => setLetterSpacing(parseFloat(e.target.value))}
+                              className="w-full accent-bible-accent"
+                            />
+                          </div>
+                        </div>
+                      </section>
+
+                      {/* Display Toggles */}
+                      <section className="space-y-3">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-bible-text-muted">Layout da Leitura</span>
+                        <div className="space-y-2">
+                          {[
+                            { id: 'paragraphMode', label: 'Modo Parágrafo', desc: 'Agrupa versículos em blocos' },
+                            { id: 'verseNumbers', label: 'Números de Versículo', desc: 'Exibe a numeração lateral' },
+                            { id: 'wordsOfJesusRed', label: 'Palavras de Jesus em Vermelho', desc: 'Destaque especial para falas de Cristo' },
+                          ].map((toggle) => (
+                            <button
+                              key={toggle.id}
+                              onClick={() => toggleSetting('textDisplay', toggle.id as any)}
+                              className="w-full flex items-center justify-between p-4 rounded-2xl bg-bible-surface/50 border border-bible-border/30 hover:bg-bible-surface transition-all group"
+                            >
+                              <div className="text-left">
+                                <div className="text-sm font-bold text-bible-text">{toggle.label}</div>
+                                <div className="text-[10px] text-bible-text-muted opacity-60">{toggle.desc}</div>
+                              </div>
+                              <div className={cn(
+                                "w-10 h-6 rounded-full transition-all relative",
+                                (settings.textDisplay as any)[toggle.id] ? "bg-bible-accent" : "bg-bible-text-muted/20"
+                              )}>
+                                <div className={cn(
+                                  "absolute top-1 w-4 h-4 rounded-full bg-white transition-all",
+                                  (settings.textDisplay as any)[toggle.id] ? "left-5" : "left-1"
+                                )} />
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </section>
+                    </div>
+                  </motion.div>
+                )}
+
+                {view === 'chapters' && (
+                  <motion.div
+                    key="chapters"
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -20, opacity: 0 }}
+                    className="flex flex-col h-full"
                   >
-                    <span className="flex items-center gap-3">
-                      <Globe className="h-4 w-4 text-[var(--accent-bible)]" />
-                      Versão
-                    </span>
-                    <span className="text-xs text-[var(--text-bible-muted)] truncate max-w-[100px]">
-                      {currentVersion?.name || 'Selecionar'}
-                    </span>
-                  </button>
+                    {renderHeader(selectedBook.name, () => setView('books'))}
+                    <div className={cn('p-4 max-h-[350px] overflow-y-auto grid gap-2 custom-scrollbar', gridCols)}>
+                      {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((chapter) => (
+                        <button
+                          key={chapter}
+                          onClick={() => handleChapterSelect(chapter)}
+                          className={cn(
+                            'h-12 w-full flex items-center justify-center rounded-xl text-sm font-bold transition-all',
+                            chapter === currentChapter && selectedBook.id === currentBook.id
+                              ? 'bg-[var(--accent-bible)] text-white shadow-glow'
+                              : 'bg-white/5 hover:bg-white/10 text-white/80 active:scale-90'
+                          )}
+                        >
+                          {chapter}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
 
-                  <button
-                    onClick={() => setShowBooks(true)}
-                    className={cn(
-                      'flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm transition-all duration-200',
-                      'text-[var(--text-bible)] hover:bg-[var(--surface-1)]'
-                    )}
+                {view === 'verses' && (
+                  <motion.div
+                    key="verses"
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -20, opacity: 0 }}
+                    className="flex flex-col h-full"
                   >
-                    <span className="flex items-center gap-3">
-                      <BookMarked className="h-4 w-4 text-[var(--accent-bible)]" />
-                      Livro
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-[var(--text-bible-muted)]" />
-                  </button>
-
-                  <div className="mt-1 flex items-center justify-between rounded-xl bg-[var(--surface-1)] px-4 py-3">
-                    <span className="flex items-center gap-3 text-sm text-[var(--text-bible)]">
-                      {currentBook.name}
-                    </span>
-                    <button
-                      onClick={handleShowChapters}
-                      className="flex items-center gap-2 text-sm font-bold text-[var(--accent-bible)]"
-                    >
-                      {currentChapter}
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    {renderHeader(`${selectedBook.name} ${selectedChapter}`, () => setView('chapters'))}
+                    <div className={cn('p-4 max-h-[350px] overflow-y-auto grid gap-2 custom-scrollbar', gridCols)}>
+                      {isLoadingVerses ? (
+                        <div className="col-span-full py-10 flex flex-col items-center gap-3">
+                           <div className="w-8 h-8 border-2 border-[var(--accent-bible)] border-t-transparent rounded-full animate-spin" />
+                           <span className="text-xs text-white/30 animate-pulse">Carregando versículos...</span>
+                        </div>
+                      ) : (
+                        Array.from({ length: verseCount }, (_, i) => i + 1).map((verse) => (
+                          <button
+                            key={verse}
+                            onClick={() => handleVerseSelect(verse)}
+                            className="h-12 w-full flex items-center justify-center rounded-xl bg-white/5 hover:bg-[var(--accent-bible)]/20 hover:text-[var(--accent-bible)] text-white/80 font-bold text-sm transition-all active:scale-90 border border-white/5"
+                          >
+                            {verse}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            
+            {/* Footer Quick Jump */}
+            {view !== 'main' && (
+              <div className="p-3 bg-white/5 border-t border-white/10 flex items-center justify-center gap-4">
+                 <button 
+                  onClick={() => setView('main')}
+                  className="text-[10px] font-black uppercase tracking-widest text-white/30 hover:text-[var(--accent-bible)] transition-colors"
+                 >
+                   Voltar ao Menu
+                 </button>
+              </div>
+            )}
           </div>
         </motion.div>
       )}

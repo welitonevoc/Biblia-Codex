@@ -90,7 +90,7 @@ const EntryRow: React.FC<{ entry: EncyclopediaEntry; onClick: () => void }> = ({
     onClick={onClick}
     whileHover={{ scale: 1.01, y: -2 }}
     whileTap={{ scale: 0.98 }}
-    className="w-full text-left glass-card rounded-xl p-4 border border-[var(--border-bible)] hover:border-[var(--accent-bible)]/30 transition-colors group cursor-pointer h-full"
+    className="w-full text-left premium-card-strong rounded-xl p-4 border border-[var(--border-bible)] hover:border-[var(--accent-bible)]/30 transition-all group cursor-pointer"
   >
     <div className="flex items-start gap-3">
       <div className={`p-2.5 rounded-xl flex-shrink-0 ${
@@ -143,7 +143,7 @@ const AlphabetBar: React.FC<{
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    className="glass-card rounded-2xl border border-[var(--border-bible)] p-3"
+    className="premium-card-strong rounded-2xl border border-[var(--border-bible)] p-3 shadow-lg"
   >
     <div className="flex flex-wrap justify-center gap-1">
       {ALPHABET.map((letter) => {
@@ -234,7 +234,7 @@ const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, 
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 40 }}
       transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-      className="h-full bg-[var(--bg-bible)] overflow-y-auto scrollbar-thin relative"
+      className="h-full bg-bible-bg overflow-y-auto scrollbar-thin relative"
     >
       {/* Sticky Header */}
       <div className="sticky top-0 z-10 backdrop-blur-xl bg-[var(--bg-bible)]/80 border-b border-[var(--border-bible)]">
@@ -262,7 +262,7 @@ const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass-card rounded-2xl p-6 space-y-4"
+          className="premium-card-strong rounded-2xl p-6 space-y-4 shadow-xl"
           onMouseOver={handleMouseOver}
           onMouseLeave={handleMouseLeave}
         >
@@ -286,7 +286,7 @@ const EncyclopediaDetailView: React.FC<EncyclopediaDetailViewProps> = ({ entry, 
               top: Math.min(previewAnchor.y + 15, window.innerHeight - 200),
             }}
           >
-            <div className="glass-card p-4 border border-[var(--accent-bible)]/30 shadow-2xl rounded-2xl backdrop-blur-2xl bg-[var(--bg-bible)]/90">
+            <div className="premium-card-strong p-4 border border-[var(--accent-bible)]/30 shadow-2xl rounded-2xl backdrop-blur-2xl bg-bible-surface">
               {loadingPreview ? (
                 <div className="flex items-center gap-3 py-2">
                   <Loader className="w-4 h-4 text-[var(--accent-bible)] animate-spin" />
@@ -375,7 +375,7 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
   const rowVirtualizer = useVirtualizer({
     count: displayEntries.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 120, // Estimated height of each entry card
+    estimateSize: () => 140, // Safer estimate to prevent overlaps
     overscan: 5,
   });
 
@@ -529,7 +529,7 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
 
   /* ── Main view ── */
   return (
-    <div className="h-full bg-[var(--bg-bible)] flex flex-col">
+    <div className="h-full bg-bible-bg flex flex-col">
       {/* Header Area */}
       <div className="max-w-4xl mx-auto w-full px-4 pt-6 space-y-6 flex-shrink-0">
         <motion.div
@@ -596,7 +596,7 @@ export const EncyclopediaPage: React.FC<EncyclopediaPageProps> = ({ onBack }) =>
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
-                className="absolute z-50 w-full mt-2 glass-card rounded-xl border border-[var(--border-bible)] shadow-xl overflow-hidden"
+                className="absolute z-50 w-full mt-2 premium-card-strong rounded-xl border border-[var(--border-bible)] shadow-2xl overflow-hidden"
               >
                 {suggestions.map((entry, index) => (
                   <button

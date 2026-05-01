@@ -271,7 +271,22 @@ body::before {
 }
 
 .shadow-float {
-  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.25), 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.premium-dock {
+  @apply backdrop-blur-2xl bg-bible-surface/80 border border-white/20 shadow-float;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+}
+
+.pure_dark .premium-dock, .royal_majesty .premium-dock, .midnight_navy .premium-dock, .obsidian_gold .premium-dock {
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.dock-item-active {
+  @apply bg-bible-accent text-white shadow-lg shadow-bible-accent/40;
+  background: linear-gradient(to bottom, var(--accent-bible), var(--accent-strong-bible));
 }
 
 .premium-button {
@@ -383,4 +398,114 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(var(--accent-bible-rgb), 0.3);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ─────────────────────────────────────────────
+   PREMIUM COMPONENTS
+   ───────────────────────────────────────────── */
+.glass-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-bible);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.pure_dark .glass-card,
+.royal_majesty .glass-card,
+.midnight_navy .glass-card,
+.obsidian_gold .glass-card,
+.emerald_sanctum .glass-card,
+.crimson_vignette .glass-card {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.premium-card-strong {
+  background: var(--surface-0);
+  border: 1px solid var(--border-strong-bible);
+  box-shadow: var(--shadow-md);
+}
+
+.pure_dark .premium-card-strong,
+.royal_majesty .premium-card-strong,
+.midnight_navy .premium-card-strong,
+.obsidian_gold .premium-card-strong,
+.emerald_sanctum .premium-card-strong,
+.crimson_vignette .premium-card-strong {
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ─────────────────────────────────────────────
+   BIBLE TITLES & HEADINGS (TS1-TS4)
+   ───────────────────────────────────────────── */
+.bible-title {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  color: var(--text-bible);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  text-wrap: balance;
+}
+
+.bible-title-1 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--accent-bible);
+  margin-bottom: 1.5rem;
+  color: var(--text-bible);
+}
+
+.bible-title-2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-bible);
+  opacity: 0.95;
+  border-left: 4px solid var(--accent-bible);
+  padding-left: 1rem;
+}
+
+.bible-title-3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--accent-bible);
+  margin-top: 1.5rem;
+}
+
+.bible-title-4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted-bible);
+  margin-top: 1.5rem;
+}
+
+.verse-headings {
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.bible-title + .bible-title {
+  margin-top: -0.25rem;
+}
+
+/* Specific highlight for major narratives if needed */
+.bible-title-narrative {
+  text-align: center;
+  font-variant: small-caps;
 }
