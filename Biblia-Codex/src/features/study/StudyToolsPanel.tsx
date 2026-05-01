@@ -182,13 +182,19 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0.5 }}
             transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-bible-bg shadow-float flex flex-col z-[300]"
+            className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-bible-bg shadow-2xl flex flex-col z-[300] overflow-hidden"
           >
+            {/* Background Decorator Premium */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-bible-accent/5 blur-[80px]" />
+              <div className="absolute bottom-1/4 -left-20 w-60 h-60 rounded-full bg-bible-accent/5 blur-[60px]" />
+            </div>
+
             {/* Header Premium */}
-            <div className="shrink-0 px-6 py-5 border-b border-bible-border/50">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2.5 rounded-xl bg-bible-accent/10">
+            <div className="shrink-0 relative z-10 px-6 py-6 backdrop-blur-xl bg-bible-bg/80 border-b border-bible-border/50">
+              <div className="flex items-start justify-between mb-5">
+                <div className="flex items-start gap-3.5">
+                  <div className="p-3 rounded-2xl bg-bible-accent/10 border border-bible-accent/20 shadow-inner">
                     {IconComponent ? (
                       <IconComponent className="w-5 h-5 text-bible-accent" />
                     ) : (
@@ -197,9 +203,9 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="premium-kicker">Estudo</span>
+                      <span className="premium-kicker">Ferramenta de Estudo</span>
                     </div>
-                    <h2 className="text-xl font-bold text-bible-text">{titles[type]}</h2>
+                    <h2 className="text-2xl font-black text-bible-text tracking-tight leading-none">{titles[type]}</h2>
                   </div>
                 </div>
                 <motion.button
@@ -214,149 +220,170 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
 
               {/* Reference Badge Premium */}
               <motion.div
-                initial={{ opacity: 0, y: 5 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-bible-accent/10 to-bible-accent/5 border border-bible-accent/20"
+                transition={{ delay: 0.15 }}
+                className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-bible-surface-strong/50 border border-bible-border/50 shadow-inner group"
               >
-                <BookOpen className="w-3.5 h-3.5 text-bible-accent" />
-                <span className="text-xs font-bold text-bible-accent">
-                  {book.name} {verse.chapter}:{verse.verse}
+                <div className="w-2 h-2 rounded-full bg-bible-accent animate-pulse" />
+                <span className="text-[11px] font-black text-bible-text uppercase tracking-widest flex items-center gap-2">
+                  {book.name} 
+                  <span className="text-bible-accent">{verse.chapter}:{verse.verse}</span>
                 </span>
-                <ArrowRight className="w-3.5 h-3.5 text-bible-accent/50" />
+                <div className="w-1 h-1 rounded-full bg-bible-text-subtle/30" />
+                <span className="text-[10px] font-bold text-bible-text-muted">ARA</span>
               </motion.div>
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden relative z-10">
               {loading ? (
-                <div className="flex flex-col items-center justify-center py-16">
+                <div className="flex flex-col items-center justify-center h-full py-20 px-10 text-center">
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="relative"
+                    className="relative mb-8"
                   >
-                    <div className="w-12 h-12 border-4 border-bible-accent/20 border-t-bible-accent rounded-full animate-spin" />
+                    <div className="w-20 h-20 border-2 border-bible-accent/10 border-t-bible-accent rounded-full animate-spin" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-bible-accent animate-pulse" />
+                      <Sparkles className="w-8 h-8 text-bible-accent animate-pulse" />
                     </div>
                   </motion.div>
-                  <motion.p
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
+                  <motion.h3
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="text-sm text-bible-text-muted mt-4 font-medium"
+                    className="text-lg font-black text-bible-text mb-2 tracking-tight"
                   >
-                    Carregando conteúdo...
+                    Sincronizando Codex
+                  </motion.h3>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-xs text-bible-text-muted font-bold uppercase tracking-widest leading-relaxed opacity-60"
+                  >
+                    Buscando as melhores fontes teológicas para o seu estudo...
                   </motion.p>
                 </div>
               ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                  className="p-5 space-y-4"
-                >
-                  {/* Commentary */}
-                  {type === 'commentary' && content && typeof content === 'object' && 'content' in content && (
-                    <div className="premium-card p-5">
-                      <div
-                        onClick={handleLinkClick}
-                        className="prose prose-bible max-w-none"
-                        dangerouslySetInnerHTML={{
-                          __html: DOMPurify.sanitize(MySwordParser.parseHTML((content as { content?: string }).content || (content as { text?: string }).text || '', settings))
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {/* Dictionary */}
-                  {type === 'dictionary' && content && typeof content === 'object' && !Array.isArray(content) && (
-                    <div className="space-y-3">
-                      {Object.entries(content as Record<string, unknown>).slice(0, 20).map(([key, value]) => (
-                        <motion.div
-                          key={key}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="premium-card p-5"
-                        >
-                          <h3 className="text-sm font-bold text-bible-text mb-2 flex items-center gap-2">
-                            <BookOpen className="w-3.5 h-3.5 text-bible-accent" />
-                            {key}
-                          </h3>
-                          <div
-                            onClick={handleLinkClick}
-                            className="text-sm text-bible-text leading-relaxed"
-                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(value)) }}
-                          />
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Cross References */}
-                  {type === 'xrefs' && Array.isArray(content) && content.length > 0 && (
-                    <div className="space-y-3">
-                      {content.map((ref, i: number) => (
-                        <motion.button
-                          key={i}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.05 }}
-                          whileHover={{ scale: 1.01, y: -2 }}
-                          whileTap={{ scale: 0.99 }}
-                          onClick={() => {
-                            const r = ref as { bookId?: string; chapter?: number; verse?: number; bookName?: string; text?: string; reason?: string };
-                            if (r.bookId) {
-                              onNavigate(r.bookId, r.chapter ?? 1, r.verse ?? 1);
-                              onClose();
-                            }
+                <div className="h-full overflow-y-auto custom-scrollbar p-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                    className="space-y-6"
+                  >
+                    {/* Commentary */}
+                    {type === 'commentary' && content && typeof content === 'object' && 'content' in content && (
+                      <div className="premium-card p-6 border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm">
+                        <div
+                          onClick={handleLinkClick}
+                          className="prose prose-bible max-w-none text-bible-text prose-p:leading-relaxed prose-strong:text-bible-accent prose-strong:font-black"
+                          dangerouslySetInnerHTML={{
+                            __html: DOMPurify.sanitize(MySwordParser.parseHTML((content as { content?: string }).content || (content as { text?: string }).text || '', settings))
                           }}
-                          className="premium-card p-5 w-full text-left group"
-                        >
-                          <div className="flex items-start justify-between gap-3 mb-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-1.5 h-1.5 rounded-full bg-bible-accent" />
-                              <span className="text-xs font-semibold text-bible-accent">
-                                {(ref as { bookName?: string }).bookName || (ref as { bookId?: string }).bookId} {(ref as { chapter?: number }).chapter}:{(ref as { verse?: number }).verse}
-                              </span>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-bible-text-muted group-hover:text-bible-accent group-hover:translate-x-1 transition-all" />
-                          </div>
-                          {(ref as { text?: string }).text && (
-                            <p className="text-sm text-bible-text line-clamp-2 leading-relaxed font-serif">
-                              {(ref as { text?: string }).text}
-                            </p>
-                          )}
-                          {(ref as { reason?: string }).reason && (
-                            <p className="text-xs text-bible-text-muted mt-2">
-                              {(ref as { reason?: string }).reason}
-                            </p>
-                          )}
-                        </motion.button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Empty State */}
-                  {!content && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="text-center py-16 px-4"
-                    >
-                      <div className="inline-flex p-4 rounded-2xl bg-bible-accent/10 mb-4">
-                        <Info className="w-8 h-8 text-bible-accent" />
+                        />
                       </div>
-                      <h3 className="text-sm font-bold text-bible-text mb-1">
-                        Nenhum conteúdo disponível
-                      </h3>
-                      <p className="text-xs text-bible-text-muted">
-                        Não há {titles[type].toLowerCase()} para este versículo
-                      </p>
-                    </motion.div>
-                  )}
-                </motion.div>
+                    )}
+
+                    {/* Dictionary */}
+                    {type === 'dictionary' && content && typeof content === 'object' && !Array.isArray(content) && (
+                      <div className="space-y-4">
+                        {Object.entries(content as Record<string, unknown>).slice(0, 20).map(([key, value]) => (
+                          <motion.div
+                            key={key}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="premium-card p-6 border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm group"
+                          >
+                            <h3 className="text-base font-black text-bible-text mb-3 flex items-center gap-3 group-hover:text-bible-accent transition-colors">
+                              <div className="w-1.5 h-6 bg-bible-accent rounded-full" />
+                              {key}
+                            </h3>
+                            <div
+                              onClick={handleLinkClick}
+                              className="text-sm text-bible-text leading-relaxed font-serif opacity-90"
+                              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(value)) }}
+                            />
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Cross References */}
+                    {type === 'xrefs' && Array.isArray(content) && content.length > 0 && (
+                      <div className="space-y-4">
+                        {content.map((ref, i: number) => (
+                          <motion.button
+                            key={i}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            whileHover={{ scale: 1.02, y: -2 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => {
+                              const r = ref as { bookId?: string; chapter?: number; verse?: number; bookName?: string; text?: string; reason?: string };
+                              if (r.bookId) {
+                                onNavigate(r.bookId, r.chapter ?? 1, r.verse ?? 1);
+                                onClose();
+                              }
+                            }}
+                            className="premium-card p-6 w-full text-left group border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm relative overflow-hidden"
+                          >
+                            <div className="absolute top-0 right-0 w-20 h-20 bg-bible-accent/5 rounded-full -translate-y-10 translate-x-10 blur-2xl group-hover:bg-bible-accent/10 transition-colors" />
+                            
+                            <div className="flex items-start justify-between gap-3 mb-3 relative z-10">
+                              <div className="flex items-center gap-2.5">
+                                <div className="p-1.5 rounded-lg bg-bible-accent/10 border border-bible-accent/20">
+                                  <BookOpen className="w-3.5 h-3.5 text-bible-accent" />
+                                </div>
+                                <span className="text-sm font-black text-bible-text tracking-tight group-hover:text-bible-accent transition-colors">
+                                  {(ref as { bookName?: string }).bookName || (ref as { bookId?: string }).bookId} {(ref as { chapter?: number }).chapter}:{(ref as { verse?: number }).verse}
+                                </span>
+                              </div>
+                              <div className="w-8 h-8 rounded-full bg-bible-surface-strong flex items-center justify-center border border-bible-border/50 group-hover:border-bible-accent/30 transition-all">
+                                <ChevronRight className="w-4 h-4 text-bible-text-muted group-hover:text-bible-accent group-hover:translate-x-0.5 transition-all" />
+                              </div>
+                            </div>
+                            {(ref as { text?: string }).text && (
+                              <p className="text-sm text-bible-text leading-relaxed font-serif italic relative z-10 opacity-90">
+                                "{(ref as { text?: string }).text}"
+                              </p>
+                            )}
+                            {(ref as { reason?: string }).reason && (
+                              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-bible-border/30 relative z-10">
+                                <Sparkles className="w-3 h-3 text-bible-accent" />
+                                <p className="text-[11px] font-bold text-bible-text-muted uppercase tracking-widest">
+                                  {(ref as { reason?: string }).reason}
+                                </p>
+                              </div>
+                            )}
+                          </motion.button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Empty State */}
+                    {!content && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex flex-col items-center justify-center py-20 px-6 text-center"
+                      >
+                        <div className="w-24 h-24 rounded-full bg-bible-surface-strong/50 flex items-center justify-center mb-6 border border-bible-border/50 shadow-inner">
+                          <Info className="w-10 h-10 text-bible-text-subtle" />
+                        </div>
+                        <h3 className="text-xl font-black text-bible-text mb-2 tracking-tight">
+                          Território Inexplorado
+                        </h3>
+                        <p className="text-sm text-bible-text-muted max-w-[240px] leading-relaxed">
+                          Não encontramos registros de {titles[type].toLowerCase()} para este versículo específico.
+                        </p>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                </div>
               )}
             </div>
           </motion.div>
