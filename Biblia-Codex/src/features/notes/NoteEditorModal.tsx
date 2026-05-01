@@ -410,42 +410,42 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
         >
           {!isMinimized && (
             <>
-              <div className="flex items-center justify-between px-4 py-3 bg-[var(--surface-1)] border-b border-[var(--border-bible)]">
-                <div className="flex items-center gap-3 flex-1">
+              <div className="flex items-center justify-between px-3 py-2 bg-[var(--surface-1)] border-b border-[var(--border-bible)] shrink-0">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Título da nota..."
-                    className="flex-1 bg-transparent text-lg font-semibold text-[var(--text-bible)] placeholder:text-[var(--text-bible-muted)] focus:outline-none"
+                    className="flex-1 bg-transparent text-base sm:text-lg font-semibold text-[var(--text-bible)] placeholder:text-[var(--text-bible-muted)] focus:outline-none truncate"
                   />
-                  {lastSaved && (
-                    <span className="text-xs text-[var(--text-bible-muted)] flex items-center gap-1">
+                  {lastSaved && !isMaximized && (
+                    <span className="hidden sm:flex text-[10px] text-[var(--text-bible-muted)] items-center gap-1 whitespace-nowrap">
                       <Clock className="w-3 h-3" />
                       {lastSaved.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   )}
                 </div>
                 
-                <div className="flex items-center gap-1">
-                  <button onClick={toggleMinimize} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Minimizar">
+                <div className="flex items-center gap-0.5 ml-2">
+                  <button onClick={toggleMinimize} className="p-1.5 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Minimizar">
                     <Minus className="w-4 h-4 text-[var(--text-bible-muted)]" />
                   </button>
-                  <button onClick={toggleMaximize} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title={isMaximized ? "Restaurar" : "Maximizar"}>
+                  <button onClick={toggleMaximize} className="hidden sm:block p-1.5 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title={isMaximized ? "Restaurar" : "Maximizar"}>
                     {isMaximized ? <Minimize2 className="w-4 h-4 text-[var(--text-bible-muted)]" /> : <Maximize2 className="w-4 h-4 text-[var(--text-bible-muted)]" />}
                   </button>
-                  <button onClick={handleClose} className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Fechar">
+                  <button onClick={handleClose} className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Fechar">
                     <X className="w-4 h-4 text-red-500" />
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 px-4 py-2 bg-[var(--surface-1)] border-b border-[var(--border-bible)]">
+              <div className="flex items-center gap-1 px-4 py-1.5 bg-[var(--surface-1)] border-b border-[var(--border-bible)] shrink-0">
                 <button
                   onClick={() => setActiveTab('edit')}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-semibold transition-colors",
-                    activeTab === 'edit' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-3)]"
+                    "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors",
+                    activeTab === 'edit' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)]"
                   )}
                 >
                   Editar
@@ -453,71 +453,71 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
                 <button
                   onClick={() => setActiveTab('tts')}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2",
-                    activeTab === 'tts' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)] hover:bg-[var(--surface-3)]"
+                    "px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5",
+                    activeTab === 'tts' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)]"
                   )}
                 >
-                  <Volume2 className="w-4 h-4" />
-                  TTS
+                  <Volume2 className="w-3.5 h-3.5" />
+                  Voz
                 </button>
               </div>
               {activeTab === 'edit' ? (
                 <>
-                  <div className="flex items-center justify-between px-2 py-2 bg-[var(--surface-1)] border-b border-[var(--border-bible)]">
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <button onClick={handleUndo} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Desfazer">
+                  <div className="flex items-center justify-between bg-[var(--surface-1)] border-b border-[var(--border-bible)] overflow-hidden">
+                    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-2 px-3 flex-1">
+                      <button onClick={handleUndo} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Desfazer">
                         <Undo className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
-                      <button onClick={handleRedo} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Refazer">
+                      <button onClick={handleRedo} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Refazer">
                         <Redo className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
                       
-                      <div className="w-px h-6 bg-[var(--border-bible)] mx-1" />
+                      <div className="w-px h-6 bg-[var(--border-bible)] mx-1 shrink-0" />
                       
-                      <button onClick={handleBold} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Negrito (Ctrl+B)">
+                      <button onClick={handleBold} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Negrito (Ctrl+B)">
                         <Bold className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
-                      <button onClick={handleItalic} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Itálico (Ctrl+I)">
+                      <button onClick={handleItalic} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Itálico (Ctrl+I)">
                         <Italic className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
-                      <button onClick={handleUnderline} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Sublinhado (Ctrl+U)">
+                      <button onClick={handleUnderline} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Sublinhado (Ctrl+U)">
                         <Underline className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
-                      <button onClick={handleStrikethrough} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Tachado">
+                      <button onClick={handleStrikethrough} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Tachado">
                         <Strikethrough className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
                       
-                      <div className="w-px h-6 bg-[var(--border-bible)] mx-1" />
+                      <div className="w-px h-6 bg-[var(--border-bible)] mx-1 shrink-0" />
                       
-                      <button onClick={() => handleHeading(1)} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Título 1">
+                      <button onClick={() => handleHeading(1)} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Título 1">
                         <Heading1 className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
-                      <button onClick={() => handleHeading(2)} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Título 2">
+                      <button onClick={() => handleHeading(2)} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Título 2">
                         <Heading2 className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
-                      <button onClick={() => handleHeading(3)} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Título 3">
+                      <button onClick={() => handleHeading(3)} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Título 3">
                         <Heading3 className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
                       
-                      <div className="w-px h-6 bg-[var(--border-bible)] mx-1" />
+                      <div className="w-px h-6 bg-[var(--border-bible)] mx-1 shrink-0" />
                       
-                      <button onClick={() => handleList(false)} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Lista">
+                      <button onClick={() => handleList(false)} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Lista">
                         <List className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
-                      <button onClick={() => handleList(true)} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Lista numerada">
+                      <button onClick={() => handleList(true)} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Lista numerada">
                         <ListOrdered className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
-                      <button onClick={handleCheckbox} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Checkbox">
+                      <button onClick={handleCheckbox} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Checkbox">
                         <CheckSquare className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
                       
-                      <div className="w-px h-6 bg-[var(--border-bible)] mx-1" />
+                      <div className="w-px h-6 bg-[var(--border-bible)] mx-1 shrink-0" />
                       
-                      <button onClick={handleLink} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Inserir link">
+                      <button onClick={handleLink} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Inserir link">
                         <Link2 className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
                       
-                      <div ref={colorPaletteRef} className="relative">
+                      <div ref={colorPaletteRef} className="relative shrink-0">
                         <button onClick={() => setShowColorPicker(!showColorPicker)} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Cor do texto">
                           <Palette className="w-4 h-4 text-[var(--text-bible-muted)]" />
                         </button>
@@ -548,15 +548,15 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
                         )}
                       </div>
                       
-                      <button onClick={handleCode} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Código">
+                      <button onClick={handleCode} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Código">
                         <Code className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
-                      <button onClick={handleQuote} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Citação">
+                      <button onClick={handleQuote} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors shrink-0" title="Citação">
                         <Quote className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
                     </div>
                     
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 px-3 border-l border-[var(--border-bible)] bg-[var(--surface-1)]">
                       <button
                         onClick={() => setPinned(!pinned)}
                         className={cn(

@@ -223,29 +223,29 @@ export const ModuleManagement: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="premium-card p-5"
+          className="premium-card p-4 sm:p-5"
         >
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Database className="w-4 h-4 text-bible-accent" />
+              <div className="flex items-center gap-2 mb-1.5">
+                <Database className="w-3.5 h-3.5 text-bible-accent" />
                 <span className="premium-kicker">Gerenciamento</span>
               </div>
-              <h1 className="premium-title mt-2 mb-1">Módulos</h1>
-              <p className="premium-subtitle text-sm">
-                Gerencie Bíblias, comentários, dicionários e mais
+              <h1 className="premium-title text-2xl sm:text-3xl mt-1 mb-0.5">Módulos</h1>
+              <p className="premium-subtitle text-xs sm:text-sm">
+                Gerencie Bíblias, comentários e mais
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-center px-4 py-2 rounded-xl bg-bible-accent/10">
-                <Folder className="w-5 h-5 text-bible-accent mx-auto mb-1" />
-                <div className="text-lg font-bold text-bible-accent">{totalModules}</div>
-                <div className="text-[10px] font-medium text-bible-accent/70 uppercase tracking-wider">módulos</div>
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <div className="flex-1 sm:flex-initial text-center px-3 sm:px-4 py-2 rounded-xl bg-bible-accent/10 border border-bible-accent/5">
+                <Folder className="w-4 h-4 sm:w-5 sm:h-5 text-bible-accent mx-auto mb-1" />
+                <div className="text-base sm:text-lg font-bold text-bible-accent">{totalModules}</div>
+                <div className="text-[9px] sm:text-[10px] font-medium text-bible-accent/70 uppercase tracking-wider">módulos</div>
               </div>
-              <div className="text-center px-4 py-2 rounded-xl bg-blue-500/10">
-                <Layers className="w-5 h-5 text-blue-500 mx-auto mb-1" />
-                <div className="text-lg font-bold text-blue-500">{categoriesCount}</div>
-                <div className="text-[10px] font-medium text-blue-500/70 uppercase tracking-wider">tipos</div>
+              <div className="flex-1 sm:flex-initial text-center px-3 sm:px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/5">
+                <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mx-auto mb-1" />
+                <div className="text-base sm:text-lg font-bold text-blue-500">{categoriesCount}</div>
+                <div className="text-[9px] sm:text-[10px] font-medium text-blue-500/70 uppercase tracking-wider">tipos</div>
               </div>
             </div>
           </div>
@@ -443,42 +443,42 @@ export const ModuleManagement: React.FC = () => {
               className="space-y-6"
             >
               {/* Import Info Card */}
-              <div className="premium-card p-6">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="p-3 rounded-xl bg-bible-accent/10">
-                    <Upload className="w-6 h-6 text-bible-accent" />
+              <div className="premium-card p-5 sm:p-6">
+                <div className="flex items-start gap-3 sm:gap-4 mb-5 sm:mb-6">
+                  <div className="p-2.5 rounded-xl bg-bible-accent/10 shrink-0">
+                    <Upload className="w-5 h-5 sm:w-6 sm:h-6 text-bible-accent" />
                   </div>
                   <div className="flex-1">
-                    <h2 className="text-lg font-bold text-bible-text mb-1">Importação Inteligente</h2>
-                    <p className="text-sm text-bible-text-muted">
-                      O sistema detecta automaticamente o tipo de módulo baseado nos padrões de nomenclatura.
+                    <h2 className="text-base sm:text-lg font-bold text-bible-text mb-0.5">Importação Inteligente</h2>
+                    <p className="text-xs sm:text-sm text-bible-text-muted">
+                      O sistema detecta automaticamente o tipo de módulo.
                     </p>
                   </div>
                 </div>
 
                 {/* Supported Formats */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 p-4 rounded-xl bg-bible-surface">
-                  <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-bible-text-muted mb-2">Formatos Suportados</h3>
-                    <ul className="space-y-1.5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 rounded-xl bg-bible-surface border border-bible-border/30">
+                  <div className="space-y-3">
+                    <h3 className="text-[9px] font-bold uppercase tracking-wider text-bible-text-muted">Formatos Suportados</h3>
+                    <ul className="grid grid-cols-1 gap-2">
                       {[
                         'MyBible (.mybible, .sqlite3)',
-                        'MySword (.mybl, .twm, .mysword)',
+                        'MySword (.mybl, .twm)',
                         'SWORD (.conf, .dat)',
                         'EPUB (.epub)'
                       ].map((fmt, i) => (
-                        <li key={i} className="flex items-center gap-2 text-xs text-bible-text">
-                          <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
-                          {fmt}
+                        <li key={i} className="flex items-center gap-2 text-[11px] text-bible-text">
+                          <Check className="w-3 h-3 text-green-500 flex-shrink-0" />
+                          <span className="truncate">{fmt}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
-                  <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-wider text-bible-text-muted mb-2">Local de Armazenamento</h3>
-                    <div className="flex items-center gap-2 text-xs text-bible-text font-mono">
-                      <Folder className="w-3.5 h-3.5 text-bible-accent" />
-                      Codex/modules/installed/
+                  <div className="pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-bible-border/30 md:pl-4">
+                    <h3 className="text-[9px] font-bold uppercase tracking-wider text-bible-text-muted mb-2">Armazenamento</h3>
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-bible-bg/50 border border-bible-border/20 text-[10px] text-bible-text font-mono overflow-hidden">
+                      <Folder className="w-3 h-3 text-bible-accent shrink-0" />
+                      <span className="truncate">Codex/modules/installed/</span>
                     </div>
                   </div>
                 </div>

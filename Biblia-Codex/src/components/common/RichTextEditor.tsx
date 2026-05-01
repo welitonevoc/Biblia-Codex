@@ -383,8 +383,11 @@ export function RichTextEditor({
   return (
     <div className={`flex h-full flex-col ${isDark ? 'bg-bible-bg' : 'bg-[#F8F9FA]'}`}>
       {/* Toolbar - Google Docs Style */}
-      <div className={`shrink-0 z-30 flex items-center justify-center p-2 border-b ${isDark ? 'bg-bible-surface/80 border-bible-border/30' : 'bg-white border-gray-200 shadow-sm'} backdrop-blur-xl sticky top-0`}>
-        <div className="flex items-center gap-1 max-w-[1000px] w-full overflow-x-auto no-scrollbar">
+      <div className={cn(
+        "shrink-0 z-30 flex items-center border-b sticky top-0 backdrop-blur-xl",
+        isDark ? "bg-bible-surface/90 border-bible-border/30" : "bg-white/90 border-gray-200 shadow-sm"
+      )}>
+        <div className="flex items-center gap-1 w-full overflow-x-auto no-scrollbar px-2 py-1.5 min-h-[48px]">
           
           {/* History Group */}
           <div className="flex items-center gap-0.5 pr-2 border-r border-bible-border/30">
@@ -468,10 +471,10 @@ export function RichTextEditor({
       </div>
 
       {/* Editor Canvas - The "Paper" Experience */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-10 flex flex-col items-center bg-inherit">
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-2 sm:p-6 lg:p-10 flex flex-col items-center bg-inherit">
         <div 
           className={cn(
-            "w-full max-w-[850px] min-h-[1056px] shadow-2xl rounded-[4px] p-[80px] transition-all duration-500 flex flex-col",
+            "w-full max-w-[850px] min-h-[1056px] shadow-2xl rounded-lg p-6 sm:p-12 lg:p-[80px] transition-all duration-500 flex flex-col",
             isDark ? "bg-[#1E1E1E] shadow-black/40 ring-1 ring-white/5" : "bg-white shadow-gray-200 ring-1 ring-gray-100"
           )}
           style={{ 
