@@ -8,7 +8,7 @@
   "android": {
     "allowMixedContent": false,
     "captureInput": true,
-    "webContentsDebuggingEnabled": false,
+    "webContentsDebuggingEnabled": true,
     "useLegacyBridge": false
   },
   "plugins": {

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   User, Palette, Sparkles, Database, HelpCircle,
   Settings2, ChevronRight, Sun, Type, Layout, Navigation2,
   BookOpen, Brain, MessageSquare, Languages, Volume2,
   Download, Globe, Shield, Key, Zap, ChevronLeft, Cloud, RefreshCw,
-  X
+  X, BookMarked, Map, Calendar, Heart, Tag, Share2, Search,
+  Mic, BookOpen as BookOpenIcon, GraduationCap, FileText,
+  CloudUpload, Smartphone, Languages as LanguagesIcon
 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { cn } from '../utils/cn';
@@ -54,6 +56,7 @@ import { TTSSettings } from './TTSSettings';
 export const SettingsDashboard: React.FC = () => {
   const { setActiveTab, syncNow, settings } = useAppContext();
   const [activeSubSection, setActiveSubSection] = useState<string | null>(null);
+  const [showVersionModal, setShowVersionModal] = useState(false);
 
   // Expose syncNow to window for SettingCard onClick if needed (hacky but works without refactoring sections)
   (window as any).AppContextSyncNow = syncNow;
