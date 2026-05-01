@@ -399,7 +399,7 @@ export interface EncyclopediaEntry {
   id: string;
   word: string;
   text: string;
-  source: 'merrill' | 'vine';
+  source: 'merrill' | 'vine' | 'quem-quem';
   language?: 'hebrew' | 'greek';
   strongNumber?: string;
   category?: string;

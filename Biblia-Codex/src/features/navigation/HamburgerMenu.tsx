@@ -73,7 +73,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-y-0 left-0 z-[210] w-[300px] max-w-[85vw]"
+            className="fixed inset-y-0 left-0 z-[210] w-[min(20rem,calc(100vw-0.75rem))]"
             style={{
               paddingTop: 'var(--sat)',
               paddingBottom: 'var(--sab)',
@@ -89,7 +89,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                     <div className="text-sm font-semibold text-bible-text">Bíbia Codex</div>
                   </div>
                 </div>
-                <button onClick={onClose} className="p-2 hover:bg-bible-surface rounded">
+                <button onClick={onClose} className="grid h-11 w-11 place-items-center rounded hover:bg-bible-surface" aria-label="Fechar menu">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -112,7 +112,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                 ) : (
                   <button
                     onClick={login}
-                    className="w-full py-2 px-3 bg-bible-accent text-bible-bg text-sm font-medium rounded flex items-center justify-center gap-2"
+                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded bg-bible-accent px-3 py-2 text-sm font-medium text-bible-bg"
                   >
                     <LogIn className="h-4 w-4" />
                     Entrar
@@ -134,7 +134,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                               key={item.id}
                               onClick={() => { onTabChange(item.id); onClose(); }}
                               className={cn(
-                                "flex w-full items-center gap-3 px-3 py-2 rounded text-left transition-colors",
+                                "flex min-h-11 w-full items-center gap-3 rounded px-3 py-2 text-left transition-colors",
                                 isActive
                                   ? "bg-bible-accent/10 text-bible-accent"
                                   : "text-bible-text hover:bg-bible-surface"
@@ -155,7 +155,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                 {user && (
                   <button
                     onClick={handleLogout}
-                    className="w-full py-2 text-sm text-red-500 hover:bg-red-500/10 rounded flex items-center justify-center gap-2"
+                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded py-2 text-sm text-red-500 hover:bg-red-500/10"
                   >
                     <LogIn className="h-4 w-4 rotate-180" />
                     Sair

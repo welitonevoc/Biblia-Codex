@@ -146,7 +146,8 @@ export const StrongsBottomSheet: React.FC<StrongsBottomSheetProps> = ({
               </div>
               <button 
                 onClick={onClose}
-                className="p-2 bg-bible-text/5 hover:bg-bible-text/10 rounded-full transition-all text-bible opacity-40 hover:opacity-100"
+                className="grid h-11 w-11 place-items-center rounded-full bg-bible-text/5 text-bible opacity-60 transition-all hover:bg-bible-text/10 hover:opacity-100"
+                aria-label="Fechar léxico"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -157,7 +158,7 @@ export const StrongsBottomSheet: React.FC<StrongsBottomSheetProps> = ({
               <button 
                 onClick={() => setActiveTab('lexicon')}
                 className={cn(
-                  "flex-1 py-1.5 rounded-lg flex items-center justify-center space-x-2 transition-all",
+                  "flex-1 min-h-10 py-1.5 rounded-lg flex items-center justify-center space-x-2 transition-all",
                   activeTab === 'lexicon' ? "bg-bible-text/10 text-bible shadow-sm" : "text-bible/40 hover:text-bible/60"
                 )}
               >
@@ -167,7 +168,7 @@ export const StrongsBottomSheet: React.FC<StrongsBottomSheetProps> = ({
               <button 
                 onClick={() => { setActiveTab('ai'); handleSearchAI(); }}
                 className={cn(
-                  "flex-1 py-1.5 rounded-lg flex items-center justify-center space-x-2 transition-all",
+                  "flex-1 min-h-10 py-1.5 rounded-lg flex items-center justify-center space-x-2 transition-all",
                   activeTab === 'ai' ? "bg-gold/20 text-gold shadow-sm" : "text-bible/40 hover:text-bible/60"
                 )}
               >

@@ -24,7 +24,7 @@ const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
   }, [open, onOpenChange])
 
   return open ? (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
         onClick={() => onOpenChange(false)}
@@ -48,9 +48,9 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
     <div
       ref={ref}
       className={cn(
-        "relative z-50 w-full max-w-lg rounded-2xl",
+        "relative z-50 w-full max-w-lg max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-2xl",
         "bg-[var(--surface-0)] border border-[var(--border-bible)]",
-        "shadow-xl p-6 animate-scale-in",
+        "shadow-xl p-4 animate-scale-in sm:p-6",
         className
       )}
       {...props}
@@ -59,7 +59,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
         <button
           onClick={onClose}
           className={cn(
-            "absolute right-4 top-4 rounded-full p-2",
+            "absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full sm:right-4 sm:top-4",
             "text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]",
             "hover:bg-[var(--surface-hover)] transition-all duration-200",
             "focus-ring"

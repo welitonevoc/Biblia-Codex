@@ -138,14 +138,15 @@ export const BookmarksPage: React.FC<BookmarksPageProps> = ({ onNavigate, onBack
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-md bg-[var(--surface-1)] rounded-2xl p-6 shadow-xl"
+              className="w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-2xl bg-[var(--surface-1)] p-4 shadow-xl sm:p-6"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-[var(--text-bible)]">Editar Marcador</h3>
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="p-2 rounded-lg hover:bg-[var(--surface-2)] transition-colors"
+                  className="grid h-11 w-11 place-items-center rounded-lg hover:bg-[var(--surface-2)] transition-colors"
+                  aria-label="Fechar edição de marcador"
                 >
                   <X className="w-5 h-5 text-[var(--text-bible-muted)]" />
                 </button>
@@ -164,13 +165,13 @@ export const BookmarksPage: React.FC<BookmarksPageProps> = ({ onNavigate, onBack
                 <label className="text-sm font-medium text-[var(--text-bible-muted)] mb-2 block">
                   Cor do marcador
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {colors.map(color => (
                     <button
                       key={color}
                       onClick={() => setSelectedBookmark({ ...selectedBookmark, color })}
                       className={cn(
-                        "w-8 h-8 rounded-full transition-transform",
+                        "h-11 w-11 rounded-full transition-transform",
                         selectedBookmark.color === color && "scale-110 ring-2 ring-offset-2 ring-[var(--text-bible)]"
                       )}
                       style={{ backgroundColor: color }}
@@ -195,7 +196,7 @@ export const BookmarksPage: React.FC<BookmarksPageProps> = ({ onNavigate, onBack
                         );
                       }}
                       className={cn(
-                        "px-3 py-1 rounded-full text-sm transition-all",
+                        "min-h-10 px-3 py-1 rounded-full text-sm transition-all",
                         editTags.includes(tag.id)
                           ? "bg-[var(--accent-bible)] text-white"
                           : "bg-[var(--surface-2)] text-[var(--text-bible-muted)]"
@@ -230,7 +231,8 @@ export const BookmarksPage: React.FC<BookmarksPageProps> = ({ onNavigate, onBack
           {onBack && (
             <button
               onClick={onBack}
-              className="p-2 rounded-lg bg-[var(--surface-1)] hover:bg-[var(--surface-2)] transition-colors"
+              className="grid h-11 w-11 place-items-center rounded-lg bg-[var(--surface-1)] hover:bg-[var(--surface-2)] transition-colors"
+              aria-label="Voltar"
             >
               <ChevronLeft className="w-5 h-5 text-[var(--text-bible)]" />
             </button>
@@ -267,7 +269,7 @@ export const BookmarksPage: React.FC<BookmarksPageProps> = ({ onNavigate, onBack
             <button
               onClick={() => setSelectedTagFilter(null)}
               className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
+                "min-h-11 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
                 selectedTagFilter === null
                   ? "bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)]"
                   : "bg-[var(--surface-1)] text-[var(--text-bible-muted)]"
@@ -280,7 +282,7 @@ export const BookmarksPage: React.FC<BookmarksPageProps> = ({ onNavigate, onBack
                 key={tag.id}
                 onClick={() => setSelectedTagFilter(tag.id)}
                 className={cn(
-                  "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
+                  "min-h-11 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
                   selectedTagFilter === tag.id
                     ? "bg-[var(--accent-bible)] text-[var(--accent-bible-contrast)]"
                     : "bg-[var(--surface-1)] text-[var(--text-bible-muted)]"
@@ -291,7 +293,7 @@ export const BookmarksPage: React.FC<BookmarksPageProps> = ({ onNavigate, onBack
             ))}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1">
             {[
               { id: 'recent', label: 'Recentes', icon: Clock },
               { id: 'book', label: 'Por Livro', icon: BookOpen },
@@ -301,7 +303,7 @@ export const BookmarksPage: React.FC<BookmarksPageProps> = ({ onNavigate, onBack
                 key={s.id}
                 onClick={() => setSortBy(s.id as any)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all",
+                  "min-h-11 shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all",
                   sortBy === s.id
                     ? "bg-[var(--accent-bible)]/20 text-[var(--accent-bible)]"
                     : "bg-[var(--surface-1)] text-[var(--text-bible-muted)]"
@@ -371,8 +373,6 @@ interface BookmarkCardProps {
 }
 
 const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark, onClick, onEdit, onDelete, tags }) => {
-  const [showActions, setShowActions] = useState(false);
-
   const getBookName = (bookId: string) => {
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
     return book ? book.name : bookId;
@@ -431,31 +431,22 @@ const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark, onClick, onEdit, 
         </div>
       </div>
 
-      <AnimatePresence>
-        {showActions && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="flex gap-2 px-4 pb-3 pt-0"
-          >
+      <div className="flex gap-2 px-4 pb-3 pt-0">
             <button
-              onClick={(e) => { e.stopPropagation(); onEdit(); setShowActions(false); }}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--surface-2)] text-sm text-[var(--text-bible-muted)]"
+              onClick={(e) => { e.stopPropagation(); onEdit(); }}
+              className="flex min-h-10 items-center gap-1 rounded-lg bg-[var(--surface-2)] px-3 py-1.5 text-sm text-[var(--text-bible-muted)]"
             >
               <Pencil className="w-3.5 h-3.5" />
               Editar
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); onDelete(); setShowActions(false); }}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500/10 text-sm text-red-500"
+              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              className="flex min-h-10 items-center gap-1 rounded-lg bg-red-500/10 px-3 py-1.5 text-sm text-red-500"
             >
               <Trash2 className="w-3.5 h-3.5" />
               Excluir
             </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>
     </motion.div>
   );
 };

@@ -109,20 +109,22 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
   };
 
   const gridCols = isMobile ? 'grid-cols-4' : isTablet ? 'grid-cols-6' : 'grid-cols-8';
-  const menuWidth = isMobile ? 'w-[92vw] max-w-[400px]' : 'w-[450px]';
+  const menuWidth = isMobile ? 'w-[calc(100vw-1rem)] max-w-[400px]' : 'w-[450px]';
 
   const renderHeader = (title: string, onBack: () => void) => (
     <div className="flex items-center justify-between p-4 border-b border-white/10">
       <button 
         onClick={onBack}
-        className="p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors"
+        className="-ml-2 grid h-11 w-11 place-items-center rounded-xl hover:bg-white/10 transition-colors"
+        aria-label="Voltar"
       >
         <ChevronLeft size={20} />
       </button>
       <h3 className="text-base font-bold tracking-tight">{title}</h3>
       <button 
         onClick={onClose}
-        className="p-2 -mr-2 rounded-xl hover:bg-white/10 transition-colors"
+        className="-mr-2 grid h-11 w-11 place-items-center rounded-xl hover:bg-white/10 transition-colors"
+        aria-label="Fechar menu bíblico"
       >
         <X size={20} />
       </button>
@@ -175,7 +177,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                   >
                     <div className="flex items-center justify-between mb-2 px-1">
                        <span className="text-xs font-black uppercase tracking-[0.2em] text-[var(--accent-bible)]/70">Navegação</span>
-                       <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full"><X size={16}/></button>
+                       <button onClick={onClose} className="grid h-11 w-11 place-items-center rounded-full hover:bg-white/10" aria-label="Fechar menu bíblico"><X size={16}/></button>
                      </div>
 
                      <button
@@ -232,13 +234,13 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     <div className="pt-2 grid grid-cols-2 gap-3">
                        <button 
                         onClick={() => { setSelectedBook(currentBook); setView('chapters'); }}
-                        className="p-3 rounded-2xl bg-[var(--accent-bible)] text-white font-bold text-sm shadow-lg shadow-[var(--accent-bible)]/30 hover:brightness-110 active:scale-95 transition-all"
+                        className="min-h-11 rounded-2xl bg-[var(--accent-bible)] p-3 text-sm font-bold text-white shadow-lg shadow-[var(--accent-bible)]/30 hover:brightness-110 active:scale-95 transition-all"
                        >
                          Capítulos
                        </button>
                        <button 
                         onClick={() => { setSelectedBook(currentBook); setSelectedChapter(currentChapter); handleChapterSelect(currentChapter); }}
-                        className="p-3 rounded-2xl bg-white/10 text-white font-bold text-sm border border-white/10 hover:bg-white/20 transition-all"
+                        className="min-h-11 rounded-2xl bg-white/10 p-3 text-sm font-bold text-white border border-white/10 hover:bg-white/20 transition-all"
                        >
                          Versículos
                        </button>
@@ -317,7 +319,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                           placeholder="Buscar livro..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-bible)]/50 transition-all"
+                          className="min-h-11 w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-10 pr-4 text-base focus:outline-none focus:ring-2 focus:ring-[var(--accent-bible)]/50 transition-all"
                         />
                       </div>
 
@@ -327,7 +329,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                             key={testament}
                             onClick={() => setSelectedTestament(testament as 'OT' | 'NT')}
                             className={cn(
-                              'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
+                              'min-h-10 flex-1 rounded-lg py-1.5 text-xs font-bold transition-all',
                               selectedTestament === testament 
                                 ? 'bg-[var(--accent-bible)] text-white shadow-md' 
                                 : 'text-white/50 hover:text-white'
@@ -344,7 +346,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                         <button
                           key={book.id}
                           onClick={() => handleBookSelect(book)}
-                          className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 group transition-all"
+                          className="flex min-h-11 items-center justify-between rounded-xl p-3 hover:bg-white/5 group transition-all"
                         >
                           <div className="flex items-center gap-3">
                             <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-[10px] font-black group-hover:bg-[var(--accent-bible)]/20 group-hover:text-[var(--accent-bible)] transition-colors">
@@ -376,7 +378,8 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     <div className="flex items-center gap-3 mb-6">
                       <button 
                         onClick={() => setView('books')}
-                        className="p-2 rounded-xl hover:bg-bible-surface transition-colors"
+                        className="grid h-11 w-11 place-items-center rounded-xl hover:bg-bible-surface transition-colors"
+                        aria-label="Voltar"
                       >
                         <ChevronLeft className="w-5 h-5 text-bible-text" />
                       </button>
@@ -392,7 +395,8 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                         <div className="flex items-center gap-4 bg-bible-surface p-3 rounded-2xl border border-bible-border/30">
                           <button 
                             onClick={() => setFontSize(Math.max(12, config.fontSize - 1))}
-                            className="p-2 rounded-lg hover:bg-bible-accent/10 text-bible-text-muted hover:text-bible-accent transition-colors"
+                            className="grid h-11 w-11 place-items-center rounded-lg hover:bg-bible-accent/10 text-bible-text-muted hover:text-bible-accent transition-colors"
+                            aria-label="Diminuir fonte"
                           >
                             <Minus className="w-4 h-4" />
                           </button>
@@ -406,7 +410,8 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                           />
                           <button 
                             onClick={() => setFontSize(Math.min(32, config.fontSize + 1))}
-                            className="p-2 rounded-lg hover:bg-bible-accent/10 text-bible-text-muted hover:text-bible-accent transition-colors"
+                            className="grid h-11 w-11 place-items-center rounded-lg hover:bg-bible-accent/10 text-bible-text-muted hover:text-bible-accent transition-colors"
+                            aria-label="Aumentar fonte"
                           >
                             <PlusIcon className="w-4 h-4" />
                           </button>

@@ -33,10 +33,10 @@ interface SheetContentProps extends React.HTMLAttributes<HTMLDivElement> {
 const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
   ({ className, side = "right", children, ...props }, ref) => {
     const sideClasses = {
-      left: "left-0 top-0 h-full w-80 border-r border-[var(--border-bible)]",
-      right: "right-0 top-0 h-full w-80 border-l border-[var(--border-bible)]",
-      top: "top-0 left-0 right-0 h-auto max-h-[50vh]",
-      bottom: "bottom-0 left-0 right-0 h-auto max-h-[50vh]",
+      left: "left-0 top-0 h-full w-[min(20rem,calc(100vw-0.75rem))] border-r border-[var(--border-bible)]",
+      right: "right-0 top-0 h-full w-[min(20rem,calc(100vw-0.75rem))] border-l border-[var(--border-bible)]",
+      top: "top-0 left-0 right-0 h-auto max-h-[85dvh]",
+      bottom: "bottom-0 left-0 right-0 h-auto max-h-[85dvh]",
     }
 
     const animateClasses = {
@@ -50,7 +50,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
       <div
         ref={ref}
         className={cn(
-          "fixed z-50 bg-[var(--bg-bible)] p-6 shadow-xl",
+          "fixed z-50 overflow-y-auto bg-[var(--bg-bible)] p-4 shadow-xl sm:p-6",
           "transition-all duration-300 ease-premium",
           sideClasses[side],
           animateClasses[side],
@@ -105,7 +105,7 @@ const SheetClose: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({
 }) => (
   <button
     className={cn(
-      "absolute right-4 top-4 rounded-full p-2",
+      "absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full sm:right-4 sm:top-4",
       "text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]",
       "hover:bg-[var(--surface-hover)] transition-all duration-200",
       "focus-ring",

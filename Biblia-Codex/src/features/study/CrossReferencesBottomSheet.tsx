@@ -146,7 +146,8 @@ export const CrossReferencesBottomSheet: React.FC<CrossReferencesBottomSheetProp
               </div>
               <button 
                 onClick={onClose}
-                className="p-2 bg-bible-text/5 hover:bg-bible-text/10 rounded-full transition-all text-bible opacity-40 hover:opacity-100"
+                className="grid h-11 w-11 place-items-center rounded-full bg-bible-text/5 text-bible opacity-60 transition-all hover:bg-bible-text/10 hover:opacity-100"
+                aria-label="Fechar referências cruzadas"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -157,7 +158,7 @@ export const CrossReferencesBottomSheet: React.FC<CrossReferencesBottomSheetProp
               <button 
                 onClick={() => setActiveTab('local')}
                 className={cn(
-                  "flex-1 py-1.5 rounded-lg flex items-center justify-center space-x-2 transition-all",
+                  "flex-1 min-h-10 py-1.5 rounded-lg flex items-center justify-center space-x-2 transition-all",
                   activeTab === 'local' ? "bg-bible-text/10 text-bible shadow-sm" : "text-bible/40 hover:text-bible/60"
                 )}
               >
@@ -167,7 +168,7 @@ export const CrossReferencesBottomSheet: React.FC<CrossReferencesBottomSheetProp
               <button 
                 onClick={() => { setActiveTab('ai'); handleSearchAI(); }}
                 className={cn(
-                  "flex-1 py-1.5 rounded-lg flex items-center justify-center space-x-2 transition-all",
+                  "flex-1 min-h-10 py-1.5 rounded-lg flex items-center justify-center space-x-2 transition-all",
                   activeTab === 'ai' ? "bg-blue-500/20 text-blue-500 shadow-sm" : "text-bible/40 hover:text-bible/60"
                 )}
               >
@@ -263,7 +264,7 @@ export const CrossReferencesBottomSheet: React.FC<CrossReferencesBottomSheetProp
                     <div className="p-6 bg-red-500/5 border border-red-500/10 rounded-2xl flex flex-col items-center space-y-3">
                       <AlertCircle className="w-8 h-8 text-red-500 opacity-60" />
                       <p className="ui-text text-[10px] font-black text-red-500">{error}</p>
-                      <button onClick={handleSearchAI} className="px-4 py-1.5 bg-red-500/10 text-red-500 rounded-lg text-[9px] font-black uppercase tracking-widest">Tentar Novamente</button>
+                      <button onClick={handleSearchAI} className="min-h-10 px-4 py-1.5 bg-red-500/10 text-red-500 rounded-lg text-[9px] font-black uppercase tracking-widest">Tentar Novamente</button>
                     </div>
                   ) : aiContent && aiContent.length > 0 ? (
                     <div className="space-y-3 animate-in fade-in duration-500">

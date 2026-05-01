@@ -160,49 +160,49 @@ const VerseItem = React.memo(({
           </span>
 
           <div className={cn(
-            "inline-flex items-center ml-3 space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 bg-bible-accent/7 backdrop-blur-sm rounded-full px-2 py-1 border border-bible-accent/10",
+            "inline-flex max-w-full items-center ml-2 space-x-1 overflow-x-auto opacity-100 transition-all duration-300 transform translate-x-0 bg-bible-accent/7 backdrop-blur-sm rounded-full px-2 py-1 border border-bible-accent/10 sm:ml-3 sm:overflow-visible sm:opacity-0 sm:translate-x-2 sm:group-hover:opacity-100 sm:group-hover:translate-x-0",
             !settings.textDisplay.paragraphMode && "absolute right-0 top-0 mt-1"
           )}>
             {settings.modules.commentary && (
               <ReaderTooltip label="Comentário">
-                <button onClick={() => onToolOpen(v, 'commentary')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool">
+                <button onClick={() => onToolOpen(v, 'commentary')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir comentário">
                   <MessageSquare className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
                 </button>
               </ReaderTooltip>
             )}
             {settings.modules.dictionary && (
               <ReaderTooltip label="Dicionário">
-                <button onClick={() => onToolOpen(v, 'dictionary')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool">
+                <button onClick={() => onToolOpen(v, 'dictionary')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir dicionário">
                   <Library className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
                 </button>
               </ReaderTooltip>
             )}
             {settings.modules.xrefs && settings.visualResources.crossRefs && (
               <ReaderTooltip label="Ref. Cruzadas">
-                <button onClick={() => onToolOpen(v, 'xrefs')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool">
+                <button onClick={() => onToolOpen(v, 'xrefs')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir referências cruzadas">
                   <Layers className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
                 </button>
               </ReaderTooltip>
             )}
             <ReaderTooltip label="Pessoas">
-              <button onClick={() => onToolOpen(v, 'people')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool">
+              <button onClick={() => onToolOpen(v, 'people')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir pessoas bíblicas">
                 <Users className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
             </ReaderTooltip>
             <ReaderTooltip label="Lugares">
-              <button onClick={() => onToolOpen(v, 'places')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool">
+              <button onClick={() => onToolOpen(v, 'places')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir lugares bíblicos">
                 <MapPin className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
             </ReaderTooltip>
             {settings.textDisplay.footnotes && (
               <ReaderTooltip label="Notas de Rodapé">
-                <button onClick={() => onToolOpen(v, 'footnotes')} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool">
+                <button onClick={() => onToolOpen(v, 'footnotes')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir notas de rodapé">
                   <FileText className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
                 </button>
               </ReaderTooltip>
             )}
             <ReaderTooltip label="Compartilhar">
-              <button onClick={() => onShare(v)} className="p-1.5 hover:bg-bible-accent/20 rounded-full transition-colors group/tool">
+              <button onClick={() => onShare(v)} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Compartilhar versículo">
                 <Share2 className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
               </button>
             </ReaderTooltip>

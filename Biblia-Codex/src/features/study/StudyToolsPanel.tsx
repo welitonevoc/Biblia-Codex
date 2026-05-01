@@ -182,7 +182,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0.5 }}
             transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-bible-bg shadow-2xl flex flex-col z-[300] overflow-hidden"
+            className="fixed right-0 top-0 bottom-0 z-[300] flex w-full max-w-lg flex-col overflow-hidden bg-bible-bg shadow-2xl"
           >
             {/* Background Decorator Premium */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -191,28 +191,29 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
             </div>
 
             {/* Header Premium */}
-            <div className="shrink-0 relative z-10 px-6 py-6 backdrop-blur-xl bg-bible-bg/80 border-b border-bible-border/50">
-              <div className="flex items-start justify-between mb-5">
-                <div className="flex items-start gap-3.5">
-                  <div className="p-3 rounded-2xl bg-bible-accent/10 border border-bible-accent/20 shadow-inner">
+            <div className="shrink-0 relative z-10 px-4 py-4 backdrop-blur-xl bg-bible-bg/80 border-b border-bible-border/50 sm:px-6 sm:py-6">
+              <div className="mb-4 flex items-start justify-between gap-3 sm:mb-5">
+                <div className="flex min-w-0 items-start gap-3 sm:gap-3.5">
+                  <div className="shrink-0 rounded-2xl bg-bible-accent/10 p-2.5 border border-bible-accent/20 shadow-inner sm:p-3">
                     {IconComponent ? (
                       <IconComponent className="w-5 h-5 text-bible-accent" />
                     ) : (
                       <Sparkles className="w-5 h-5 text-bible-accent" />
                     )}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="premium-kicker">Ferramenta de Estudo</span>
                     </div>
-                    <h2 className="text-2xl font-black text-bible-text tracking-tight leading-none">{titles[type]}</h2>
+                    <h2 className="text-xl font-black text-bible-text tracking-tight leading-tight sm:text-2xl">{titles[type]}</h2>
                   </div>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.1, rotate: 90 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={onClose}
-                  className="premium-icon-button"
+                  className="premium-icon-button h-11 w-11 shrink-0"
+                  aria-label="Fechar ferramenta de estudo"
                 >
                   <X className="w-4 h-4" />
                 </motion.button>
@@ -223,15 +224,15 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-bible-surface-strong/50 border border-bible-border/50 shadow-inner group"
+                className="inline-flex max-w-full items-center gap-2.5 rounded-2xl bg-bible-surface-strong/50 px-3 py-2.5 border border-bible-border/50 shadow-inner group sm:px-4"
               >
                 <div className="w-2 h-2 rounded-full bg-bible-accent animate-pulse" />
-                <span className="text-[11px] font-black text-bible-text uppercase tracking-widest flex items-center gap-2">
+                <span className="flex min-w-0 items-center gap-2 truncate text-[11px] font-black uppercase tracking-wider text-bible-text sm:tracking-widest">
                   {book.name} 
                   <span className="text-bible-accent">{verse.chapter}:{verse.verse}</span>
                 </span>
                 <div className="w-1 h-1 rounded-full bg-bible-text-subtle/30" />
-                <span className="text-[10px] font-bold text-bible-text-muted">ARA</span>
+                <span className="hidden text-[10px] font-bold text-bible-text-muted min-[380px]:inline">ARA</span>
               </motion.div>
             </div>
 
@@ -267,7 +268,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
                   </motion.p>
                 </div>
               ) : (
-                <div className="h-full overflow-y-auto custom-scrollbar p-6">
+                <div className="h-full overflow-y-auto custom-scrollbar p-4 sm:p-6">
                   <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -276,7 +277,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
                   >
                     {/* Commentary */}
                     {type === 'commentary' && content && typeof content === 'object' && 'content' in content && (
-                      <div className="premium-card p-6 border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm">
+                      <div className="premium-card p-4 border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm sm:p-6">
                         <div
                           onClick={handleLinkClick}
                           className="prose prose-bible max-w-none text-bible-text prose-p:leading-relaxed prose-strong:text-bible-accent prose-strong:font-black"
@@ -295,7 +296,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
                             key={key}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="premium-card p-6 border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm group"
+                            className="premium-card p-4 border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm group sm:p-6"
                           >
                             <h3 className="text-base font-black text-bible-text mb-3 flex items-center gap-3 group-hover:text-bible-accent transition-colors">
                               <div className="w-1.5 h-6 bg-bible-accent rounded-full" />
@@ -329,7 +330,7 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
                                 onClose();
                               }
                             }}
-                            className="premium-card p-6 w-full text-left group border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm relative overflow-hidden"
+                            className="premium-card relative w-full overflow-hidden p-4 text-left group border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm sm:p-6"
                           >
                             <div className="absolute top-0 right-0 w-20 h-20 bg-bible-accent/5 rounded-full -translate-y-10 translate-x-10 blur-2xl group-hover:bg-bible-accent/10 transition-colors" />
                             

@@ -4,7 +4,7 @@ import { BibleService } from '../BibleService';
 import {
   Users, TreePine, List, X, Calendar, MapPin,
   BookOpen, ChevronRight, Search, Minus, Plus,
-  Maximize2, Heart, Star, GitBranch, User, ArrowRight
+  Maximize2, Heart, Star, GitBranch, User, ArrowRight, History
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';

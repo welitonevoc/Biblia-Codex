@@ -69,6 +69,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
       const timer = setTimeout(checkScroll, 100);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [showExtra]);
 
   const visibleItems = isMobile
@@ -81,7 +82,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
     ? navItems.filter(item => !mobilePriorityIds.includes(item.id))
     : [];
 
-  const buttonSize = isSmallMobile ? 'h-10 w-10' : isMobile ? 'h-12 w-12' : 'h-14 w-14';
+  const buttonSize = isSmallMobile ? 'h-11 w-11' : isMobile ? 'h-12 w-12' : 'h-14 w-14';
   const iconSize = isSmallMobile ? 18 : isMobile ? 20 : 22;
   const gapSize = isSmallMobile ? 'gap-0.5' : isMobile ? 'gap-1' : 'gap-2';
   const containerPadding = isSmallMobile ? 'px-1 py-1' : isMobile ? 'px-2 py-2' : 'px-3 py-3';
@@ -154,7 +155,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({ activeTab, onTabChan
   return (
     <div
       ref={dockRef}
-      className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 flex flex-col items-center w-full max-w-fit px-4"
+      className="fixed bottom-4 left-1/2 z-50 flex w-full max-w-fit -translate-x-1/2 flex-col items-center px-2 sm:bottom-6 sm:px-4"
       style={{ paddingBottom: 'max(var(--sab), 24px)' }}
     >
       <AnimatePresence>
