@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { BookOpen, ChevronRight, Calendar, User, Book, X, Download, Loader2, Bookmark, Globe } from 'lucide-react';
+import { getDataUrl } from '../utils/dataAssets';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { MagazineReader } from './MagazineReader';
@@ -70,7 +71,7 @@ const DynamicBook: React.FC<{ onBack: () => void; magazineUrl?: string; magazine
       }
     } else {
       // Carrega de URL (servidor local)
-      const url = magazineUrl || '/public/EBD/page.txt';
+      const url = getDataUrl(magazineUrl || 'EBD/page.txt');
       fetch(url)
         .then(res => res.text())
         .then(html => {
@@ -204,7 +205,7 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           setMagazineHTML(result.magazineHTML);
           setMagazineUrl(null);
         } else {
-          setMagazineUrl(result.magazineUrl || '/EBD/page.txt');
+          setMagazineUrl(result.magazineUrl || 'EBD/page.txt');
           setMagazineHTML(null);
         }
 
@@ -470,19 +471,19 @@ export const EBDPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               onClick={() => {
                 // Para o 1º Trimestre de 2026, mostrar diretamente o conteúdo da página.txt
                 if (quarter.id === '2026-q1') {
-                  setMagazineUrl('/public/EBD/page.txt');
+                  setMagazineUrl('EBD/page.txt');
                   setMagazineHTML(null);
                   setShowDynamicBook(true);
                 }
                 // Para o 2º Trimestre de 2026, mostrar diretamente o conteúdo da page2.txt
                 else if (quarter.id === '2026-q2') {
-                  setMagazineUrl('/public/EBD/page2.txt');
+                  setMagazineUrl('EBD/page2.txt');
                   setMagazineHTML(null);
                   setShowDynamicBook(true);
                 }
                 // Para o 3º Trimestre de 2026, mostrar diretamente o conteúdo da page3.txt
                 else if (quarter.id === '2026-q3') {
-                  setMagazineUrl('/public/EBD/page3.txt');
+                  setMagazineUrl('EBD/page3.txt');
                   setMagazineHTML(null);
                   setShowDynamicBook(true);
                 } else {
@@ -595,7 +596,7 @@ const QuarterView: React.FC<QuarterViewProps> = ({ quarter, onBack, onSelectLess
               onClick={() => {
                 // Para 1º, 2º e 3º trimestre 2026, abrir revista completa na página da lição
                 if (onOpenDynamicBook && (quarter.id === '2026-q1' || quarter.id === '2026-q2' || quarter.id === '2026-q3')) {
-                  const url = quarter.id === '2026-q1' ? '/public/EBD/page.txt' : quarter.id === '2026-q2' ? '/public/EBD/page2.txt' : '/public/EBD/page3.txt';
+                  const url = quarter.id === '2026-q1' ? 'EBD/page.txt' : quarter.id === '2026-q2' ? 'EBD/page2.txt' : 'EBD/page3.txt';
                   // Calcular página: lição 1 = page 3, lição 2 = page 4, etc.
                   const pageIndex = lesson.number + 2; // +2 porque page 0=capa, page 1=editora, page 2=sumário
                   onOpenDynamicBook(url, pageIndex);

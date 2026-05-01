@@ -1,4 +1,5 @@
 import type { EncyclopediaEntry } from '../types';
+import { getDataUrl } from '../../utils/dataAssets';
 
 interface MerrillRaw { w: string; t: string }
 interface VineRaw { w: string; l: string; t: string }
@@ -35,6 +36,7 @@ async function decompressGzip(data: Uint8Array): Promise<ArrayBuffer> {
 async function loadNDJSON<T>(filename: string): Promise<T[]> {
   // Try multiple URL strategies for compatibility with both Capacitor and web deployments
   const urls = [
+    getDataUrl(filename),              // New bundled path
     filename,                          // absolute: /file.json.gz
     `.${filename}`,                    // relative: ./file.json.gz
     `${import.meta.env.BASE_URL}${filename.replace(/^\//, '')}`, // base-aware

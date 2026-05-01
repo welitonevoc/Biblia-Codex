@@ -6,6 +6,7 @@ import { BookNumberConverter } from './services/BookNumberConverter';
 import { footnoteService } from './services/FootnoteService';
 import initSqlJs from 'sql.js';
 import { getGeminiExplanation, getAIResponse } from './services/geminiService';
+import { getDataUrl } from './utils/dataAssets';
 
 const isWeb = typeof window !== 'undefined' && !(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
 
@@ -87,7 +88,8 @@ const detectSchema = (db: unknown): SQLiteSchema | null => {
 const readModuleBinaryFromPublic = async (modulePath: string): Promise<Uint8Array> => {
   const fileName = modulePath.split('/').pop() || modulePath;
   try {
-    const response = await fetch(`/${fileName}`);
+    const url = getDataUrl(fileName);
+    const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP ${response.status} ao buscar ${fileName}`);
     const buffer = await response.arrayBuffer();
     if (buffer.byteLength === 0) {
@@ -329,7 +331,8 @@ getDictionaryEntry: async (word: string, modulePath: string): Promise<Dictionary
         const SQL = await getSqlInstance();
         let binaryData: Uint8Array;
         if (modulePath.startsWith('http') || !modulePath.includes('/')) {
-          binaryData = await readModuleBinaryFromPublic(modulePath);
+          const url = getDataUrl(modulePath);
+          binaryData = await readModuleBinaryFromPublic(url);
         } else {
           binaryData = await readModuleBinary(modulePath);
         }

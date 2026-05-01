@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Loader2, ChevronRight } from 'lucide-react';
+import { getDataUrl } from '../utils/dataAssets';
 
 interface MagazineReaderProps {
   onBack: () => void;
@@ -27,7 +28,8 @@ export const MagazineReader: React.FC<MagazineReaderProps> = ({
     setError(null);
 
     try {
-      const response = await fetch(url, { signal: controller.signal });
+      const resolvedUrl = getDataUrl(url);
+      const response = await fetch(resolvedUrl, { signal: controller.signal });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }

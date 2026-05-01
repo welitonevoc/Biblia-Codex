@@ -8,6 +8,7 @@ import {
 import { cn } from '../utils/cn';
 import DOMPurify from 'dompurify';
 import initSqlJs from 'sql.js';
+import { getDataUrl } from '../utils/dataAssets';
 
 interface DevotionalModule {
   id: string;
@@ -61,8 +62,9 @@ export function DevotionalPage({ onClose }: DevotionalPageProps) {
     try {
       const JSZip = (await import('jszip')).default;
       
-      const response = await fetch(`/${module.path}`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const url = getDataUrl(module.path);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status} at ${url}`);
       const zipData = await response.arrayBuffer();
       
       const zip = await JSZip.loadAsync(zipData);

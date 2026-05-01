@@ -1,4 +1,5 @@
 import { BIBLE_BOOKS } from '../data/bibleMetadata';
+import { getDataUrl } from '../utils/dataAssets';
 
 export interface VerseRef {
   bookId: string;
@@ -44,7 +45,8 @@ export async function loadCrossReferences(): Promise<void> {
   if (crossRefCache.size > 0) return;
 
   try {
-    const response = await fetch('/cross_references.txt');
+    const url = getDataUrl('cross_references.txt');
+    const response = await fetch(url);
     const text = await response.text();
     const lines = text.split('\n');
 
