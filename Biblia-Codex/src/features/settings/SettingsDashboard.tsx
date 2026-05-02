@@ -78,12 +78,14 @@ export const SettingsDashboard: React.FC = () => {
   }
   if (activeSubSection === 'tts') {
     return (
-      <div>
-        <button onClick={handleBack} className="flex items-center gap-2 text-bible-accent mb-4">
+      <div className="h-full overflow-hidden">
+        <button onClick={handleBack} className="flex items-center gap-2 text-bible-accent mb-2 px-4 pt-4">
           <ChevronLeft className="w-4 h-4" />
           <span>Voltar</span>
         </button>
-        <TTSSettings />
+        <div className="h-[calc(100%-40px)] overflow-y-auto">
+          <TTSSettings />
+        </div>
       </div>
     );
   }

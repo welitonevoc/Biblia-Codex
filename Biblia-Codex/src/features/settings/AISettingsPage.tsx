@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useAppContext } from '../AppContext';
 import {
   Sparkles, Key, Brain, BookOpen, MessageSquare, Lightbulb,
   Check, AlertCircle, ExternalLink, Loader2, Eye, Mic,
-  Zap, Settings2, ChevronLeft
+  Zap, Settings2, ChevronLeft, Sliders, Trash2, History,
+  Info, ChevronDown, Copy, RotateCcw
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'motion/react';
@@ -25,38 +26,56 @@ const SectionHeader: React.FC<{ icon: React.ElementType; title: string; descript
 );
 
 const API_PROVIDERS = [
-  { id: 'openrouter', name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', description: 'MiniMax, Nemotron, Gemma, Qwen - gratuitito com CORS' },
-  { id: 'groq', name: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', description: 'Velocidade instantanea - Llama e Mixtral' },
-  { id: 'google', name: 'Google AI Studio (Gemini)', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', description: 'Generoso - até 1M tokens gratuitamente' },
-  { id: 'huggingface', name: 'Hugging Face', baseUrl: 'https://api-inference.huggingface.co', description: 'Milhares de modelos open source' },
-  { id: 'opencode', name: 'OpenCode.ai ⛔', baseUrl: 'https://opencode.ai/api/v1', description: 'CORS bloqueado - use OpenRouter' },
+  { id: 'openrouter', name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', description: 'MiniMax, Nemotron, Gemma, Qwen - gratuitito com CORS', popular: true },
+  { id: 'groq', name: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', description: 'Velocidade instantanea - Llama e Mixtral', popular: false },
+  { id: 'google', name: 'Google AI Studio (Gemini)', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', description: 'Generoso - até 1M tokens gratuitamente', popular: true },
+  { id: 'huggingface', name: 'Hugging Face', baseUrl: 'https://api-inference.huggingface.co', description: 'Milhares de modelos open source', popular: false },
+  { id: 'openai', name: 'OpenAI', baseUrl: 'https://api.openai.com/v1', description: 'GPT-4o mini gratis - 3M tokens/mês', popular: true },
+  { id: 'anthropic', name: 'Anthropic Claude', baseUrl: 'https://api.anthropic.com/v1', description: 'Claude 3.5 Haiku gratis - 1M tokens/mês', popular: true },
+  { id: 'opencode', name: 'OpenCode.ai', baseUrl: 'https://opencode.ai/api/v1', description: 'MiniMax M2.5 gratis - recomendado', popular: true },
 ];
 
 const OPENCODE_MODELS = [
   { id: 'minimax-m2.5-free', name: 'MiniMax M2.5', provider: 'opencode', context: '197K', badge: 'Recomendado', speed: 'Rapido' },
 ];
 
+const PROVIDER_LOGOS: Record<string, { bg: string; text: string }> = {
+  openrouter: { bg: '#f97316', text: 'OR' },
+  groq: { bg: '#8b5cf6', text: 'G' },
+  google: { bg: '#4285f4', text: 'G' },
+  huggingface: { bg: '#ffc107', text: 'HF' },
+  opencode: { bg: '#10b981', text: 'OC' },
+  openai: { bg: '#10a37f', text: 'OAI' },
+  anthropic: { bg: '#d97757', text: 'AN' },
+};
+
 const FREE_MODELS = [
-  { id: 'minimax/minimax-m2.5:free', name: 'MiniMax M2.5', provider: 'openrouter', context: '197K', badge: 'Free', speed: 'Muito Rapido' },
-  { id: 'nvidia/nemotron-3-super-120b-a12b:free', name: 'Nemotron 3 Super', provider: 'openrouter', context: '262K', badge: 'Free', speed: 'Rapido' },
-  { id: 'nvidia/nemotron-3-nano-30b-a3b:free', name: 'Nemotron 3 Nano 30B', provider: 'openrouter', context: '256K', badge: 'Free', speed: 'Rapido' },
-  { id: 'google/gemma-4-31b-it:free', name: 'Gemma 4 31B', provider: 'openrouter', context: '262K', badge: 'Free', speed: 'Rapido' },
-  { id: 'google/gemma-4-26b-a4b-it:free', name: 'Gemma 4 26B', provider: 'openrouter', context: '262K', badge: 'Free', speed: 'Rapido' },
-  { id: 'qwen/qwen3-next-80b-a3b-instruct:free', name: 'Qwen3 Next 80B', provider: 'openrouter', context: '262K', badge: 'Free', speed: 'Rapido' },
-  { id: 'qwen/qwen3-coder:free', name: 'Qwen3 Coder', provider: 'openrouter', context: '262K', badge: 'Free', speed: 'Rapido' },
-  { id: 'openrouter/free', name: 'OpenRouter Auto', provider: 'openrouter', context: '200K', badge: 'Free', speed: 'Variavel' },
-  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'google', context: '1M', badge: 'Recomendado', speed: 'Rapido' },
-  { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash', provider: 'google', context: '1M', badge: 'Novo', speed: 'Muito Rapido' },
-  { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', provider: 'google', context: '1M', badge: 'Economico', speed: 'Muito Rapido' },
-  { id: 'gemini-pro', name: 'Gemini Pro', provider: 'google', context: '1M', badge: null, speed: 'Avancado' },
-  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', provider: 'groq', context: '128K', badge: 'Free', speed: 'Instantaneo' },
-  { id: 'llama-3.1-70b-versatile', name: 'Llama 3.1 70B', provider: 'groq', context: '128K', badge: 'Free', speed: 'Instantaneo' },
-  { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B', provider: 'groq', context: '32K', badge: 'Free', speed: 'Instantaneo' },
-  { id: 'qwen-qwen2-72b-instruct', name: 'Qwen2 72B', provider: 'groq', context: '32K', badge: 'Free', speed: 'Instantaneo' },
-  { id: 'deepseek-ai/DeepSeek-R1', name: 'DeepSeek R1', provider: 'huggingface', context: '64K', badge: 'Free', speed: 'Rapido', tier: 'inference' },
-  { id: 'meta-llama/Llama-3.1-70B-Instruct', name: 'Llama 3.1 70B', provider: 'huggingface', context: '128K', badge: 'Free', speed: 'Rapido', tier: 'inference' },
-  { id: 'mistralai/Mistral-7B-Instruct-v0.3', name: 'Mistral 7B', provider: 'huggingface', context: '32K', badge: 'Free', speed: 'Rapido', tier: 'inference' },
-  { id: 'Qwen/Qwen2.5-72B-Instruct', name: 'Qwen2.5 72B', provider: 'huggingface', context: '32K', badge: 'Free', speed: 'Rapido', tier: 'inference' },
+  { id: 'minimax/minimax-m2.5:free', name: 'MiniMax M2.5', provider: 'openrouter', context: '197K', badge: 'Free', speed: 'Muito Rápido' },
+  { id: 'nvidia/nemotron-3-super-120b-a12b:free', name: 'Nemotron 3 Super', provider: 'openrouter', context: '262K', badge: 'Free', speed: 'Rápido' },
+  { id: 'nvidia/nemotron-3-nano-30b-a3b:free', name: 'Nemotron 3 Nano 30B', provider: 'openrouter', context: '256K', badge: 'Free', speed: 'Rápido' },
+  { id: 'google/gemma-4-31b-it:free', name: 'Gemma 4 31B', provider: 'openrouter', context: '262K', badge: 'Free', speed: 'Rápido' },
+  { id: 'google/gemma-4-26b-a4b-it:free', name: 'Gemma 4 26B', provider: 'openrouter', context: '262K', badge: 'Free', speed: 'Rápido' },
+  { id: 'qwen/qwen3-next-80b-a3b-instruct:free', name: 'Qwen3 Next 80B', provider: 'openrouter', context: '262K', badge: 'Free', speed: 'Rápido' },
+  { id: 'qwen/qwen3-coder:free', name: 'Qwen3 Coder', provider: 'openrouter', context: '262K', badge: 'Free', speed: 'Rápido' },
+  { id: 'openrouter/free', name: 'OpenRouter Auto', provider: 'openrouter', context: '200K', badge: 'Free', speed: 'Variável' },
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'google', context: '1M', badge: 'Recomendado', speed: 'Rápido' },
+  { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash', provider: 'google', context: '1M', badge: 'Novo', speed: 'Muito Rápido' },
+  { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', provider: 'google', context: '1M', badge: 'Econômico', speed: 'Muito Rápido' },
+  { id: 'gemini-pro', name: 'Gemini Pro', provider: 'google', context: '1M', badge: null, speed: 'Avançado' },
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', provider: 'groq', context: '128K', badge: 'Free', speed: 'Instantâneo' },
+  { id: 'llama-3.1-70b-versatile', name: 'Llama 3.1 70B', provider: 'groq', context: '128K', badge: 'Free', speed: 'Instantâneo' },
+  { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B', provider: 'groq', context: '32K', badge: 'Free', speed: 'Instantâneo' },
+  { id: 'qwen-qwen2-72b-instruct', name: 'Qwen2 72B', provider: 'groq', context: '32K', badge: 'Free', speed: 'Instantâneo' },
+  { id: 'deepseek-ai/DeepSeek-R1', name: 'DeepSeek R1', provider: 'huggingface', context: '64K', badge: 'Free', speed: 'Rápido', tier: 'inference' },
+  { id: 'meta-llama/Llama-3.1-70B-Instruct', name: 'Llama 3.1 70B', provider: 'huggingface', context: '128K', badge: 'Free', speed: 'Rápido', tier: 'inference' },
+  { id: 'mistralai/Mistral-7B-Instruct-v0.3', name: 'Mistral 7B', provider: 'huggingface', context: '32K', badge: 'Free', speed: 'Rápido', tier: 'inference' },
+  { id: 'Qwen/Qwen2.5-72B-Instruct', name: 'Qwen2.5 72B', provider: 'huggingface', context: '32K', badge: 'Free', speed: 'Rápido', tier: 'inference' },
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openai', context: '128K', badge: 'Grátis', speed: 'Rápido' },
+  { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai', context: '128K', badge: 'Pro', speed: 'Rápido' },
+  { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', provider: 'openai', context: '128K', badge: 'Pro', speed: 'Médio' },
+  { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', provider: 'anthropic', context: '200K', badge: 'Grátis', speed: 'Rápido' },
+  { id: 'claude-3.5-sonnet-20241022', name: 'Claude 3.5 Sonnet', provider: 'anthropic', context: '200K', badge: 'Pro', speed: 'Médio' },
+  { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', provider: 'anthropic', context: '200K', badge: 'Pro', speed: 'Lento' },
 ];
 
 export const AISettingsPage: React.FC = () => {
@@ -66,27 +85,22 @@ export const AISettingsPage: React.FC = () => {
     return localStorage.getItem('ai-api-provider') || 'openrouter';
   });
 
-  const [openCodeKey, setOpenCodeKey] = useState(() => {
-    return localStorage.getItem('opencode-api-key') || '';
-  });
-  const [openRouterKey, setOpenRouterKey] = useState(() => {
-    return localStorage.getItem('openrouter-api-key') || '';
-  });
-  const [geminiKey, setGeminiKey] = useState(() => {
-    return localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY || '';
-  });
-  const [groqKey, setGroqKey] = useState(() => {
-    return localStorage.getItem('groq-api-key') || '';
-  });
-  const [huggingfaceKey, setHuggingfaceKey] = useState(() => {
-    return localStorage.getItem('huggingface-api-key') || '';
-  });
+  const [openCodeKey, setOpenCodeKey] = useState(() => localStorage.getItem('opencode-api-key') || '');
+  const [openRouterKey, setOpenRouterKey] = useState(() => localStorage.getItem('openrouter-api-key') || '');
+  const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY || '');
+  const [groqKey, setGroqKey] = useState(() => localStorage.getItem('groq-api-key') || '');
+  const [huggingfaceKey, setHuggingfaceKey] = useState(() => localStorage.getItem('huggingface-api-key') || '');
+  const [openaiKey, setOpenaiKey] = useState(() => localStorage.getItem('openai-api-key') || '');
+  const [anthropicKey, setAnthropicKey] = useState(() => localStorage.getItem('anthropic-api-key') || '');
 
   const [openCodeKeyInput, setOpenCodeKeyInput] = useState(openCodeKey);
   const [openRouterKeyInput, setOpenRouterKeyInput] = useState(openRouterKey);
   const [groqKeyInput, setGroqKeyInput] = useState(groqKey);
   const [huggingfaceKeyInput, setHuggingfaceKeyInput] = useState(huggingfaceKey);
   const [geminiKeyInput, setGeminiKeyInput] = useState(geminiKey);
+  const [openaiKeyInput, setOpenaiKeyInput] = useState(openaiKey);
+  const [anthropicKeyInput, setAnthropicKeyInput] = useState(anthropicKey);
+
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -95,34 +109,57 @@ export const AISettingsPage: React.FC = () => {
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [modelsError, setModelsError] = useState<string | null>(null);
 
-  const currentApiKey = apiProvider === 'opencode' ? openCodeKey : apiProvider === 'openrouter' ? openRouterKey : apiProvider === 'groq' ? groqKey : apiProvider === 'huggingface' ? huggingfaceKey : geminiKey;
+  const [temperature, setTemperature] = useState(() => parseFloat(localStorage.getItem('ai-temperature') || '0.7'));
+  const [maxTokens, setMaxTokens] = useState(() => parseInt(localStorage.getItem('ai-max-tokens') || '2048', 10));
+  const [systemPrompt, setSystemPrompt] = useState(() => localStorage.getItem('ai-system-prompt') || '');
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<{ role: string; content: string }[]>([]);
+
+  const currentApiKey = apiProvider === 'opencode' ? openCodeKey 
+    : apiProvider === 'openrouter' ? openRouterKey 
+    : apiProvider === 'groq' ? groqKey 
+    : apiProvider === 'huggingface' ? huggingfaceKey 
+    : apiProvider === 'google' ? geminiKey
+    : apiProvider === 'openai' ? openaiKey
+    : apiProvider === 'anthropic' ? anthropicKey
+    : geminiKey;
 
   const handleSaveApiKey = useCallback(() => {
-    if (apiProvider === 'opencode' && openCodeKeyInput.trim()) {
-      localStorage.setItem('opencode-api-key', openCodeKeyInput.trim());
-      setOpenCodeKey(openCodeKeyInput.trim());
-    } else if (apiProvider === 'openrouter' && openRouterKeyInput.trim()) {
-      localStorage.setItem('openrouter-api-key', openRouterKeyInput.trim());
-      setOpenRouterKey(openRouterKeyInput.trim());
-    } else if (apiProvider === 'groq' && groqKeyInput.trim()) {
-      localStorage.setItem('groq-api-key', groqKeyInput.trim());
-      setGroqKey(groqKeyInput.trim());
-    } else if (apiProvider === 'huggingface' && huggingfaceKeyInput.trim()) {
-      localStorage.setItem('huggingface-api-key', huggingfaceKeyInput.trim());
-      setHuggingfaceKey(huggingfaceKeyInput.trim());
-    } else if (apiProvider === 'google' && geminiKeyInput.trim()) {
-      localStorage.setItem('gemini-api-key', geminiKeyInput.trim());
-      setGeminiKey(geminiKeyInput.trim());
+    const keysToSave: Record<string, { key: string; setter: (v: string) => void }> = {
+      opencode: { key: openCodeKeyInput, setter: setOpenCodeKey },
+      openrouter: { key: openRouterKeyInput, setter: setOpenRouterKey },
+      groq: { key: groqKeyInput, setter: setGroqKey },
+      huggingface: { key: huggingfaceKeyInput, setter: setHuggingfaceKey },
+      google: { key: geminiKeyInput, setter: setGeminiKey },
+      openai: { key: openaiKeyInput, setter: setOpenaiKey },
+      anthropic: { key: anthropicKeyInput, setter: setAnthropicKey },
+    };
+
+    const providerKey = keysToSave[apiProvider];
+    if (providerKey && providerKey.key.trim()) {
+      localStorage.setItem(`${apiProvider}-api-key`, providerKey.key.trim());
+      providerKey.setter(providerKey.key.trim());
     }
+
     localStorage.setItem('ai-api-provider', apiProvider);
-    if (selectedModel) {
-      localStorage.setItem('ai-model', selectedModel);
-    }
-    setTestResult({ success: true, message: 'Chave salva com sucesso!' });
-  }, [apiProvider, openCodeKeyInput, openRouterKeyInput, geminiKeyInput, groqKeyInput, huggingfaceKeyInput, selectedModel]);
+    if (selectedModel) localStorage.setItem('ai-model', selectedModel);
+    localStorage.setItem('ai-temperature', temperature.toString());
+    localStorage.setItem('ai-max-tokens', maxTokens.toString());
+    if (systemPrompt) localStorage.setItem('ai-system-prompt', systemPrompt);
+
+    setTestResult({ success: true, message: 'Configurações salvas com sucesso!' });
+  }, [apiProvider, openCodeKeyInput, openRouterKeyInput, geminiKeyInput, groqKeyInput, huggingfaceKeyInput, openaiKeyInput, anthropicKeyInput, selectedModel, temperature, maxTokens, systemPrompt]);
 
   const handleTestConnection = useCallback(async () => {
-    const key = apiProvider === 'opencode' ? openCodeKey : apiProvider === 'openrouter' ? openRouterKey : apiProvider === 'groq' ? groqKey : apiProvider === 'huggingface' ? huggingfaceKey : geminiKey;
+    const key = apiProvider === 'opencode' ? openCodeKey 
+      : apiProvider === 'openrouter' ? openRouterKey 
+      : apiProvider === 'groq' ? groqKey 
+      : apiProvider === 'huggingface' ? huggingfaceKey 
+      : apiProvider === 'google' ? geminiKey
+      : apiProvider === 'openai' ? openaiKey
+      : apiProvider === 'anthropic' ? anthropicKey
+      : geminiKey;
+
     if (!key) {
       setTestResult({ success: false, message: 'Insira uma chave de API primeiro.' });
       return;
@@ -133,53 +170,50 @@ export const AISettingsPage: React.FC = () => {
 
     try {
       let response;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://biblia-codex.vercel.app',
+        'X-Title': 'Biblia Codex'
+      };
+
       if (apiProvider === 'openrouter') {
-        // OpenRouter - try to get user info or do a simple chat
-        response = await fetch(
-          `https://openrouter.ai/api/v1/chat/completions`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${key}`,
-              'Content-Type': 'application/json',
-              'HTTP-Referer': 'https://biblia-codex.vercel.app',
-              'X-Title': 'Biblia Codex'
-            },
-            body: JSON.stringify({
-              model: 'openrouter/free',
-              messages: [{ role: 'user', content: 'Hi' }],
-              max_tokens: 10
-            })
-          }
-        );
+        headers['Authorization'] = `Bearer ${key}`;
+        response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ model: 'openrouter/free', messages: [{ role: 'user', content: 'Hi' }], max_tokens: 10 })
+        });
       } else if (apiProvider === 'opencode') {
-        response = await fetch(
-          `https://opencode.ai/api/v1/models`,
-          { headers: { 'Authorization': `Bearer ${key}` } }
-        );
+        headers['Authorization'] = `Bearer ${key}`;
+        response = await fetch('https://opencode.ai/api/v1/models', { headers });
       } else if (apiProvider === 'groq') {
-        response = await fetch(
-          `https://api.groq.com/openai/v1/models`,
-          { headers: { 'Authorization': `Bearer ${key}` } }
-        );
+        headers['Authorization'] = `Bearer ${key}`;
+        response = await fetch('https://api.groq.com/openai/v1/models', { headers });
+      } else if (apiProvider === 'google') {
+        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+      } else if (apiProvider === 'openai') {
+        headers['Authorization'] = `Bearer ${key}`;
+        response = await fetch('https://api.openai.com/v1/models', { headers });
+      } else if (apiProvider === 'anthropic') {
+        headers['x-api-key'] = key;
+        headers['anthropic-version'] = '2023-06-01';
+        response = await fetch('https://api.anthropic.com/v1/models', { headers });
       } else {
-        response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`
-        );
+        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
       }
 
       if (response.ok) {
-        setTestResult({ success: true, message: 'Conexao estabelecida com sucesso!' });
+        setTestResult({ success: true, message: 'Conexão estabelecida com sucesso!' });
       } else {
         const error = await response.json().catch(() => ({ error: { message: 'Erro desconhecido' } }));
         setTestResult({ success: false, message: error.error?.message || 'Erro ao conectar com a API.' });
       }
     } catch {
-      setTestResult({ success: false, message: 'Erro de conexao. Verifique sua internet.' });
+      setTestResult({ success: false, message: 'Erro de conexão. Verifique sua internet.' });
     } finally {
       setIsTesting(false);
     }
-  }, [apiProvider, openCodeKey, openRouterKey, geminiKey, groqKey, huggingfaceKey]);
+  }, [apiProvider, openCodeKey, openRouterKey, geminiKey, groqKey, huggingfaceKey, openaiKey, anthropicKey]);
 
   const loadAvailableModels = useCallback(async () => {
     const key = currentApiKey;
@@ -473,9 +507,38 @@ export const AISettingsPage: React.FC = () => {
                 value={huggingfaceKeyInput}
                 onChange={(e) => setHuggingfaceKeyInput(e.target.value)}
                 placeholder="Cole sua chave de API Hugging Face aqui..."
-                className={cn("w-full px-4 py-3 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text placeholder:text-bible-text-muted focus:outline-none focus:ring-2 focus:ring-bible-accent")}
+                aria-label="Chave API Hugging Face"
+                className="w-full px-4 py-3 min-h-[44px] rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text placeholder:text-bible-text-muted focus:outline-none focus:ring-2 focus:ring-bible-accent focus:ring-offset-2"
               />
               <p className="text-xs text-bible-text-muted">Obtenha uma chave gratuita em <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="text-bible-accent hover:underline">Hugging Face</a></p>
+            </div>
+          )}
+
+          {apiProvider === 'openai' && (
+            <div className="space-y-3">
+              <input
+                type="password"
+                value={openaiKeyInput}
+                onChange={(e) => setOpenaiKeyInput(e.target.value)}
+                placeholder="sk-..."
+                aria-label="Chave API OpenAI"
+                className="w-full px-4 py-3 min-h-[44px] rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text placeholder:text-bible-text-muted focus:outline-none focus:ring-2 focus:ring-bible-accent focus:ring-offset-2"
+              />
+              <p className="text-xs text-bible-text-muted">Obtenha uma chave gratuita em <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-bible-accent hover:underline">OpenAI Platform</a> (3M tokens/mês grátis)</p>
+            </div>
+          )}
+
+          {apiProvider === 'anthropic' && (
+            <div className="space-y-3">
+              <input
+                type="password"
+                value={anthropicKeyInput}
+                onChange={(e) => setAnthropicKeyInput(e.target.value)}
+                placeholder="sk-ant-..."
+                aria-label="Chave API Anthropic"
+                className="w-full px-4 py-3 min-h-[44px] rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text placeholder:text-bible-text-muted focus:outline-none focus:ring-2 focus:ring-bible-accent focus:ring-offset-2"
+              />
+              <p className="text-xs text-bible-text-muted">Obtenha uma chave gratuita em <a href="https://console.anthropic.com/keys" target="_blank" rel="noopener noreferrer" className="text-bible-accent hover:underline">Anthropic Console</a> (1M tokens/mês grátis)</p>
             </div>
           )}
 
@@ -484,12 +547,15 @@ export const AISettingsPage: React.FC = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleSaveApiKey}
-              className={cn("px-4 py-3 rounded-xl font-bold text-sm bg-bible-accent text-white hover:bg-bible-accent-strong transition-colors", 
+              aria-label="Salvar configurações de API"
+              className={cn("px-4 py-3 min-h-[44px] rounded-xl font-bold text-sm bg-bible-accent text-white hover:bg-bible-accent-strong transition-colors", 
                 (apiProvider === 'opencode' && !openCodeKeyInput.trim()) ||
                 (apiProvider === 'openrouter' && !openRouterKeyInput.trim()) ||
                 (apiProvider === 'groq' && !groqKeyInput.trim()) ||
                 (apiProvider === 'huggingface' && !huggingfaceKeyInput.trim()) ||
-                (apiProvider === 'google' && !geminiKeyInput.trim())
+                (apiProvider === 'google' && !geminiKeyInput.trim()) ||
+                (apiProvider === 'openai' && !openaiKeyInput.trim()) ||
+                (apiProvider === 'anthropic' && !anthropicKeyInput.trim())
                 ? "opacity-50 cursor-not-allowed" : ""
               )}
             >Salvar</motion.button>
@@ -630,6 +696,123 @@ export const AISettingsPage: React.FC = () => {
             ))}
           </div>
         </motion.section>
+
+        <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="premium-card p-5">
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="w-full flex items-center justify-between"
+            aria-expanded={showAdvanced}
+          >
+            <SectionHeader icon={Sliders} title="Configurações Avançadas" description="Personalize o comportamento do modelo" />
+            <ChevronDown className={cn("w-5 h-5 text-bible-text-muted transition-transform", showAdvanced && "rotate-180")} />
+          </button>
+
+          {showAdvanced && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-5 mt-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label htmlFor="temperature" className="text-sm font-semibold text-bible-text">Temperatura</label>
+                  <span className="text-xs text-bible-text-muted bg-bible-surface px-2 py-1 rounded">{temperature}</span>
+                </div>
+                <input
+                  id="temperature"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={temperature}
+                  onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-bible-border rounded-lg appearance-none cursor-pointer accent-bible-accent"
+                  aria-label="Temperatura da resposta"
+                />
+                <div className="flex justify-between text-xs text-bible-text-muted mt-1">
+                  <span>Preciso (0)</span>
+                  <span>Criativo (1)</span>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label htmlFor="maxTokens" className="text-sm font-semibold text-bible-text">Máximo de Tokens</label>
+                  <span className="text-xs text-bible-text-muted bg-bible-surface px-2 py-1 rounded">{maxTokens}</span>
+                </div>
+                <input
+                  id="maxTokens"
+                  type="range"
+                  min="256"
+                  max="8192"
+                  step="256"
+                  value={maxTokens}
+                  onChange={(e) => setMaxTokens(parseInt(e.target.value, 10))}
+                  className="w-full h-2 bg-bible-border rounded-lg appearance-none cursor-pointer accent-bible-accent"
+                  aria-label="Máximo de tokens"
+                />
+                <div className="flex justify-between text-xs text-bible-text-muted mt-1">
+                  <span>256</span>
+                  <span>8192</span>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="systemPrompt" className="text-sm font-semibold text-bible-text block mb-2">
+                  Prompt do Sistema
+                  <span className="text-xs font-normal text-bible-text-muted ml-2">(opcional)</span>
+                </label>
+                <textarea
+                  id="systemPrompt"
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  placeholder="Você é um assistente de estudo bíblico..."
+                  rows={3}
+                  className="w-full px-4 py-3 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text placeholder:text-bible-text-muted focus:outline-none focus:ring-2 focus:ring-bible-accent resize-none"
+                  aria-label="Prompt do sistema"
+                />
+                <p className="text-xs text-bible-text-muted mt-1 flex items-center gap-1">
+                  <Info className="w-3 h-3" />
+                  Defines como o assistente deve se comportar
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => { setTemperature(0.7); setMaxTokens(2048); setSystemPrompt(''); }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-bible-surface border border-bible-border text-sm text-bible-text hover:bg-bible-surface-strong"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Restaurar Padrões
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </motion.section>
+
+        {isLoadingModels && (
+          <div className="premium-card p-5 space-y-3">
+            <div className="animate-pulse flex items-center gap-3">
+              <div className="w-10 h-10 bg-bible-border rounded-lg" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-bible-border rounded w-3/4" />
+                <div className="h-3 bg-bible-border rounded w-1/2" />
+              </div>
+            </div>
+            <div className="animate-pulse flex items-center gap-3">
+              <div className="w-10 h-10 bg-bible-border rounded-lg" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-bible-border rounded w-2/3" />
+                <div className="h-3 bg-bible-border rounded w-1/3" />
+              </div>
+            </div>
+            <div className="animate-pulse flex items-center gap-3">
+              <div className="w-10 h-10 bg-bible-border rounded-lg" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-bible-border rounded w-4/5" />
+                <div className="h-3 bg-bible-border rounded w-1/2" />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );

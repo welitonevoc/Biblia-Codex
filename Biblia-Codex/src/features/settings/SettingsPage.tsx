@@ -100,23 +100,7 @@ export const SettingsPage: React.FC<{ section?: string }> = ({ section }) => {
       className="h-full overflow-y-auto"
     >
       {section === 'tts' ? (
-        <div className="max-w-4xl mx-auto px-4 py-6 pb-32 space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 mb-6"
-          >
-            <div className="p-2 rounded-xl bg-[var(--accent-bible)]/10">
-              <svg className="w-6 h-6 text-[var(--accent-bible)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4 12 4v4a1 1 0 001 1h1.586z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-[var(--text-bible)]">Leitura por Voz (TTS)</h1>
-              <p className="text-sm text-[var(--text-bible-muted)]">Configure a síntese de voz</p>
-            </div>
-          </motion.div>
-
+        <div className="h-full overflow-y-auto">
           <TTSSettings />
         </div>
       ) : (

@@ -2,7 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   Volume2, Settings2, ChevronLeft, Play, Pause, SkipForward,
-  Mic, Speaker, Zap, Check, Loader2
+  Mic, Speaker, Zap, Check, Loader2, Eye, Clock, Layers,
+  VolumeX, RotateCcw, Info
 } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { cn } from '../../utils/cn';
@@ -29,6 +30,11 @@ export const TTSSettings: React.FC = () => {
     pitch: 1.0,
     volume: 0.8,
   });
+
+  const [highlightEnabled, setHighlightEnabled] = useState(true);
+  const [pauseBetweenVerses, setPauseBetweenVerses] = useState(0.5);
+  const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
+  const [testError, setTestError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -103,9 +109,10 @@ export const TTSSettings: React.FC = () => {
     }
 
     setIsPlaying(true);
+    setTestError(null);
 
     try {
-      const text = "Joao 3:16 - Porque Deus amou o mundo de tal maneira que deu o seu Filho unigenito, para que todo aquele que nele cre nao pereca, mas tenha a vida eterna.";
+      const text = "João 3:16 - Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito, para que todo aquele que nele crê não pereça, mas tenha a vida eterna.";
 
       const options: TTSOptions = {
         rate: ttsSettings.rate,
@@ -123,9 +130,14 @@ export const TTSSettings: React.FC = () => {
       await ttsService.speak(text, {
         ...options,
         onComplete: () => setIsPlaying(false),
+      }).catch((err) => {
+        console.error('TTS error:', err);
+        setTestError('Erro ao reproduzir. Tente selecionar outra voz.');
+        setIsPlaying(false);
       });
     } catch (error) {
       console.error('TTS error:', error);
+      setTestError('Erro ao reproduzir. Verifique as configurações.');
       setIsPlaying(false);
     }
   }, [isPlaying, selectedVoice, ttsSettings]);
@@ -148,9 +160,9 @@ export const TTSSettings: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="h-full overflow-y-auto"
+      className="min-h-0"
     >
-      <div className="max-w-4xl mx-auto px-4 py-6 pb-32 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 py-4 pb-32 space-y-4">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -261,35 +273,66 @@ export const TTSSettings: React.FC = () => {
             <div className="mt-6 p-4 rounded-xl bg-[var(--surface-bible)] border border-[var(--border-bible)]/30">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-semibold text-[var(--text-bible)]">Testar Voz</span>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handlePlaySample}
-                  className={cn(
-                    "px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200",
-                    "flex items-center gap-2 cursor-pointer",
-                    isPlaying
-                      ? "bg-red-500 text-white hover:bg-red-600 shadow-[0_0_20px_rgba(239,68,68,0.3)]"
-                      : "bg-[var(--accent-bible)] text-white hover:bg-[var(--accent-bible)]/90 shadow-[0_0_20px_rgba(var(--accent-bible-rgb),0.3)]"
-                  )}
-                  aria-label={isPlaying ? "Parar reproducao" : "Ouvir amostra"}
-                >
-                  {isPlaying ? (
-                    <>
-                      <Pause className="w-4 h-4" />
-                      Parar
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4" />
-                      Ouvir Amostra
-                    </>
-                  )}
-                </motion.button>
+                <div className="flex gap-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      ttsService.stop();
+                      setIsPlaying(false);
+                    }}
+                    disabled={!isPlaying}
+                    className={cn(
+                      "p-2.5 rounded-xl transition-all duration-200 cursor-pointer",
+                      isPlaying
+                        ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                        : "bg-[var(--surface-bible-strong)] text-[var(--text-bible-muted)] opacity-50 cursor-not-allowed"
+                    )}
+                    aria-label="Parar reprodução"
+                  >
+                    <SkipForward className="w-4 h-4" />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handlePlaySample}
+                    className={cn(
+                      "px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200",
+                      "flex items-center gap-2 cursor-pointer min-h-[44px]",
+                      isPlaying
+                        ? "bg-red-500 text-white hover:bg-red-600 shadow-[0_0_20px_rgba(239,68,68,0.3)]"
+                        : "bg-[var(--accent-bible)] text-white hover:bg-[var(--accent-bible)]/90 shadow-[0_0_20px_rgba(var(--accent-bible-rgb),0.3)]"
+                    )}
+                    aria-label={isPlaying ? "Parar reprodução" : "Ouvir amostra"}
+                  >
+                    {isPlaying ? (
+                      <>
+                        <Pause className="w-4 h-4" />
+                        Reproduzindo...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4" />
+                        Ouvir Amostra
+                      </>
+                    )}
+                  </motion.button>
+                </div>
               </div>
               <p className="text-xs text-[var(--text-bible-muted)] italic">
-                "Joao 3:16 - Porque Deus amou o mundo de tal maneira que deu o seu Filho unigenito..."
+                "João 3:16 - Porque Deus amou o mundo de tal maneira..."
               </p>
+
+              {testError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-3 p-3 rounded-lg bg-red-500/10 text-red-500 text-xs flex items-center gap-2"
+                >
+                  <Info className="w-4 h-4 flex-shrink-0" />
+                  {testError}
+                </motion.div>
+              )}
             </div>
           </div>
         </motion.section>
@@ -400,7 +443,7 @@ export const TTSSettings: React.FC = () => {
           </div>
         </motion.section>
 
-        {/* Features */}
+        {/* Advanced Features */}
         <motion.section
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -410,10 +453,116 @@ export const TTSSettings: React.FC = () => {
           <div className="p-5 border-b border-[var(--border-bible)]/50">
             <div className="flex items-center gap-3 mb-1">
               <div className="p-2 rounded-xl bg-[var(--accent-bible)]/10">
+                <Layers className="w-4 h-4 text-[var(--accent-bible)]" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-[var(--text-bible)]">Recursos Avançados</h2>
+                <p className="text-xs text-[var(--text-bible-muted)]">Personalize a experiência de leitura</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 space-y-4">
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => setHighlightEnabled(!highlightEnabled)}
+              className={cn(
+                "w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer min-h-[60px]",
+                highlightEnabled
+                  ? "border-[var(--accent-bible)] bg-[var(--accent-bible)]/5"
+                  : "border-[var(--border-bible)] bg-[var(--surface-bible)] opacity-60"
+              )}
+              aria-pressed={highlightEnabled}
+            >
+              <div className="flex items-center gap-3">
+                <div className={cn("p-2.5 rounded-xl", highlightEnabled ? "bg-[var(--accent-bible)]/20" : "bg-[var(--surface-bible-strong)]")}>
+                  <Eye className={cn("w-5 h-5", highlightEnabled ? "text-[var(--accent-bible)]" : "text-[var(--text-bible-muted)]")} />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-semibold text-[var(--text-bible)]">Destaque Visual</div>
+                  <div className="text-xs text-[var(--text-bible-muted)]">Marca o versículo atual durante leitura</div>
+                </div>
+              </div>
+              <div className={cn(
+                "w-12 h-7 rounded-full p-1 transition-all shadow-inner",
+                highlightEnabled ? "bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible-strong)]" : "bg-[var(--border-bible)]"
+              )}>
+                <motion.div animate={{ x: highlightEnabled ? 20 : 0 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} className="w-5 h-5 bg-white rounded-full shadow-md" />
+              </div>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => setAutoPlayEnabled(!autoPlayEnabled)}
+              className={cn(
+                "w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer min-h-[60px]",
+                autoPlayEnabled
+                  ? "border-[var(--accent-bible)] bg-[var(--accent-bible)]/5"
+                  : "border-[var(--border-bible)] bg-[var(--surface-bible)] opacity-60"
+              )}
+              aria-pressed={autoPlayEnabled}
+            >
+              <div className="flex items-center gap-3">
+                <div className={cn("p-2.5 rounded-xl", autoPlayEnabled ? "bg-[var(--accent-bible)]/20" : "bg-[var(--surface-bible-strong)]")}>
+                  <Play className={cn("w-5 h-5", autoPlayEnabled ? "text-[var(--accent-bible)]" : "text-[var(--text-bible-muted)]")} />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-semibold text-[var(--text-bible)]">Leitura Automática</div>
+                  <div className="text-xs text-[var(--text-bible-muted)]">Avança automaticamente entre versículos</div>
+                </div>
+              </div>
+              <div className={cn(
+                "w-12 h-7 rounded-full p-1 transition-all shadow-inner",
+                autoPlayEnabled ? "bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible-strong)]" : "bg-[var(--border-bible)]"
+              )}>
+                <motion.div animate={{ x: autoPlayEnabled ? 20 : 0 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} className="w-5 h-5 bg-white rounded-full shadow-md" />
+              </div>
+            </motion.button>
+
+            <div className="space-y-3 p-4 rounded-xl bg-[var(--surface-bible)] border border-[var(--border-bible)]/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-[var(--accent-bible)]" />
+                  <span className="text-sm font-medium text-[var(--text-bible)]">Pausa entre Versículos</span>
+                </div>
+                <span className="text-sm font-bold text-[var(--accent-bible)] bg-[var(--accent-bible)]/10 px-3 py-1 rounded-lg">
+                  {pauseBetweenVerses}s
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="3"
+                step="0.5"
+                value={pauseBetweenVerses}
+                onChange={(e) => setPauseBetweenVerses(parseFloat(e.target.value))}
+                className="w-full h-2 bg-[var(--surface-bible-strong)] rounded-full appearance-none cursor-pointer accent-[var(--accent-bible)]"
+                aria-label="Pausa entre versículos"
+              />
+              <div className="flex justify-between text-xs text-[var(--text-bible-muted)]">
+                <span>Sem pausa</span>
+                <span>3s</span>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Features Info */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-bible)]/50 overflow-hidden"
+        >
+          <div className="p-5 border-b border-[var(--border-bible)]/50">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="p-2 rounded-xl bg-[var(--accent-bible)]/10">
                 <Zap className="w-4 h-4 text-[var(--accent-bible)]" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-[var(--text-bible)]">Recursos Disponiveis</h2>
+                <h2 className="text-sm font-bold text-[var(--text-bible)]">Recursos Disponíveis</h2>
                 <p className="text-xs text-[var(--text-bible-muted)]">Funcionalidades da leitura por voz</p>
               </div>
             </div>
@@ -423,22 +572,22 @@ export const TTSSettings: React.FC = () => {
             {[
               {
                 icon: Play,
-                title: 'Leitura Automatica',
-                description: 'Avanca automaticamente versiculo por versiculo',
+                title: 'Leitura Automática',
+                description: 'Avança automaticamente versículo por versículo',
                 color: 'text-green-500',
                 bg: 'bg-green-500/10'
               },
               {
                 icon: SkipForward,
-                title: 'Controles de Navegacao',
-                description: 'Pule versiculos ou capitulos facilmente',
+                title: 'Controles de Navegação',
+                description: 'Pule versículos ou capítulos facilmente',
                 color: 'text-blue-500',
                 bg: 'bg-blue-500/10'
               },
               {
                 icon: Speaker,
                 title: 'Funciona Offline',
-                description: 'Leitura disponivel mesmo sem internet',
+                description: 'Leitura disponível mesmo sem internet',
                 color: 'text-purple-500',
                 bg: 'bg-purple-500/10'
               }
@@ -447,7 +596,7 @@ export const TTSSettings: React.FC = () => {
                 key={feature.title}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + index * 0.05 }}
+                transition={{ delay: 0.4 + index * 0.05 }}
                 className="flex items-center gap-4 p-4 rounded-xl bg-[var(--surface-bible)] border border-[var(--border-bible)]/30 hover:border-[var(--accent-bible)]/20 transition-colors"
               >
                 <div className={`p-2.5 rounded-xl ${feature.bg}`}>
@@ -467,17 +616,36 @@ export const TTSSettings: React.FC = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="flex justify-center pt-4"
+          transition={{ delay: 0.5 }}
+          className="flex flex-col gap-3 items-center pt-4"
         >
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleSave}
-            className="px-10 py-3.5 rounded-2xl bg-[var(--accent-bible)] text-white font-semibold shadow-[0_0_30px_rgba(var(--accent-bible-rgb),0.3)] hover:shadow-[0_0_40px_rgba(var(--accent-bible-rgb),0.4)] transition-all duration-200 cursor-pointer"
-          >
-            Salvar Configuracoes
-          </motion.button>
+          <div className="flex gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                setTtsSettings({ rate: 1.0, pitch: 1.0, volume: 0.8 });
+                setHighlightEnabled(true);
+                setPauseBetweenVerses(0.5);
+                setAutoPlayEnabled(false);
+                const defaultVoice = voices.find(v => v.langCode.startsWith('pt'));
+                if (defaultVoice) setSelectedVoice(defaultVoice);
+              }}
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[var(--surface-bible)] border border-[var(--border-bible)] text-sm font-medium text-[var(--text-bible)] hover:bg-[var(--surface-bible-strong)] transition-all duration-200 cursor-pointer min-h-[44px]"
+              aria-label="Restaurar configurações padrão"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Restaurar Padrões
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSave}
+              className="px-10 py-3.5 rounded-2xl bg-[var(--accent-bible)] text-white font-semibold shadow-[0_0_30px_rgba(var(--accent-bible-rgb),0.3)] hover:shadow-[0_0_40px_rgba(var(--accent-bible-rgb),0.4)] transition-all duration-200 cursor-pointer min-h-[44px]"
+            >
+              Salvar Configurações
+            </motion.button>
+          </div>
         </motion.div>
       </div>
     </motion.div>

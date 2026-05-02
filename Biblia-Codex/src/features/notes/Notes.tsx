@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Plus, Search, Trash2, Edit3, Pin } from 'lucide-react';
-import { Note } from '../types';
-import { storage } from '../StorageService';
+import { Note } from '../../types';
+import { storage } from '../../StorageService';
 import { RichTextEditor } from './RichTextEditor';
 import { useAppContext } from '../AppContext';
 import { getThemePreset } from '../theme/presets';

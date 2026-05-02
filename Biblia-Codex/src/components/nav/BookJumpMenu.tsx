@@ -39,14 +39,14 @@ export const BookJumpMenu: React.FC<BookJumpMenuProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="fixed bottom-24 left-1/2 z-50 w-[calc(100vw-1rem)] max-w-sm -translate-x-1/2 sm:w-auto"
-          style={{ paddingBottom: 'max(var(--sab), 24px)' }}
-        >
+       <motion.div
+           initial={{ opacity: 0, y: 10, scale: 0.95 }}
+           animate={{ opacity: 1, y: 0, scale: 1 }}
+           exit={{ opacity: 0, y: 10, scale: 0.95 }}
+           transition={{ duration: 0.2, ease: 'easeOut' }}
+           className="fixed bottom-52 left-1/2 z-50 w-[calc(100vw-1rem)] max-w-sm -translate-x-1/2 sm:w-auto"
+           style={{ paddingBottom: 'max(var(--sab), 24px)' }}
+         >
           <div className="flex items-center gap-1 rounded-2xl border border-[var(--border-bible)] bg-[var(--surface-0)]/95 backdrop-blur-md shadow-lg shadow-black/10 sm:gap-2">
             <button
               onClick={() => {

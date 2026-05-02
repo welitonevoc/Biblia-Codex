@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ttsService, TTSVoice, isTTSSupported } from '../../services/ttsService';
+import { useAppContext } from '../../app/AppContext';
 
 interface AudioPlayerProps {
   track: {
@@ -44,11 +45,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   className = '',
   onTrackChange
 }) => {
+  const { settings } = useAppContext();
+  const ttsConfig = settings.tts;
+  
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentVerse, setCurrentVerse] = useState(0);
   const [availableVoices, setAvailableVoices] = useState<TTSVoice[]>([]);
   const [selectedVoice, setSelectedVoice] = useState<TTSVoice | null>(null);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [playbackSpeed, setPlaybackSpeed] = useState(ttsConfig?.rate || 1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
 

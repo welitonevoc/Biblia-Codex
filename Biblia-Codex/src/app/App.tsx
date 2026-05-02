@@ -272,7 +272,7 @@ function AppContent() {
               <motion.div key="tts" initial={useAnimations ? { opacity: 0 } : {}} animate={{ opacity: 1 }} exit={useAnimations ? { opacity: 0 } : {}} className="h-full">
                 <Page name="Settings">
                   <Suspense fallback={<PageLoader />}>
-                    <SettingsPage />
+                    <SettingsPage section="tts" />
                   </Suspense>
                 </Page>
               </motion.div>
@@ -453,27 +453,29 @@ function AppContent() {
           </AnimatePresence>
         </main>
 
-<FloatingDock 
-          activeTab={activeTab} 
-          onTabChange={(tab) => {
-            if (tab === 'bible') {
-              if (activeTab !== 'bible') {
-                // Primeira vez que clica em bible - vai para a página
-                setIsBiblicalMenuOpen(false);
-                setActiveTab('bible');
-              } else if (!isBiblicalMenuOpen) {
-                // Já está em bible, menu fechado - abre o menu
-                setIsBiblicalMenuOpen(true);
-              } else {
-                // Já está em bible, menu aberto - fecha
-                setIsBiblicalMenuOpen(false);
-              }
-            } else {
-              setIsBiblicalMenuOpen(false);
-              setActiveTab(tab as TabType);
-            }
-          }} 
-        />
+{!isBiblicalMenuOpen && (
+        <FloatingDock 
+           activeTab={activeTab} 
+           onTabChange={(tab) => {
+             if (tab === 'bible') {
+               if (activeTab !== 'bible') {
+                 // Primeira vez que clica em bible - vai para a página
+                 setIsBiblicalMenuOpen(false);
+                 setActiveTab('bible');
+               } else if (!isBiblicalMenuOpen) {
+                 // Já está em bible, menu fechado - abre o menu
+                 setIsBiblicalMenuOpen(true);
+               } else {
+                 // Já está em bible, menu aberto - fecha
+                 setIsBiblicalMenuOpen(false);
+               }
+             } else {
+               setIsBiblicalMenuOpen(false);
+               setActiveTab(tab as TabType);
+             }
+           }} 
+         />
+        )}
         
 <BiblicalMenu
           isOpen={isBiblicalMenuOpen}
