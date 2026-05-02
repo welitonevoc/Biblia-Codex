@@ -647,12 +647,14 @@ body {
    DICTIONARY CONTENT STYLES (StrongsBottomSheet)
    ────────────────────────────────────────────── */
 .dictionary-content {
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 16px; /* Min 16px para mobile (ui-ux-pro-max) */
+  line-height: 1.7; /* 1.5-1.75 para body text */
   color: var(--text-bible);
   word-break: normal;
   overflow-wrap: break-word;
   hyphens: auto;
+  max-width: 100%;
+  overflow-x: hidden; /* Evitar scroll horizontal */
 }
 
 .dictionary-content p {
