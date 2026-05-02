@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, Book, Sparkles, Loader2, Info, 
@@ -8,7 +8,9 @@ import {
 } from 'lucide-react';
 import { searchLocalDictionary, getAIDefinition } from '../services/dictionaryService';
 import { useAppContext } from '../AppContext';
-import { DictionaryEntry, StrongsEntry } from '../types';
+import { BibleService } from '../../BibleService';
+import { BIBLE_BOOKS } from '../../data/bibleMetadata';
+import { DictionaryEntry, StrongsEntry, BibleModule } from '../types';
 import { MySwordParser } from '../services/mySwordParser';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -28,13 +30,21 @@ interface StrongsBottomSheetProps {
 export const StrongsBottomSheet: React.FC<StrongsBottomSheetProps> = ({ 
   strongsNumber, context, onClose, isOpen 
 }) => {
-  const { settings, availableDictionaries, updateSettings } = useAppContext();
+  const { settings, availableDictionaries, availableVersions, updateSettings } = useAppContext();
   const [activeTab, setActiveTab] = useState<'lexicon' | 'ai'>('lexicon');
   const [lexiconEntry, setLexiconEntry] = useState<DictionaryEntry | null>(null);
   const [aiEntry, setAiEntry] = useState<DictionaryEntry | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [versePopup, setVersePopup] = useState<{
+    text: string;
+    reference: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const popupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen && strongsNumber) {
@@ -42,9 +52,93 @@ export const StrongsBottomSheet: React.FC<StrongsBottomSheetProps> = ({
       setLexiconEntry(null);
       setError(null);
       setActiveTab('lexicon');
+      setVersePopup(null);
       handleSearchLexicon();
     }
   }, [isOpen, strongsNumber]);
+
+  useEffect(() => {
+    const container = contentRef.current;
+    if (!container) return;
+
+    const handleMouseOver = async (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a.cross-ref');
+      if (!link) return;
+
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+
+      popupTimeoutRef.current = setTimeout(async () => {
+        const href = (link as HTMLAnchorElement).getAttribute('href');
+        if (!href?.startsWith('b')) return;
+
+        const parts = href.substring(1).split('.');
+        if (parts.length < 3) return;
+
+        const bookNum = parseInt(parts[0]);
+        const chapter = parseInt(parts[1]);
+        const verseNum = parseInt(parts[2]);
+
+        const book = BIBLE_BOOKS.find(b => b.numericId === bookNum);
+        if (!book) return;
+
+        const version: BibleModule | undefined = availableVersions && availableVersions.length > 0 ? availableVersions[0] : undefined;
+        if (!version) {
+          const rect = (link as HTMLElement).getBoundingClientRect();
+          setVersePopup({
+            text: 'Nenhuma versão disponível',
+            reference: `${book.name} ${chapter}:${verseNum}`,
+            x: rect.left + window.scrollX,
+            y: rect.top + window.scrollY - 10
+          });
+          return;
+        }
+
+        try {
+          const verses = await BibleService.getVerses(book.id, chapter, version);
+          const verse = verses.find(v => v.verse === verseNum);
+          if (verse) {
+            const rect = (link as HTMLElement).getBoundingClientRect();
+            setVersePopup({
+              text: verse.text,
+              reference: `${book.name} ${chapter}:${verseNum}`,
+              x: rect.left + window.scrollX,
+              y: rect.top + window.scrollY - 10
+            });
+          }
+        } catch (err) {
+          console.error('Erro ao buscar versículo:', err);
+        }
+      }, 300);
+    };
+
+    const handleMouseOut = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a.cross-ref');
+      if (!link) return;
+
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+
+      setTimeout(() => {
+        setVersePopup(null);
+      }, 200);
+    };
+
+    container.addEventListener('mouseover', handleMouseOver);
+    container.addEventListener('mouseout', handleMouseOut);
+
+    return () => {
+      container.removeEventListener('mouseover', handleMouseOver);
+      container.removeEventListener('mouseout', handleMouseOut);
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+    };
+  }, [lexiconEntry, availableVersions]);
 
   const handleSearchLexicon = async (forcedPath?: string) => {
     setLoading(true);
@@ -234,11 +328,11 @@ export const StrongsBottomSheet: React.FC<StrongsBottomSheetProps> = ({
                         <div className="mb-3 flex items-center gap-2">
                           <div className="premium-kicker">Definição</div>
                         </div>
-                        <div className="dictionary-content">
+                        <div className="dictionary-content" ref={contentRef}>
                              <div 
                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(MySwordParser.parseContent(lexiconEntry.definition)) }}
                              />
-                        </div>
+                       </div>
                       </div>
 
                       {/* Info Chips */}
@@ -298,6 +392,15 @@ export const StrongsBottomSheet: React.FC<StrongsBottomSheetProps> = ({
                 </motion.div>
               )}
             </AnimatePresence>
+              {versePopup && (
+                <div
+                  className="fixed z-[1100] bg-bible-bg border border-bible-border rounded-lg shadow-lg p-3 max-w-xs text-sm pointer-events-none"
+                  style={{ left: versePopup.x, top: versePopup.y, transform: 'translateY(-100%)' }}
+                >
+                  <div className="font-bold text-bible-accent mb-1">{versePopup.reference}</div>
+                  <div className="text-bible-text text-[14px] leading-relaxed">{versePopup.text}</div>
+                </div>
+              )}
           </div>
         </motion.div>
       </div>
