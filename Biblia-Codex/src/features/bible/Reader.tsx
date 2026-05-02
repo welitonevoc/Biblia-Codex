@@ -10,7 +10,7 @@ import DOMPurify from 'dompurify';
 import {
   Bookmark, Share2, MessageSquare,
   Sparkles, Library, Layers, X, BookOpen, Volume2, Trash2, Tag,
-  ChevronLeft, ChevronRight, Users, MapPin, FileText, Copy, Highlighter, GitCompare
+  ChevronLeft, ChevronRight, Users, MapPin, FileText, Copy, Highlighter, GitCompare, Check
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { DictionaryBottomSheet } from '../study/DictionaryBottomSheet';
@@ -158,55 +158,6 @@ const VerseItem = React.memo(({
               </span>
             )}
           </span>
-
-          <div className={cn(
-            "inline-flex max-w-full items-center ml-2 space-x-1 overflow-x-auto opacity-100 transition-all duration-300 transform translate-x-0 bg-bible-accent/7 backdrop-blur-sm rounded-full px-2 py-1 border border-bible-accent/10 sm:ml-3 sm:overflow-visible sm:opacity-0 sm:translate-x-2 sm:group-hover:opacity-100 sm:group-hover:translate-x-0",
-            !settings.textDisplay.paragraphMode && "absolute right-0 top-0 mt-1"
-          )}>
-            {settings.modules.commentary && (
-              <ReaderTooltip label="Comentário">
-                <button onClick={() => onToolOpen(v, 'commentary')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir comentário">
-                  <MessageSquare className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                </button>
-              </ReaderTooltip>
-            )}
-            {settings.modules.dictionary && (
-              <ReaderTooltip label="Dicionário">
-                <button onClick={() => onToolOpen(v, 'dictionary')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir dicionário">
-                  <Library className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                </button>
-              </ReaderTooltip>
-            )}
-            {settings.modules.xrefs && settings.visualResources.crossRefs && (
-              <ReaderTooltip label="Ref. Cruzadas">
-                <button onClick={() => onToolOpen(v, 'xrefs')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir referências cruzadas">
-                  <Layers className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                </button>
-              </ReaderTooltip>
-            )}
-            <ReaderTooltip label="Pessoas">
-              <button onClick={() => onToolOpen(v, 'people')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir pessoas bíblicas">
-                <Users className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-              </button>
-            </ReaderTooltip>
-            <ReaderTooltip label="Lugares">
-              <button onClick={() => onToolOpen(v, 'places')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir lugares bíblicos">
-                <MapPin className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-              </button>
-            </ReaderTooltip>
-            {settings.textDisplay.footnotes && (
-              <ReaderTooltip label="Notas de Rodapé">
-                <button onClick={() => onToolOpen(v, 'footnotes')} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Abrir notas de rodapé">
-                  <FileText className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-                </button>
-              </ReaderTooltip>
-            )}
-            <ReaderTooltip label="Compartilhar">
-              <button onClick={() => onShare(v)} className="grid h-9 w-9 place-items-center rounded-full hover:bg-bible-accent/20 transition-colors group/tool sm:h-auto sm:w-auto sm:p-1.5" aria-label="Compartilhar versículo">
-                <Share2 className="w-3.5 h-3.5 text-bible-accent opacity-60 group-hover/tool:opacity-100" />
-              </button>
-            </ReaderTooltip>
-          </div>
         </>
       )}
     </div>
@@ -239,7 +190,18 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   const [isCommentaryOpen, setIsCommentaryOpen] = useState(false);
   const [isXrefsOpen, setIsXrefsOpen] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
+  const [copiedFeedback, setCopiedFeedback] = useState(false);
   const { config, settings, currentVersion } = useAppContext();
+
+  const cleanVerseText = (text: string): string => {
+    return text
+      .replace(/<TS1>.*?<\/TS1>/gi, '')
+      .replace(/<Ts>.*?<\/Ts>/gi, '')
+      .replace(/<WH\d+>/gi, '')
+      .replace(/<\/?[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
   const containerRef = useRef<HTMLDivElement>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
@@ -509,42 +471,215 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
 
       <AnimatePresence>
         {selectedVerses.length > 0 && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={() => setSelectedVerses([])} />
-            <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 50, scale: 0.9 }} className="fixed left-1/2 z-50 w-[min(calc(100vw-1.5rem),28rem)] -translate-x-1/2 bottom-64">
-              <div className="glass-panel px-3 py-3 shadow-2xl sm:px-6 sm:py-4">
-                <div className="flex items-center justify-between mb-3 pb-2 border-b border-bible-border/50">
-                  <span className="text-xs font-bold text-bible-text">{selectedVerses.length} versículos selecionados</span>
-                  <button onClick={() => setSelectedVerses([])} className="p-1 hover:bg-bible-surface rounded-full"><X className="w-4 h-4" /></button>
-                </div>
-                <div className="grid grid-cols-5 gap-3">
-                  <button onClick={() => setShowColorPicker(!showColorPicker)} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-bible-accent/10"><Bookmark className="h-5 w-5 text-bible-accent" /></div><span className="text-[8px] font-bold uppercase">Marcador</span></button>
-                  <button onClick={() => setShowTagEditor(!showTagEditor)} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-500/10"><Tag className="h-5 w-5 text-blue-500" /></div><span className="text-[8px] font-bold uppercase">Etiquetas</span></button>
-                  <button onClick={handleStudy} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-purple-500/10"><Sparkles className="h-5 w-5 text-purple-500" /></div><span className="text-[8px] font-bold uppercase">Estudar</span></button>
-                  {isTTSSupported && (
-                    <button onClick={() => toggleTTS(selectedVerses)} className="flex flex-col items-center gap-1.5"><div className={cn("h-10 w-10 flex items-center justify-center rounded-xl transition-colors", isSpeakingTTS ? "bg-orange-500/20" : "bg-orange-500/10")}><Volume2 className={cn("h-5 w-5 text-orange-500", isSpeakingTTS && "animate-pulse")} /></div><span className="text-[8px] font-bold uppercase">{isSpeakingTTS ? 'Parar' : 'Ouvir'}</span></button>
-                  )}
-                  <button onClick={handleDeleteBookmarks} className="flex flex-col items-center gap-1.5"><div className="h-10 w-10 flex items-center justify-center rounded-xl bg-red-500/10"><Trash2 className="h-5 w-5 text-red-500" /></div><span className="text-[8px] font-bold uppercase">Remover</span></button>
-                </div>
-                {showColorPicker && (
-                  <div className="flex justify-center gap-2 mt-4 p-2 glass-panel">
-                    {['#fef08a', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fbcfe8'].map(c => (
-                      <button key={c} onClick={() => handleBookmark(c)} className="w-8 h-8 rounded-full border-2 border-white shadow-md" style={{ backgroundColor: c }} />
-                    ))}
-                    <button onClick={() => handleBookmark(null)} className="w-8 h-8 rounded-full border-2 border-bible-border flex items-center justify-center"><X className="w-4 h-4" /></button>
-                  </div>
-                )}
-                {showTagEditor && (
-                  <div className="mt-4 p-2">
-                    <input type="text" value={currentTags} onChange={(e) => setCurrentTags(e.target.value)} placeholder="Etiquetas..." className="w-full p-2 rounded-lg border border-bible-border bg-bible-surface text-xs focus:ring-2 focus:ring-bible-accent outline-none" />
-                    <div className="flex gap-2 mt-2">
-                      <button onClick={handleSaveTags} className="flex-1 p-2 bg-bible-accent text-white text-xs font-bold rounded-lg">Salvar</button>
+          <div className="fixed right-2 top-1/2 -translate-y-1/2 z-50 flex items-start gap-1.5 max-sm:right-1">
+            <AnimatePresence>
+              {showColorPicker && (
+                <motion.div 
+                  initial={{ opacity: 0, x: -10, scale: 0.9 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -10, scale: 0.9 }}
+                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  className="glass-panel rounded-2xl p-2 shadow-2xl"
+                >
+                  <div className="flex flex-col items-center gap-1.5">
+                    <span className="text-[8px] font-medium text-bible-text-muted">Cores</span>
+                    <div className="flex flex-col gap-1.5">
+                      {['#fef08a', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fbcfe8'].map(c => (
+                        <button 
+                          key={c} 
+                          onClick={() => handleBookmark(c)} 
+                          className="w-7 h-7 rounded-full border border-white/50 shadow-sm cursor-pointer hover:scale-110 transition-transform" 
+                          style={{ backgroundColor: c }} 
+                        />
+                      ))}
+                      <button 
+                        onClick={() => handleBookmark(null)} 
+                        className="w-7 h-7 rounded-full border border-bible-border flex items-center justify-center cursor-pointer hover:bg-bible-surface transition-colors"
+                      >
+                        <X className="w-3 h-3 text-bible-text-muted" />
+                      </button>
                     </div>
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <motion.div 
+              initial={{ opacity: 0, x: 10, scale: 0.9 }} 
+              animate={{ opacity: 1, x: 0, scale: 1 }} 
+              exit={{ opacity: 0, x: 10, scale: 0.9 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="glass-panel rounded-2xl p-1.5 shadow-2xl max-h-[60vh] overflow-y-auto scrollbar-thin"
+            >
+              <div className="flex flex-col items-center gap-1 sm:gap-1.5">
+                <div className="flex items-center gap-1 sticky top-0 bg-[var(--glass-bg)] py-1 z-10">
+                  <span className="text-xs font-bold text-bible-text">{selectedVerses.length}</span>
+                  <button onClick={() => setSelectedVerses([])} className="p-1 hover:bg-bible-surface rounded-full transition-colors cursor-pointer">
+                    <X className="w-3 h-3 text-bible-text-muted" />
+                  </button>
+                </div>
+                <button 
+                  onClick={() => setShowColorPicker(!showColorPicker)} 
+                  className={cn(
+                    "flex flex-col items-center gap-1 p-1.5 rounded-xl transition-colors cursor-pointer",
+                    showColorPicker ? "bg-bible-accent/20" : "hover:bg-bible-accent/10"
+                  )}
+                >
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-bible-accent/10">
+                    <Bookmark className="h-4 w-4 text-bible-accent" />
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Marcar</span>
+                </button>
+                <button 
+                  onClick={() => setShowTagEditor(!showTagEditor)} 
+                  className={cn(
+                    "flex flex-col items-center gap-1 p-1.5 rounded-xl transition-colors cursor-pointer",
+                    showTagEditor ? "bg-blue-500/20" : "hover:bg-blue-500/10"
+                  )}
+                >
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-blue-500/10">
+                    <Tag className="h-4 w-4 text-blue-500" />
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Etiqueta</span>
+                </button>
+                <button 
+                  onClick={handleStudy} 
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-purple-500/10 transition-colors cursor-pointer"
+                >
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-purple-500/10">
+                    <Sparkles className="h-4 w-4 text-purple-500" />
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Estudar</span>
+                </button>
+                <button 
+                  onClick={() => selectedVerses[0] && handleToolOpen(verses.find(v => v.verse === selectedVerses[0])!, 'commentary')}
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-amber-500/10 transition-colors cursor-pointer"
+                >
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-amber-500/10">
+                    <MessageSquare className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Comentário</span>
+                </button>
+                <button 
+                  onClick={() => selectedVerses[0] && handleToolOpen(verses.find(v => v.verse === selectedVerses[0])!, 'dictionary')}
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-cyan-500/10 transition-colors cursor-pointer"
+                >
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-cyan-500/10">
+                    <Library className="h-4 w-4 text-cyan-500" />
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Dicionário</span>
+                </button>
+                <button 
+                  onClick={() => selectedVerses[0] && handleToolOpen(verses.find(v => v.verse === selectedVerses[0])!, 'xrefs')}
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-indigo-500/10 transition-colors cursor-pointer"
+                >
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-indigo-500/10">
+                    <Layers className="h-4 w-4 text-indigo-500" />
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Refs</span>
+                </button>
+                <button 
+                  onClick={() => selectedVerses[0] && handleToolOpen(verses.find(v => v.verse === selectedVerses[0])!, 'people')}
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-teal-500/10 transition-colors cursor-pointer"
+                >
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-teal-500/10">
+                    <Users className="h-4 w-4 text-teal-500" />
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Pessoas</span>
+                </button>
+                <button 
+                  onClick={() => selectedVerses[0] && handleToolOpen(verses.find(v => v.verse === selectedVerses[0])!, 'places')}
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-rose-500/10 transition-colors cursor-pointer"
+                >
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-rose-500/10">
+                    <MapPin className="h-4 w-4 text-rose-500" />
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Lugares</span>
+                </button>
+                <button 
+                  onClick={() => selectedVerses[0] && handleToolOpen(verses.find(v => v.verse === selectedVerses[0])!, 'footnotes')}
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-slate-500/10 transition-colors cursor-pointer"
+                >
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-slate-500/10">
+                    <FileText className="h-4 w-4 text-slate-400" />
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Notas</span>
+                </button>
+                <button 
+                  onClick={() => {
+                    const text = selectedVerses.map(v => {
+                      const verse = verses.find(ver => ver.verse === v);
+                      return verse ? cleanVerseText(verse.text) : '';
+                    }).join(' ');
+                    const reference = `${book.name} ${chapter}:${selectedVerses.join(',')}`;
+                    const versionLabel = currentVersion?.name || 'ARA';
+                    const fullText = `${text} ${reference} - ${versionLabel}`;
+                    navigator.clipboard.writeText(fullText);
+                    setCopiedFeedback(true);
+                    setTimeout(() => setCopiedFeedback(false), 2000);
+                  }} 
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-xl transition-colors cursor-pointer"
+                >
+                  <div className={cn("h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg transition-colors", copiedFeedback ? "bg-green-500/30" : "bg-green-500/10 hover:bg-green-500/20")}>
+                    {copiedFeedback ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4 text-green-500" />
+                    )}
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">{copiedFeedback ? 'Copiado!' : 'Copiar'}</span>
+                </button>
+                <button 
+                  onClick={() => onShare(selectedVerses.map(v => ({ verse: v, text: verses.find(ver => ver.verse === v)?.text || '' })), `${book.name} ${chapter}:${selectedVerses.join(',')}`)} 
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-pink-500/10 transition-colors cursor-pointer"
+                >
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-pink-500/10">
+                    <Share2 className="h-4 w-4 text-pink-500" />
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Compartilhar</span>
+                </button>
+                {isTTSSupported && (
+                  <button 
+                    onClick={() => toggleTTS(selectedVerses)} 
+                    className={cn(
+                      "flex flex-col items-center gap-1 p-1.5 rounded-xl transition-colors cursor-pointer",
+                      isSpeakingTTS ? "bg-orange-500/20" : "hover:bg-orange-500/10"
+                    )}
+                  >
+                    <div className={cn("h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg transition-colors", isSpeakingTTS ? "bg-orange-500/20" : "bg-orange-500/10")}>
+                      <Volume2 className={cn("h-4 w-4 text-orange-500", isSpeakingTTS && "animate-pulse")} />
+                    </div>
+                    <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">{isSpeakingTTS ? 'Parar' : 'Ouvir'}</span>
+                  </button>
                 )}
+                <button 
+                  onClick={handleDeleteBookmarks} 
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-red-500/10 transition-colors cursor-pointer"
+                >
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg bg-red-500/10">
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Remover</span>
+                </button>
               </div>
+              {showTagEditor && (
+                <div className="mt-2 pt-2 border-t border-bible-border/50">
+                  <input 
+                    type="text" 
+                    value={currentTags} 
+                    onChange={(e) => setCurrentTags(e.target.value)} 
+                    placeholder="Etiqueta..." 
+                    className="w-full p-1.5 text-xs rounded border border-bible-border bg-bible-surface focus:ring-1 focus:ring-bible-accent outline-none cursor-text" 
+                  />
+                  <button 
+                    onClick={handleSaveTags} 
+                    className="w-full mt-1.5 p-1.5 bg-bible-accent text-white text-xs font-semibold rounded hover:opacity-90 transition-opacity cursor-pointer"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              )}
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
