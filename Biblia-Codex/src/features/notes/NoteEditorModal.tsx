@@ -218,18 +218,17 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
 
   const handleSave = async () => {
     if (!note) return;
-    const contentText = editorRef.current?.innerText || content;
+    const contentHtml = editorRef.current?.innerHTML || content || '';
     setIsSaving(true);
     try {
       const updatedNote: Note = {
         ...note,
         title: title || 'Sem título',
-        content: contentText,
+        content: contentHtml,
         tags: [],
         pinned,
         updatedAt: Date.now()
       };
-      await storage.saveNote(updatedNote);
       onSave(updatedNote);
       setLastSaved(new Date());
     } catch (error) {

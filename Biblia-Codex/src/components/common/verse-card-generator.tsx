@@ -6,11 +6,13 @@ import {
   Check, ChevronLeft, ChevronRight, Copy,
   Maximize2, Smartphone, Monitor, Send,
   Layers, Hexagon, Wand2, Sliders, Sun,
-  Moon, Contrast, Droplets, FlaskConical
+  Moon, Contrast, Droplets, FlaskConical,
+  BookOpen, CheckCircle
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { cn } from '../../utils/cn';
 import { useAppContext } from '../../app/AppContext';
+import { useNotesStore } from '../../stores/notesStore';
 import { stripTags } from '../../utils/textUtils';
 
 interface VerseCardGeneratorProps {
@@ -186,6 +188,7 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
   onClose
 }) => {
   const { currentVersion } = useAppContext();
+  const { addNote } = useNotesStore();
   const [currentTheme, setCurrentTheme] = useState(THEMES[0]);
   const [currentFont, setCurrentFont] = useState(FONTS[0]);
   const [currentFormat, setCurrentFormat] = useState(FORMATS[0]);
@@ -196,6 +199,7 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
   const [customBgColor, setCustomBgColor] = useState('#ffffff');
   const [customTextColor, setCustomTextColor] = useState('#000000');
   const [useCustomColors, setUseCustomColors] = useState(false);
+  const [savedNote, setSavedNote] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const fullText = verses.map(v => stripTags(v.text)).join(' ');
@@ -254,6 +258,17 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
     } catch (err) {
       console.error('Share text error:', err);
     }
+  };
+
+  const handleSaveNote = async () => {
+    await addNote({
+      title: referenceWithVersion,
+      content: `"${fullText}"\n\n— Salvo do CodexBible`,
+      tags: ['versiculo'],
+      updatedAt: Date.now()
+    });
+    setSavedNote(true);
+    setTimeout(() => setSavedNote(false), 2000);
   };
 
   if (!isOpen) return null;
@@ -549,35 +564,49 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
               )}
             </div>
 
-            <div className="p-4 bg-black/60 backdrop-blur-xl border-t border-white/10 grid grid-cols-3 gap-3">
+            <div className="p-4 bg-black/60 backdrop-blur-xl border-t border-white/10 grid grid-cols-4 gap-2">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleShareText}
-                className="h-14 rounded-2xl bg-white/5 border border-white/10 text-white flex flex-col items-center justify-center gap-1 font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-all"
+                className="h-14 rounded-2xl bg-white/5 border border-white/10 text-white flex flex-col items-center justify-center gap-1 font-bold text-[9px] uppercase tracking-wider hover:bg-white/10 transition-all"
               >
                 <Send className="w-4 h-4" />
-                <span className="hidden sm:inline">Texto</span>
+                <span>Texto</span>
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleCopy}
                 disabled={isExporting}
-                className="h-14 rounded-2xl bg-white/5 border border-white/10 text-white flex flex-col items-center justify-center gap-1 font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-all disabled:opacity-50"
+                className="h-14 rounded-2xl bg-white/5 border border-white/10 text-white flex flex-col items-center justify-center gap-1 font-bold text-[9px] uppercase tracking-wider hover:bg-white/10 transition-all disabled:opacity-50"
               >
                 <Copy className="w-4 h-4" />
-                <span className="hidden sm:inline">Copiar</span>
+                <span>Copiar</span>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSaveNote}
+                className={cn(
+                  "h-14 rounded-2xl border flex flex-col items-center justify-center gap-1 font-bold text-[9px] uppercase tracking-wider transition-all",
+                  savedNote 
+                    ? "bg-green-500/20 border-green-500 text-green-400" 
+                    : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                )}
+              >
+                {savedNote ? <CheckCircle className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
+                <span>{savedNote ? 'Salvo' : 'Nota'}</span>
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleDownload}
                 disabled={isExporting}
-                className="h-14 rounded-2xl bg-bible-accent text-white flex flex-col items-center justify-center gap-1 font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-bible-accent/30 hover:brightness-110 transition-all disabled:opacity-50"
+                className="h-14 rounded-2xl bg-bible-accent text-white flex flex-col items-center justify-center gap-1 font-bold text-[9px] uppercase tracking-wider shadow-lg shadow-bible-accent/30 hover:brightness-110 transition-all disabled:opacity-50"
               >
                 <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">{isExporting ? '...' : 'Salvar'}</span>
+                <span>{isExporting ? '...' : 'Salvar'}</span>
               </motion.button>
             </div>
           </div>
