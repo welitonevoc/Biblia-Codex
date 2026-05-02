@@ -5,7 +5,8 @@ import {
   Layout, Sparkles, Image as ImageIcon,
   Check, ChevronLeft, ChevronRight, Copy,
   Maximize2, Smartphone, Monitor, Send,
-  Layers, Hexagon, Wand2
+  Layers, Hexagon, Wand2, Sliders, Sun,
+  Moon, Contrast, Droplets, FlaskConical
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { cn } from '../../utils/cn';
@@ -33,7 +34,7 @@ type CardTheme = {
 const THEMES: CardTheme[] = [
   {
     id: 'insta-gradient-1',
-    name: 'Vibrant Sunset',
+    name: 'Sunset',
     className: 'bg-gradient-to-tr from-[#f09433] via-[#e6683c] to-[#bc1888]',
     gradient: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
     textColor: '#ffffff',
@@ -41,8 +42,26 @@ const THEMES: CardTheme[] = [
     glass: true
   },
   {
+    id: 'insta-gradient-2',
+    name: 'Purple Haze',
+    gradient: 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)',
+    className: 'bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400',
+    textColor: '#ffffff',
+    accentColor: '#ffffff',
+    glass: true
+  },
+  {
+    id: 'insta-gradient-3',
+    name: 'Ocean',
+    gradient: 'linear-gradient(160deg, #0093E9 0%, #80D0C7 100%)',
+    className: 'bg-gradient-to-br from-cyan-500 to-teal-400',
+    textColor: '#ffffff',
+    accentColor: '#ffffff',
+    glass: true
+  },
+  {
     id: 'whatsapp-dark',
-    name: 'WhatsApp Night',
+    name: 'Noite',
     className: 'bg-[#0b141a]',
     gradient: 'linear-gradient(135deg, #0b141a 0%, #111b21 100%)',
     textColor: '#e9edef',
@@ -50,7 +69,7 @@ const THEMES: CardTheme[] = [
   },
   {
     id: 'royal-gold',
-    name: 'Obsidian Gold',
+    name: 'Ouro',
     className: 'bg-[#0f172a]',
     gradient: 'radial-gradient(circle at top left, #1e293b 0%, #020617 100%)',
     textColor: '#f8fafc',
@@ -59,7 +78,7 @@ const THEMES: CardTheme[] = [
   },
   {
     id: 'ethereal-blue',
-    name: 'Ethereal',
+    name: 'Celeste',
     className: 'bg-[#0ea5e9]',
     gradient: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
     textColor: '#ffffff',
@@ -68,7 +87,7 @@ const THEMES: CardTheme[] = [
   },
   {
     id: 'minimal-noir',
-    name: 'Minimal Noir',
+    name: 'Preto',
     className: 'bg-black',
     gradient: 'linear-gradient(180deg, #000000 0%, #1a1a1a 100%)',
     textColor: '#ffffff',
@@ -76,25 +95,88 @@ const THEMES: CardTheme[] = [
   },
   {
     id: 'divine-light',
-    name: 'Divine Light',
+    name: 'Branco',
     className: 'bg-white',
     gradient: 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)',
     textColor: '#0f172a',
     accentColor: '#2563eb'
+  },
+  {
+    id: 'rose-garden',
+    name: 'Rosa',
+    gradient: 'linear-gradient(135deg, #fdf4ff 0%, #f0abfc 50%, #e879f9 100%)',
+    className: 'bg-gradient-to-br from-pink-100 to-fuchsia-300',
+    textColor: '#86198f',
+    accentColor: '#c026d3',
+    glass: true
+  },
+  {
+    id: 'forest-deep',
+    name: 'Floresta',
+    gradient: 'linear-gradient(135deg, #052e16 0%, #14532d 50%, #166534 100%)',
+    className: 'bg-gradient-to-br from-green-950 to-green-700',
+    textColor: '#dcfce7',
+    accentColor: '#4ade80'
+  },
+  {
+    id: 'midnight',
+    name: 'Meia-Noite',
+    gradient: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)',
+    className: 'bg-gradient-to-br from-indigo-950 to-indigo-700',
+    textColor: '#e0e7ff',
+    accentColor: '#818cf8'
+  },
+  {
+    id: 'sunrise-gold',
+    name: 'Aurora',
+    gradient: 'linear-gradient(135deg, #fff7ed 0%, #fdba74 50%, #f97316 100%)',
+    className: 'bg-gradient-to-br from-orange-50 to-orange-300',
+    textColor: '#7c2d12',
+    accentColor: '#ea580c'
   }
 ];
 
 const FONTS = [
-  { id: 'serif', name: 'Premium Serif', className: 'font-serif tracking-tight' },
-  { id: 'sans', name: 'Modern Sans', className: 'font-sans font-black' },
-  { id: 'display', name: 'Elegant Display', className: 'font-display italic' },
-  { id: 'mono', name: 'Codex Mono', className: 'font-mono' }
+  { id: 'serif', name: 'Serif Clássico', className: 'font-serif tracking-tight', family: '"Libre Baskerville", serif' },
+  { id: 'sans', name: 'Sans Moderno', className: 'font-sans font-black', family: '"Manrope", sans-serif' },
+  { id: 'display', name: 'Display Elegante', className: 'font-display italic', family: '"Cormorant Garamond", serif' },
+  { id: 'mono', name: 'Mono Código', className: 'font-mono', family: '"JetBrains Mono", monospace' },
+  { id: 'lora', name: 'Lora', className: '', family: '"Lora", serif' },
+  { id: 'playfair', name: 'Playfair', className: '', family: '"Playfair Display", serif' },
+  { id: 'raleway', name: 'Raleway', className: 'font-sans', family: '"Raleway", sans-serif' },
+  { id: 'outfit', name: 'Outfit', className: 'font-sans', family: '"Outfit", sans-serif' }
 ];
 
 const FORMATS = [
-  { id: 'square', name: '1:1 Square', icon: Smartphone, aspect: '1/1' },
-  { id: 'story', name: '9:16 Story', icon: Smartphone, aspect: '9/16' },
-  { id: 'post', name: '4:5 Portrait', icon: Smartphone, aspect: '4/5' }
+  { id: 'story', name: 'Story', icon: Smartphone, aspect: '9/16' },
+  { id: 'square', name: 'Quadrado', icon: Smartphone, aspect: '1/1' },
+  { id: 'post', name: 'Retrato', icon: Smartphone, aspect: '4/5' }
+];
+
+const BG_COLORS = [
+  { id: 'transparent', name: 'Transparente', value: 'transparent' },
+  { id: 'white', name: 'Branco', value: '#ffffff' },
+  { id: 'black', name: 'Preto', value: '#000000' },
+  { id: 'cream', name: 'Creme', value: '#fef3c7' },
+  { id: 'light-blue', name: 'Azul Claro', value: '#dbeafe' },
+  { id: 'light-green', name: 'Verde Claro', value: '#dcfce7' },
+  { id: 'light-pink', name: 'Rosa Claro', value: '#fce7f3' },
+  { id: 'light-purple', name: 'Roxo Claro', value: '#f3e8ff' },
+  { id: 'light-orange', name: 'Laranja Claro', value: '#ffedd5' },
+  { id: 'gray', name: 'Cinza', value: '#f3f4f6' }
+];
+
+const TEXT_COLORS = [
+  { id: 'white', name: 'Branco', value: '#ffffff' },
+  { id: 'black', name: 'Preto', value: '#000000' },
+  { id: 'dark-gray', name: 'Cinza Escuro', value: '#1f2937' },
+  { id: 'gray', name: 'Cinza', value: '#4b5563' },
+  { id: 'gold', name: 'Dourado', value: '#fbbf24' },
+  { id: 'blue', name: 'Azul', value: '#3b82f6' },
+  { id: 'green', name: 'Verde', value: '#10b981' },
+  { id: 'purple', name: 'Roxo', value: '#8b5cf6' },
+  { id: 'pink', name: 'Rosa', value: '#ec4899' },
+  { id: 'red', name: 'Vermelho', value: '#ef4444' }
 ];
 
 export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
@@ -110,6 +192,10 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
   const [showReference, setShowReference] = useState(true);
   const [fontSize, setFontSize] = useState(24);
   const [isExporting, setIsExporting] = useState(false);
+  const [activeTab, setActiveTab] = useState<'themes' | 'fonts' | 'custom'>('themes');
+  const [customBgColor, setCustomBgColor] = useState('#ffffff');
+  const [customTextColor, setCustomTextColor] = useState('#000000');
+  const [useCustomColors, setUseCustomColors] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const fullText = verses.map(v => stripTags(v.text)).join(' ');
@@ -117,6 +203,10 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
   const referenceWithVersion = versionLabel && !reference.includes(versionLabel)
     ? `${reference} ${versionLabel}`
     : reference;
+
+  const currentBgColor = useCustomColors ? customBgColor : currentTheme.gradient;
+  const currentTextColor = useCustomColors ? customTextColor : currentTheme.textColor;
+  const currentAccentColor = useCustomColors ? customTextColor : currentTheme.accentColor;
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
@@ -161,8 +251,6 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
     const text = `"${fullText}" ${reference} - ${versionLabel || 'ARA'}`;
     try {
       await navigator.clipboard.writeText(text);
-      // We don't have toast here, but we can use alert or just rely on the UI feedback
-      // Actually, let's just make it work for now.
     } catch (err) {
       console.error('Share text error:', err);
     }
@@ -176,263 +264,322 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[500] flex flex-col md:flex-row items-stretch bg-black overflow-hidden"
+        className="fixed inset-0 z-[500] flex flex-col bg-black overflow-hidden"
       >
-        {/* Background Decorative Blur */}
-        <div className="absolute inset-0 opacity-40 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 -left-1/4 w-[80%] h-[80%] bg-bible-accent/10 blur-[150px] rounded-full" />
-          <div className="absolute bottom-0 -right-1/4 w-[80%] h-[80%] bg-purple-500/10 blur-[150px] rounded-full" />
+        <div className="absolute inset-0 opacity-30 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 -left-1/4 w-[80%] h-[60%] bg-bible-accent/20 blur-[120px] rounded-full" />
+          <div className="absolute bottom-0 -right-1/4 w-[80%] h-[60%] bg-purple-500/20 blur-[120px] rounded-full" />
         </div>
 
-        {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-6 right-6 z-[600] w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-white/20 hover:rotate-90 transition-all duration-500 active:scale-90"
+          className="absolute top-4 right-4 z-[600] w-10 h-10 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all active:scale-95"
         >
-          <X className="w-6 h-6 text-white" />
+          <X className="w-5 h-5 text-white" />
         </button>
 
-        {/* Left: Preview Area */}
-        <div className="flex-1 relative flex items-center justify-center p-6 md:p-12 overflow-hidden">
-          <motion.div 
-            layout
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="relative z-10 flex items-center justify-center w-full h-full max-h-[85vh] drop-shadow-[0_40px_80px_rgba(0,0,0,0.6)]"
-          >
-            <div 
-              ref={cardRef}
-              className={cn(
-                "relative overflow-hidden flex flex-col items-center justify-center p-12 text-center transition-all duration-700",
-                currentTheme.className,
-                currentFont.className
-              )}
-              style={{ 
-                background: currentTheme.gradient,
-                aspectRatio: currentFormat.aspect,
-                height: '100%',
-                maxHeight: '100%',
-                width: 'auto'
-              }}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 relative flex items-center justify-center p-4 overflow-hidden">
+            <motion.div 
+              layout
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="relative z-10 flex items-center justify-center w-full h-full"
             >
-              {currentTheme.overlay && (
-                <div className="absolute inset-0 z-0 opacity-30" style={{ backgroundImage: currentTheme.overlay }} />
-              )}
-              
-              {/* Glassmorphism Elements if theme supports */}
-              {currentTheme.glass && (
+              <div 
+                ref={cardRef}
+                className={cn(
+                  "relative overflow-hidden flex flex-col items-center justify-center p-6 md:p-10 text-center transition-all duration-500",
+                  currentFont.className
+                )}
+                style={{ 
+                  background: currentBgColor,
+                  aspectRatio: currentFormat.aspect,
+                  height: '100%',
+                  maxHeight: 'calc(100vh - 220px)',
+                  width: 'auto',
+                  maxWidth: '400px',
+                  fontFamily: currentFont.family
+                }}
+              >
+                {currentTheme.overlay && !useCustomColors && (
+                  <div className="absolute inset-0 z-0 opacity-30" style={{ backgroundImage: currentTheme.overlay }} />
+                )}
+                
+                {currentTheme.glass && !useCustomColors && (
+                  <>
+                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/10 blur-[40px] rounded-full" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-white/5 blur-[40px] rounded-full" />
+                  </>
+                )}
+
+                <div className="relative z-10 flex flex-col items-center gap-6 max-w-[85%]">
+                  <motion.div 
+                    animate={{ rotate: [0, 8, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center"
+                  >
+                    <Sparkles className="w-5 h-5" style={{ color: currentAccentColor }} />
+                  </motion.div>
+                  
+                  <p 
+                    className="leading-[1.6] font-semibold"
+                    style={{ color: currentTextColor, fontSize: `${fontSize}px` }}
+                  >
+                    "{fullText}"
+                  </p>
+                  
+                  {showReference && (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-10 h-[1px] rounded-full opacity-30" style={{ backgroundColor: currentTextColor }} />
+                      <span 
+                        className="text-xs font-bold uppercase tracking-[0.3em]"
+                        style={{ color: currentAccentColor }}
+                      >
+                        {referenceWithVersion}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="absolute bottom-6 flex items-center gap-2 opacity-50">
+                  <div className="w-5 h-5 rounded-md bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden">
+                    <div className="w-2 h-2 rounded-full bg-white/80 animate-pulse" />
+                  </div>
+                  <span className="text-[8px] font-bold uppercase tracking-[0.4em]" style={{ color: currentTextColor }}>
+                    Codex
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="bg-[#0a0a0a]/95 backdrop-blur-2xl border-t border-white/10 flex flex-col max-h-[45vh]">
+            <div className="flex items-center gap-1 p-2 border-b border-white/5">
+              {[
+                { id: 'themes', icon: Palette, label: 'Temas' },
+                { id: 'fonts', icon: Type, label: 'Fontes' },
+                { id: 'custom', icon: Sliders, label: 'Personalizar' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all",
+                    activeTab === tab.id 
+                      ? "bg-bible-accent/20 text-bible-accent" 
+                      : "text-white/40 hover:text-white/70"
+                  )}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {activeTab === 'themes' && (
                 <>
-                  <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/10 blur-[60px] rounded-full" />
-                  <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-white/5 blur-[60px] rounded-full" />
+                  <div className="grid grid-cols-4 gap-2">
+                    {THEMES.map(theme => (
+                      <motion.button
+                        key={theme.id}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => { setCurrentTheme(theme); setUseCustomColors(false); }}
+                        className={cn(
+                          "aspect-square rounded-2xl border-4 transition-all relative overflow-hidden",
+                          currentTheme.id === theme.id && !useCustomColors
+                            ? "border-bible-accent shadow-lg shadow-bible-accent/40" 
+                            : "border-white/10 opacity-70 hover:opacity-100"
+                        )}
+                      >
+                        <div className={cn("absolute inset-0", theme.className)} />
+                        {currentTheme.id === theme.id && !useCustomColors && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[2px]">
+                            <Check className="w-5 h-5 text-white" />
+                          </div>
+                        )}
+                      </motion.button>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <span className="text-xs font-bold text-white/60 uppercase">Formato</span>
+                    <div className="flex gap-2">
+                      {FORMATS.map(f => (
+                        <button
+                          key={f.id}
+                          onClick={() => setCurrentFormat(f)}
+                          className={cn(
+                            "px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all",
+                            currentFormat.id === f.id 
+                              ? "bg-bible-accent text-white" 
+                              : "bg-white/5 text-white/40 hover:bg-white/10"
+                          )}
+                        >
+                          {f.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </>
               )}
 
-              <div className="relative z-10 flex flex-col items-center gap-10 max-w-[85%]">
-                <motion.div 
-                  animate={{ rotate: [0, 12, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-14 h-14 rounded-[20px] bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-lg"
-                >
-                  <Sparkles className="w-7 h-7" style={{ color: currentTheme.accentColor }} />
-                </motion.div>
-                
-                <p 
-                  className="leading-[1.5] font-black"
-                  style={{ color: currentTheme.textColor, fontSize: `${fontSize}px` }}
-                >
-                  “{fullText}”
-                </p>
-                
-                {showReference && (
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-[2px] rounded-full opacity-30" style={{ backgroundColor: currentTheme.textColor }} />
-                    <span 
-                      className="text-sm font-black uppercase tracking-[0.4em]"
-                      style={{ color: currentTheme.accentColor }}
+              {activeTab === 'fonts' && (
+                <div className="grid grid-cols-2 gap-2">
+                  {FONTS.map(font => (
+                    <button
+                      key={font.id}
+                      onClick={() => setCurrentFont(font)}
+                      className={cn(
+                        "p-4 rounded-2xl border-2 transition-all text-center",
+                        currentFont.id === font.id
+                          ? "bg-white text-black border-white"
+                          : "bg-white/5 text-white/60 border-transparent hover:bg-white/10"
+                      )}
+                      style={{ fontFamily: font.family }}
                     >
-                      {referenceWithVersion}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Minimal Branding */}
-              <div className="absolute bottom-12 flex items-center gap-3 opacity-40">
-                <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center overflow-hidden">
-                  <div className="w-2.5 h-2.5 rounded-full bg-white/80 animate-pulse" />
+                      <span className="text-sm font-bold">{font.name}</span>
+                    </button>
+                  ))}
                 </div>
-                <span className="text-[9px] font-black uppercase tracking-[0.5em]" style={{ color: currentTheme.textColor }}>
-                  Codex • Biblia Digital
-                </span>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+              )}
 
-        {/* Right: Controls Panel */}
-        <div className="w-full md:w-[460px] bg-[#0a0a0a]/80 backdrop-blur-3xl border-l border-white/5 flex flex-col z-[550] shadow-2xl">
-          <div className="p-8 pb-4">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="p-2 rounded-xl bg-bible-accent/10">
-                <Wand2 className="w-5 h-5 text-bible-accent" />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-bible-accent">Codex Studio</span>
-            </div>
-            <h2 className="text-3xl font-black text-white tracking-tight">Estilizar</h2>
-          </div>
+              {activeTab === 'custom' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <Droplets className="w-4 h-4 text-bible-accent" />
+                      <span className="text-xs font-bold text-white/60 uppercase">Cores Personalizadas</span>
+                    </div>
+                    <button
+                      onClick={() => setUseCustomColors(!useCustomColors)}
+                      className={cn(
+                        "w-12 h-6 rounded-full transition-all relative flex items-center px-1",
+                        useCustomColors ? "bg-bible-accent" : "bg-white/10"
+                      )}
+                    >
+                      <motion.div 
+                        animate={{ x: useCustomColors ? 24 : 0 }}
+                        className="w-4 h-4 rounded-full bg-white shadow-lg" 
+                      />
+                    </button>
+                  </div>
 
-          <div className="flex-1 overflow-y-auto p-8 pt-4 space-y-12 custom-scrollbar">
-            {/* Formats */}
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Layout className="w-4 h-4 text-white/40" />
-                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Tamanho da Tela</span>
-              </div>
-              <div className="flex gap-3">
-                {FORMATS.map(f => (
-                  <button
-                    key={f.id}
-                    onClick={() => setCurrentFormat(f)}
-                    className={cn(
-                      "flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300",
-                      currentFormat.id === f.id 
-                        ? "bg-bible-accent/20 border-bible-accent text-white" 
-                        : "bg-white/5 border-transparent text-white/40 hover:bg-white/10"
-                    )}
-                  >
-                    <f.icon className="w-5 h-5" />
-                    <span className="text-[10px] font-black uppercase tracking-tight">{f.name}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* Themes Selection */}
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Palette className="w-4 h-4 text-white/40" />
-                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Esquema de Cores</span>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                {THEMES.map(theme => (
-                  <motion.button
-                    key={theme.id}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setCurrentTheme(theme)}
-                    className={cn(
-                      "aspect-square rounded-[24px] border-4 transition-all relative overflow-hidden",
-                      currentTheme.id === theme.id 
-                        ? "border-bible-accent shadow-lg shadow-bible-accent/40" 
-                        : "border-white/5 opacity-70 hover:opacity-100"
-                    )}
-                  >
-                    <div className={cn("absolute inset-0", theme.className)} />
-                    {currentTheme.id === theme.id && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-bible-accent/20 backdrop-blur-[2px]">
-                        <Check className="w-6 h-6 text-white" />
+                  {useCustomColors && (
+                    <>
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Sun className="w-4 h-4 text-white/40" />
+                          <span className="text-xs font-bold text-white/40 uppercase">Cor de Fundo</span>
+                        </div>
+                        <div className="grid grid-cols-5 gap-2">
+                          {BG_COLORS.map(color => (
+                            <button
+                              key={color.id}
+                              onClick={() => setCustomBgColor(color.value)}
+                              className={cn(
+                                "aspect-square rounded-xl border-2 transition-all",
+                                customBgColor === color.value 
+                                  ? "border-bible-accent scale-110" 
+                                  : "border-white/10 hover:border-white/30"
+                              )}
+                              style={{ backgroundColor: color.value }}
+                            />
+                          ))}
+                        </div>
                       </div>
-                    )}
-                  </motion.button>
-                ))}
-              </div>
-            </section>
 
-            {/* Typography */}
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Type className="w-4 h-4 text-white/40" />
-                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Tipografia & Estilo</span>
-              </div>
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {FONTS.map(font => (
-                  <button
-                    key={font.id}
-                    onClick={() => setCurrentFont(font)}
-                    className={cn(
-                      "p-4 rounded-2xl border-2 transition-all text-xs font-black uppercase tracking-widest",
-                      currentFont.id === font.id
-                        ? "bg-white text-black border-white"
-                        : "bg-white/5 text-white/60 border-transparent hover:bg-white/10"
-                    )}
-                  >
-                    {font.name}
-                  </button>
-                ))}
-              </div>
-              <div className="bg-white/5 p-6 rounded-[28px] border border-white/5 space-y-5">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Tamanho da Fonte</span>
-                  <span className="text-sm font-black text-bible-accent">{fontSize}px</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="16" 
-                  max="72" 
-                  value={fontSize} 
-                  onChange={(e) => setFontSize(parseInt(e.target.value))}
-                  className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-bible-accent"
-                />
-              </div>
-            </section>
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Type className="w-4 h-4 text-white/40" />
+                          <span className="text-xs font-bold text-white/40 uppercase">Cor do Texto</span>
+                        </div>
+                        <div className="grid grid-cols-5 gap-2">
+                          {TEXT_COLORS.map(color => (
+                            <button
+                              key={color.id}
+                              onClick={() => setCustomTextColor(color.value)}
+                              className={cn(
+                                "aspect-square rounded-xl border-2 transition-all",
+                                customTextColor === color.value 
+                                  ? "border-bible-accent scale-110" 
+                                  : "border-white/10 hover:border-white/30"
+                              )}
+                              style={{ backgroundColor: color.value }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
 
-            {/* Layout Toggles */}
-            <section className="pb-32">
-              <div className="flex items-center gap-2 mb-4">
-                <Layers className="w-4 h-4 text-white/40" />
-                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Opções de Layout</span>
-              </div>
-              <button 
-                onClick={() => setShowReference(!showReference)}
-                className="w-full flex items-center justify-between p-5 rounded-[28px] bg-white/5 border border-white/5 hover:bg-white/10 transition-all group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className={cn("p-2 rounded-xl transition-colors", showReference ? "bg-bible-accent/20 text-bible-accent" : "bg-white/5 text-white/40")}>
-                    <Hexagon className="w-5 h-5" />
+                  <div className="bg-white/5 p-4 rounded-2xl space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-white/40 uppercase">Tamanho</span>
+                      <span className="text-sm font-black text-bible-accent">{fontSize}px</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="14" 
+                      max="48" 
+                      value={fontSize} 
+                      onChange={(e) => setFontSize(parseInt(e.target.value))}
+                      className="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer accent-bible-accent"
+                    />
                   </div>
-                  <span className="text-sm font-bold text-white/80">Referência Bíblica</span>
-                </div>
-                <div className={cn(
-                  "w-14 h-7 rounded-full transition-all duration-500 relative flex items-center px-1",
-                  showReference ? "bg-bible-accent" : "bg-white/10"
-                )}>
-                  <motion.div 
-                    animate={{ x: showReference ? 28 : 0 }}
-                    className="w-5 h-5 rounded-full bg-white shadow-xl" 
-                  />
-                </div>
-              </button>
-            </section>
-          </div>
 
-          {/* Actions Bottom Bar */}
-          <div className="p-8 bg-black/60 backdrop-blur-2xl border-t border-white/10 grid grid-cols-3 gap-3">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleShareText}
-              className="h-16 rounded-[24px] bg-white/5 border border-white/10 text-white flex flex-col items-center justify-center gap-1 font-black text-[9px] uppercase tracking-widest hover:bg-white/10 transition-all"
-            >
-              <Send className="w-4 h-4" /> Texto
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleCopy}
-              disabled={isExporting}
-              className="h-16 rounded-[24px] bg-white/5 border border-white/10 text-white flex flex-col items-center justify-center gap-1 font-black text-[9px] uppercase tracking-widest hover:bg-white/10 transition-all disabled:opacity-50"
-            >
-              <Copy className="w-5 h-5" /> Imagem
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleDownload}
-              disabled={isExporting}
-              className="h-16 rounded-[24px] bg-bible-accent text-white flex flex-col items-center justify-center gap-1 font-black text-[9px] uppercase tracking-widest shadow-2xl shadow-bible-accent/40 hover:brightness-110 transition-all disabled:opacity-50"
-            >
-              <Download className="w-5 h-5" /> {isExporting ? '...' : 'Salvar'}
-            </motion.button>
+                  <button 
+                    onClick={() => setShowReference(!showReference)}
+                    className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all"
+                  >
+                    <span className="text-sm font-bold text-white/80">Referência Bíblica</span>
+                    <div className={cn(
+                      "w-12 h-6 rounded-full transition-all relative flex items-center px-1",
+                      showReference ? "bg-bible-accent" : "bg-white/10"
+                    )}>
+                      <motion.div 
+                        animate={{ x: showReference ? 24 : 0 }}
+                        className="w-4 h-4 rounded-full bg-white shadow-lg" 
+                      />
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 bg-black/60 backdrop-blur-xl border-t border-white/10 grid grid-cols-3 gap-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleShareText}
+                className="h-14 rounded-2xl bg-white/5 border border-white/10 text-white flex flex-col items-center justify-center gap-1 font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-all"
+              >
+                <Send className="w-4 h-4" />
+                <span className="hidden sm:inline">Texto</span>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleCopy}
+                disabled={isExporting}
+                className="h-14 rounded-2xl bg-white/5 border border-white/10 text-white flex flex-col items-center justify-center gap-1 font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-all disabled:opacity-50"
+              >
+                <Copy className="w-4 h-4" />
+                <span className="hidden sm:inline">Copiar</span>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleDownload}
+                disabled={isExporting}
+                className="h-14 rounded-2xl bg-bible-accent text-white flex flex-col items-center justify-center gap-1 font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-bible-accent/30 hover:brightness-110 transition-all disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">{isExporting ? '...' : 'Salvar'}</span>
+              </motion.button>
+            </div>
           </div>
         </div>
       </motion.div>

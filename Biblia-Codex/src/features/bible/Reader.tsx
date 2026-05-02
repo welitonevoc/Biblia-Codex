@@ -83,7 +83,7 @@ const VerseItem = React.memo(({
     <div
       ref={verseRef}
       className={cn(
-        "group relative",
+        "group relative pb-4",
         hasHeadingBlock && "basis-full w-full",
         !settings.textDisplay.paragraphMode && "block w-full"
       )}
@@ -470,7 +470,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
           <motion.div
             initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
             animate={{ opacity: 1 }}
-            className={cn("space-y-4", settings.textDisplay.paragraphMode ? "flex flex-wrap items-baseline gap-x-1.5" : "flex flex-col")}
+            className={cn("space-y-4 pb-21", settings.textDisplay.paragraphMode ? "flex flex-wrap items-baseline gap-x-1.5" : "flex flex-col")}
             style={{ fontSize: `${config.fontSize}px`, lineHeight: config.lineHeight, fontFamily: 'var(--font-bible-family)' }}
           >
             {processedVerses.map(({ verse: v, headingsHtml, bodyHtml }) => {

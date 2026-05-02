@@ -547,7 +547,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     className="flex flex-col h-full"
                   >
                     {renderHeader(`${selectedBook.name} ${selectedChapter}`, () => setView('chapters'))}
-                    <div className={cn('p-4 max-h-[350px] overflow-y-auto grid gap-2 custom-scrollbar', gridCols)}>
+                    <div className={cn('px-4 pb-8 pt-2 max-h-[350px] overflow-y-auto grid gap-2 custom-scrollbar', gridCols)}>
                       {isLoadingVerses ? (
                         <div className="col-span-full py-10 flex flex-col items-center gap-3">
                            <div className="w-8 h-8 border-2 border-[var(--accent-bible)] border-t-transparent rounded-full animate-spin" />
