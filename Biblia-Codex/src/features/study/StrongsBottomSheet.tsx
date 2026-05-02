@@ -61,6 +61,7 @@ export const StrongsBottomSheet: React.FC<StrongsBottomSheetProps> = ({
       
       if (!lexiconModule) {
         lexiconModule = availableDictionaries.find(d => d.path.toLowerCase().includes('strong')) 
+          || availableDictionaries.find(d => d.path.toLowerCase().includes('vinepro'))
           || availableDictionaries[0];
       }
 
@@ -229,23 +230,26 @@ export const StrongsBottomSheet: React.FC<StrongsBottomSheetProps> = ({
                   ) : lexiconEntry ? (
                     <div className="space-y-4 animate-in fade-in duration-500">
                       {/* Analysis Block */}
-                      <div className="glass-panel p-4">
-                        <div className="prose prose-gold max-w-none prose-p:ui-text prose-p:text-[15px] prose-p:leading-relaxed prose-strong:text-gold prose-p:text-bible">
-                           <div 
-                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(MySwordParser.parseContent(lexiconEntry.definition)) }}
-                           />
+                      <div className="glass-panel p-5 overflow-x-hidden">
+                        <div className="mb-3 flex items-center gap-2">
+                          <div className="premium-kicker">Definição</div>
+                        </div>
+                        <div className="dictionary-content">
+                             <div 
+                               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(MySwordParser.parseContent(lexiconEntry.definition)) }}
+                             />
                         </div>
                       </div>
 
-                      {/* Info Chips - Compact */}
-                      <div className="grid grid-cols-2 gap-2 mt-4 opacity-50">
-                         <div className="p-3 rounded-xl bg-bible-text/5 flex items-center justify-between border border-bible-border/5">
-                            <span className="text-[7px] font-black uppercase tracking-tight text-bible">Strong</span>
-                            <span className="text-[9px] font-bold text-gold">{strongsNumber}</span>
+                      {/* Info Chips */}
+                      <div className="grid grid-cols-2 gap-2 mt-6">
+                         <div className="dictionary-chip">
+                            <span className="dictionary-chip-label">Strong</span>
+                            <span className="dictionary-chip-value gold">{strongsNumber}</span>
                          </div>
-                         <div className="p-3 rounded-xl bg-bible-text/5 flex items-center justify-between border border-bible-border/5">
-                            <span className="text-[7px] font-black uppercase tracking-tight text-bible">Origem</span>
-                            <span className="text-[9px] font-bold text-bible">{isHebrew ? 'Hebraico' : 'Grego'}</span>
+                         <div className="dictionary-chip">
+                            <span className="dictionary-chip-label">Origem</span>
+                            <span className="dictionary-chip-value">{isHebrew ? 'Hebraico' : 'Grego'}</span>
                          </div>
                       </div>
                     </div>

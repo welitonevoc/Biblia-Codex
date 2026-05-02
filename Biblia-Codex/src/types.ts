@@ -218,6 +218,7 @@ export interface AppSettings {
     chapterTitles: boolean;
     headlines: boolean;
     footnotes: boolean;
+    showStrongs: boolean;
   };
   studyTools: {
     strongsTags: boolean;

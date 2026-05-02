@@ -43,13 +43,21 @@ export class MySwordParser {
     // 2c. Inline verse markers used by some MySword/MyBible-derived modules
     parsed = parsed.replace(/<v=[^>]+>/gi, '');
     
-    // 3. Strong's Numbers - ALWAYS REMOVE to avoid cluttering the display
+    // 3. Strong's Numbers - Remove unless showStrongs is enabled
     // These interfere with reading and are only needed for scholarly study
     // Remove all forms: <WH1234>, <WG1234>, <S1234>, <S>H1234</S>
-    parsed = parsed.replace(/<WH\d+>/gi, '');
-    parsed = parsed.replace(/<WG\d+>/gi, '');
-    parsed = parsed.replace(/<S[HG]?\d+>/gi, '');
-    parsed = parsed.replace(/<S>[HG]?\d+<\/S>/gi, '');
+    if (settings?.textDisplay?.showStrongs) {
+      // Keep Strong numbers but wrap them in a styled span
+      parsed = parsed.replace(/<WH(\d+)>/gi, '<span class="strong-number" data-strong="H$1">H$1</span>');
+      parsed = parsed.replace(/<WG(\d+)>/gi, '<span class="strong-number" data-strong="G$1">G$1</span>');
+      parsed = parsed.replace(/<S[HG]?(\d+)>/gi, '<span class="strong-number" data-strong="$1">$1</span>');
+      parsed = parsed.replace(/<S>([HG]?\d+)<\/S>/gi, '<span class="strong-number" data-strong="$1">$1</span>');
+    } else {
+      parsed = parsed.replace(/<WH\d+>/gi, '');
+      parsed = parsed.replace(/<WG\d+>/gi, '');
+      parsed = parsed.replace(/<S[HG]?\d+>/gi, '');
+      parsed = parsed.replace(/<S>[HG]?\d+<\/S>/gi, '');
+    }
 
     // 4. Morphology
     if (settings?.studyTools?.morphTags) {

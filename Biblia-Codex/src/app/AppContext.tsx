@@ -8,6 +8,7 @@ import { auth, db, onAuthStateChanged, User, loginWithGoogle, logout, handleRedi
 import { syncService } from '../services/SyncService';
 import { dictionaryService, createAiModule } from '../services/dictionaryService';
 import { scanForBibleModules } from '../services/moduleScanner';
+import { loadVineIndex } from '../services/VineProService';
 import { listInstalledModules } from '../services/moduleService';
 import { DEFAULT_THEME_MODE, THEME_CLASSNAMES, getThemePreset, getThemeVariables, normalizeThemeMode } from '../theme/presets';
 
@@ -137,6 +138,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         chapterTitles: true,
         headlines: true,
         footnotes: true,
+        showStrongs: false,
       },
       studyTools: {
         strongsTags: false,
@@ -541,6 +543,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     refreshModules();
   }, [refreshModules]);
+
+  useEffect(() => {
+    loadVineIndex().catch(e => console.warn('[AppContext] VinePro não carregado:', e));
+  }, []);
 
   const handleSetSelectedDictionaryModule = useCallback((module: BibleModule | null) => {
     setSelectedDictionaryModule(module);

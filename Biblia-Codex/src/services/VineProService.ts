@@ -1,17 +1,60 @@
 import { getConfiguredProvider, getApiKey } from './geminiService';
+import { storage } from '../StorageService';
+import type { StrongsEntry } from '../types';
 
 let vineCache: Map<string, { word: string; lang: string; text: string }[]> | null = null;
+let vineLoadError: string | null = null;
+let vineLoadedToStorage = false;
 
 export const loadVineIndex = async (): Promise<void> => {
   if (vineCache) return;
+  if (vineLoadError) {
+    console.warn('[VineProService] Ja houve erro ao carregar:', vineLoadError);
+    return;
+  }
+    
+  console.log('[VineProService] Carregando indice...');
   
-  console.log('[VineProService] Carregando índice...');
-  const response = await fetch('/VinePro_clean.json.gz');
-  const buffer = await response.arrayBuffer();
-  
-  const decompressed = await decompressGzip(new Uint8Array(buffer));
-  const text = new TextDecoder().decode(decompressed);
-  
+  // Usar apenas o formato .json.gz (NDJSON comprimido)
+  const gzUrls = [
+    '/data/VinePro_clean.json.gz',
+    '/VinePro_clean.json.gz',
+  ];
+
+  for (const url of gzUrls) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) continue;
+      
+      const buffer = await response.arrayBuffer();
+      const uint8Array = new Uint8Array(buffer);
+      
+      if (uint8Array[0] === 0x1f && uint8Array[1] === 0x8b) {
+        const decompressed = await decompressGzip(uint8Array);
+        const text = new TextDecoder().decode(decompressed);
+        parseVineData(text);
+        console.log('[VineProService] Carregado gz de:', url);
+        await loadVineToStorage();
+        return;
+      } else {
+        const text = new TextDecoder().decode(buffer);
+        if (text.trim().length > 100) {
+          parseVineData(text);
+          console.log('[VineProService] Carregado texto de:', url);
+          await loadVineToStorage();
+          return;
+        }
+      }
+    } catch (_e) {
+      console.warn('[VineProService] Falha ao carregar de', url, _e);
+    }
+  }
+
+  vineLoadError = 'Nenhum formato de VinePro encontrado';
+  console.error('[VineProService] Erro: nenhum arquivo VinePro disponivel');
+};
+
+function parseVineData(text: string) {
   const lines = text.split('\n').filter(l => l.trim());
   vineCache = new Map();
   
@@ -20,10 +63,11 @@ export const loadVineIndex = async (): Promise<void> => {
       const entry = JSON.parse(line);
       const word = entry.w?.toUpperCase();
       if (word) {
-        if (!vineCache!.has(word[0].toUpperCase())) {
-          vineCache!.set(word[0].toUpperCase(), []);
+        const firstChar = word.charAt(0).toUpperCase();
+        if (!vineCache!.has(firstChar)) {
+          vineCache!.set(firstChar, []);
         }
-        vineCache!.get(word[0].toUpperCase())!.push({
+        vineCache!.get(firstChar)!.push({
           word,
           lang: entry.l,
           text: entry.t
@@ -33,15 +77,63 @@ export const loadVineIndex = async (): Promise<void> => {
   });
   
   console.log('[VineProService] Índice carregado:', vineCache!.size, 'grupos');
-};
+}
+
+async function loadVineToStorage() {
+  if (vineLoadedToStorage || !vineCache) return;
+  
+  try {
+    const hebrewEntries: StrongsEntry[] = [];
+    const greekEntries: StrongsEntry[] = [];
+    
+    for (const [, group] of vineCache) {
+      for (const entry of group) {
+        const entryData: StrongsEntry = {
+          number: entry.word,
+          word: entry.word,
+          language: entry.lang === 'H' ? 'hebrew' : 'greek',
+          transliteration: entry.word,
+          definition: entry.text,
+          pronunciation: '',
+        };
+        
+        if (entry.lang === 'H') {
+          hebrewEntries.push(entryData);
+        } else {
+          greekEntries.push(entryData);
+        }
+      }
+    }
+    
+    if (hebrewEntries.length > 0) {
+      await storage.saveStrongsHebrewBatch(hebrewEntries);
+      console.log('[VineProService] Salvos', hebrewEntries.length, 'verbetes hebraicos');
+    }
+    
+    if (greekEntries.length > 0) {
+      await storage.saveStrongsGreekBatch(greekEntries);
+      console.log('[VineProService] Salvos', greekEntries.length, 'verbetes gregos');
+    }
+    
+    vineLoadedToStorage = true;
+    console.log('[VineProService] VinePro carregado no storage como dicionário padrão de Strong');
+  } catch (e) {
+    console.error('[VineProService] Erro ao salvar no storage:', e);
+  }
+}
 
 async function decompressGzip(data: Uint8Array): Promise<ArrayBuffer> {
-  const ds = new DecompressionStream('gzip');
-  const writer = ds.writable.getWriter();
-  writer.write(data);
-  writer.close();
-  const response = new Response(ds.readable);
-  return response.arrayBuffer();
+  try {
+    const ds = new DecompressionStream('gzip');
+    const writer = ds.writable.getWriter();
+    writer.write(data);
+    writer.close();
+    const response = new Response(ds.readable);
+    return await response.arrayBuffer();
+  } catch (e) {
+    console.error('[VineProService] Erro na descompressão:', e);
+    throw e;
+  }
 }
 
 export const getVineEntry = async (term: string): Promise<string | null> => {

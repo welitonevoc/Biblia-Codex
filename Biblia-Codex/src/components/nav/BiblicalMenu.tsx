@@ -366,10 +366,10 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     exit={{ opacity: 0, x: -20 }}
                     className="flex flex-col h-full p-2 sm:p-4"
                   >
-                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
                       <button 
                         onClick={() => setView('books')}
-                        className="grid h-8 w-8 sm:h-11 sm:w-11 place-items-center rounded-lg sm:rounded-xl hover:bg-bible-surface transition-colors"
+                        className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-lg sm:rounded-xl hover:bg-bible-surface transition-colors"
                         aria-label="Voltar"
                       >
                         <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-bible-text" />
@@ -377,8 +377,8 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                       <h2 className="text-base sm:text-xl font-black text-bible-text tracking-tight">Aparência</h2>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-8 pr-1 sm:pr-2 custom-scrollbar">
-                      <section className="space-y-2 sm:space-y-4">
+                    <div className="flex-1 overflow-y-auto space-y-3 sm:space-y-6 pr-1 sm:pr-2 custom-scrollbar max-h-[50vh] sm:max-h-none">
+                      <section className="space-y-1.5 sm:space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-bible-text-muted">Tamanho da Fonte</span>
                           <span className="text-xs sm:text-sm font-bold text-bible-accent">{config.fontSize}px</span>
@@ -386,7 +386,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                         <div className="flex items-center gap-2 sm:gap-4 bg-bible-surface p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-bible-border/30">
                           <button 
                             onClick={() => setFontSize(Math.max(12, config.fontSize - 1))}
-                            className="grid h-8 w-8 sm:h-11 sm:w-11 place-items-center rounded-lg hover:bg-bible-accent/10 text-bible-text-muted hover:text-bible-accent transition-colors"
+                            className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-lg hover:bg-bible-accent/10 text-bible-text-muted hover:text-bible-accent transition-colors"
                             aria-label="Diminuir fonte"
                           >
                             <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -401,7 +401,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                           />
                           <button 
                             onClick={() => setFontSize(Math.min(32, config.fontSize + 1))}
-                            className="grid h-8 w-8 sm:h-11 sm:w-11 place-items-center rounded-lg hover:bg-bible-accent/10 text-bible-text-muted hover:text-bible-accent transition-colors"
+                            className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-lg hover:bg-bible-accent/10 text-bible-text-muted hover:text-bible-accent transition-colors"
                             aria-label="Aumentar fonte"
                           >
                             <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -409,7 +409,29 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                         </div>
                       </section>
 
-                      <section className="space-y-2 sm:space-y-4">
+                      <section className="space-y-1.5 sm:space-y-3">
+                        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-bible-text-muted">Números de Strong</span>
+                        <button
+                          onClick={() => toggleSetting('textDisplay', 'showStrongs')}
+                          className="w-full flex items-center justify-between p-2.5 sm:p-3.5 rounded-lg sm:rounded-xl bg-bible-surface/50 border border-bible-border/30 hover:bg-bible-surface transition-all group"
+                        >
+                          <div className="text-left">
+                            <div className="text-xs sm:text-sm font-bold text-bible-text">Mostrar números Strong</div>
+                            <div className="text-[8px] sm:text-[9px] text-bible-text-muted opacity-60">Exibe referências Strong no texto</div>
+                          </div>
+                          <div className={cn(
+                            "w-9 h-5 sm:w-10 sm:h-6 rounded-full transition-all relative",
+                            settings.textDisplay.showStrongs ? "bg-bible-accent" : "bg-bible-text-muted/20"
+                          )}>
+                            <div className={cn(
+                              "absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all",
+                              settings.textDisplay.showStrongs ? "left-4 sm:left-5" : "left-0.5 sm:left-1"
+                            )} />
+                          </div>
+                        </button>
+                      </section>
+
+                      <section className="space-y-1.5 sm:space-y-3">
                         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-bible-text-muted">Estilo da Fonte</span>
                         <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                           {[

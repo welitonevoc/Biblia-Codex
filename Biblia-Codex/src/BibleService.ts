@@ -341,7 +341,7 @@ export const BibleService = {
     return null;
   },
 
-getDictionaryEntry: async (word: string, modulePath: string): Promise<DictionaryEntry | null> => {
+ getDictionaryEntry: async (word: string, modulePath: string): Promise<DictionaryEntry | null> => {
     // Handle VinePro format (JSON gz)
     if (modulePath.includes('VinePro')) {
       try {
@@ -362,6 +362,27 @@ getDictionaryEntry: async (word: string, modulePath: string): Promise<Dictionary
       }
       return null;
     }
+
+    // Handle Merrill format (JSON gz)
+    if (modulePath.toLowerCase().includes('merril') || modulePath.toLowerCase().includes('enciclopedia')) {
+      try {
+        const { getMerrillEntry } = await import('./services/MerrillService');
+        const text = await getMerrillEntry(word);
+        if (text) {
+          return {
+            id: `merrill-${word}`,
+            term: word,
+            definition: text,
+            moduleName: 'Enciclopédia Merrill',
+            source: 'local',
+            isAiGenerated: false
+          };
+        }
+      } catch (e) {
+        console.error('[BibleService] Erro ao buscar Merrill:', e);
+      }
+      return null;
+    }
     
     try {
       const cacheKey = `dict-${modulePath}`;
@@ -378,39 +399,39 @@ getDictionaryEntry: async (word: string, modulePath: string): Promise<Dictionary
         }
         const db = new SQL.Database(binaryData);
 
-        // Detect if it's Merrill format (has 'entries' table directly)
-        const tablesResult = execSQL(db, `SELECT name FROM sqlite_master WHERE type='table'`);
+const tablesResult = execSQL(db, `SELECT name FROM sqlite_master WHERE type='table'`);
         const tableNames = (tablesResult[0]?.values ?? []).map((row: unknown[]) => String(row[0]).toLowerCase()) as string[];
+        
+        const isMerrill = modulePath.toLowerCase().includes('merril') || modulePath.toLowerCase().includes('enciclopedia');
         
         let table: string;
         let schema: SQLiteSchema;
         
-        if (tableNames.includes('entries')) {
-          // Merrill format: direct 'entries' table
-          table = 'entries';
-          const pragma = execSQL(db, `PRAGMA table_info("entries")`);
+        if (tableNames.includes('entries') || (isMerrill && tableNames.length > 0)) {
+          table = tableNames.includes('entries') ? 'entries' : tableNames[0];
+          const pragma = execSQL(db, `PRAGMA table_info("${table}")`);
           const cols = (pragma[0]?.values.map((v: unknown[]) => String(v[1]).toLowerCase()) as string[]);
           
           schema = {
             table,
-            bookCol: cols.find(c => ['word', 'topic', 'key', 'entry', 'lexeme'].includes(c)) || 'word',
-            textCol: cols.find(c => ['data', 'definition', 'content', 'text', 'body'].includes(c)) || 'text',
+            bookCol: cols.find(c => ['word', 'topic', 'key', 'entry', 'lexeme', 'term'].includes(c)) || cols[0] || 'word',
+            textCol: cols.find(c => ['data', 'definition', 'content', 'text', 'body', 'description'].includes(c)) || 'data',
             chapterCol: '',
             verseCol: '',
             isMyBible: false
           };
         } else {
           // mybible format
-          table = ['dictionary', 'dict', 'entries', 'words'].find(t => tableNames.includes(t)) || tableNames[0];
-          if (!table) throw new Error("Tabela de dicionário não encontrada");
+          table = ['dictionary', 'dict', 'entries', 'words', 'words'].find(t => tableNames.includes(t)) || tableNames[0];
+          if (!table) throw new Error("Tabela de dicionario nao encontrada");
 
           const pragma = execSQL(db, `PRAGMA table_info("${table}")`);
           const cols = (pragma[0]?.values.map((v: unknown[]) => String(v[1]).toLowerCase()) as string[]);
 
           schema = {
             table,
-            bookCol: cols.find(c => ['word', 'topic', 'key', 'entry', 'lexeme'].includes(c)) || 'word',
-            textCol: cols.find(c => ['data', 'definition', 'content', 'text', 'body'].includes(c)) || 'data',
+            bookCol: cols.find(c => ['word', 'topic', 'key', 'entry', 'lexeme', 'term'].includes(c)) || 'word',
+            textCol: cols.find(c => ['data', 'definition', 'content', 'text', 'body', 'description'].includes(c)) || 'data',
             chapterCol: '',
             verseCol: '',
             isMyBible: false
@@ -421,7 +442,7 @@ getDictionaryEntry: async (word: string, modulePath: string): Promise<Dictionary
         dbCache.set(cacheKey, cached);
       }
 
-const { db, schema } = cached!;
+      const { db, schema } = cached!;
       const cleanWord = word.replace(/^[HG]/i, '');
       const query = `SELECT "${schema.textCol}", "${schema.bookCol}" FROM "${schema.table}" WHERE "${schema.bookCol}" = ? OR "${schema.bookCol}" = ? OR "${schema.bookCol}" LIKE ? LIMIT 1`;
       const result = execSQL(db, query, [word, cleanWord, `${cleanWord}%`]);

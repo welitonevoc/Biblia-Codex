@@ -252,6 +252,23 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     onToolOpen(v, type as any);
   }, [onToolOpen]);
 
+  const handleStrongClick = useCallback((e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('strong-number')) {
+      e.stopPropagation();
+      const strongNumber = target.getAttribute('data-strong');
+      if (strongNumber) {
+        setSelectedStrongs(strongNumber);
+        setIsStrongsOpen(true);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('click', handleStrongClick);
+    return () => document.removeEventListener('click', handleStrongClick);
+  }, [handleStrongClick]);
+
   useEffect(() => {
     let cancelled = false;
 

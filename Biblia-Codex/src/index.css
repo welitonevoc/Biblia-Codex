@@ -352,6 +352,35 @@ body::before {
   text-shadow: 0 0 12px rgba(248, 113, 113, 0.2);
 }
 
+.strong-number {
+  display: inline-block;
+  font-size: 0.65em;
+  font-weight: 700;
+  color: var(--accent-strong-bible, #9333ea);
+  background: var(--surface-strong, #f3e8ff);
+  padding: 1px 4px;
+  margin: 0 2px;
+  border-radius: 3px;
+  vertical-align: super;
+  line-height: 1;
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.pure_dark .strong-number,
+.royal_majesty .strong-number,
+.midnight_navy .strong-number,
+.obsidian_gold .strong-number,
+.emerald_sanctum .strong-number,
+.crimson_vignette .strong-number {
+  background: rgba(147, 51, 234, 0.2);
+  color: #c084fc;
+}
+
+.strong-number:hover {
+  cursor: pointer;
+  transform: scale(1.1);
+}
+
 .pure_dark .bible-text,
 .royal_majesty .bible-text,
 .midnight_navy .bible-text,
@@ -519,4 +548,187 @@ body {
 .bible-title-narrative {
   text-align: center;
   font-variant: small-caps;
+}
+
+/* ──────────────────────────────────────────────
+   MYSWORD COLOR CLASSES (from mySwordParser)
+   ────────────────────────────────────────────── */
+.mysword-color-red { color: #dc2626; }
+.mysword-color-orange { color: #ea580c; }
+.mysword-color-brown { color: #92400e; }
+.mysword-color-green-yellow { color: #4d7c0f; }
+.mysword-color-green { color: #16a34a; }
+.mysword-color-teal { color: #0d9488; }
+.mysword-color-blue { color: #2563eb; }
+.mysword-color-violet { color: #7c3aed; }
+.mysword-color-purple { color: #9333ea; }
+.mysword-color-pink { color: #db2777; }
+.mysword-color-gray { color: #6b7280; }
+
+/* Dark mode adjustments for MySword colors */
+.pure_dark .mysword-color-red,
+.royal_majesty .mysword-color-red,
+.midnight_navy .mysword-color-red,
+.obsidian_gold .mysword-color-red,
+.emerald_sanctum .mysword-color-red,
+.crimson_vignette .mysword-color-red { color: #f87171; }
+
+.pure_dark .mysword-color-orange,
+.royal_majesty .mysword-color-orange,
+.midnight_navy .mysword-color-orange,
+.obsidian_gold .mysword-color-orange,
+.emerald_sanctum .mysword-color-orange,
+.crimson_vignette .mysword-color-orange { color: #fb923c; }
+
+.pure_dark .mysword-color-brown,
+.royal_majesty .mysword-color-brown,
+.midnight_navy .mysword-color-brown,
+.obsidian_gold .mysword-color-brown,
+.emerald_sanctum .mysword-color-brown,
+.crimson_vignette .mysword-color-brown { color: #d97706; }
+
+.pure_dark .mysword-color-green-yellow,
+.royal_majesty .mysword-color-green-yellow,
+.midnight_navy .mysword-color-green-yellow,
+.obsidian_gold .mysword-color-green-yellow,
+.emerald_sanctum .mysword-color-green-yellow,
+.crimson_vignette .mysword-color-green-yellow { color: #a3e635; }
+
+.pure_dark .mysword-color-green,
+.royal_majesty .mysword-color-green,
+.midnight_navy .mysword-color-green,
+.obsidian_gold .mysword-color-green,
+.emerald_sanctum .mysword-color-green,
+.crimson_vignette .mysword-color-green { color: #4ade80; }
+
+.pure_dark .mysword-color-teal,
+.royal_majesty .mysword-color-teal,
+.midnight_navy .mysword-color-teal,
+.obsidian_gold .mysword-color-teal,
+.emerald_sanctum .mysword-color-teal,
+.crimson_vignette .mysword-color-teal { color: #2dd4bf; }
+
+.pure_dark .mysword-color-blue,
+.royal_majesty .mysword-color-blue,
+.midnight_navy .mysword-color-blue,
+.obsidian_gold .mysword-color-blue,
+.emerald_sanctum .mysword-color-blue,
+.crimson_vignette .mysword-color-blue { color: #60a5fa; }
+
+.pure_dark .mysword-color-violet,
+.royal_majesty .mysword-color-violet,
+.midnight_navy .mysword-color-violet,
+.obsidian_gold .mysword-color-violet,
+.emerald_sanctum .mysword-color-violet,
+.crimson_vignette .mysword-color-violet { color: #a78bfa; }
+
+.pure_dark .mysword-color-purple,
+.royal_majesty .mysword-color-purple,
+.midnight_navy .mysword-color-purple,
+.obsidian_gold .mysword-color-purple,
+.emerald_sanctum .mysword-color-purple,
+.crimson_vignette .mysword-color-purple { color: #c084fc; }
+
+.pure_dark .mysword-color-pink,
+.royal_majesty .mysword-color-pink,
+.midnight_navy .mysword-color-pink,
+.obsidian_gold .mysword-color-pink,
+.emerald_sanctum .mysword-color-pink,
+.crimson_vignette .mysword-color-pink { color: #f472b6; }
+
+.pure_dark .mysword-color-gray,
+.royal_majesty .mysword-color-gray,
+.midnight_navy .mysword-color-gray,
+.obsidian_gold .mysword-color-gray,
+.emerald_sanctum .mysword-color-gray,
+.crimson_vignette .mysword-color-gray { color: #9ca3af; }
+
+/* ──────────────────────────────────────────────
+   DICTIONARY CONTENT STYLES (StrongsBottomSheet)
+   ────────────────────────────────────────────── */
+.dictionary-content {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-bible);
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.dictionary-content p {
+  margin-bottom: 1em;
+  max-width: 65ch; /* Limit line length for readability (ui-ux-pro-max) */
+}
+
+.dictionary-content ul,
+.dictionary-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1em;
+}
+
+.dictionary-content li {
+  margin-bottom: 0.5em;
+}
+
+.dictionary-content strong {
+  color: var(--accent-bible);
+  font-weight: 700;
+}
+
+.dictionary-content a {
+  color: var(--accent-bible);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.dictionary-content a:hover {
+  opacity: 0.8;
+}
+
+.dictionary-content h1,
+.dictionary-content h2,
+.dictionary-content h3,
+.dictionary-content h4 {
+  font-family: var(--font-display, "Cormorant Garamond", serif);
+  color: var(--text-bible);
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+}
+
+.dictionary-content h1 { font-size: 1.5rem; font-weight: 800; }
+.dictionary-content h2 { font-size: 1.3rem; font-weight: 700; }
+.dictionary-content h3 { font-size: 1.15rem; font-weight: 600; }
+.dictionary-content h4 { font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Info chips at bottom of dictionary entry */
+.dictionary-chip {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm, 10px);
+  background: var(--surface-2, #f1f5f9);
+  border: 1px solid var(--border-bible, #e2e8f0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px; /* Touch target size (ui-ux-pro-max) */
+}
+
+.dictionary-chip-label {
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted-bible, #475569);
+}
+
+.dictionary-chip-value {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-bible, #0f172a);
+}
+
+.dictionary-chip-value.gold {
+  color: var(--accent-bible, #2563eb);
 }

@@ -10,14 +10,13 @@ const PUBLIC_MODULES = [
 ];
 
 const PUBLIC_DICTIONARIES = [
-  { file: 'Strong AMG Biblia Palavra-Chave.dct.mybible', name: 'Strong AMG (Biblia Palavra-Chave)' },
-  { file: 'Strong KJ Concordancia.dct.mybible', name: 'Strong KJ (Concordancia)' },
+  { file: 'Strong AMG Bíblia Palavra-Chave.dct.mybible', name: 'Strong AMG (Biblia Palavra-Chave)' },
+  { file: 'Strong KJ Concordância.dct.mybible', name: 'Strong KJ (Concordância)' },
   { file: 'EnciclopediaMerril_optimized.db', name: 'Enciclopédia Merrill (Tenney)', category: 'merrill' },
   { file: 'VinePro_clean.json.gz', name: 'Multiléxico Vine Pro BR', category: 'vinepro' },
 ];
 
 export const scanForBibleModules = async (): Promise<BibleModule[]> => {
-  // Always include public modules as built-in options
   const bibleModules = PUBLIC_MODULES.map(m => ({
     id: m.file,
     name: m.name,

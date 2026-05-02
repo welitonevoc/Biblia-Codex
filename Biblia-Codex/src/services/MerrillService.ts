@@ -1,35 +1,67 @@
 import { DictionaryEntry } from '../types';
 
 let merrillCache: Map<string, { word: string; text: string }[]> | null = null;
+let merrillLoadError: string | null = null;
 
 export const loadMerrillIndex = async (): Promise<void> => {
   if (merrillCache) return;
-  
+  if (merrillLoadError) {
+    console.warn('[MerrillService] Erro anterior:', merrillLoadError);
+    return;
+  }
+
   console.log('[MerrillService] Carregando índice...');
-  const response = await fetch('/EnciclopediaMerril_clean.json.gz');
-  const buffer = await response.arrayBuffer();
-  
-  const decompressed = await decompressGzip(new Uint8Array(buffer));
-  const text = new TextDecoder().decode(decompressed);
-  
-  const lines = text.split('\n').filter(l => l.trim());
-  merrillCache = new Map();
-  
-  lines.forEach(line => {
+  const urls = [
+    '/data/EnciclopediaMerril_clean.json.gz',
+    '/EnciclopediaMerril_clean.json.gz',
+    '/data/EnciclopediaMerril_optimized.db'
+  ];
+
+  let lastError;
+  for (const url of urls) {
     try {
-      const entry = JSON.parse(line);
-      const word = entry.w?.toLowerCase();
-      if (word) {
-        const firstChar = word.charAt(0).toUpperCase();
-        if (!merrillCache!.has(firstChar)) {
-          merrillCache!.set(firstChar, []);
-        }
-        merrillCache!.get(firstChar)!.push({ word, text: entry.t });
+      const response = await fetch(url);
+      if (!response.ok) continue;
+
+      const buffer = await response.arrayBuffer();
+      const uint8Array = new Uint8Array(buffer);
+
+      let text: string;
+      if (uint8Array[0] === 0x1f && uint8Array[1] === 0x8b) {
+        const decompressed = await decompressGzip(uint8Array);
+        text = new TextDecoder().decode(decompressed);
+      } else {
+        text = new TextDecoder().decode(buffer);
       }
-    } catch (e) {}
-  });
-  
-  console.log('[MerrillService] Índice carregado:', merrillCache?.size, 'grupos');
+
+      if (text.trim().length > 100) {
+        const lines = text.split('\n').filter(l => l.trim());
+        merrillCache = new Map();
+
+        lines.forEach(line => {
+          try {
+            const entry = JSON.parse(line);
+            const word = entry.w?.toLowerCase();
+            if (word) {
+              const firstChar = word.charAt(0).toUpperCase();
+              if (!merrillCache!.has(firstChar)) {
+                merrillCache!.set(firstChar, []);
+              }
+              merrillCache!.get(firstChar)!.push({ word, text: entry.t });
+            }
+          } catch (e) {}
+        });
+
+        console.log('[MerrillService] Índice carregado de', url, ':', merrillCache?.size, 'grupos');
+        return;
+      }
+    } catch (e) {
+      lastError = e;
+    }
+  }
+
+  merrillLoadError = 'Nenhum arquivo Merrill encontrado';
+  console.error('[MerrillService] Erro: nenhum arquivo disponível', lastError);
 };
 
 async function decompressGzip(data: Uint8Array): Promise<ArrayBuffer> {
