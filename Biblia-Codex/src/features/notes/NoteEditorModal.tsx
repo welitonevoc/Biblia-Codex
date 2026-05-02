@@ -1,13 +1,13 @@
 /**
  * NoteEditorModal - Popup de edição de notas avançada
- * Inclui: fechar, maximizar, minimizar, TTS, tags, toolbar rica, parsing de versículos
+ * Inclui: fechar, maximizar, minimizar, tags, toolbar rica, parsing de versículos
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  X, Minus, Maximize2, Minimize2, Volume2, VolumeX, Pin, PinOff,
-  Save, Download, Share2, Trash2, Sparkles, Play, Pause,
+  X, Minus, Maximize2, Minimize2, Pin, PinOff,
+  Save, Download, Share2, Trash2, Sparkles,
   Clock, Bold, Italic, Underline, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, CheckSquare, Link2, Palette, Highlighter, Code, Quote,
   AlignLeft, AlignCenter, AlignRight, Undo, Redo, Link, BookOpen,
@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import { Note } from '../types';
 import { storage } from '../StorageService';
-import { speakText, stopSpeaking, isTTSSupported, isCurrentlySpeaking } from '../services/ttsService';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -83,8 +82,7 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
   const [content, setContent] = useState('');
   const [htmlContent, setHtmlContent] = useState('');
   const [pinned, setPinned] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [activeTab, setActiveTab] = useState<'edit' | 'tts'>('edit');
+  const [activeTab, setActiveTab] = useState<'edit'>('edit');
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   
@@ -303,10 +301,6 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
   };
 
   const handleClose = () => {
-    if (isCurrentlySpeaking()) {
-      stopSpeaking();
-      setIsSpeaking(false);
-    }
     onClose();
   };
 
@@ -316,27 +310,6 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
 
   const toggleMinimize = () => {
     setWindowState(prev => prev === 'minimized' ? 'normal' : 'minimized');
-  };
-
-  const toggleTTS = async () => {
-    if (!isTTSSupported) return;
-    
-    const contentText = editorRef.current?.innerText || content;
-    
-    if (isSpeaking) {
-      stopSpeaking();
-      setIsSpeaking(false);
-    } else {
-      setIsSpeaking(true);
-      try {
-        const textToRead = title ? `${title}. ${contentText}` : contentText;
-        await speakText(textToRead, { rate: 0.85, lang: 'pt-BR' });
-      } catch (e) {
-        console.error('TTS erro:', e);
-      } finally {
-        setIsSpeaking(false);
-      }
-    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -437,24 +410,14 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
 
               <div className="flex items-center gap-1 px-3 py-1.5 bg-[var(--surface-1)] border-b border-[var(--border-bible)] shrink-0 sm:px-4">
                 <button
-                  onClick={() => setActiveTab('edit')}
-                  className={cn(
-                    "min-h-9 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors",
-                    activeTab === 'edit' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)]"
-                  )}
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => setActiveTab('tts')}
-                  className={cn(
-                    "min-h-9 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5",
-                    activeTab === 'tts' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)]"
-                  )}
-                >
-                  <Volume2 className="w-3.5 h-3.5" />
-                  Voz
-                </button>
+                   onClick={() => setActiveTab('edit')}
+                   className={cn(
+                     "min-h-9 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors",
+                     activeTab === 'edit' ? "bg-[var(--accent-bible)] text-white" : "bg-[var(--surface-2)] text-[var(--text-bible-muted)]"
+                   )}
+                 >
+                   Editar
+                 </button>
               </div>
               {activeTab === 'edit' ? (
                 <>
@@ -563,19 +526,6 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
                         {pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
                       </button>
 
-                      {isTTSSupported && (
-                        <button
-                          onClick={toggleTTS}
-                          className={cn(
-                            "p-2 rounded-lg transition-colors",
-                            isSpeaking ? "bg-orange-100 dark:bg-orange-900/30 text-orange-500" : "hover:bg-[var(--surface-2)] text-[var(--text-bible-muted)]"
-                          )}
-                          title={isSpeaking ? "Parar" : "Ouvir nota"}
-                        >
-                          {isSpeaking ? <Pause className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                        </button>
-                      )}
-                      
                       <button onClick={handleExport} className="p-2 hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="Exportar">
                         <Download className="w-4 h-4 text-[var(--text-bible-muted)]" />
                       </button>
@@ -609,30 +559,6 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
                     />
                   </div>
                 </>
-              ) : (
-                <div className="flex-1 overflow-auto p-6">
-                  <div className="max-w-md mx-auto space-y-6">
-                    <div className="text-center p-8 rounded-2xl bg-[var(--surface-1)] border border-[var(--border-bible)]">
-                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[var(--accent-bible)]/10 flex items-center justify-center">
-                        <Volume2 className="w-10 h-10 text-[var(--accent-bible)]" />
-                      </div>
-                      <h3 className="text-lg font-bold text-[var(--text-bible)] mb-2">Text-to-Speech</h3>
-                      <p className="text-sm text-[var(--text-bible-muted)] mb-4">Ouça sua nota sendo lida em voz alta</p>
-                      <button
-                        onClick={toggleTTS}
-                        disabled={!isTTSSupported || !content}
-                        className={cn(
-                          "w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all",
-                          isSpeaking ? "bg-red-500 text-white hover:bg-red-600" : "bg-[var(--accent-bible)] text-white hover:bg-[var(--accent-bible-strong)]",
-                          (!isTTSSupported || !content) && "opacity-50 cursor-not-allowed"
-                        )}
-                      >
-                        {isSpeaking ? <><Pause className="w-5 h-5" /> Parar</> : <><Play className="w-5 h-5" /> Ouvir Nota</>}
-                      </button>
-                      {!isTTSSupported && <p className="text-xs text-red-500 mt-2">TTS não disponível neste navegador</p>}
-                    </div>
-                  </div>
-                </div>
               )}
             </>
           )}
@@ -644,7 +570,6 @@ export const NoteEditorModal: React.FC<NoteEditorModalProps> = ({
               title={title || 'Nota Minimizada'}
             >
               <Edit3 className="w-6 h-6 text-white" />
-              {isSpeaking && <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-orange-500 border-2 border-[var(--accent-bible)] animate-pulse" />}
             </div>
           )}
         </motion.div>
