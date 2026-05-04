@@ -45,7 +45,7 @@ export interface StudyContext {
 
 // ==================== PERFIS TEOLÓGICOS ====================
 
-export const THEOLOGICAL_FILES = {
+export const THEOLOGICAL_PROFILES = {
   assembleiano: {
     name: "Assembleiano Clássico",
     systemPrompt: `
@@ -105,7 +105,7 @@ DIRETRIZES DE RESPOSTA:
   },
 } as const;
 
-export type TheologicalProfile = keyof typeof THEOLOGICAL_FILES;
+export type TheologicalProfile = keyof typeof THEOLOGICAL_PROFILES;
 
 // ==================== CLASSE PRINCIPAL ====================
 
@@ -195,7 +195,7 @@ export class AIService {
     console.log('[AIService] Provider atual:', this.provider);
     console.log('[AIService] API Key presente:', !!this.provider.apiKey);
     
-    const profile = THEOLOGICAL_FILES[theologicalProfile];
+    const profile = THEOLOGICAL_PROFILES[theologicalProfile];
     const finalSystemInstruction = systemInstruction || profile.systemPrompt;
 
     // Construir contexto enriquecido
@@ -717,7 +717,7 @@ Responda em Markdown.
     const configuredProvider = localStorage.getItem('ai-api-provider') || 'google';
     const openCodeKey = localStorage.getItem('opencode-api-key');
     const openRouterKey = localStorage.getItem('openrouter-api-key');
-    (geminiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
+    const geminiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
 
     return {
       configuredProvider,
