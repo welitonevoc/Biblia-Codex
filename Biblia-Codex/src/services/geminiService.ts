@@ -1,283 +1,118 @@
 /**
  * Serviço de Integração com Gemini AI
  * Focado em fornecer definições teológicas profundas (Assembleiano Clássico).
+ * 
+ * NOTA: Este arquivo agora atua como uma camada de compatibilidade (facade)
+ * que utiliza os novos serviços em src/features/ai/
  */
 
-import { getMerrillEntry } from './MerrillService';
+// Importar o novo serviço unificado
+import { aiService, THEOLOGICAL_PROFILES } from '../features/ai/AIService';
+import type { AIResponse } from '../features/ai/AIService';
 
-const ASSEMBLEIANO_CLASSICO_PROMPT = `
-DIRETRIZES DE PERFIL: Assembleiano Clássico (Pentecostalismo Histórico/CPAD).
+// Manter compatibilidade com código antigo
+const ASSEMBLEIANO_CLASSICO_PROMPT = THEOLOGICAL_PROFILES.assembleiano.systemPrompt;
 
-AUTORES DE REFERÊNCIA (USE COMO BASE):
-- Clássicos: Antonio Gilberto, Eurico Bergstén, Severino Pedro da Silva, Claudionor de Andrade, Lawrence Olson, Emílio Conde, Orlando Boyer.
-- Atuais: Elienai Cabral, Esequias Soares, Elinaldo Renovato, José Gonçalves, Douglas Baptista, Silas Daniel, Esdras Bentho.
-- Liderança/Educação: José Wellington Bezerra da Costa, Ciro Zibordi, Marcos Tuler, Paulo Romeiro.
-
-DIRETRIZES DE RESPOSTA:
-1. Baseie-se no pentecostalismo clássico das Assembleias de Deus (Declaração de Fé da CGADB).
-2. Use preferencialmente a Bíblia Almeida Corrigida Fiel (ARC).
-3. Cite ou faça alusão ao pensamento dos autores acima para validar os argumentos teológicos.
-4. Mantenha um tom pastoral, tecnicamente profundo e focado na edificação.
-5. Defenda as doutrinas distintivas: Batismo no Espírito Santo como evidência inicial (falar em línguas), dons espirituais para a atualidade e a iminente volta de Cristo (Pré-milenarismo Dispensacionalista).
-6. Responda em Português do Brasil de forma organizada.
-`;
+// ==================== FUNÇÕES DE CONFIGURAÇÃO ====================
 
 /**
- * Obtém a chave de API com base no provedor configurado, com auto-detecção
+ * Obtém a chave de API (compatibilidade)
  */
 export const getApiKey = (): string => {
   const provider = getConfiguredProvider();
-  console.log('[geminiService] Provider final usado:', provider);
-
-  if (provider === 'opencode') {
-    const key = localStorage.getItem('opencode-api-key') || '';
-    console.log('[geminiService] Usando chave OpenCode:', key ? 'Presente' : 'Ausente');
-    return key;
+  switch (provider) {
+    case 'opencode':
+      return localStorage.getItem('opencode-api-key') || '';
+    case 'openrouter':
+      return localStorage.getItem('openrouter-api-key') || '';
+    case 'groq':
+      return localStorage.getItem('groq-api-key') || '';
+    case 'huggingface':
+      return localStorage.getItem('huggingface-api-key') || '';
+    default:
+      return localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY || '';
   }
-
-  if (provider === 'openrouter') {
-    const key = localStorage.getItem('openrouter-api-key') || '';
-    console.log('[geminiService] Usando chave OpenRouter:', key ? 'Presente' : 'Ausente');
-    return key;
-  }
-
-  const key = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY || '';
-  console.log('[geminiService] Usando chave Gemini:', key ? 'Presente' : 'Ausente');
-  return key;
 };
 
 /**
- * Detecta automaticamente o provider baseado nas chaves disponíveis
- * OpenCode é ignorado por ter CORS bloqueado para browser
+ * Detecta automaticamente o provider (compatibilidade)
  */
 export const autoDetectProvider = (): 'google' | 'openrouter' | 'opencode' | 'groq' | 'huggingface' => {
   const openRouterKey = localStorage.getItem('openrouter-api-key');
   const groqKey = localStorage.getItem('groq-api-key');
   const geminiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
 
-  if (openRouterKey && openRouterKey.trim()) {
-    console.log('[geminiService] OpenRouter detectado automaticamente');
-    return 'openrouter';
-  }
-
-  if (groqKey && groqKey.trim()) {
-    console.log('[geminiService] Groq detectado automaticamente');
-    return 'groq';
-  }
-
-  if (geminiKey && geminiKey.trim()) {
-    console.log('[geminiService] Gemini detectado automaticamente');
-    return 'google';
-  }
-
-  console.warn('[geminiService] Nenhuma chave de API encontrada, usando OpenRouter por padrão');
+  if (openRouterKey && openRouterKey.trim()) return 'openrouter';
+  if (groqKey && groqKey.trim()) return 'groq';
+  if (geminiKey && geminiKey.trim()) return 'google';
+  
   return 'openrouter';
 };
 
 /**
- * Obtém o provider configurado, com auto-detecção se necessário
+ * Obtém o provider configurado (compatibilidade)
  */
 export const getConfiguredProvider = (): 'google' | 'openrouter' | 'opencode' | 'groq' | 'huggingface' => {
   const configured = localStorage.getItem('ai-api-provider') || 'google';
-  const openCodeKey = localStorage.getItem('opencode-api-key');
-  const openRouterKey = localStorage.getItem('openrouter-api-key');
-  const geminiKey = localStorage.getItem('gemini-api-key') || import.meta.env.VITE_GEMINI_API_KEY;
-
-  console.log('[geminiService] Provider configurado no localStorage:', configured);
-  console.log('[geminiService] Chave OpenCode presente:', !!openCodeKey);
-  console.log('[geminiService] Chave OpenRouter presente:', !!openRouterKey);
-  console.log('[geminiService] Chave Gemini presente:', !!geminiKey);
-
-  // Verifica se a configuração faz sentido com as chaves disponíveis
-  if (configured === 'opencode') {
-    if (!openCodeKey || !openCodeKey.trim()) {
-      console.warn('[geminiService] OpenCode configurado mas sem chave, auto-detectando...');
-      return autoDetectProvider();
-    }
-  } else if (configured === 'openrouter') {
-    if (!openRouterKey || !openRouterKey.trim()) {
-      console.warn('[geminiService] OpenRouter configurado mas sem chave, auto-detectando...');
-      return autoDetectProvider();
-    }
-  } else if (configured === 'google') {
-    if (!geminiKey || !geminiKey.trim()) {
-      console.warn('[geminiService] Google configurado mas sem chave, auto-detectando...');
-      return autoDetectProvider();
-    }
-  }
-
-  console.log('[geminiService] Usando provider:', configured);
-  return configured as 'google' | 'openrouter' | 'opencode' | 'groq' | 'huggingface';
+  return configured as any;
 };
 
 /**
- * Obtém o modelo configurado nas configurações
+ * Obtém o modelo configurado (compatibilidade)
  */
 export const getConfiguredModel = (): string => {
   const provider = getConfiguredProvider();
   const saved = localStorage.getItem('codex-settings');
-
+  
   if (saved) {
     try {
       const settings = JSON.parse(saved);
-      if (settings.ai?.model) {
-        // Valida se o modelo é compatível com o provider
-        const model = settings.ai.model;
-        if (provider === 'openrouter') {
-          // Para OpenRouter, modelos devem ter formato "author/model" ou ser da lista de free models
-          // Se o modelo for um modelo Google (sem /), usa o openrouter auto
-          if (!model.includes('/')) {
-            console.warn('[geminiService] Modelo Google não compatível com OpenRouter, usando openrouter/free');
-            return 'openrouter/free';
-          }
-        }
-        return model;
-      }
+      if (settings.ai?.model) return settings.ai.model;
     } catch (e) {
-      console.error('[geminiService] Erro ao ler settings:', e);
+      // Ignorar erro
     }
   }
-
-  // Fallback baseado no provider
+  
   return provider === 'openrouter' ? 'openrouter/free' : 'gemini-2.0-flash';
 };
 
+// ==================== FUNÇÕES DE COMPATIBILIDADE ====================
+
 /**
- * Função interna para fazer requisição à IA
+ * Obtém uma explicação detalhada via IA (compatibilidade)
  */
-const callAI = async (prompt: string, systemInstruction?: string, apiKey?: string, model?: string): Promise<string> => {
-  const key = apiKey || getApiKey();
-  if (!key) return "API Key não configurada nas preferências.";
-
-  const configuredModel = model || getConfiguredModel();
-  const provider = getConfiguredProvider();
-
+export const getGeminiExplanation = async (
+  term: string,
+  context?: string,
+  apiKey?: string,
+  model?: string
+): Promise<string> => {
   try {
-    let url: string;
-    let headers: Record<string, string> = {};
-    let body: any;
-
-    if (provider === 'opencode') {
-      url = `https://opencode.ai/api/v1/chat/completions`;
-      headers = {
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/json'
-      };
-      body = {
-        model: 'minimax-m2.5-free',
-        messages: systemInstruction
-          ? [{ role: 'system', content: systemInstruction }, { role: 'user', content: prompt }]
-          : [{ role: 'user', content: prompt }]
-      };
-      console.log(`[geminiService] OpenCode request:`, {
-        model: 'minimax-m2.5-free',
-        url,
-        keyPrefix: key?.substring(0, 10) + '...',
-        hasKey: !!key
-      });
-    } else if (provider === 'openrouter') {
-      url = `https://openrouter.ai/api/v1/chat/completions`;
-      headers = {
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'Bíblia Codex'
-      };
-      body = {
-        model: configuredModel,
-        messages: systemInstruction
-          ? [{ role: 'system', content: systemInstruction }, { role: 'user', content: prompt }]
-          : [{ role: 'user', content: prompt }]
-      };
-      console.log(`[geminiService] OpenRouter request:`, {
-        model: configuredModel,
-        url,
-        keyPrefix: key?.substring(0, 10) + '...',
-        hasKey: !!key,
-        keyLength: key?.length || 0
-      });
-    } else {
-      url = `https://generativelanguage.googleapis.com/v1beta/models/${configuredModel}:generateContent?key=${key}`;
-      headers = { 'Content-Type': 'application/json' };
-      body = {
-        contents: [{ parts: [{ text: prompt }] }],
-        ...(systemInstruction && { system_instruction: { parts: [{ text: systemInstruction }] } })
-      };
-    }
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body)
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('AI API Error:', data);
-
-      // Tratamento específico para erros de quota
-      if (response.status === 429 || data.error?.message?.includes('Quota exceeded')) {
-        const quotaMessage = `Limite de uso excedido para ${configuredModel}. `;
-        const retryMatch = data.error?.message?.match(/retry in (\d+\.\d+)s/);
-        if (retryMatch) {
-          const retryTime = parseFloat(retryMatch[1]);
-          const minutes = Math.ceil(retryTime / 60);
-          return `${quotaMessage}Tente novamente em ${minutes} minuto(s). Ou considere usar OpenRouter para mais quota.`;
-        }
-        return `${quotaMessage}Tente novamente mais tarde ou configure uma chave OpenRouter para mais quota.`;
-      }
-
-      // Outros erros da API
-      if (response.status === 403) {
-        return `Erro 403: Acesso negado. Verifique se sua chave de API é válida para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`;
-      }
-
-      if (response.status === 401) {
-        return `Erro 401: Não autorizado. Verifique sua chave de API para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`;
-      }
-
-      return `Erro ${response.status}: ${data.error?.message || 'Falha na requisição'}`;
-    }
-
-    if (provider === 'opencode' || provider === 'openrouter') {
-      return data.choices?.[0]?.message?.content || "Erro ao gerar resposta.";
-    } else {
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || "Erro ao gerar resposta.";
-    }
-  } catch (error) {
-    console.error("AI Error:", error);
-    return "Erro de conexão com o Assistente IA.";
+    const response = await aiService.explainTerm(term, 'assembleiano');
+    return response.success ? response.content || '' : `Erro: ${response.error}`;
+  } catch (error: any) {
+    return `Erro ao gerar explicação: ${error.message}`;
   }
 };
 
 /**
- * Obtém uma explicação detalhada via IA (compatibilidade - usa template de definição)
+ * Gera conteúdo usando IA com prompt personalizado (compatibilidade)
  */
-export const getGeminiExplanation = async (term: string, context?: string, apiKey?: string, model?: string): Promise<string> => {
-  const merrillContext = await getMerrillEntry(term);
-  
-  const prompt = `
-    ${ASSEMBLEIANO_CLASSICO_PROMPT}
-
-    ${merrillContext ? `
-    INFORMAÇÃO DA ENCICLOPÉDIA MERRILL (C. Tenney):
-    ${merrillContext}
-    ` : ''}
-
-    TAREFA: Defina e explique o termo bíblico ou palavra: "${term}" ${context ? `no contexto de ${context}` : ""}.
-    ${merrillContext ? 'Use a informação da Enciclopédia Merrill como base, complementando com seu conhecimento teológico.' : 'Forneça o significado original (hebraico/grego se aplicável), uso bíblico e aplicação espiritual segundo o perfil teológico citado acima.'}
-    Responda em Markdown.
-  `;
-
-  return callAI(prompt, "Você é um assistente de estudo bíblico erudito.", apiKey, model);
-};
-
-/**
- * Gera conteúdo usando IA com prompt personalizado
- */
-export const getAIResponse = async (prompt: string, systemInstruction?: string, apiKey?: string, model?: string): Promise<string> => {
-  return callAI(prompt, systemInstruction, apiKey, model);
+export const getAIResponse = async (
+  prompt: string,
+  systemInstruction?: string,
+  apiKey?: string,
+  model?: string
+): Promise<string> => {
+  try {
+    const response = await aiService.callAI(prompt, {
+      systemInstruction,
+      theologicalProfile: 'assembleiano',
+    });
+    return response.success ? response.content || '' : `Erro: ${response.error}`;
+  } catch (error: any) {
+    return `Erro ao gerar resposta: ${error.message}`;
+  }
 };
 
 export interface AIExplanation {
@@ -288,8 +123,37 @@ export interface AIExplanation {
   spiritualApplication: string;
 }
 
+export interface ReadingPlanAI {
+  id: string;
+  title: string;
+  description: string;
+  totalDays: number;
+  readings: {
+    day: number;
+    title: string;
+    type: 'scripture' | 'devotional';
+    passages: string[];
+    devotionalContent?: string;
+  }[];
+}
+
 /**
- * Diagnóstico completo da configuração IA
+ * Gera plano de leitura usando IA (compatibilidade)
+ */
+export const generateReadingPlan = async (
+  userDescription: string,
+  preferredDays?: number
+): Promise<{ success: boolean; plan?: ReadingPlanAI; error?: string }> => {
+  try {
+    const response = await aiService.generateReadingPlan(userDescription, preferredDays);
+    return response;
+  } catch (error: any) {
+    return { success: false, error: `Erro ao gerar plano: ${error.message}` };
+  }
+};
+
+/**
+ * Diagnóstico completo da configuração IA (compatibilidade)
  */
 export const diagnoseAIConfiguration = () => {
   const configuredProvider = localStorage.getItem('ai-api-provider') || 'google';
@@ -299,9 +163,9 @@ export const diagnoseAIConfiguration = () => {
 
   console.log('=== DIAGNÓSTICO CONFIGURAÇÃO IA ===');
   console.log('Provider configurado:', configuredProvider);
-  console.log('Chave OpenCode presente:', !!openCodeKey, openCodeKey ? '(comprimento: ' + openCodeKey.length + ')' : '');
-  console.log('Chave OpenRouter presente:', !!openRouterKey, openRouterKey ? '(comprimento: ' + openRouterKey.length + ')' : '');
-  console.log('Chave Gemini presente:', !!geminiKey, geminiKey ? '(comprimento: ' + geminiKey.length + ')' : '');
+  console.log('Chave OpenCode presente:', !!openCodeKey);
+  console.log('Chave OpenRouter presente:', !!openRouterKey);
+  console.log('Chave Gemini presente:', !!geminiKey);
   console.log('Provider detectado:', getConfiguredProvider());
   console.log('Modelo configurado:', getConfiguredModel());
   console.log('Chave API usada:', getApiKey() ? 'Presente' : 'Ausente');
@@ -319,9 +183,16 @@ export const diagnoseAIConfiguration = () => {
 };
 
 /**
- * Testa a configuração da IA
+ * Testa a configuração da IA (compatibilidade)
  */
-export const testAIConfiguration = async (): Promise<{ success: boolean; message: string; provider: string; model: string; quotaWarning?: boolean; suggestion?: string }> => {
+export const testAIConfiguration = async (): Promise<{ 
+  success: boolean; 
+  message: string; 
+  provider: string; 
+  model: string; 
+  quotaWarning?: boolean; 
+  suggestion?: string 
+}> => {
   const provider = getConfiguredProvider();
   const model = getConfiguredModel();
   const apiKey = getApiKey();
@@ -338,9 +209,8 @@ export const testAIConfiguration = async (): Promise<{ success: boolean; message
   }
 
   try {
-    // Teste simples
     const testPrompt = "Olá, isso é um teste. Responda apenas 'OK'.";
-    const response = await getAIResponse(testPrompt, undefined, apiKey, model);
+    const response = await getAIResponse(testPrompt);
     return {
       success: true,
       message: `Configuração válida: ${provider} com modelo ${model}`,
@@ -349,8 +219,7 @@ export const testAIConfiguration = async (): Promise<{ success: boolean; message
     };
   } catch (error: any) {
     console.error('[geminiService] Erro no teste:', error);
-
-    // Detecta problemas específicos
+    
     let quotaWarning = false;
     let message = `Erro na configuração: ${error.message}`;
     let suggestion: string | undefined;
@@ -358,12 +227,12 @@ export const testAIConfiguration = async (): Promise<{ success: boolean; message
     if (error.message?.includes('Quota exceeded')) {
       quotaWarning = true;
       message = `Limite de quota excedido para ${model}.`;
-      suggestion = 'Para mais quota gratuita, configure OpenRouter nas Configurações → IA. Modelos gratuitos disponíveis: MiniMax, Nemotron, Gemma, Qwen.';
+      suggestion = 'Para mais quota gratuita, configure OpenRouter nas Configurações → IA.';
     } else if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
       message = `Chave de API inválida para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`;
       suggestion = 'Verifique se a chave foi copiada corretamente das configurações do provedor.';
     } else if (error.message?.includes('403') || error.message?.includes('Forbidden')) {
-      message = `Acesso negado. Verifique permissões da chave de API para ${provider === 'openrouter' ? 'OpenRouter' : 'Google Gemini'}.`;
+      message = `Acesso negado. Verifique permissões da chave de API.`;
       suggestion = 'A chave pode não ter permissões suficientes ou ter expirado.';
     }
 
@@ -385,10 +254,7 @@ export const suggestOpenRouterForQuota = (): boolean => {
   const openRouterKey = localStorage.getItem('openrouter-api-key');
   const currentProvider = getConfiguredProvider();
 
-  // Se já está usando OpenRouter, não sugere
   if (currentProvider === 'openrouter') return false;
-
-  // Se tem chave OpenRouter disponível, sugere
   return !!(openRouterKey && openRouterKey.trim());
 };
 
@@ -402,104 +268,8 @@ export const autoSwitchToOpenRouter = (): boolean => {
   if (openRouterKey && openRouterKey.trim()) {
     localStorage.setItem('ai-api-provider', 'openrouter');
     console.log('[geminiService] Auto-switched to OpenRouter for better quota');
-    console.log('[geminiService] Provider após switch:', localStorage.getItem('ai-api-provider'));
     return true;
   }
 
-  console.log('[geminiService] Não foi possível fazer auto-switch - chave OpenRouter não encontrada');
   return false;
-};
-
-export interface ReadingPlanAI {
-  id: string;
-  title: string;
-  description: string;
-  totalDays: number;
-  readings: {
-    day: number;
-    title: string;
-    type: 'scripture' | 'devotional';
-    passages: string[];
-    devotionalContent?: string;
-  }[];
-}
-
-const READING_PLAN_SYSTEM_PROMPT = `
-Você é um assistente especializado em criar planos de leitura bíblica personalizados.
-Seu trabalho é criar planos de leitura baseados em descrições do usuário.
-
-DIRETRIZES:
-1. Crie planos que sejam teologicamente ricos e espiritualmente edificantes.
-2. Inclua uma mistura de leituras bíblicas e, opcionalmente, devocionais.
-3. Use referências bíblicas precisas (formato: Livro Capítulo:Versículos).
-4. Para devocionais, escreva conteúdo original e reflexivo de aproximadamente 200-300 palavras.
-5. Responda sempre em JSON válido, sem texto adicional.
-
-FORMATO DE RESPOSTA (JSON):
-{
-  "title": "Nome do plano",
-  "description": "Breve descrição do plano",
-  "totalDays": número de dias,
-  "readings": [
-    {
-      "day": número do dia,
-      "title": "Título da leitura",
-      "type": "scripture" ou "devotional",
-      "passages": ["Referência bíblica"],
-      "devotionalContent": "Conteúdo do devocional (apenas se type for devotional)"
-    }
-  ]
-}
-`;
-
-export const generateReadingPlan = async (
-  userDescription: string,
-  preferredDays?: number
-): Promise<{ success: boolean; plan?: ReadingPlanAI; error?: string }> => {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    return { success: false, error: 'Chave de API não configurada. Vá em Configurações → IA e adicione sua chave.' };
-  }
-
-  const provider = getConfiguredProvider();
-  const daysText = preferredDays ? `com aproximadamente ${preferredDays} dias` : 'com duração adequada';
-  
-  const userPrompt = `
-Por favor, crie um plano de leitura bíblica personalizado ${daysText}.
-
-Descrição do usuário: ${userDescription}
-
-Responda apenas com o JSON, sem texto adicional.
-`;
-
-  try {
-    const response = await callAI(READING_PLAN_SYSTEM_PROMPT, userPrompt, apiKey);
-    
-    if (response.startsWith('Erro') || response.includes('não configurada') || response.includes('Tente novamente')) {
-      return { success: false, error: response };
-    }
-
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return { success: false, error: 'Não foi possível entender a resposta da IA. Tente novamente.' };
-    }
-
-    const plan = JSON.parse(jsonMatch[0]);
-    
-    const planId = `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
-    return {
-      success: true,
-      plan: {
-        id: planId,
-        title: plan.title || 'Plano Personalizado',
-        description: plan.description || '',
-        totalDays: plan.totalDays || plan.readings?.length || 1,
-        readings: plan.readings || []
-      }
-    };
-  } catch (error) {
-    console.error('[geminiService] Erro ao gerar plano:', error);
-    return { success: false, error: 'Erro ao gerar plano. Tente novamente.' };
-  }
 };

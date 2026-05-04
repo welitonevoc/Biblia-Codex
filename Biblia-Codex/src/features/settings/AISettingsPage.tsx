@@ -125,20 +125,29 @@ export const AISettingsPage: React.FC = () => {
     : geminiKey;
 
   const handleSaveApiKey = useCallback(() => {
-    const keysToSave: Record<string, { key: string; setter: (v: string) => void }> = {
-      opencode: { key: openCodeKeyInput, setter: setOpenCodeKey },
-      openrouter: { key: openRouterKeyInput, setter: setOpenRouterKey },
-      groq: { key: groqKeyInput, setter: setGroqKey },
-      huggingface: { key: huggingfaceKeyInput, setter: setHuggingfaceKey },
-      google: { key: geminiKeyInput, setter: setGeminiKey },
-      openai: { key: openaiKeyInput, setter: setOpenaiKey },
-      anthropic: { key: anthropicKeyInput, setter: setAnthropicKey },
+    // Mapeamento de provider para nome correto da chave no localStorage
+    const providerKeyMap: Record<string, { storageKey: string; inputKey: string; setter: (v: string) => void }> = {
+      opencode: { storageKey: 'opencode-api-key', inputKey: openCodeKeyInput, setter: setOpenCodeKey },
+      openrouter: { storageKey: 'openrouter-api-key', inputKey: openRouterKeyInput, setter: setOpenRouterKey },
+      groq: { storageKey: 'groq-api-key', inputKey: groqKeyInput, setter: setGroqKey },
+      huggingface: { storageKey: 'huggingface-api-key', inputKey: huggingfaceKeyInput, setter: setHuggingfaceKey },
+      google: { storageKey: 'gemini-api-key', inputKey: geminiKeyInput, setter: setGeminiKey },
+      openai: { storageKey: 'openai-api-key', inputKey: openaiKeyInput, setter: setOpenaiKey },
+      anthropic: { storageKey: 'anthropic-api-key', inputKey: anthropicKeyInput, setter: setAnthropicKey },
     };
 
-    const providerKey = keysToSave[apiProvider];
-    if (providerKey && providerKey.key.trim()) {
-      localStorage.setItem(`${apiProvider}-api-key`, providerKey.key.trim());
-      providerKey.setter(providerKey.key.trim());
+    const providerInfo = providerKeyMap[apiProvider];
+    if (providerInfo && providerInfo.inputKey.trim()) {
+      // Remover todos os espaços e quebras de linha da chave
+      const cleanKey = providerInfo.inputKey.replace(/\s+/g, '');
+      localStorage.setItem(providerInfo.storageKey, cleanKey);
+      providerInfo.setter(cleanKey);
+      console.log('[AISettingsPage] Chave salva para', apiProvider, '- Tamanho:', cleanKey.length);
+    } else {
+      // Limpar chave se vazia
+      localStorage.removeItem(providerInfo.storageKey);
+      providerInfo.setter('');
+      console.log('[AISettingsPage] Chave removida para', apiProvider);
     }
 
     localStorage.setItem('ai-api-provider', apiProvider);
