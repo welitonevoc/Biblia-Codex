@@ -107,49 +107,25 @@ Use um tom acadêmico, mas pastoral. Use Markdown rico e estruturado.`;
             className="fixed right-0 top-0 bottom-0 w-full max-w-2xl z-[450] flex flex-col bg-[#050505] shadow-[-30px_0_100px_rgba(0,0,0,0.8)] overflow-hidden"
           >
             {/* Header Pro Max */}
-<div className="relative h-40 shrink-0 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-bible-accent via-bible-accent/40 to-transparent" />
-              <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#050505] to-transparent" />
-              
-              <div className="absolute inset-0 px-4 pb-3 flex items-end justify-between">
-                <div className="flex items-center gap-2">
-                    <motion.div 
-                      animate={{ rotate: [0, 15, -15, 0] }}
-                      transition={{ duration: 6, repeat: Infinity }}
-                      className="w-10 h-10 rounded-lg bg-white/10 backdrop-blur-2xl border border-white/20 flex items-center justify-center shadow-lg"
-                    >
-                      <Sparkles className="w-5 h-5 text-white" />
-                    </motion.div>
-                    <div>
-                      <span className="text-[8px] font-bold text-bible-accent/80 uppercase tracking-wider">IA</span>
-                      <h2 className="text-base font-bold text-white">Codex Insight</h2>
-                    </div>
-                  </div>
-                  <motion.button 
-                    whileHover={{ scale: 1.1, rotate: 90 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={onClose}
-                    className="w-8 h-8 flex items-center justify-center bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-white transition-all"
-                  >
-                    <X className="w-4 h-4" />
-                  </motion.button>
-              </div>
-            </div>
-                    </div>
-                  <motion.button 
-                    whileHover={{ scale: 1.1, rotate: 90 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={onClose}
-                    className="w-12 h-12 flex items-center justify-center bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-white transition-all"
-                  >
-                    <X className="w-6 h-6" />
-                  </motion.button>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-bible-accent/20 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-bible-accent" />
+                </div>
+                <div>
+                  <span className="text-[8px] font-medium text-bible-accent/70 uppercase tracking-wider">IA</span>
+                  <p className="text-sm font-semibold text-white -mt-0.5">Codex Insight</p>
                 </div>
               </div>
+              <button 
+                onClick={onClose}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-10">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
               {selectedVerses.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-12 space-y-6">
                   <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
@@ -266,33 +242,28 @@ Use um tom acadêmico, mas pastoral. Use Markdown rico e estruturado.`;
             </div>
             
             {/* Interactive Chat Footer */}
-            <div className="p-6 pb-10 bg-black/60 backdrop-blur-3xl border-t border-white/10">
-              <div className="relative max-w-xl mx-auto flex items-center gap-3">
-                <div className="flex-1 relative group">
-                  <div className="absolute inset-0 bg-bible-accent/5 rounded-[22px] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
-                  <input 
-                    type="text"
-                    value={userQuestion}
-                    onChange={(e) => setUserQuestion(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendQuestion()}
-                    placeholder="Dúvida sobre estes versículos? Pergunte ao Codex..."
-                    className="w-full h-16 rounded-[22px] bg-white/5 border border-white/10 px-6 text-sm font-medium text-white placeholder:text-white/20 focus:outline-none focus:border-bible-accent/50 focus:bg-white/[0.08] transition-all relative z-10"
-                  />
-                </div>
+            <div className="p-3 border-t border-white/10">
+              <div className="flex items-center gap-2">
+                <input 
+                  type="text"
+                  value={userQuestion}
+                  onChange={(e) => setUserQuestion(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendQuestion()}
+                  placeholder="Pergunte ao Codex..."
+                  className="flex-1 h-10 rounded-lg bg-white/5 border border-white/10 px-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-bible-accent/50 transition-colors"
+                />
                 <button 
                   onClick={handleSendQuestion}
                   disabled={!userQuestion.trim() || loading}
                   className={cn(
-                    "w-16 h-16 rounded-[22px] flex items-center justify-center transition-all shadow-xl active:scale-90 disabled:opacity-30 disabled:grayscale relative z-10",
-                    userQuestion.trim() ? "bg-bible-accent text-white shadow-bible-accent/40" : "bg-white/5 text-white/20"
+                    "w-10 h-10 rounded-lg flex items-center justify-center transition-colors disabled:opacity-30",
+                    userQuestion.trim() ? "bg-bible-accent text-white" : "bg-white/10 text-white/40"
                   )}
                 >
-                  <Send className="w-6 h-6" />
+                  <Send className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-center text-[9px] text-white/20 font-bold uppercase tracking-[0.4em] mt-4">
-                Desenvolvido por Google Gemini AI
-              </p>
+              <p className="text-center text-[7px] text-white/25 mt-2">Gemini AI</p>
             </div>
           </motion.div>
         </>
