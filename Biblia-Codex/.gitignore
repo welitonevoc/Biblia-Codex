@@ -25,3 +25,7 @@ npm-debug.log*
 .env
 .env.local
 .env.*.local
+
+# Gradle build output
+android/.gradle/
+
