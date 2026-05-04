@@ -196,12 +196,15 @@ export const readModuleBinary = async (modulePath: string): Promise<Uint8Array> 
 
         // Em Capacitor Android, assets estão em ./data/ ou ./
         const fileName = resolved.path.split('/').pop() || resolved.path;
+        const isNative = Capacitor.isNativePlatform();
+        const origin = isNative ? window.location.origin : '';
+        
         const urls = [
           `./data/${fileName}`,
           `./${fileName}`,
-          `https://localhost/data/${fileName}`,
-          `capacitor://localhost/data/${fileName}`
-        ];
+          `${origin}/data/${fileName}`,
+          `${origin}/${fileName}`
+        ].filter(Boolean);
 
         for (const url of urls) {
           try {

@@ -3,7 +3,7 @@
   "appName": "Bíblia Codex",
   "webDir": "dist",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "capacitor"
   },
   "android": {
     "allowMixedContent": false,

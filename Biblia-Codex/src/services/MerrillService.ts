@@ -1,4 +1,5 @@
 import { DictionaryEntry } from '../types';
+import { Capacitor } from '@capacitor/core';
 
 let merrillCache: Map<string, { word: string; text: string }[]> | null = null;
 let merrillLoadError: string | null = null;
@@ -11,15 +12,21 @@ export const loadMerrillIndex = async (): Promise<void> => {
   }
 
   console.log('[MerrillService] Carregando índice...');
+  const isNative = Capacitor.isNativePlatform();
+  const origin = isNative ? window.location.origin : '';
+
   const urls = [
+    `${origin}/data/EnciclopediaMerril_clean.json.gz`,
     '/data/EnciclopediaMerril_clean.json.gz',
     '/EnciclopediaMerril_clean.json.gz',
+    `${origin}/data/EnciclopediaMerril_optimized.db`,
     '/data/EnciclopediaMerril_optimized.db'
-  ];
+  ].filter(Boolean);
 
   let lastError;
   for (const url of urls) {
     try {
+      console.log(`[MerrillService] Trying ${url}...`);
       const response = await fetch(url);
       if (!response.ok) continue;
 

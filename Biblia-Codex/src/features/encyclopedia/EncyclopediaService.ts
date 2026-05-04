@@ -40,32 +40,37 @@ async function decompressGzip(data: Uint8Array): Promise<ArrayBuffer> {
 
 async function loadNDJSON<T>(filename: string): Promise<T[]> {
   const cleanName = filename.replace(/^\//, '');
-
-  // In Capacitor, we should use the bridge to check where we are
   const isNative = Capacitor.isNativePlatform();
 
-  // Try multiple URL strategies for compatibility
-  const urls = isNative
-    ? [
-        `https://localhost/data/${cleanName}`,
-        `capacitor://localhost/data/${cleanName}`,
-        `./data/${cleanName}`,
-        `data/${cleanName}`,
-        `/data/${cleanName}`
-      ]
-    : [
-        `/data/${cleanName}`,
-        `./data/${cleanName}`,
-        getDataUrl(filename)
-      ];
+  console.log(`Encyclopedia: Platform: ${Capacitor.getPlatform()}, Native: ${isNative}, Loading: ${cleanName}`);
+
+  // Build URL list based on platform
+  const urls: string[] = [];
+
+  if (isNative) {
+    // On Android with capacitor:// scheme, use relative paths or capacitor:// URLs
+    const origin = window.location.origin; // Should be capacitor://localhost
+    urls.push(
+      `${origin}/data/${cleanName}`,
+      `./data/${cleanName}`,
+      `data/${cleanName}`,
+      `/data/${cleanName}`
+    );
+  } else {
+    urls.push(
+      `/data/${cleanName}`,
+      `./data/${cleanName}`,
+      getDataUrl(filename)
+    );
+  }
 
   let lastError: Error | null = null;
-  console.log(`Encyclopedia: Platform: ${Capacitor.getPlatform()}, Native: ${isNative}, Loading: ${cleanName}`);
 
   for (const url of urls) {
     try {
+      console.log(`Encyclopedia: Trying ${url}...`);
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
 
       const response = await fetch(url, { signal: controller.signal });
       clearTimeout(timeoutId);
@@ -75,7 +80,6 @@ async function loadNDJSON<T>(filename: string): Promise<T[]> {
         continue;
       }
 
-      // Check for HTML fallback (404 redirected to index.html)
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('text/html')) {
          console.warn(`Encyclopedia: Received HTML instead of data from ${url}. Skipping.`);
@@ -90,17 +94,14 @@ async function loadNDJSON<T>(filename: string): Promise<T[]> {
         continue;
       }
 
-      // Check if it's actually gzip data (magic bytes: 0x1f 0x8b)
       const bytes = new Uint8Array(buffer);
       let text: string;
-      
+
       if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
-        // It's gzip - decompress
         console.log(`Encyclopedia: Decompressing ${cleanName}...`);
         const decompressed = await decompressGzip(bytes);
         text = new TextDecoder().decode(decompressed);
       } else {
-        // Not gzip (maybe server already decompressed it) - use as-is
         text = new TextDecoder().decode(buffer);
       }
 
