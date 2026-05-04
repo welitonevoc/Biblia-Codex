@@ -160,14 +160,14 @@ export const AISettingsPage: React.FC = () => {
   }, [apiProvider, openCodeKeyInput, openRouterKeyInput, geminiKeyInput, groqKeyInput, huggingfaceKeyInput, openaiKeyInput, anthropicKeyInput, selectedModel, temperature, maxTokens, systemPrompt]);
 
   const handleTestConnection = useCallback(async () => {
-    const key = apiProvider === 'opencode' ? openCodeKey 
-      : apiProvider === 'openrouter' ? openRouterKey 
-      : apiProvider === 'groq' ? groqKey 
-      : apiProvider === 'huggingface' ? huggingfaceKey 
-      : apiProvider === 'google' ? geminiKey
-      : apiProvider === 'openai' ? openaiKey
-      : apiProvider === 'anthropic' ? anthropicKey
-      : geminiKey;
+    const key = apiProvider === 'opencode' ? openCodeKeyInput 
+      : apiProvider === 'openrouter' ? openRouterKeyInput 
+      : apiProvider === 'groq' ? groqKeyInput 
+      : apiProvider === 'huggingface' ? huggingfaceKeyInput 
+      : apiProvider === 'google' ? geminiKeyInput
+      : apiProvider === 'openai' ? openaiKeyInput
+      : apiProvider === 'anthropic' ? anthropicKeyInput
+      : geminiKeyInput;
 
     if (!key) {
       setTestResult({ success: false, message: 'Insira uma chave de API primeiro.' });
