@@ -145,36 +145,32 @@ const readModuleBinaryFromPublic = async (modulePath: string): Promise<Uint8Arra
 
 const readModuleBinaryFromAssets = async (modulePath: string): Promise<Uint8Array> => {
   const fileName = modulePath.split('/').pop() || modulePath;
-  try {
-    const { Filesystem, Directory } = await import('@capacitor/filesystem');
-    const contents = await Filesystem.readFile({
-      path: fileName,
-      directory: Directory.Documents
-    });
-    const raw = contents.data;
-    if (typeof raw === 'string') {
-      const cleanBase64 = raw.replace(/\s/g, '');
-      const binaryData = atob(cleanBase64);
-      const bytes = new Uint8Array(binaryData.length);
-      for (let i = 0; i < binaryData.length; i++) {
-        bytes[i] = binaryData.charCodeAt(i);
-      }
-      return bytes;
-    }
-    return new Uint8Array(0);
-  } catch (e: unknown) {
-    console.log('[Assets] Error, trying HTTP fallback:', fileName);
+  const isNative = (window as any).Capacitor?.isNativePlatform?.() || false;
+  const origin = isNative ? window.location.origin : '';
+
+  const urls = [
+    `${origin}/data/${fileName}`,
+    `./data/${fileName}`,
+    `data/${fileName}`
+  ].filter(Boolean);
+
+  let lastError: Error | null = null;
+
+  for (const url of urls) {
     try {
-      const origin = window.location.origin;
-      const response = await fetch(`${origin}/data/${fileName}`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const response = await fetch(url);
+      if (!response.ok) {
+        lastError = new Error(`HTTP ${response.status} for ${url}`);
+        continue;
+      }
       const buffer = await response.arrayBuffer();
       return new Uint8Array(buffer);
-    } catch (e2: unknown) {
-      console.log('[Assets] HTTP fallback also failed:', e2);
-      return new Uint8Array(0);
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e));
     }
   }
+
+  throw lastError || new Error(`Failed to load module: ${fileName}`);
 };
 
 // Helper to execute SQL on unknown db type

@@ -7,7 +7,6 @@
  * - Android 6-12: Usar armazenamento externo (Directory.Documents) com permissões legadas
  * - Fallback: Tentar ambos os diretórios durante importação
  */
-import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 
 export interface PermissionStatus {
