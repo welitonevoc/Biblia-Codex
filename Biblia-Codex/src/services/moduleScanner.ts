@@ -1,4 +1,3 @@
-import { Filesystem, Directory } from '@capacitor/filesystem';
 import { BibleModule } from '../types';
 
 const isWeb = typeof window !== 'undefined' && !(window as any).Capacitor?.isNativePlatform?.();
