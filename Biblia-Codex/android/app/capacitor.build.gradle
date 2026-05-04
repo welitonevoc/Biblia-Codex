@@ -9,6 +9,7 @@ android {
 
 apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
+    implementation 'com.google.firebase:firebase-crashlytics:20.0.5'
     implementation project(':capacitor-filesystem')
 
 }

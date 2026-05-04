@@ -1,8 +1,7 @@
 /**
  * Módulo de Gerenciamento de Arquivos Premium
- * Responsável por estruturar módulos em pastas e detectar tipos automaticamente.
+ * Responsável por estruturar módulos em pastas e detectar tipos automaticante.
  */
-import { Filesystem, Directory } from '@capacitor/filesystem';
 
 export type ModuleCategory = 'bible' | 'commentary' | 'dictionary' | 'cross_reference' | 'book' | 'map' | 'people' | 'devotional' | 'other';
 export type ModuleFormat = 'mybible' | 'mysword' | 'sword' | 'epub' | 'other';
