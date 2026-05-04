@@ -107,29 +107,36 @@ Use um tom acadêmico, mas pastoral. Use Markdown rico e estruturado.`;
             className="fixed right-0 top-0 bottom-0 w-full max-w-2xl z-[450] flex flex-col bg-[#050505] shadow-[-30px_0_100px_rgba(0,0,0,0.8)] overflow-hidden"
           >
             {/* Header Pro Max */}
-            <div className="relative h-64 shrink-0 overflow-hidden">
+<div className="relative h-40 shrink-0 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-bible-accent via-bible-accent/40 to-transparent" />
               <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
-              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#050505] to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#050505] to-transparent" />
               
-              <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-5">
+              <div className="absolute inset-0 px-4 pb-3 flex items-end justify-between">
+                <div className="flex items-center gap-2">
                     <motion.div 
                       animate={{ rotate: [0, 15, -15, 0] }}
                       transition={{ duration: 6, repeat: Infinity }}
-                      className="w-16 h-16 rounded-[22px] bg-white/10 backdrop-blur-2xl border border-white/20 flex items-center justify-center shadow-2xl"
+                      className="w-10 h-10 rounded-lg bg-white/10 backdrop-blur-2xl border border-white/20 flex items-center justify-center shadow-lg"
                     >
-                      <Sparkles className="w-8 h-8 text-white" />
+                      <Sparkles className="w-5 h-5 text-white" />
                     </motion.div>
                     <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Zap className="w-3 h-3 text-bible-accent fill-bible-accent" />
-                        <span className="text-[10px] font-black text-bible-accent uppercase tracking-[0.3em]">IA Analítica Ativa</span>
-                      </div>
-                      <h2 className="text-3xl font-black text-white tracking-tight">Codex Insight</h2>
+                      <span className="text-[8px] font-bold text-bible-accent/80 uppercase tracking-wider">IA</span>
+                      <h2 className="text-base font-bold text-white">Codex Insight</h2>
                     </div>
                   </div>
+                  <motion.button 
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={onClose}
+                    className="w-8 h-8 flex items-center justify-center bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-white transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                  </motion.button>
+              </div>
+            </div>
+                    </div>
                   <motion.button 
                     whileHover={{ scale: 1.1, rotate: 90 }}
                     whileTap={{ scale: 0.9 }}
