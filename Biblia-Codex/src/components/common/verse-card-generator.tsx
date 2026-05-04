@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, Download, Share2, Palette, Type, 
@@ -9,11 +9,22 @@ import {
   Moon, Contrast, Droplets, FlaskConical,
   BookOpen, CheckCircle
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import { cn } from '../../utils/cn';
 import { useAppContext } from '../../app/AppContext';
 import { useNotesStore } from '../../stores/notesStore';
 import { stripTags } from '../../utils/textUtils';
+
+// Verifica se o canvas é suportado (WebView Android)
+const isCanvasSupported = (): boolean => {
+  try {
+    if (typeof document === 'undefined') return false;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d') || canvas.getContext('webgl') || canvas.getContext('webgl2');
+    return !!ctx;
+  } catch {
+    return false;
+  }
+};
 
 interface VerseCardGeneratorProps {
   verses: { verse: number; text: string }[];
@@ -214,8 +225,13 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
+    if (!isCanvasSupported()) {
+      alert('Seu dispositivo não suporta canvas. Tente em outro dispositivo.');
+      return;
+    }
     setIsExporting(true);
     try {
+      const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(cardRef.current, {
         scale: 4, 
         backgroundColor: null,
@@ -228,6 +244,7 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
       link.click();
     } catch (err) {
       console.error('Export error:', err);
+      alert('Erro ao exportar. Tente novamente.');
     } finally {
       setIsExporting(false);
     }
@@ -235,8 +252,13 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
 
   const handleCopy = async () => {
     if (!cardRef.current) return;
+    if (!isCanvasSupported()) {
+      alert('Seu dispositivo não suporta canvas. Tente em outro dispositivo.');
+      return;
+    }
     setIsExporting(true);
     try {
+      const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(cardRef.current, { scale: 3 } as any);
       canvas.toBlob(async (blob) => {
         if (blob) {
@@ -246,6 +268,7 @@ export const VerseCardGenerator: React.FC<VerseCardGeneratorProps> = ({
       });
     } catch (err) {
       console.error('Copy error:', err);
+      alert('Erro ao copiar. Tente novamente.');
     } finally {
       setIsExporting(false);
     }
