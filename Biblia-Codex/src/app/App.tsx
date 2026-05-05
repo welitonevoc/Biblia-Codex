@@ -134,6 +134,7 @@ function AppContent() {
   const handleToolOpen = (verse: Verse, type: ToolType) => {
     setToolVerse(verse);
     setToolType(type);
+    setIsToolOpen(true);
   };
 
   return (
