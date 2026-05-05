@@ -86,7 +86,8 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
     }
   }, [bookId, chapter, verse, initialPlaces]);
 
-  function processPlaces(data: PlacesData[]): PlacesData[] {
+  function processPlaces(data: unknown): PlacesData[] {
+    if (!Array.isArray(data)) return [];
     return (data || []).map((p) => {
       const images = extractImagesFromComment(p.comment || '');
       return {
