@@ -48,10 +48,6 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
 
   const [content, setContent] = useState<StudyToolContent>(null);
   const [loading, setLoading] = useState(true);
-  const { settings } = useAppContext();
-
-  const [content, setContent] = useState<StudyToolContent>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { settings } = useAppContext();
 
