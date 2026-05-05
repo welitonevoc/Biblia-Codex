@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppContext } from '../AppContext';
+import { useUserStore, type TrophyData, type BookProgress, type ReadingPlan } from '../../stores/userStore';
 import {
   User, Settings, Flame, BookOpen, Trophy, Medal, Target,
   ChevronRight, ChevronLeft, Lock, CheckCircle, Star, Gem, Zap, Crown, Shield,
@@ -9,98 +10,6 @@ import {
   Diamond, Camera, Mail, Bell, Moon, Globe, Cloud, Smartphone, Download, LogOut, Book,
   Map as MapIcon
 } from 'lucide-react';
-
-interface UserProfile {
-  name: string;
-  email: string;
-  avatar: string;
-  level: number;
-  rank: string;
-  xp: number;
-  xpToNext: number;
-  stars: number;
-  diamonds: number;
-  bolts: number;
-  lives: number;
-  maxLives: number;
-  streak: number;
-  booksRead: number;
-  trophies: number;
-  isPremium: boolean;
-  premiumUntil?: string;
-  googleLinked: boolean;
-}
-
-interface TrophyData {
-  id: string;
-  icon: string;
-  name: string;
-  desc: string;
-  xp: number;
-  tier: 'bronze' | 'silver' | 'gold' | 'diamond' | 'legendary';
-  unlocked: boolean;
-  lockedHint?: string;
-}
-
-interface BookProgress {
-  abbr: string;
-  icon: string;
-  xp: number;
-  done: boolean;
-  testament: 'AT' | 'NT';
-}
-
-interface ReadingPlan {
-  id: string;
-  icon: string;
-  name: string;
-  days: number;
-  current: number;
-  xp: number;
-  reward: string;
-  rewardTier: string;
-  bonusXp: number;
-  active: boolean;
-}
-
-const INITIAL_PROFILE: UserProfile = {
-  name: 'José Menezes',
-  email: 'jose@gmail.com',
-  avatar: '🙏',
-  level: 12,
-  rank: 'Discípulo',
-  xp: 6800,
-  xpToNext: 10000,
-  stars: 3240,
-  diamonds: 18,
-  bolts: 57,
-  lives: 4,
-  maxLives: 5,
-  streak: 14,
-  booksRead: 11,
-  trophies: 4,
-  isPremium: true,
-  premiumUntil: 'jan/2026',
-  googleLinked: true,
-};
-
-const TROPHIES: TrophyData[] = [
-  { id: 'shield', icon: '🛡️', name: 'Escudo da Fé', desc: '7 dias consecutivos', xp: 500, tier: 'bronze', unlocked: true },
-  { id: 'warrior', icon: '⚔️', name: 'Guerreiro da Fé', desc: '30 dias consecutivos', xp: 2000, tier: 'silver', unlocked: true },
-  { id: 'paladin', icon: '🛡️', name: 'Paladino Eterno', desc: '365 dias consecutivos', xp: 50000, tier: 'diamond', unlocked: false, lockedHint: '365 dias de leitura' },
-  { id: 'lamp', icon: '🕯️', name: 'Lâmpada dos Pés', desc: '1 plano de estudo', xp: 1000, tier: 'gold', unlocked: true },
-  { id: 'sword', icon: '⚔️', name: 'Espada do Espírito', desc: '10 versículos memorizados', xp: 800, tier: 'silver', unlocked: true },
-  { id: 'anchor', icon: '⚓', name: 'Âncora da Esperança', desc: 'Plano esperança/sofrimento', xp: 1500, tier: 'gold', unlocked: true },
-  { id: 'harp', icon: '🎵', name: 'Harpa de Davi', desc: 'Ler todos os Salmos', xp: 3000, tier: 'gold', unlocked: true },
-  { id: 'crown', icon: '👑', name: 'Coroa da Vitória', desc: 'Ler Apocalipse completo', xp: 5000, tier: 'diamond', unlocked: false, lockedHint: 'Concluir Apocalipse' },
-  { id: 'bread', icon: '🍞', name: 'Pão da Vida', desc: '30 devocionais seguidos', xp: 2000, tier: 'silver', unlocked: false, lockedHint: '30 dias de devocional' },
-  { id: 'key', icon: '🔑', name: 'Chave do Saber', desc: 'Plano escatologia', xp: 2500, tier: 'gold', unlocked: false, lockedHint: 'Concluir plano escatologia' },
-  { id: 'shepherd', icon: '🐑', name: 'Bom Pastor', desc: 'Salmo 23 + plano liderança', xp: 1200, tier: 'silver', unlocked: false, lockedHint: 'Ler Salmo 23' },
-  { id: 'fire', icon: '🔥', name: 'Fogo do Pentecostes', desc: 'Ler Atos completo', xp: 2800, tier: 'gold', unlocked: false, lockedHint: 'Concluir Atos' },
-  { id: 'dove', icon: '🕊️', name: 'Pomba da Paz', desc: 'NT completo', xp: 15000, tier: 'diamond', unlocked: false, lockedHint: 'Ler todo Novo Testamento' },
-  { id: 'scroll', icon: '📜', name: 'Rolo do Profeta', desc: 'Todos os profetas do AT', xp: 20000, tier: 'diamond', unlocked: false, lockedHint: 'Profetas do AT' },
-  { id: 'bible', icon: '✝️', name: 'Bíblia Completa', desc: 'Todos os 66 livros', xp: 100000, tier: 'legendary', unlocked: false, lockedHint: '66 livros completa' },
-];
 
 const AT_BOOKS: BookProgress[] = [
   { abbr: 'Gn', icon: '📜', xp: 800, done: true, testament: 'AT' },
@@ -174,12 +83,11 @@ const NT_BOOKS: BookProgress[] = [
   { abbr: 'Ap', icon: '👑', xp: 400, done: false, testament: 'NT' },
 ];
 
-const READING_PLANS: ReadingPlan[] = [
-  { id: 'warrior', icon: '⚔️', name: 'Guerreiro da Palavra', days: 30, current: 13, xp: 60, reward: '🥈 Prata', rewardTier: 'silver', bonusXp: 2000, active: true },
-  { id: 'lamp', icon: '🕯️', name: 'Lâmpada para os Meus Pés', days: 7, current: 5, xp: 50, reward: '🥉 Bronze', rewardTier: 'bronze', bonusXp: 500, active: true },
-  { id: 'david', icon: '🎵', name: 'Coração de Davi', days: 90, current: 7, xp: 25, reward: '🥇 Ouro', rewardTier: 'gold', bonusXp: 8000, active: true },
+const DEFAULT_PLANS: ReadingPlan[] = [
+  { id: 'warrior', icon: '⚔️', name: 'Guerreiro da Palavra', days: 30, current: 0, xp: 60, reward: '🥈 Prata', rewardTier: 'silver', bonusXp: 2000, active: true },
+  { id: 'lamp', icon: '🕯️', name: 'Lâmpada para os Meus Pés', days: 7, current: 0, xp: 50, reward: '🥉 Bronze', rewardTier: 'bronze', bonusXp: 500, active: false },
+  { id: 'david', icon: '🎵', name: 'Coração de Davi', days: 90, current: 0, xp: 25, reward: '🥇 Ouro', rewardTier: 'gold', bonusXp: 8000, active: false },
   { id: 'year', icon: '✝️', name: 'Bíblia em 1 Ano', days: 365, current: 0, xp: 100, reward: '💎 Diamante', rewardTier: 'diamond', bonusXp: 50000, active: false },
-  { id: 'eschatology', icon: '🔑', name: 'Guardião da Escatologia', days: 60, current: 0, xp: 80, reward: '🔑 Ouro', rewardTier: 'gold', bonusXp: 6000, active: false },
 ];
 
 const EMOJIS = ['🙏', '✝️', '📖', '🕊️', '⭐', '🌟', '🔥', '💎', '🌿', '🕯️', '🐑', '⚓', '🛡️', '👑', '🎵', '🕊️', '✝️', '👑', '🌈', '⭐'];
@@ -202,53 +110,57 @@ function formatNumber(num: number): string {
 
 export function ProfilePage() {
   const { setActiveTab } = useAppContext();
+  const { profile, trophies, bookProgress, setProfile, addXP, addDiamond, addStar, useLife, refillLives, unlockTrophy, setBookProgress } = useUserStore();
   const [activeTab, setActiveTabState] = useState('perfil');
   
   const handleBack = () => setActiveTab('settings');
   const handleInnerTab = (tab: string) => setActiveTabState(tab);
-  const [profile, setProfile] = useState<UserProfile>(INITIAL_PROFILE);
-  const [books, setBooks] = useState<BookProgress[]>([]);
   const [showNameModal, setShowNameModal] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [editName, setEditName] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState(profile.avatar);
   const [xpFloat, setXpFloat] = useState<string | null>(null);
   const [heartAnimating, setHeartAnimating] = useState<number | null>(null);
-  const [lives, setLives] = useState(profile.lives);
+  const [localLives, setLocalLives] = useState(profile.lives);
 
   useEffect(() => {
-    setBooks([...AT_BOOKS, ...NT_BOOKS]);
-  }, []);
+    setLocalLives(profile.lives);
+  }, [profile.lives]);
 
   const xpPercent = Math.min((profile.xp / profile.xpToNext) * 100, 100);
-  const booksDone = books.filter(b => b.done).length;
-  const totalBooksXp = books.reduce((sum, b) => sum + (b.done ? b.xp : 0), 0);
-  const unlockedTrophies = TROPHIES.filter(t => t.unlocked).length;
+  const booksDone = bookProgress.filter(b => b.done).length;
+  const totalBooksXp = bookProgress.reduce((sum, b) => sum + (b.done ? b.xp : 0), 0);
+  const unlockedTrophies = trophies.filter(t => t.unlocked).length;
 
   const handleSaveName = () => {
     if (editName.trim()) {
-      setProfile(p => ({ ...p, name: editName.trim() }));
+      setProfile({ name: editName.trim() });
     }
     setShowNameModal(false);
   };
 
   const handleEmojiSelect = (emoji: string) => {
     setSelectedEmoji(emoji);
-    setProfile(p => ({ ...p, avatar: emoji }));
+    setProfile({ avatar: emoji });
   };
 
-  const toggleBook = (index: number) => {
-    const newBooks = [...books];
-    newBooks[index] = { ...newBooks[index], done: !newBooks[index].done };
-    setBooks(newBooks);
+  const toggleBook = (abbr: string) => {
+    const book = bookProgress.find(b => b.abbr === abbr);
+    if (book) {
+      const newDone = !book.done;
+      setBookProgress({ ...book, done: newDone });
+      if (newDone) {
+        addXP(book.xp);
+      }
+    }
   };
 
   const handleHeartClick = (index: number) => {
     if (heartAnimating !== null) return;
     
-    const currentLives = lives;
-    if (currentLives > 0) {
-      setLives(currentLives - 1);
+    if (localLives > 0) {
+      setLocalLives(localLives - 1);
+      useLife();
       setHeartAnimating(index);
       setXpFloat('-50 XP');
       
@@ -260,9 +172,9 @@ export function ProfilePage() {
   };
 
   const restoreHeart = (index: number) => {
-    const currentLives = lives;
-    if (currentLives < profile.maxLives && heartAnimating === null) {
-      setLives(currentLives + 1);
+    if (localLives < profile.maxLives && heartAnimating === null) {
+      setLocalLives(localLives + 1);
+      refillLives();
     }
   };
 
@@ -293,14 +205,14 @@ export function ProfilePage() {
       case 'perfil':
         return <TabPerfil profile={profile} xpPercent={xpPercent} />;
       case 'recompensas':
-        return <TabRecompensas />;
+        return <TabRecompensas trophies={trophies} unlockedCount={unlockedTrophies} />;
       case 'livros':
-        return <TabLivros books={books} booksDone={booksDone} totalXp={totalBooksXp} onToggle={toggleBook} />;
+        return <TabLivros books={bookProgress} booksDone={booksDone} totalXp={totalBooksXp} onToggle={toggleBook} />;
       case 'planos':
         return <TabPlanos />;
       case 'vidas':
         return <TabVidas 
-          lives={lives} 
+          lives={localLives} 
           maxLives={profile.maxLives} 
           onHeartClick={handleHeartClick}
           onRestoreHeart={restoreHeart}
@@ -313,7 +225,7 @@ export function ProfilePage() {
   };
 
   return (
-    <div className="min-h-full bg-[var(--bg-bible)]">
+    <div className="min-h-full h-full bg-[var(--bg-bible)] overflow-y-auto">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-[var(--surface-overlay)] backdrop-blur-xl border-b border-[var(--border-bible)]">
         <div className="flex items-center justify-between px-4 py-3">
@@ -465,7 +377,7 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose: () =
   );
 }
 
-function TabPerfil({ profile, xpPercent }: { profile: UserProfile; xpPercent: number }) {
+function TabPerfil({ profile, xpPercent }: { profile: ReturnType<typeof useUserStore.getState>['profile']; xpPercent: number }) {
   return (
     <div className="space-y-4">
       {/* Hero Card */}
@@ -578,8 +490,11 @@ function TabPerfil({ profile, xpPercent }: { profile: UserProfile; xpPercent: nu
   );
 }
 
-function TabRecompensas() {
-  const xpPercent = Math.min((INITIAL_PROFILE.xp / INITIAL_PROFILE.xpToNext) * 100, 100);
+function TabRecompensas({ trophies, unlockedCount }: { trophies: TrophyData[]; unlockedCount: number }) {
+  const { profile } = useUserStore();
+  const xpPercent = Math.min((profile.xp / profile.xpToNext) * 100, 100);
+  
+  const localLives = profile.lives;
   
   const renderTierBadgeInternal = (tier: TrophyData['tier']) => {
     const colors: Record<string, string> = {
@@ -609,19 +524,19 @@ function TabRecompensas() {
       <div className="rounded-2xl bg-[var(--surface-1)] p-5">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-16 h-16 rounded-full bg-[var(--surface-2)] border-2 border-[var(--accent-bible)] flex flex-col items-center justify-center">
-            <span className="text-xl font-bold text-[var(--accent-bible)]">{INITIAL_PROFILE.level}</span>
+            <span className="text-xl font-bold text-[var(--accent-bible)]">{profile.level}</span>
             <span className="text-[8px] text-[var(--accent-bible)]">NÍVEL</span>
           </div>
           <div>
-            <div className="text-base font-semibold text-[var(--text-bible)]">{INITIAL_PROFILE.rank}</div>
+            <div className="text-base font-semibold text-[var(--text-bible)]">{profile.rank}</div>
             <div className="text-xs text-[var(--text-bible-muted)]">
-              {formatNumber(INITIAL_PROFILE.xp)} / {formatNumber(INITIAL_PROFILE.xpToNext)} XP
+              {formatNumber(profile.xp)} / {formatNumber(profile.xpToNext)} XP
             </div>
           </div>
         </div>
         <div className="flex justify-between text-xs text-[var(--text-bible-muted)] mb-1">
-          <span>Nível {INITIAL_PROFILE.level} — {INITIAL_PROFILE.rank}</span>
-          <span>{formatNumber(INITIAL_PROFILE.xp)} XP</span>
+          <span>Nível {profile.level} — {profile.rank}</span>
+          <span>{formatNumber(profile.xp)} XP</span>
         </div>
         <div className="h-2.5 bg-[var(--surface-2)] rounded-full overflow-hidden">
           <motion.div
@@ -635,10 +550,10 @@ function TabRecompensas() {
 
       {/* Coins */}
       <div className="grid grid-cols-4 gap-2 p-3 rounded-xl bg-[var(--surface-1)]">
-        <CoinDisplay icon={Star} value={INITIAL_PROFILE.stars} label="Estrelas" />
-        <CoinDisplay icon={Diamond} value={INITIAL_PROFILE.diamonds} label="Diamantes" />
-        <CoinDisplay icon={Zap} value={INITIAL_PROFILE.bolts} label="Raios" />
-        <CoinDisplay icon={Heart} value={`${INITIAL_PROFILE.lives}/${INITIAL_PROFILE.maxLives}`} label="Vidas" />
+        <CoinDisplay icon={Star} value={profile.stars} label="Estrelas" />
+        <CoinDisplay icon={Diamond} value={profile.diamonds} label="Diamantes" />
+        <CoinDisplay icon={Zap} value={profile.bolts} label="Raios" />
+        <CoinDisplay icon={Heart} value={`${localLives}/${profile.maxLives}`} label="Vidas" />
       </div>
 
       {/* How to Earn XP */}
@@ -710,7 +625,7 @@ function TabRecompensas() {
           Troféus conquistados
         </div>
         <div className="grid grid-cols-3 gap-2">
-          {TROPHIES.slice(0, 12).map((trophy, i) => (
+          {trophies.slice(0, 12).map((trophy, i) => (
             <motion.div
               key={trophy.id}
               initial={{ opacity: 0, scale: 0.8 }}
@@ -741,7 +656,7 @@ function TabLivros({ books, booksDone, totalXp, onToggle }: {
   books: BookProgress[]; 
   booksDone: number; 
   totalXp: number;
-  onToggle: (index: number) => void;
+  onToggle: (abbr: string) => void;
 }) {
   const atBooks = books.filter(b => b.testament === 'AT');
   const ntBooks = books.filter(b => b.testament === 'NT');
@@ -801,7 +716,7 @@ function TabLivros({ books, booksDone, totalXp, onToggle }: {
           {atBooks.map((book, i) => (
             <motion.button
               key={book.abbr}
-              onClick={() => onToggle(i)}
+              onClick={() => onToggle(book.abbr)}
               whileTap={{ scale: 0.95 }}
               className={cn(
                 'p-1.5 rounded-lg bg-[var(--surface-1)] text-center transition-all',
@@ -866,8 +781,10 @@ function TabLivros({ books, booksDone, totalXp, onToggle }: {
 }
 
 function TabPlanos() {
-  const activePlans = READING_PLANS.filter(p => p.active);
-  const availablePlans = READING_PLANS.filter(p => !p.active);
+  const { readingPlans } = useUserStore();
+  const plans = readingPlans.length > 0 ? readingPlans : DEFAULT_PLANS;
+  const activePlans = plans.filter(p => p.active);
+  const availablePlans = plans.filter(p => !p.active);
 
   return (
     <div className="space-y-4">
@@ -879,6 +796,11 @@ function TabPlanos() {
         {activePlans.map(plan => (
           <PlanCard key={plan.id} plan={plan} />
         ))}
+        {activePlans.length === 0 && (
+          <div className="text-center text-[var(--text-bible-muted)] text-sm py-4">
+            Nenhum plano ativo. Escolha um abaixo!
+          </div>
+        )}
       </div>
 
       {/* Available Plans */}

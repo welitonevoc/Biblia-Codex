@@ -13,12 +13,13 @@ import {
 } from 'firebase/firestore';
 import { storage } from '../StorageService';
 import { Bookmark, Note } from '../types';
+import { useUserStore } from '../stores/userStore';
 
 class SyncService {
   private isSyncing = false;
 
   /**
-   * Sincroniza todos os dados (Marcadores e Notas)
+   * Sincroniza todos os dados (Marcadores, Notas e Perfil do Usuário)
    */
   async syncAll(): Promise<{ success: boolean; message: string }> {
     if (this.isSyncing) return { success: false, message: 'Já está sincronizando...' };
@@ -31,7 +32,8 @@ class SyncService {
       
       await Promise.all([
         this.syncCollection<Bookmark>('bookmarks', userId),
-        this.syncCollection<Note>('notes', userId)
+        this.syncCollection<Note>('notes', userId),
+        this.syncUserProfile(userId)
       ]);
 
       return { success: true, message: 'Sincronização concluída com sucesso!' };
@@ -40,6 +42,38 @@ class SyncService {
       return { success: false, message: `Erro: ${error.message}` };
     } finally {
       this.isSyncing = false;
+    }
+  }
+
+  /**
+   * Sincroniza o perfil do usuário (gamificação)
+   */
+  private async syncUserProfile(userId: string) {
+    if (!db) return;
+
+    try {
+      const userStore = useUserStore.getState();
+      const localData = userStore.toFirestore();
+      const cloudPath = `users/${userId}/profile/data`;
+      
+      const cloudDoc = await getDoc(doc(db, cloudPath));
+      const cloudData = cloudDoc.exists() ? cloudDoc.data() : null;
+      
+      const localUpdated = localData.updatedAt || 0;
+      const cloudUpdated = cloudData?.updatedAt?.toMillis?.() || cloudData?.updatedAt || 0;
+      
+      if (localUpdated >= cloudUpdated) {
+        await setDoc(doc(db, cloudPath), {
+          ...localData,
+          syncAt: Timestamp.now()
+        }, { merge: true });
+        console.log('[SyncService] Perfil uploaded para Firestore');
+      } else if (cloudUpdated > localUpdated) {
+        userStore.loadFromFirestore(cloudData);
+        console.log('[SyncService] Perfil downloaded do Firestore');
+      }
+    } catch (error) {
+      console.log('[SyncService] Profile sync skipped:', error);
     }
   }
 

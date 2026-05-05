@@ -6,17 +6,23 @@ import {
 } from '../types';
 import { auth, db, onAuthStateChanged, User, loginWithGoogle, logout, handleRedirectResult, doc, setDoc, onSnapshot, serverTimestamp } from '../firebase';
 import { syncService } from '../services/SyncService';
+import { useUserStore } from '../stores/userStore';
+import { getDoc } from 'firebase/firestore';
 import { dictionaryService, createAiModule } from '../services/dictionaryService';
 import { scanForBibleModules } from '../services/moduleScanner';
 import { loadVineIndex } from '../services/VineProService';
 import { listInstalledModules } from '../services/moduleService';
 import { DEFAULT_THEME_MODE, THEME_CLASSNAMES, getThemePreset, getThemeVariables, normalizeThemeMode } from '../theme/presets';
 
+export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'unauthenticated' | 'error';
+
 interface AppContextType {
   config: ThemeConfig;
   settings: AppSettings;
   user: User | null;
   isAuthReady: boolean;
+  authStatus: AuthStatus;
+  authError: string | null;
   selectedDictionaryModule: BibleModule | null;
   selectedCommentaryModule: BibleModule | null;
   selectedXrefModule: BibleModule | null;
@@ -56,6 +62,8 @@ interface AppContextType {
   syncNow: () => void;
   refreshModules: () => Promise<void>;
   login: () => Promise<void>;
+  handleLogout: () => Promise<void>;
+  clearAuthError: () => void;
   handleLogout: () => Promise<void>;
   setSelectedDictionaryModule: (module: BibleModule | null) => void;
   setSelectedCommentaryModule: (module: BibleModule | null) => void;
@@ -128,6 +136,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return defaults;
     }
   });
+
+  const isCloudUpdateRef = useRef(false);
 
   const [settings, setSettings] = useState<AppSettings>(() => {
     const defaults: AppSettings = {
@@ -214,65 +224,92 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
        return;
      }
 
-     const unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
-       setUser(currentUser);
-       setIsAuthReady(true);
-     });
+const unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
+        setUser(currentUser);
+        setIsAuthReady(true);
+        setAuthStatus(currentUser ? 'authenticated' : 'unauthenticated');
+      });
      return () => unsubscribe();
    }, []);
 
-   // Sync from Cloud
-   useEffect(() => {
-    if (!user || !db) return;
-
-    const userDocRef = doc(db, 'users', user.uid);
-    const unsubscribe = onSnapshot(userDocRef, (docSnap: any) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const settingsStr = JSON.stringify(data.settings);
-
-        if (data.settings && settingsStr !== lastRemoteSettingsRef.current) {
-          lastRemoteSettingsRef.current = settingsStr;
-          setSettings((prev: AppSettings) => ({ ...prev, ...data.settings }));
-        }
-
-        if (data.config) {
-          setConfig((prev: ThemeConfig) => ({
-            ...prev,
-            ...data.config,
-            mode: normalizeThemeMode(data.config.mode),
-          }));
-        }
+// Sync from Cloud
+    useEffect(() => {
+      // Only sync if Firebase is properly configured AND sync is enabled in settings
+      // Default to disabled unless explicitly enabled
+      const storedSync = localStorage.getItem('sync_enabled');
+      const isSyncEnabled = storedSync === 'true';
+      
+      if (!user || !db || !import.meta.env.VITE_FIREBASE_API_KEY || !isSyncEnabled) {
+        console.log('[Firestore] Sync skipped:', { user: !!user, db: !!db, apiKey: !!import.meta.env.VITE_FIREBASE_API_KEY, isSyncEnabled, storedSync });
+        return;
       }
-    });
-
-    return () => unsubscribe();
-  }, [user]);
-
-  // Sync to Cloud
-  const syncToCloud = useCallback(async (newConfig: ThemeConfig, newSettings: AppSettings) => {
-    if (!user || !db) return;
-
-    try {
-      const settingsStr = JSON.stringify(newSettings);
-      if (settingsStr === lastRemoteSettingsRef.current) return;
 
       const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        config: newConfig,
-        settings: newSettings,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
+      const unsubscribe = onSnapshot(userDocRef, (docSnap: any) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const settingsStr = JSON.stringify(data.settings);
 
-      lastRemoteSettingsRef.current = settingsStr;
-    } catch (error) {
-      console.error('Sync to Cloud Error:', error);
-    }
-  }, [user]);
+          if (data.settings && settingsStr !== lastRemoteSettingsRef.current) {
+            lastRemoteSettingsRef.current = settingsStr;
+            isCloudUpdateRef.current = true;
+            setSettings((prev: AppSettings) => ({ ...prev, ...data.settings }));
+            isCloudUpdateRef.current = false;
+          }
+
+          if (data.config) {
+            isCloudUpdateRef.current = true;
+            setConfig((prev: ThemeConfig) => ({
+              ...prev,
+              ...data.config,
+              mode: normalizeThemeMode(data.config.mode),
+            }));
+            isCloudUpdateRef.current = false;
+          }
+
+          // Load user profile (gamification)
+          if (data.profile) {
+            const loadUserProfile = useUserStore.getState().loadFromFirestore;
+            if (data.profile.profile && data.profile.trophies) {
+              loadUserProfile(data.profile);
+            }
+          }
+        }
+      });
+
+      return () => unsubscribe();
+
+     // Also sync user profile from Firestore 'profile' collection
+     const syncUserProfile = async () => {
+       try {
+         const profileDoc = await getDoc(doc(db, `users/${user.uid}/profile`, 'data'));
+         if (profileDoc.exists()) {
+           const profileData = profileDoc.data();
+           const setProfile = useUserStore.getState().setProfile;
+           
+           // Update profile with Firebase user data
+           if (user.displayName && user.email) {
+             setProfile({
+               name: user.displayName,
+               email: user.email,
+               googleLinked: true
+             });
+           }
+           
+           // Load gamification data
+           if (profileData.profile || profileData.trophies) {
+             useUserStore.getState().loadFromFirestore(profileData);
+           }
+         }
+       } catch (e) {
+         console.log('[AppContext] Profile sync not available yet');
+       }
+     };
+     
+     syncUserProfile();
+
+return () => unsubscribe();
+    }, [user]);
 
   // Apply theme to document
   useEffect(() => {
@@ -324,9 +361,56 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('codex-settings', JSON.stringify(settings));
   }, [settings]);
 
+  // Helper to remove undefined fields from objects
+  const removeUndefined = (obj: any): any => {
+    if (obj === null || obj === undefined) return undefined;
+    if (Array.isArray(obj)) return obj.map(removeUndefined).filter((v: any) => v !== undefined);
+    if (typeof obj === 'object') {
+      const result: any = {};
+      for (const key of Object.keys(obj)) {
+        const val = removeUndefined(obj[key]);
+        if (val !== undefined) result[key] = val;
+      }
+      return Object.keys(result).length > 0 ? result : undefined;
+    }
+    return obj;
+  };
+
+  // syncToCloud function - must be defined before useEffect that uses it
+  const syncToCloud = useCallback(async (newConfig: ThemeConfig, newSettings: AppSettings) => {
+    const isSyncEnabled = localStorage.getItem('sync_enabled') === 'true';
+    if (!user || !db || !isSyncEnabled) return;
+    
+    // Skip if Firebase not properly configured
+    if (!import.meta.env.VITE_FIREBASE_API_KEY || !import.meta.env.VITE_FIREBASE_PROJECT_ID) {
+      return;
+    }
+
+    try {
+      const cleanedSettings = removeUndefined(newSettings);
+      const settingsStr = JSON.stringify(cleanedSettings);
+      if (settingsStr === lastRemoteSettingsRef.current) return;
+
+      const userDocRef = doc(db, 'users', user.uid);
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        config: removeUndefined(newConfig),
+        settings: cleanedSettings,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      lastRemoteSettingsRef.current = settingsStr;
+    } catch (error) {
+      console.error('Sync to Cloud Error:', error);
+    }
+  }, [user]);
+
   // Debounced cloud sync
   useEffect(() => {
-    if (!user) return;
+    if (!user || isCloudUpdateRef.current) return;
 
     const timer = setTimeout(() => {
       syncToCloud(config, settings);
@@ -462,12 +546,61 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [user, syncToCloud, config, settings]);
 
+  const [authStatus, setAuthStatus] = useState<AuthStatus>('idle');
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const clearAuthError = useCallback(() => {
+    setAuthError(null);
+    if (authStatus === 'error') {
+      setAuthStatus(user ? 'authenticated' : 'unauthenticated');
+    }
+  }, [authStatus, user]);
+
   const login = useCallback(async () => {
-    await loginWithGoogle();
+    if (!auth) {
+      setAuthError('Firebase não configurado. Configure as variáveis de ambiente VITE_FIREBASE_*');
+      setAuthStatus('error');
+      return;
+    }
+
+    setAuthStatus('loading');
+    setAuthError(null);
+    
+    try {
+      await loginWithGoogle();
+    } catch (error: any) {
+      const errorMessages: Record<string, string> = {
+        'auth/popup-closed-by-user': 'Login cancelado pelo usuário',
+        'auth/popup-blocked': 'Popup bloqueado. Permita popups no navegador.',
+        'auth/network-request-failed': 'Erro de conexão. Verifique sua internet.',
+        'auth/cancelled-popup-request': 'Solicitação cancelada. Tente novamente.',
+        'auth/operation-not-allowed': 'Login desabilitado. Entre em contato com o suporte.',
+      };
+      
+      const code = error?.code || 'unknown';
+      setAuthError(errorMessages[code] || `Erro ao fazer login: ${error?.message || 'Erro desconhecido'}`);
+      setAuthStatus('error');
+      console.error('Login error:', error);
+    }
   }, []);
 
   const handleLogout = useCallback(async () => {
-    await logout();
+    if (!auth) {
+      setAuthStatus('unauthenticated');
+      return;
+    }
+
+    setAuthStatus('loading');
+    setAuthError(null);
+    
+    try {
+      await logout();
+      setAuthStatus('unauthenticated');
+    } catch (error: any) {
+      setAuthError(`Erro ao fazer logout: ${error?.message || 'Erro desconhecido'}`);
+      setAuthStatus('error');
+      console.error('Logout error:', error);
+    }
   }, []);
 
   const refreshModulesRunning = useRef(false);
@@ -581,6 +714,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     settings,
     user,
     isAuthReady,
+    authStatus,
+    authError,
+    clearAuthError,
     selectedDictionaryModule,
     availableVersions,
     availableDictionaries,

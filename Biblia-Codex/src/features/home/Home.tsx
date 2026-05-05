@@ -3,11 +3,13 @@ import { motion } from 'motion/react';
 import {
   BookOpen, History, Bookmark, Calendar, Flame, ChevronRight, Play,
   BookMarked, Clock, Star, Sparkles, ArrowRight,
-  PenLine, Search, Map, Languages, GraduationCap, Tags, Settings
+  PenLine, Search, Map, Languages, GraduationCap, Tags, Settings,
+  Zap, Gem, Crown, Target, LogIn, LogOut
 } from 'lucide-react';
 import { Book } from '../types';
 import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { useAppContext } from '../AppContext';
+import { useUserStore } from '../../stores/userStore';
 import { cn } from '../utils/cn';
 
 interface HomeProps {
@@ -24,6 +26,8 @@ interface HomeProps {
   goToDictionaries?: () => void;
   goToSettings?: () => void;
   goToBible?: () => void;
+  login?: () => void;
+  handleLogout?: () => void;
 }
 
 export const Home: React.FC<HomeProps> = React.memo(({ 
@@ -42,10 +46,25 @@ export const Home: React.FC<HomeProps> = React.memo(({
   goToBible,
 }) => {
   const { user } = useAppContext();
-  const [streak] = useState(7);
+  const { login: loginFromContext, handleLogout: logoutFromContext } = useAppContext();
+  const login = loginFromContext;
+  const handleLogout = logoutFromContext;
+  const { profile, trophies, incrementStreak } = useUserStore();
   const [planDay] = useState(4);
   const [isReadToday] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    incrementStreak();
+  }, [incrementStreak]);
+
+  const xpPercent = useMemo(() => {
+    return Math.min((profile.xp / profile.xpToNext) * 100, 100);
+  }, [profile.xp, profile.xpToNext]);
+
+  const unlockedTrophies = useMemo(() => {
+    return trophies.filter(t => t.unlocked).length;
+  }, [trophies]);
 
   // Verse of the Day Data
   const dailyVerses = useMemo(() => [
@@ -247,32 +266,116 @@ export const Home: React.FC<HomeProps> = React.memo(({
                   </p>
                 </div>
                 
-                <div className="hidden sm:flex items-center gap-3">
+                <div className="hidden sm:flex items-center gap-2">
+                  {/* Streak */}
                   <motion.div 
                     whileHover={{ scale: 1.05 }}
                     className={cn(
-                      "text-center px-4 py-3 rounded-xl",
+                      "text-center px-3 py-2 rounded-xl min-w-[60px]",
                       "bg-gradient-to-br from-orange-500/10 to-amber-500/10",
                       "border border-orange-500/20"
                     )}
                   >
-                    <Flame className="w-5 h-5 text-orange-500 mx-auto mb-1" />
-                    <div className="text-xl font-bold text-orange-600">{streak}</div>
-                    <div className="text-[10px] font-medium text-orange-400/80">dias</div>
+                    <Flame className="w-4 h-4 text-orange-500 mx-auto mb-0.5" />
+                    <div className="text-lg font-bold text-orange-600">{profile.streak}</div>
+                    <div className="text-[9px] font-medium text-orange-400/80">dias</div>
                   </motion.div>
                   
+                  {/* Level */}
                   <motion.div 
                     whileHover={{ scale: 1.05 }}
                     className={cn(
-                      "text-center px-4 py-3 rounded-xl",
-                      "bg-gradient-to-br from-blue-500/10 to-indigo-500/10",
-                      "border border-blue-500/20"
+                      "text-center px-3 py-2 rounded-xl min-w-[60px]",
+                      "bg-gradient-to-br from-purple-500/10 to-violet-500/10",
+                      "border border-purple-500/20"
                     )}
                   >
-                    <Calendar className="w-5 h-5 text-blue-500 mx-auto mb-1" />
-                    <div className="text-xl font-bold text-blue-600">{planDay}</div>
-                    <div className="text-[10px] font-medium text-blue-400/80">dia</div>
+                    <Crown className="w-4 h-4 text-purple-500 mx-auto mb-0.5" />
+                    <div className="text-lg font-bold text-purple-600">{profile.level}</div>
+                    <div className="text-[9px] font-medium text-purple-400/80">nível</div>
                   </motion.div>
+
+                  {/* XP Progress */}
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    className={cn(
+                      "text-center px-3 py-2 rounded-xl min-w-[70px]",
+                      "bg-gradient-to-br from-green-500/10 to-emerald-500/10",
+                      "border border-green-500/20"
+                    )}
+                  >
+                    <Zap className="w-4 h-4 text-green-500 mx-auto mb-0.5" />
+                    <div className="text-lg font-bold text-green-600">{profile.xp}</div>
+                    <div className="text-[9px] font-medium text-green-400/80">XP</div>
+                    <div className="w-full h-1 bg-green-500/20 rounded-full mt-1">
+                      <div 
+                        className="h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full transition-all"
+                        style={{ width: `${xpPercent}%` }}
+                      />
+                    </div>
+                  </motion.div>
+
+                  {/* Diamonds */}
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    className={cn(
+                      "text-center px-3 py-2 rounded-xl min-w-[60px]",
+                      "bg-gradient-to-br from-cyan-500/10 to-blue-500/10",
+                      "border border-cyan-500/20"
+                    )}
+                  >
+                    <Gem className="w-4 h-4 text-cyan-500 mx-auto mb-0.5" />
+                    <div className="text-lg font-bold text-cyan-600">{profile.diamonds}</div>
+                    <div className="text-[9px] font-medium text-cyan-400/80">gemas</div>
+                  </motion.div>
+
+                  {/* Trophies */}
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    className={cn(
+                      "text-center px-3 py-2 rounded-xl min-w-[60px]",
+                      "bg-gradient-to-br from-yellow-500/10 to-amber-500/10",
+                      "border border-yellow-500/20"
+                    )}
+                  >
+                    <Target className="w-4 h-4 text-yellow-500 mx-auto mb-0.5" />
+                    <div className="text-lg font-bold text-yellow-600">{unlockedTrophies}</div>
+                    <div className="text-[9px] font-medium text-yellow-400/80">troféus</div>
+                  </motion.div>
+
+                  {/* Login/Logout Button */}
+                  {user ? (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleLogout?.()}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-xl",
+                        "bg-[var(--surface-1)] border border-[var(--border-bible)]",
+                        "text-[var(--text-bible-muted)] hover:text-[var(--text-bible)]",
+                        "transition-colors cursor-pointer"
+                      )}
+                      title="Sair da conta"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span className="text-xs font-medium hidden sm:inline">Sair</span>
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => login?.()}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-xl",
+                        "bg-[var(--accent-bible)] text-white font-medium",
+                        "hover:bg-[var(--accent-bible)]/90 transition-colors cursor-pointer"
+                      )}
+                      title="Entrar com Google"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span className="text-xs font-medium hidden sm:inline">Entrar</span>
+                    </motion.button>
+                  )}
                 </div>
               </div>
             </motion.div>

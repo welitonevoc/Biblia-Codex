@@ -5,7 +5,6 @@ import { readModuleBinary } from './services/moduleService';
 import { BookNumberConverter } from './services/BookNumberConverter';
 import { footnoteService } from './services/FootnoteService';
 import initSqlJs from 'sql.js';
-import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 import { getGeminiExplanation, getAIResponse } from './services/geminiService';
 import { getDataUrl } from './utils/dataAssets';
 import { Capacitor } from '@capacitor/core';
@@ -74,15 +73,11 @@ export const getSqlInstance = async () => {
 
   sqlPromise = (async () => {
     try {
-      console.log('[BibleService] Carregando WASM de:', sqlWasmUrl);
-      const response = await fetchWithTimeout(sqlWasmUrl);
-      if (!response.ok) {
-        throw new Error(`Falha ao carregar ${sqlWasmUrl}: ${response.status} ${response.statusText}`);
-      }
-      const wasmBinary = await response.arrayBuffer();
-      const instance = await initSqlJs({ wasmBinary });
-      sqlInstance = instance;
-      return instance;
+      const SQL = await initSqlJs({
+        wasmBinary: await fetch('https://sql.js.org/dist/sql-wasm.wasm').then(r => r.arrayBuffer())
+      });
+      sqlInstance = SQL;
+      return sqlInstance;
     } catch (error) {
       console.error('[BibleService] Erro ao inicializar SQL.js:', error);
       sqlPromise = null;

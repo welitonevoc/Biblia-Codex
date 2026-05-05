@@ -49,10 +49,16 @@ if (isFirebaseConfigured) {
   try {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
-    const firestoreDatabaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID || '(default)';
-    db = getFirestore(app, firestoreDatabaseId);
-  } catch (error) {
-    console.error('❌ Erro ao inicializar Firebase:', error);
+    // Usar Firestore padrão (não especificar database ID)
+    db = getFirestore(app);
+    console.log('[Firebase] Firestore inicializado (database padrão)');
+  } catch (error: any) {
+    console.error('❌ Erro ao inicializar Firebase:', error?.message || error);
+    // If database not found, set db to null to prevent further attempts
+    if (error?.message?.includes('Database') || error?.message?.includes('not found')) {
+      console.warn('⚠️ Firestore banco de dados não encontrado. Sync desabilitado.');
+      db = null;
+    }
   }
 }
 
