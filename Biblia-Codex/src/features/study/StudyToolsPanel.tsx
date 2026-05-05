@@ -50,33 +50,57 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
   const [loading, setLoading] = useState(true);
   const { settings } = useAppContext();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      if (type === 'commentary') {
-        const data = await BibleService.getCommentary(book.id, verse.chapter, verse.verse, settings.ai.model);
-        setContent(data);
-      } else if (type === 'dictionary') {
-        const text = verse.text;
-        const wordMatch = text.match(/\b([A-Za-z]+)\b/);
-        const word = wordMatch ? wordMatch[1] : text.split(' ')[0];
-        const data = await BibleService.getDictionary(word);
-        setContent(data);
-      } else if (type === 'xrefs') {
-        const data = await BibleService.getCrossReferences(book.id, verse.chapter, verse.verse, settings.ai.model);
-        setContent(data);
-      } else if (type === 'people') {
-        const data = await BibleService.getPeopleData(book.id, verse.chapter, verse.verse);
-        setContent(data);
-      } else if (type === 'places') {
-        const data = await BibleService.getPlacesData(book.id, verse.chapter, verse.verse);
-        setContent(data);
-      } else if (type === 'footnotes') {
-        const data = await BibleService.getFootnotes(book.id, verse.chapter, verse.verse);
-        setContent(data);
+  const [content, setContent] = useState<StudyToolContent>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { settings } = useAppContext();
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let data: StudyToolContent = null;
+      
+      switch (type) {
+        case 'commentary': {
+          data = await BibleService.getCommentary(book.id, verse.chapter, verse.verse, settings.ai.model);
+          break;
+        }
+        case 'dictionary': {
+          const text = verse.text;
+          const words = text.match(/\b([A-Za-záéíóúàèìòùâêîôûãõ]{3,})\b/gi) || [];
+          const uniqueWords = [...new Set(words.map(w => w.toLowerCase()))];
+          const word = uniqueWords[0] || text.split(' ')[0];
+          data = await BibleService.getDictionary(word);
+          break;
+        }
+        case 'xrefs': {
+          data = await BibleService.getCrossReferences(book.id, verse.chapter, verse.verse, settings.ai.model);
+          break;
+        }
+        case 'people': {
+          data = await BibleService.getPeopleData(book.id, verse.chapter, verse.verse);
+          break;
+        }
+        case 'places': {
+          data = await BibleService.getPlacesData(book.id, verse.chapter, verse.verse);
+          break;
+        }
+        case 'footnotes': {
+          data = await BibleService.getFootnotes(book.id, verse.chapter, verse.verse);
+          break;
+        }
       }
+      setContent(data);
+    } catch (err) {
+      console.error('Erro ao buscar dados:', err);
+      setError('Erro ao carregar dados. Tente novamente.');
+    } finally {
       setLoading(false);
-    };
+    }
+  };
+
+  useEffect(() => {
     if (isOpen) fetchData();
   }, [isOpen, type, verse, book, settings.ai.model]);
 
@@ -291,99 +315,140 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
                       </div>
                     )}
 
-                    {/* Dictionary */}
-                    {type === 'dictionary' && content && typeof content === 'object' && !Array.isArray(content) && (
+{/* Dictionary */}
+                    {type === 'dictionary' && (
                       <div className="space-y-4">
-                        {Object.entries(content as Record<string, unknown>).slice(0, 20).map(([key, value]) => (
+                        {typeof content === 'string' ? (
                           <motion.div
-                            key={key}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="premium-card p-4 border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm group sm:p-6"
+                            className="premium-card p-4 border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm sm:p-6"
                           >
-                            <h3 className="text-base font-black text-bible-text mb-3 flex items-center gap-3 group-hover:text-bible-accent transition-colors">
-                              <div className="w-1.5 h-6 bg-bible-accent rounded-full" />
-                              {key}
-                            </h3>
                             <div
                               onClick={handleLinkClick}
-                              className="text-sm text-bible-text leading-relaxed font-serif opacity-90"
-                              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(value)) }}
+                              className="prose prose-bible max-w-none text-bible-text prose-p:leading-relaxed"
+                              dangerouslySetInnerHTML={{
+                                __html: DOMPurify.sanitize(content)
+                              }}
                             />
                           </motion.div>
-                        ))}
+                        ) : (
+                          <div className="space-y-4">
+                            {Object.entries(content as Record<string, unknown>).slice(0, 20).map(([key, value]) => (
+                              <motion.div
+                                key={key}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="premium-card p-4 border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm group sm:p-6"
+                              >
+                                <h3 className="text-base font-black text-bible-text mb-3 flex items-center gap-3 group-hover:text-bible-accent transition-colors">
+                                  <div className="w-1.5 h-6 bg-bible-accent rounded-full" />
+                                  {key}
+                                </h3>
+                                <div
+                                  onClick={handleLinkClick}
+                                  className="text-sm text-bible-text leading-relaxed font-serif opacity-90"
+                                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(String(value)) }}
+                                />
+                              </motion.div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {/* Cross References */}
-                    {type === 'xrefs' && Array.isArray(content) && content.length > 0 && (
+{/* Cross References */}
+                    {type === 'xrefs' && Array.isArray(content) && (
                       <div className="space-y-4">
-                        {content.map((ref, i: number) => (
-                          <motion.button
-                            key={i}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.05 }}
-                            whileHover={{ scale: 1.02, y: -2 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => {
-                              const r = ref as { bookId?: string; chapter?: number; verse?: number; bookName?: string; text?: string; reason?: string };
-                              if (r.bookId) {
-                                onNavigate(r.bookId, r.chapter ?? 1, r.verse ?? 1);
-                                onClose();
-                              }
-                            }}
-                            className="premium-card relative w-full overflow-hidden p-4 text-left group border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm sm:p-6"
+                        {content.length === 0 ? (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="flex flex-col items-center justify-center py-12 text-center"
                           >
-                            <div className="absolute top-0 right-0 w-20 h-20 bg-bible-accent/5 rounded-full -translate-y-10 translate-x-10 blur-2xl group-hover:bg-bible-accent/10 transition-colors" />
-                            
-                            <div className="flex items-start justify-between gap-3 mb-3 relative z-10">
-                              <div className="flex items-center gap-2.5">
-                                <div className="p-1.5 rounded-lg bg-bible-accent/10 border border-bible-accent/20">
-                                  <BookOpen className="w-3.5 h-3.5 text-bible-accent" />
+                            <Layers className="w-12 h-12 text-bible-text-subtle mb-4" />
+                            <p className="text-sm text-bible-text-muted">Nenhuma referência cruzada encontrada.</p>
+                          </motion.div>
+                        ) : (
+                          content.map((ref, i: number) => (
+                            <motion.button
+                              key={i}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.05 }}
+                              whileHover={{ scale: 1.02, y: -2 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => {
+                                const r = ref as { bookId?: string; chapter?: number; verse?: number; bookName?: string; text?: string; reason?: string };
+                                if (r.bookId) {
+                                  onNavigate(r.bookId, r.chapter ?? 1, r.verse ?? 1);
+                                  onClose();
+                                }
+                              }}
+                              className="premium-card relative w-full overflow-hidden p-4 text-left group border-bible-border/30 bg-bible-bg/40 backdrop-blur-sm sm:p-6"
+                            >
+                              <div className="absolute top-0 right-0 w-20 h-20 bg-bible-accent/5 rounded-full -translate-y-10 translate-x-10 blur-2xl group-hover:bg-bible-accent/10 transition-colors" />
+                              
+                              <div className="flex items-start justify-between gap-3 mb-3 relative z-10">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="p-1.5 rounded-lg bg-bible-accent/10 border border-bible-accent/20">
+                                    <BookOpen className="w-3.5 h-3.5 text-bible-accent" />
+                                  </div>
+                                  <span className="text-sm font-black text-bible-text tracking-tight group-hover:text-bible-accent transition-colors">
+                                    {(ref as { bookName?: string }).bookName || (ref as { bookId?: string }).bookId} {(ref as { chapter?: number }).chapter}:{(ref as { verse?: number }).verse}
+                                  </span>
                                 </div>
-                                <span className="text-sm font-black text-bible-text tracking-tight group-hover:text-bible-accent transition-colors">
-                                  {(ref as { bookName?: string }).bookName || (ref as { bookId?: string }).bookId} {(ref as { chapter?: number }).chapter}:{(ref as { verse?: number }).verse}
-                                </span>
+                                <div className="w-8 h-8 rounded-full bg-bible-surface-strong flex items-center justify-center border border-bible-border/50 group-hover:border-bible-accent/30 transition-all">
+                                  <ChevronRight className="w-4 h-4 text-bible-text-muted group-hover:text-bible-accent group-hover:translate-x-0.5 transition-all" />
+                                </div>
                               </div>
-                              <div className="w-8 h-8 rounded-full bg-bible-surface-strong flex items-center justify-center border border-bible-border/50 group-hover:border-bible-accent/30 transition-all">
-                                <ChevronRight className="w-4 h-4 text-bible-text-muted group-hover:text-bible-accent group-hover:translate-x-0.5 transition-all" />
-                              </div>
-                            </div>
-                            {(ref as { text?: string }).text && (
-                              <p className="text-sm text-bible-text leading-relaxed font-serif italic relative z-10 opacity-90">
-                                "{(ref as { text?: string }).text}"
-                              </p>
-                            )}
-                            {(ref as { reason?: string }).reason && (
-                              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-bible-border/30 relative z-10">
-                                <Sparkles className="w-3 h-3 text-bible-accent" />
-                                <p className="text-[11px] font-bold text-bible-text-muted uppercase tracking-widest">
-                                  {(ref as { reason?: string }).reason}
+                              {(ref as { text?: string }).text && (
+                                <p className="text-sm text-bible-text leading-relaxed font-serif italic relative z-10 opacity-90">
+                                  "{(ref as { text?: string }).text}"
                                 </p>
-                              </div>
-                            )}
-                          </motion.button>
-                        ))}
+                              )}
+                              {(ref as { reason?: string }).reason && (
+                                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-bible-border/30 relative z-10">
+                                  <Sparkles className="w-3 h-3 text-bible-accent" />
+                                  <p className="text-[11px] font-bold text-bible-text-muted uppercase tracking-widest">
+                                    {(ref as { reason?: string }).reason}
+                                  </p>
+                                </div>
+                              )}
+                            </motion.button>
+                          ))
+                        )}
                       </div>
                     )}
 
                     {/* Empty State */}
-                    {!content && (
+                    {(error || (!loading && !content)) && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="flex flex-col items-center justify-center py-20 px-6 text-center"
                       >
                         <div className="w-24 h-24 rounded-full bg-bible-surface-strong/50 flex items-center justify-center mb-6 border border-bible-border/50 shadow-inner">
-                          <Info className="w-10 h-10 text-bible-text-subtle" />
+                          {error ? (
+                            <Search className="w-10 h-10 text-bible-accent" />
+                          ) : (
+                            <Info className="w-10 h-10 text-bible-text-subtle" />
+                          )}
                         </div>
                         <h3 className="text-xl font-black text-bible-text mb-2 tracking-tight">
-                          Território Inexplorado
+                          {error ? 'Ops! Algo deu errado' : 'Nenhum dado encontrado'}
                         </h3>
                         <p className="text-sm text-bible-text-muted max-w-[240px] leading-relaxed">
-                          Não encontramos registros de {titles[type].toLowerCase()} para este versículo específico.
+                          {error || `Não encontramos ${titles[type].toLowerCase()} para ${book.name} ${verse.chapter}:${verse.verse}.`}
                         </p>
+                        {error && (
+                          <button
+                            onClick={fetchData}
+                            className="mt-4 px-4 py-2 bg-bible-accent text-white rounded-lg text-sm font-bold"
+                          >
+                            Tentar novamente
+                          </button>
+                        )}
                       </motion.div>
                     )}
                   </motion.div>
