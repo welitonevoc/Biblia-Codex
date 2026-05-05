@@ -909,22 +909,25 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
               </div>
 
               {selectedPerson.verses && (
-                <div className="premium-card p-6 border-bible-border/30 bg-bible-surface-strong/20 mb-8">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="p-2 rounded-xl bg-bible-accent/10">
-                      <BookOpen className="w-4 h-4 text-bible-accent" />
-                    </div>
-                    <span className="text-xs font-black uppercase tracking-widest text-bible-text-muted">Onde encontrar na Bíblia</span>
+                <div className="premium-card p-4 border-bible-border/30 bg-bible-surface-strong/20 mb-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <BookOpen className="w-4 h-4 text-bible-accent" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-bible-text-muted">Referências na Bíblia</span>
                   </div>
-                  <div className="flex flex-wrap gap-2.5">
-                    {selectedPerson.verses.split(',').map((verse, idx) => (
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedPerson.verses.split(',').slice(0, 10).map((verse, idx) => (
                       <span
                         key={idx}
-                        className="px-4 py-2.5 rounded-xl text-sm font-bold bg-bible-bg border border-bible-border/50 text-bible-text hover:border-bible-accent hover:text-bible-accent transition-all cursor-default shadow-sm"
+                        className="px-2 py-1 rounded-md text-xs font-medium bg-bible-bg border border-bible-border/50 text-bible-text"
                       >
                         {verse.trim()}
                       </span>
                     ))}
+                    {selectedPerson.verses.split(',').length > 10 && (
+                      <span className="px-2 py-1 rounded-md text-xs text-bible-text-muted">
+                        +{selectedPerson.verses.split(',').length - 10}
+                      </span>
+                    )}
                   </div>
                 </div>
               )}
