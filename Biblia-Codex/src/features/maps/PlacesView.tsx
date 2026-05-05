@@ -233,15 +233,7 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
       </div>
     </div>
   );
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <AnimatePresence mode="popLayout">
-                {filteredPlaces.map((place, idx) => {
-                  const images = place.images || [];
-                  const hasImage = images.length > 0;
-                  
-                  return (
-                    <ReaderTooltip key={place.id || place.location || idx} label={`Explorar ${place.location}`}>
-                      <motion.button 
+} 
                         layout
                         initial={{ opacity: 0, scale: 0.9 }} 
                         animate={{ opacity: 1, scale: 1 }} 
