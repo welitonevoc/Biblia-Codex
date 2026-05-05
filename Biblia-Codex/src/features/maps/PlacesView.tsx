@@ -189,6 +189,9 @@ export function PlacesView({ bookId, chapter, verse, places: initialPlaces, onCl
                   {place.modernName && (
                     <p className="text-[10px] text-bible-text-muted truncate">{place.modernName}</p>
                   )}
+                  {place.verses && (
+                    <p className="text-[9px] text-bible-accent mt-1 truncate">{place.verses}</p>
+                  )}
                 </div>
               </button>
             ))}
