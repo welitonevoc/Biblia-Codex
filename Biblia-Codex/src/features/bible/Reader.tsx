@@ -158,6 +158,26 @@ const VerseItem = React.memo(({
               </span>
             )}
           </span>
+          <div className="absolute right-0 top-0 -mt-1 -mr-1 hidden group/verse-actions sm:flex items-center gap-0.5 opacity-0 group-hover/verse:opacity-100 transition-opacity">
+            <button onClick={() => onToolOpen(v, 'commentary')} className="p-1 hover:bg-bible-accent/20 rounded-full transition-colors" title="Comentário">
+              <MessageSquare className="w-3.5 h-3.5 text-bible-accent" />
+            </button>
+            <button onClick={() => onToolOpen(v, 'dictionary')} className="p-1 hover:bg-bible-accent/20 rounded-full transition-colors" title="Dicionário">
+              <Library className="w-3.5 h-3.5 text-bible-accent" />
+            </button>
+            <button onClick={() => onToolOpen(v, 'xrefs')} className="p-1 hover:bg-bible-accent/20 rounded-full transition-colors" title="Refs. Cruzadas">
+              <Layers className="w-3.5 h-3.5 text-bible-accent" />
+            </button>
+            <button onClick={() => onToolOpen(v, 'people')} className="p-1 hover:bg-bible-accent/20 rounded-full transition-colors" title="Pessoas">
+              <Users className="w-3.5 h-3.5 text-bible-accent" />
+            </button>
+            <button onClick={() => onToolOpen(v, 'places')} className="p-1 hover:bg-bible-accent/20 rounded-full transition-colors" title="Lugares">
+              <MapPin className="w-3.5 h-3.5 text-bible-accent" />
+            </button>
+            <button onClick={() => onToolOpen(v, 'footnotes')} className="p-1 hover:bg-bible-accent/20 rounded-full transition-colors" title="Notas de Rodapé">
+              <FileText className="w-3.5 h-3.5 text-bible-accent" />
+            </button>
+          </div>
         </>
       )}
     </div>
