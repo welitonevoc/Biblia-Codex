@@ -4,7 +4,8 @@ import { BibleService } from '../BibleService';
 import {
   Users, TreePine, List, X, Calendar, MapPin,
   BookOpen, ChevronRight, Search, Minus, Plus,
-  Maximize2, Heart, Star, GitBranch, User, ArrowRight, History
+  Maximize2, Heart, Star, GitBranch, User, ArrowRight, History,
+  Venus, Mars
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -60,6 +61,61 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
   const [centerNode, setCenterNode] = useState<number | null>(null);
   const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
   const [zoom, setZoom] = useState(1);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [focusedNodeId, setFocusedNodeId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  useEffect(() => {
+    if (!showTree || !treeNodes.length) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const visibleNodes = treeNodes.filter(n => expandedNodes.has(n.id) || n.id === centerNode);
+      const currentIndex = focusedNodeId !== null ? visibleNodes.findIndex(n => n.id === focusedNodeId) : -1;
+      
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (currentIndex > 0) {
+            setFocusedNodeId(visibleNodes[currentIndex - 1].id);
+            setSelectedPerson(visibleNodes[currentIndex - 1]);
+          } else if (focusedNodeId === null && visibleNodes.length > 0) {
+            setFocusedNodeId(visibleNodes[0].id);
+            setSelectedPerson(visibleNodes[0]);
+          }
+          break;
+        case 'ArrowDown':
+        case 'ArrowRight':
+          e.preventDefault();
+          if (currentIndex < visibleNodes.length - 1) {
+            setFocusedNodeId(visibleNodes[currentIndex + 1].id);
+            setSelectedPerson(visibleNodes[currentIndex + 1]);
+          }
+          break;
+        case 'Enter':
+        case ' ':
+          if (focusedNodeId !== null) {
+            const node = treeNodes.find(n => n.id === focusedNodeId);
+            if (node?.childIds.length) toggleNode(focusedNodeId);
+          }
+          break;
+        case 'Escape':
+          setSelectedPerson(null);
+          setFocusedNodeId(null);
+          break;
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showTree, treeNodes, expandedNodes, centerNode, focusedNodeId]);
 
   useEffect(() => {
     async function loadData() {
@@ -309,24 +365,24 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-[var(--accent-bible)]/5 blur-3xl" />
         </div>
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          initial={prefersReducedMotion ? {} : { scale: 0.8, opacity: 0 }}
+          animate={prefersReducedMotion ? {} : { scale: 1, opacity: 1 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5 }}
           className="relative z-10"
         >
           <div className="w-16 h-16 rounded-2xl border border-[var(--border-bible)] flex items-center justify-center bg-[var(--surface-1)]">
             <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              animate={prefersReducedMotion ? {} : { rotate: 360 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { duration: 2, repeat: Infinity, ease: 'linear' }}
             >
               <Users className="w-6 h-6 text-[var(--accent-bible)]" />
             </motion.div>
           </div>
         </motion.div>
         <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          initial={prefersReducedMotion ? {} : { opacity: 0 }}
+          animate={prefersReducedMotion ? {} : { opacity: 1 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.3 }}
           className="mt-4 text-sm font-medium text-[var(--text-bible-muted)]"
         >
           Carregando pessoas...
@@ -364,11 +420,17 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
     const isMale = node.gender === 'M';
     const isSelected = selectedPerson?.id === node.id;
     const isHovered = isHoveringCard === node.id;
+    const isFocused = focusedNodeId === node.id;
     const isVisible = isExpanded || isCenter;
 
     return (
       <g
         key={node.id}
+        tabIndex={isVisible ? 0 : -1}
+        onFocus={() => setFocusedNodeId(node.id)}
+        role="button"
+        aria-label={`${node.name}${hasChildren ? ', pressione Enter para expandir' : ''}`}
+        aria-expanded={hasChildren ? isExpanded : undefined}
         style={{ 
           opacity: isVisible ? 1 : 0.4, 
           transition: 'opacity 0.3s ease' 
@@ -394,11 +456,11 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
             height="70"
             rx="16"
             fill="var(--surface-1)"
-            stroke={isCenter ? 'var(--accent-bible)' : isSelected ? 'var(--accent-bible)' : 'var(--border-bible)'}
-            strokeWidth={isCenter || isSelected ? 2 : 1}
+            stroke={isFocused ? 'var(--accent-bible)' : isCenter ? 'var(--accent-bible)' : isSelected ? 'var(--accent-bible)' : 'var(--border-bible)'}
+            strokeWidth={isFocused || isCenter || isSelected ? 3 : 1}
             className="transition-all duration-200"
             style={{
-              filter: 'var(--shadow-sm)',
+              filter: isFocused ? 'var(--shadow-sm), drop-shadow(0 0 8px var(--accent-bible))' : 'var(--shadow-sm)',
             }}
           />
           
@@ -421,17 +483,15 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
             fill={isMale ? 'var(--accent-bible)' : '#8b5cf6'}
             opacity="0.15"
           />
-          <text
-            x="0"
-            y="-3"
-            textAnchor="middle"
-            dominantBaseline="central"
-            fill={isMale ? 'var(--accent-bible)' : '#8b5cf6'}
-            fontSize="18"
-            fontWeight="600"
-          >
-            {isMale ? '♂' : '♀'}
-          </text>
+          {isMale ? (
+            <g transform="translate(0, -10)">
+              <Mars className="w-5 h-5" style={{ fill: 'var(--accent-bible)', color: 'var(--accent-bible)' }} />
+            </g>
+          ) : (
+            <g transform="translate(0, -10)">
+              <Venus className="w-5 h-5" style={{ fill: '#8b5cf6', color: '#8b5cf6' }} />
+            </g>
+          )}
           
           <text
             x="0"
@@ -480,7 +540,7 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
           {isCenter && (
             <g transform={`translate(-75, 0)`}>
               <circle r="12" fill="var(--accent-bible)" />
-              <text x="0" y="4" textAnchor="middle" fill="white" fontSize="10" fontWeight="700">⚜</text>
+              <Star className="w-4 h-4 text-white" style={{ transform: 'translate(-8px, -8px)' }} />
             </g>
           )}
         </g>
@@ -502,8 +562,9 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
       </div>
       
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={prefersReducedMotion ? {} : { opacity: 0, y: -20 }}
+        animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3 }}
         className="shrink-0 relative z-20 px-6 py-5 backdrop-blur-xl bg-bible-bg/80 border-b border-bible-border/50 shadow-sm"
       >
         <div className="flex items-start justify-between mb-5">
@@ -530,10 +591,11 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
           {onClose && (
             <ReaderTooltip label="Fechar">
               <motion.button
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
+                whileHover={prefersReducedMotion ? {} : { scale: 1.1, rotate: 90 }}
+                whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
                 onClick={onClose}
-                className="premium-icon-button"
+                className="premium-icon-button min-w-[44px] min-h-[44px] focus:outline-none focus:ring-2 focus:ring-bible-accent/50"
+                aria-label="Fechar"
               >
                 <X className="w-4 h-4" />
               </motion.button>
@@ -564,15 +626,17 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
               ].map((filter) => (
                 <ReaderTooltip key={filter.id} label={filter.label}>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+                    whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
                     onClick={() => setFilterGender(filter.id)}
                     className={cn(
-                      'p-2.5 rounded-xl transition-all duration-300',
+                      'min-w-[44px] min-h-[44px] p-2.5 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-bible-accent/50 focus:ring-offset-2 focus:ring-offset-bible-bg',
                       filterGender === filter.id
                         ? 'bg-bible-accent text-white shadow-lg shadow-bible-accent/25'
                         : 'text-bible-text-muted hover:bg-bible-accent/10'
                     )}
+                    aria-label={filter.label}
+                    aria-pressed={filterGender === filter.id}
                   >
                     <filter.icon className="w-4 h-4" />
                   </motion.button>
@@ -587,18 +651,20 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
               ].map((mode) => (
                 <ReaderTooltip key={String(mode.id)} label={mode.label}>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+                    whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
                     onClick={() => {
                       setShowTree(mode.id);
                       if (mode.id) setSelectedPerson(null);
                     }}
                     className={cn(
-                      'flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all duration-300',
+                      'flex items-center gap-2 min-h-[44px] px-4 py-2.5 rounded-xl text-xs font-black transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-bible-accent/50 focus:ring-offset-2 focus:ring-offset-bible-bg',
                       showTree === mode.id
                         ? 'bg-bible-accent text-white shadow-lg shadow-bible-accent/25'
                         : 'text-bible-text-muted hover:bg-bible-accent/10'
                     )}
+                    aria-label={mode.label}
+                    aria-pressed={showTree === mode.id}
                   >
                     <mode.icon className="w-4 h-4" />
                     <span className="hidden md:inline uppercase tracking-widest">{mode.label.replace('Visualizar ', '')}</span>
@@ -610,10 +676,11 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
             {showTree && (
               <div className="flex p-1 rounded-2xl bg-bible-surface-strong/50 border border-bible-border/50 items-center">
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
                   onClick={() => setZoom(z => Math.max(0.3, z - 0.1))}
-                  className="p-2.5 rounded-xl text-bible-text-muted hover:bg-bible-accent/10"
+                  className="min-w-[44px] min-h-[44px] p-2.5 rounded-xl text-bible-text-muted hover:bg-bible-accent/10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-bible-accent/50"
+                  aria-label="Diminuir zoom"
                 >
                   <Minus className="w-4 h-4" />
                 </motion.button>
@@ -621,19 +688,21 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
                   {Math.round(zoom * 100)}%
                 </span>
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
                   onClick={() => setZoom(z => Math.min(2, z + 0.1))}
-                  className="p-2.5 rounded-xl text-bible-text-muted hover:bg-bible-accent/10"
+                  className="min-w-[44px] min-h-[44px] p-2.5 rounded-xl text-bible-text-muted hover:bg-bible-accent/10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-bible-accent/50"
+                  aria-label="Aumentar zoom"
                 >
                   <Plus className="w-4 h-4" />
                 </motion.button>
                 <div className="w-px h-4 bg-bible-border/50 mx-1" />
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
                   onClick={() => setZoom(1)}
-                  className="p-2.5 rounded-xl text-bible-text-muted hover:bg-bible-accent/10"
+                  className="min-w-[44px] min-h-[44px] p-2.5 rounded-xl text-bible-text-muted hover:bg-bible-accent/10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-bible-accent/50"
+                  aria-label="Resetar zoom"
                 >
                   <Maximize2 className="w-4 h-4" />
                 </motion.button>
@@ -647,10 +716,10 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
         {!showTree ? (
           <motion.div
             key="list-view"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
+            initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
+            animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
+            exit={prefersReducedMotion ? {} : { opacity: 0, y: -10 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
             className="h-full overflow-y-auto p-6"
           >
             {filteredPeople.length === 0 ? (
@@ -676,17 +745,17 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
                       <motion.button
                         key={person.id || idx}
                         layout
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ delay: idx * 0.02 }}
-                        whileHover={{ y: -4, scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.9 }}
+                        animate={prefersReducedMotion ? {} : { opacity: 1, scale: 1 }}
+                        exit={prefersReducedMotion ? {} : { opacity: 0, scale: 0.9 }}
+                        transition={prefersReducedMotion ? { duration: 0 } : { delay: idx * 0.02, duration: 0.2 }}
+                        whileHover={prefersReducedMotion ? {} : { y: -4, scale: 1.02 }}
+                        whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
                         onMouseEnter={() => setIsHoveringCard(person.id)}
                         onMouseLeave={() => setIsHoveringCard(null)}
                         onClick={() => setSelectedPerson(person)}
                         className={cn(
-                          'w-full flex items-center gap-4 p-5 rounded-2xl text-left transition-all border group relative overflow-hidden',
+                          'w-full flex items-center gap-4 p-5 rounded-2xl text-left transition-all border group relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-bible-accent/50 focus:ring-offset-2 focus:ring-offset-bible-bg',
                           isSelected ? "bg-bible-surface-strong border-bible-accent shadow-lg" : "bg-bible-bg border-bible-border/50 hover:border-bible-accent/30 shadow-sm"
                         )}
                       >
@@ -700,12 +769,11 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
                             backgroundColor: isMale ? 'rgba(var(--accent-bible-rgb), 0.1)' : 'rgba(139, 92, 246, 0.1)',
                           }}
                         >
-                          <span 
-                            className="text-2xl font-bold"
-                            style={{ color: isMale ? 'var(--accent-bible)' : '#8b5cf6' }}
-                          >
-                            {isMale ? '♂' : '♀'}
-                          </span>
+                          {isMale ? (
+                            <Mars className="w-7 h-7" style={{ color: 'var(--accent-bible)' }} />
+                          ) : (
+                            <Venus className="w-7 h-7" style={{ color: '#8b5cf6' }} />
+                          )}
                           <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-bible-bg border-2 border-white flex items-center justify-center">
                             <div className="w-2.5 h-2.5 rounded-full bg-bible-accent animate-pulse" />
                           </div>
@@ -748,10 +816,10 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
         ) : (
           <motion.div
             key="tree-view"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            initial={prefersReducedMotion ? {} : { opacity: 0 }}
+            animate={prefersReducedMotion ? {} : { opacity: 1 }}
+            exit={prefersReducedMotion ? {} : { opacity: 0 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
             className="w-full h-full"
             onClick={() => setSelectedPerson(null)}
           >
@@ -797,9 +865,10 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
       <AnimatePresence>
         {selectedPerson && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={prefersReducedMotion ? {} : { opacity: 0 }}
+            animate={prefersReducedMotion ? {} : { opacity: 1 }}
+            exit={prefersReducedMotion ? {} : { opacity: 0 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.15 }}
             className="absolute inset-0 z-40"
             style={{ 
               backgroundColor: 'rgba(0,0,0,0.3)',
@@ -813,10 +882,10 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
       <AnimatePresence>
         {selectedPerson && (
           <motion.div
-            initial={{ y: '100%' }}
+            initial={prefersReducedMotion ? { y: '100%' } : { y: '100%' }}
             animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            exit={prefersReducedMotion ? { y: '100%' } : { y: '100%' }}
+            transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', damping: 30, stiffness: 300 }}
             className="absolute bottom-0 left-0 right-0 z-50"
           >
             <div 
@@ -828,21 +897,20 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
               
               <div className="flex justify-between items-start mb-8">
                 <div className="flex items-center gap-5">
-                  <div 
-                    className="w-20 h-20 rounded-[24px] flex items-center justify-center border-2 shadow-lg relative overflow-hidden group/avatar"
-                    style={{ 
-                      backgroundColor: selectedPerson.gender === 'M' ? 'rgba(var(--accent-bible-rgb), 0.1)' : 'rgba(139, 92, 246, 0.1)',
-                      borderColor: selectedPerson.gender === 'M' ? 'rgba(var(--accent-bible-rgb), 0.2)' : 'rgba(139, 92, 246, 0.2)'
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-                    <span 
-                      className="text-4xl font-black relative z-10 transition-transform group-hover/avatar:scale-110 duration-500"
-                      style={{ color: selectedPerson.gender === 'M' ? 'var(--accent-bible)' : '#8b5cf6' }}
+<div 
+                      className="w-20 h-20 rounded-[24px] flex items-center justify-center border-2 shadow-lg relative overflow-hidden group/avatar"
+                      style={{ 
+                        backgroundColor: selectedPerson.gender === 'M' ? 'rgba(var(--accent-bible-rgb), 0.1)' : 'rgba(139, 92, 246, 0.1)',
+                        borderColor: selectedPerson.gender === 'M' ? 'rgba(var(--accent-bible-rgb), 0.2)' : 'rgba(139, 92, 246, 0.2)'
+                      }}
                     >
-                      {selectedPerson.gender === 'M' ? '♂' : '♀'}
-                    </span>
-                  </div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+                      {selectedPerson.gender === 'M' ? (
+                        <Mars className="w-10 h-10 relative z-10 transition-transform group-hover/avatar:scale-110 duration-500" style={{ color: 'var(--accent-bible)' }} />
+                      ) : (
+                        <Venus className="w-10 h-10 relative z-10 transition-transform group-hover/avatar:scale-110 duration-500" style={{ color: '#8b5cf6' }} />
+                      )}
+                    </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="premium-kicker">Personagem Bíblico</span>
@@ -861,10 +929,11 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
                   </div>
                 </div>
                 <motion.button
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.1, rotate: 90 }}
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.9 }}
                   onClick={() => setSelectedPerson(null)}
-                  className="premium-icon-button"
+                  className="premium-icon-button min-w-[44px] min-h-[44px] focus:outline-none focus:ring-2 focus:ring-bible-accent/50"
+                  aria-label="Fechar detalhes"
                 >
                   <X className="w-4 h-4" />
                 </motion.button>
@@ -934,13 +1003,13 @@ export function GenealogyTree({ bookId, chapter, verse, onClose }: GenealogyTree
 
               {!showTree && people.length > 1 && (
                 <motion.button
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
+                  initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
+                  animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.2 }}
+                  whileHover={prefersReducedMotion ? {} : { scale: 1.02, y: -2 }}
+                  whileTap={prefersReducedMotion ? {} : { scale: 0.98 }}
                   onClick={() => setShowTree(true)}
-                  className="w-full flex items-center justify-center gap-3 p-5 rounded-[20px] font-black uppercase tracking-widest text-sm transition-all bg-gradient-to-r from-bible-accent to-bible-accent-dark text-white shadow-xl shadow-bible-accent/20"
+                  className="w-full flex items-center justify-center gap-3 p-5 rounded-[20px] font-black uppercase tracking-widest text-sm transition-all bg-gradient-to-r from-bible-accent to-bible-accent-dark text-white shadow-xl shadow-bible-accent/20 focus:outline-none focus:ring-2 focus:ring-bible-accent/50 focus:ring-offset-2 focus:ring-offset-bible-bg"
                 >
                   <GitBranch className="w-5 h-5" />
                   Ver Árvore Genealógica
