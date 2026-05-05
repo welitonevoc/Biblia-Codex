@@ -655,10 +655,10 @@ const tablesResult = execSQL(db, `SELECT name FROM sqlite_master WHERE type='tab
 
           const db = new SQL.Database(binaryData);
 
-          let result = execSQL(db, `SELECT * FROM people WHERE verses LIKE ? LIMIT 15`, [`%${bookAbbr} ${verseRef}%`]);
+          let result = execSQL(db, `SELECT * FROM people WHERE verses LIKE ? LIMIT 50`, [`%${bookAbbr} ${verseRef}%`]);
 
           if (!result.length || !result[0].values.length) {
-            result = execSQL(db, `SELECT * FROM people WHERE verses LIKE ? LIMIT 15`, [`%${bookAbbr} ${chapter}:%`]);
+            result = execSQL(db, `SELECT * FROM people WHERE verses LIKE ? LIMIT 50`, [`%${bookAbbr} ${chapter}:%`]);
           }
 
           if (result.length > 0 && result[0].values.length > 0) {
