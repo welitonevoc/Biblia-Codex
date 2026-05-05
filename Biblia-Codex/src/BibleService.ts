@@ -526,7 +526,18 @@ const tablesResult = execSQL(db, `SELECT name FROM sqlite_master WHERE type='tab
   },
 
   getDictionary: async (word: string): Promise<string> => {
-    return `Definição simulada para ${word}`;
+    try {
+      const prompt = `Forneça a definição teológica da palavra "${word}" em português brasileiro, incluindo etimologia, uso bíblico e significado nos contextos do Antigo e Novo testamento. Sea breve e objetivo.`;
+      const definition = await getAIResponse(
+        prompt,
+        'Você é um teólogo erudito. Forneça definições claras e acadêmicas.',
+        undefined,
+        'gemini-2.0-flash'
+      );
+      return definition || `Definição não disponível para "${word}". Tente usar o Codex Insight.`;
+    } catch {
+      return `Definição não disponível para "${word}". Tente usar o Codex Insight.`;
+    }
   },
 
   getAICrossReferences: async (bookId: string, chapter: number, verse: number, model?: string): Promise<CrossReference[]> => {

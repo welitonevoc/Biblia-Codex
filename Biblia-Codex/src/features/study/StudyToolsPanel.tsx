@@ -57,7 +57,10 @@ export const StudyToolsPanel: React.FC<StudyToolsPanelProps> = React.memo(({
         const data = await BibleService.getCommentary(book.id, verse.chapter, verse.verse, settings.ai.model);
         setContent(data);
       } else if (type === 'dictionary') {
-        const data = await BibleService.getDictionary('Codex');
+        const text = verse.text;
+        const wordMatch = text.match(/\b([A-Za-z]+)\b/);
+        const word = wordMatch ? wordMatch[1] : text.split(' ')[0];
+        const data = await BibleService.getDictionary(word);
         setContent(data);
       } else if (type === 'xrefs') {
         const data = await BibleService.getCrossReferences(book.id, verse.chapter, verse.verse, settings.ai.model);
