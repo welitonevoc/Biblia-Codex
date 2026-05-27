@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "cd Biblia-Codex && npm install && npm run build",
+    "build:gh-pages": "cd Biblia-Codex && npm install && npm run build -- --base=/Biblia-Codex/",
     "dev": "cd Biblia-Codex && npm run dev",
     "postinstall": "cd Biblia-Codex && npm install"
   }
