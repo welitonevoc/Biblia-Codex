@@ -58,9 +58,9 @@ async function loadNDJSON<T>(filename: string): Promise<T[]> {
     );
   } else {
     urls.push(
-      `/data/${cleanName}`,
-      `./data/${cleanName}`,
-      getDataUrl(filename)
+      `${import.meta.env.BASE_URL}data/${cleanName}`,
+      getDataUrl(filename),
+      `/data/${cleanName}`
     );
   }
 
@@ -131,7 +131,7 @@ async function loadNDJSON<T>(filename: string): Promise<T[]> {
 }
 
 async function loadMerrill(): Promise<EncyclopediaEntry[]> {
-  const raw = await loadNDJSON<MerrillRaw>('/EnciclopediaMerril_clean.json.gz');
+  const raw = await loadNDJSON<MerrillRaw>('EnciclopediaMerril_clean.json.gz');
   return raw.map((item, idx) => ({
     id: `merrill-${idx}`,
     word: item.w,
@@ -143,7 +143,7 @@ async function loadMerrill(): Promise<EncyclopediaEntry[]> {
 }
 
 async function loadQuemQuem(): Promise<EncyclopediaEntry[]> {
-  const raw = await loadNDJSON<MerrillRaw>('/QuemQuem_clean.json.gz');
+  const raw = await loadNDJSON<MerrillRaw>('QuemQuem_clean.json.gz');
   return raw.map((item, idx) => ({
     id: `quem-quem-${idx}`,
     word: item.w,
@@ -155,7 +155,7 @@ async function loadQuemQuem(): Promise<EncyclopediaEntry[]> {
 }
 
 async function loadVine(): Promise<EncyclopediaEntry[]> {
-  const raw = await loadNDJSON<VineRaw>('/VinePro_clean.json.gz');
+  const raw = await loadNDJSON<VineRaw>('VinePro_clean.json.gz');
   return raw.map((item, idx) => {
     const isHebrew = item.l === 'H';
     return {

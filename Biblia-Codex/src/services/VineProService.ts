@@ -17,8 +17,8 @@ export const loadVineIndex = async (): Promise<void> => {
   
   // Usar apenas o formato .json.gz (NDJSON comprimido)
   const gzUrls = [
-    '/data/VinePro_clean.json.gz',
-    '/VinePro_clean.json.gz',
+    `${import.meta.env.BASE_URL}data/VinePro_clean.json.gz`,
+    `${import.meta.env.BASE_URL}VinePro_clean.json.gz`,
   ];
 
   for (const url of gzUrls) {

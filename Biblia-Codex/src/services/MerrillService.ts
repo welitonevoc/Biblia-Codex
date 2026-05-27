@@ -15,12 +15,13 @@ export const loadMerrillIndex = async (): Promise<void> => {
   const isNative = Capacitor.isNativePlatform();
   const origin = isNative ? window.location.origin : '';
 
+  const base = import.meta.env.BASE_URL;
   const urls = [
-    `${origin}/data/EnciclopediaMerril_clean.json.gz`,
-    '/data/EnciclopediaMerril_clean.json.gz',
-    '/EnciclopediaMerril_clean.json.gz',
-    `${origin}/data/EnciclopediaMerril_optimized.db`,
-    '/data/EnciclopediaMerril_optimized.db'
+    `${origin}${base}data/EnciclopediaMerril_clean.json.gz`,
+    `${base}data/EnciclopediaMerril_clean.json.gz`,
+    `${base}EnciclopediaMerril_clean.json.gz`,
+    `${origin}${base}data/EnciclopediaMerril_optimized.db`,
+    `${base}data/EnciclopediaMerril_optimized.db`
   ].filter(Boolean);
 
   let lastError;
