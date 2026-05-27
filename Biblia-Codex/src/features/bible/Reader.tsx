@@ -10,7 +10,9 @@ import DOMPurify from 'dompurify';
 import {
   Bookmark, Share2, MessageSquare,
   Sparkles, Library, Layers, X, BookOpen, Volume2, Trash2, Tag,
-  ChevronLeft, ChevronRight, Users, MapPin, FileText, Copy, Highlighter, GitCompare, Check
+  ChevronLeft, ChevronRight, Users, MapPin, FileText, Copy, Highlighter, GitCompare, Check,
+  ArrowUp, Image, History, CheckCircle2, Circle, Sun, Moon, List,
+  ArrowLeft, ArrowRight
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { DictionaryBottomSheet } from '../study/DictionaryBottomSheet';
@@ -19,6 +21,55 @@ import { useReaderTTS } from '../../hooks/useReaderTTS';
 import { StrongsBottomSheet } from '../study/StrongsBottomSheet';
 import { CommentaryBottomSheet } from '../study/CommentaryBottomSheet';
 import { CrossReferencesBottomSheet } from '../study/CrossReferencesBottomSheet';
+
+const READING_HISTORY_KEY = 'codex-reading-history';
+const READ_CHAPTERS_KEY = 'codex-read-chapters';
+const MAX_HISTORY = 20;
+
+interface ReadingHistoryEntry {
+  bookId: string;
+  bookName: string;
+  chapter: number;
+  timestamp: number;
+}
+
+function getReadingHistory(): ReadingHistoryEntry[] {
+  try {
+    const raw = localStorage.getItem(READING_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveReadingHistory(entry: ReadingHistoryEntry) {
+  const history = getReadingHistory().filter(h => !(h.bookId === entry.bookId && h.chapter === entry.chapter));
+  history.unshift(entry);
+  if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
+  localStorage.setItem(READING_HISTORY_KEY, JSON.stringify(history));
+}
+
+function getReadChapters(): Set<string> {
+  try {
+    const raw = localStorage.getItem(READ_CHAPTERS_KEY);
+    return new Set<string>(raw ? JSON.parse(raw) : []);
+  } catch { return new Set(); }
+}
+
+function toggleReadChapter(bookId: string, chapter: number) {
+  const key = `${bookId}-${chapter}`;
+  const set = getReadChapters();
+  if (set.has(key)) set.delete(key); else set.add(key);
+  localStorage.setItem(READ_CHAPTERS_KEY, JSON.stringify([...set]));
+}
+
+function isChapterRead(bookId: string, chapter: number): boolean {
+  return getReadChapters().has(`${bookId}-${chapter}`);
+}
+
+function getAutoDarkMode(): boolean {
+  const hour = new Date().getHours();
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return prefersDark || hour >= 18 || hour < 6;
+}
 
 export const ReaderTooltip = ({ label, children }: { label?: string; children: React.ReactNode }) => (
   <div className="premium-tooltip relative group">
@@ -211,7 +262,32 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
   const [isXrefsOpen, setIsXrefsOpen] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
   const [copiedFeedback, setCopiedFeedback] = useState(false);
-  const { config, settings, currentVersion } = useAppContext();
+  const { config, settings, currentVersion, setMode } = useAppContext();
+
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [readChapters, setReadChapters] = useState<Set<string>>(getReadChapters);
+  const [readingHistory, setReadingHistory] = useState<ReadingHistoryEntry[]>(getReadingHistory);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showQuickScroll, setShowQuickScroll] = useState(false);
+  const [autoDark, setAutoDark] = useState(getAutoDarkMode);
+  const [isExportingImage, setIsExportingImage] = useState(false);
+  const [imageExportFeedback, setImageExportFeedback] = useState<'idle' | 'loading' | 'done'>('idle');
+  const [longPressTerm, setLongPressTerm] = useState('');
+
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const currentBookIndex = BIBLE_BOOKS.findIndex(b => b.id === book.id);
+  const prevBook = currentBookIndex > 0 ? BIBLE_BOOKS[currentBookIndex - 1] : null;
+  const nextBook = currentBookIndex < BIBLE_BOOKS.length - 1 ? BIBLE_BOOKS[currentBookIndex + 1] : null;
+  const totalChapters = book.chapters;
+  const hasPrevChapter = chapter > 1;
+  const hasNextChapter = chapter < totalChapters;
+  const canGoPrevBook = !hasPrevChapter && !!prevBook;
+  const canGoNextBook = !hasNextChapter && !!nextBook;
 
   const cleanVerseText = (text: string): string => {
     return text
@@ -427,12 +503,147 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
     }
   }, [book.name, chapter, onNavigate]);
 
+  // Auto dark mode effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newVal = getAutoDarkMode();
+      if (newVal !== autoDark) {
+        setAutoDark(newVal);
+        if (newVal) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      }
+    }, 60000);
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => {
+      const newVal = e.matches || new Date().getHours() >= 18 || new Date().getHours() < 6;
+      setAutoDark(newVal);
+      document.documentElement.classList.toggle('dark', newVal);
+    };
+    prefersDark.addEventListener('change', handler);
+    return () => { clearInterval(interval); prefersDark.removeEventListener('change', handler); };
+  }, [autoDark]);
+
+  // Save reading history on chapter load
+  useEffect(() => {
+    if (!loading && verses.length > 0) {
+      saveReadingHistory({ bookId: book.id, bookName: book.name, chapter, timestamp: Date.now() });
+      setReadingHistory(getReadingHistory());
+    }
+  }, [book.id, chapter, loading]);
+
+  // Sync read chapters
+  useEffect(() => {
+    setReadChapters(getReadChapters());
+  }, [book.id, chapter]);
+
+  // Scroll handler
+  const handleScroll = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const scrollTop = el.scrollTop;
+    const scrollHeight = el.scrollHeight - el.clientHeight;
+    setShowScrollTop(scrollTop > 300);
+    setScrollProgress(scrollHeight > 0 ? Math.min(scrollTop / scrollHeight, 1) : 0);
+  }, []);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
+
+  // Swipe navigation
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    swipeStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!swipeStartRef.current) return;
+    const dx = e.changedTouches[0].clientX - swipeStartRef.current.x;
+    const dy = e.changedTouches[0].clientY - swipeStartRef.current.y;
+    swipeStartRef.current = null;
+    if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 1.5) return;
+    if (dx > 0 && hasPrevChapter && onNavigate) {
+      onNavigate(book.id, chapter - 1);
+    } else if (dx < 0 && hasNextChapter && onNavigate) {
+      onNavigate(book.id, chapter + 1);
+    }
+  }, [book.id, chapter, hasPrevChapter, hasNextChapter, onNavigate]);
+
+  // Long-press → dictionary
+  const handleTouchStartLongPress = useCallback((e: React.TouchEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('a') || target.closest('[role="button"]')) return;
+    longPressTimerRef.current = setTimeout(() => {
+      const selection = window.getSelection();
+      const text = selection ? selection.toString().trim() : '';
+      if (text && text.length > 1 && text.length < 60) {
+        setLongPressTerm(text);
+        setSelectedTerm(text);
+        setSelectedContext(`${book.name} ${chapter}`);
+        setIsDictionaryOpen(true);
+      }
+      selection?.removeAllRanges();
+    }, 600);
+  }, [book.name, chapter]);
+
+  const handleTouchMoveCancel = useCallback(() => {
+    if (longPressTimerRef.current) { clearTimeout(longPressTimerRef.current); longPressTimerRef.current = null; }
+  }, []);
+
+  const handleContextMenuLongPress = useCallback((e: React.MouseEvent) => {
+    const selection = window.getSelection();
+    const text = selection ? selection.toString().trim() : '';
+    if (text && text.length > 1 && text.length < 60) {
+      e.preventDefault();
+      setLongPressTerm(text);
+      setSelectedTerm(text);
+      setSelectedContext(`${book.name} ${chapter}`);
+      setIsDictionaryOpen(true);
+    }
+    selection?.removeAllRanges();
+  }, [book.name, chapter]);
+
+  // Share as image
+  const handleShareImage = useCallback(async () => {
+    if (selectedVerses.length === 0) return;
+    setIsExportingImage(true);
+    setImageExportFeedback('loading');
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      if (!contentRef.current) return;
+      const canvas = await html2canvas(contentRef.current, { scale: 3, backgroundColor: null, useCORS: true, logging: false } as any);
+      const link = document.createElement('a');
+      const refStr = `${book.name} ${chapter}:${selectedVerses.join(',')}`;
+      link.download = `Codex-${refStr.replace(/\s/g, '-')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      setImageExportFeedback('done');
+      setTimeout(() => setImageExportFeedback('idle'), 2000);
+    } catch (err) {
+      console.error('Export image error:', err);
+      setImageExportFeedback('idle');
+    } finally {
+      setIsExportingImage(false);
+    }
+  }, [selectedVerses, book.name, chapter, verses]);
+
+  const handleMarkRead = useCallback(() => {
+    toggleReadChapter(book.id, chapter);
+    setReadChapters(getReadChapters());
+  }, [book.id, chapter]);
+
+  const chapterIsRead = readChapters.has(`${book.id}-${chapter}`);
+
   return (
     <div
       ref={containerRef}
       onClick={handleLinkClick}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       className={cn(
-        "h-full overflow-y-auto scroll-smooth",
+        "h-full overflow-y-auto scroll-smooth relative",
         settings.navigation.horizontalScroll && "flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory"
       )}
       style={{
@@ -443,6 +654,11 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
         paddingRight: !settings.navigation.horizontalScroll ? `${config.horizontalMargin}px` : undefined,
       }}
     >
+      {/* Progress bar */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 z-10 bg-bible-border/20">
+        <div className="h-full bg-bible-accent/60 transition-all duration-150" style={{ width: `${scrollProgress * 100}%` }} />
+      </div>
+
       <div className={cn("max-w-4xl mx-auto pb-32", settings.navigation.horizontalScroll && "min-w-full flex-shrink-0 snap-center")}>
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24">
@@ -454,7 +670,7 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
               <X className="w-8 h-8 text-red-500" />
             </div>
-            <p className="text-bible-text font-medium mb-2">{error}</p>
+            <p className="bible-text font-medium mb-2">{error}</p>
             <p className="text-sm text-bible-text-muted mb-6">Verifique sua conexão ou tente outra versão.</p>
             <button
               onClick={() => {
@@ -467,8 +683,13 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
           </div>
         ) : (
           <motion.div
+            ref={contentRef}
             initial={settings.navigation.navAnimation ? { opacity: 0 } : {}}
             animate={{ opacity: 1 }}
+            onTouchStart={handleTouchStartLongPress}
+            onTouchMove={handleTouchMoveCancel}
+            onTouchEnd={handleTouchMoveCancel}
+            onContextMenu={handleContextMenuLongPress}
             className={cn("space-y-4 pb-21", settings.textDisplay.paragraphMode ? "flex flex-wrap items-baseline gap-x-1.5" : "flex flex-col")}
             style={{ fontSize: `${config.fontSize}px`, lineHeight: config.lineHeight, fontFamily: 'var(--font-bible-family)' }}
           >
@@ -674,6 +895,20 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
                   </div>
                   <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">Compartilhar</span>
                 </button>
+                <button 
+                  onClick={handleShareImage} 
+                  disabled={isExportingImage}
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-xl hover:bg-violet-500/10 transition-colors cursor-pointer disabled:opacity-40"
+                >
+                  <div className={cn("h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg", imageExportFeedback === 'done' ? "bg-green-500/30" : "bg-violet-500/10")}>
+                    {imageExportFeedback === 'loading' ? (
+                      <div className="w-3.5 h-3.5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Image className={cn("h-4 w-4", imageExportFeedback === 'done' ? "text-green-600" : "text-violet-500")} />
+                    )}
+                  </div>
+                  <span className="hidden sm:block text-[8px] font-medium text-bible-text-muted">{imageExportFeedback === 'done' ? 'Pronto!' : 'Imagem'}</span>
+                </button>
                 {isTTSSupported && (
                   <button 
                     onClick={() => toggleTTS(selectedVerses)} 
@@ -719,6 +954,165 @@ export const Reader: React.FC<ReaderProps> = React.memo(({
           </div>
         )}
       </AnimatePresence>
+
+      {/* Scroll-to-top */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={() => containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="fixed bottom-24 right-4 z-40 w-10 h-10 rounded-full bg-bible-accent text-white shadow-lg flex items-center justify-center cursor-pointer hover:bg-bible-accent/90 transition-colors"
+          >
+            <ArrowUp className="w-5 h-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Features bar (floating bottom-left) */}
+      {!loading && !error && (
+        <div className="fixed bottom-20 left-4 z-40 flex items-center gap-2">
+          {/* Mark as read */}
+          <button
+            onClick={handleMarkRead}
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--surface-2)] border border-[var(--border-bible)] shadow-lg backdrop-blur-md cursor-pointer hover:bg-bible-accent/10 transition-colors"
+            title={chapterIsRead ? "Marcar como não lido" : "Marcar como lido"}
+          >
+            {chapterIsRead ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-bible-text-muted" />}
+          </button>
+
+          {/* Reading history */}
+          <div className="relative">
+            <button
+              onClick={() => setShowHistory(v => !v)}
+              className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--surface-2)] border border-[var(--border-bible)] shadow-lg backdrop-blur-md cursor-pointer hover:bg-bible-accent/10 transition-colors"
+              title="Histórico de leitura"
+            >
+              <History className="w-4 h-4 text-bible-accent" />
+            </button>
+            <AnimatePresence>
+              {showHistory && readingHistory.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute bottom-full mb-2 left-0 min-w-[220px] bg-[var(--surface-2)] border border-[var(--border-bible)] rounded-xl shadow-2xl backdrop-blur-xl p-2 max-h-60 overflow-y-auto"
+                >
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-bible-text-muted px-2 py-1">Histórico</div>
+                  {readingHistory.slice(0, 10).map((h, i) => (
+                    <button
+                      key={`${h.bookId}-${h.chapter}-${i}`}
+                      onClick={() => { if (onNavigate) { onNavigate(h.bookId, h.chapter); setShowHistory(false); } }}
+                      className={cn(
+                        "w-full text-left px-2 py-1.5 rounded-lg text-xs hover:bg-bible-accent/10 transition-colors cursor-pointer",
+                        h.bookId === book.id && h.chapter === chapter && "bg-bible-accent/15"
+                      )}
+                    >
+                      <span className="font-medium">{h.bookName}</span> <span className="text-bible-text-muted">{h.chapter}</span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Quick scroll */}
+          <button
+            onClick={() => setShowQuickScroll(v => !v)}
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--surface-2)] border border-[var(--border-bible)] shadow-lg backdrop-blur-md cursor-pointer hover:bg-bible-accent/10 transition-colors"
+            title="Navegação rápida"
+          >
+            <List className="w-4 h-4 text-bible-accent" />
+          </button>
+        </div>
+      )}
+
+      {/* Quick scroll alphabetical sidebar */}
+      <AnimatePresence>
+        {showQuickScroll && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="fixed right-2 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-0.5 bg-[var(--surface-2)]/90 backdrop-blur-xl border border-[var(--border-bible)] rounded-xl p-1 shadow-2xl"
+          >
+            {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => {
+              const matchingBooks = BIBLE_BOOKS.filter(b => b.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().startsWith(letter));
+              const hasMatch = matchingBooks.length > 0;
+              return (
+                <button
+                  key={letter}
+                  disabled={!hasMatch}
+                  onClick={() => {
+                    if (hasMatch && matchingBooks[0] && onNavigate) {
+                      onNavigate(matchingBooks[0].id, 1);
+                      setShowQuickScroll(false);
+                    }
+                  }}
+                  className={cn(
+                    "w-6 h-5 flex items-center justify-center text-[9px] font-bold rounded transition-colors cursor-pointer",
+                    hasMatch ? "text-bible-text hover:bg-bible-accent/20" : "text-bible-text-muted/30 cursor-not-allowed"
+                  )}
+                >
+                  {letter}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Chapter navigation arrows (mobile) */}
+      {!loading && !error && (
+        <div className="fixed bottom-20 right-4 z-40 flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (hasPrevChapter && onNavigate) onNavigate(book.id, chapter - 1);
+              else if (canGoPrevBook && prevBook && onNavigate) onNavigate(prevBook.id, prevBook.chapters);
+            }}
+            disabled={!hasPrevChapter && !canGoPrevBook}
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--surface-2)] border border-[var(--border-bible)] shadow-lg backdrop-blur-md cursor-pointer hover:bg-bible-accent/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            title="Capítulo anterior"
+          >
+            <ChevronLeft className="w-4 h-4 text-bible-text" />
+          </button>
+          <button
+            onClick={() => {
+              if (hasNextChapter && onNavigate) onNavigate(book.id, chapter + 1);
+              else if (canGoNextBook && nextBook && onNavigate) onNavigate(nextBook.id, 1);
+            }}
+            disabled={!hasNextChapter && !canGoNextBook}
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--surface-2)] border border-[var(--border-bible)] shadow-lg backdrop-blur-md cursor-pointer hover:bg-bible-accent/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            title="Próximo capítulo"
+          >
+            <ChevronRight className="w-4 h-4 text-bible-text" />
+          </button>
+        </div>
+      )}
+
+      {/* Auto dark mode indicator */}
+      {autoDark && (
+        <div className="fixed top-2 right-2 z-40 opacity-30 pointer-events-none">
+          <Moon className="w-3 h-3 text-bible-text" />
+        </div>
+      )}
+
+      {/* Hidden card for image export (rendered but invisible, used by html2canvas) */}
+      <div ref={cardRef} className="absolute -left-[9999px] top-0" style={{ width: '400px', padding: '24px', backgroundColor: '#1a1a2e', color: '#fff', fontFamily: 'serif' }}>
+        <div style={{ fontSize: '20px', marginBottom: '16px', fontWeight: 700 }}>{book.name} {chapter}:{selectedVerses.join(',')}</div>
+        {selectedVerses.map(vNum => {
+          const v = verses.find(ver => ver.verse === vNum);
+          if (!v) return null;
+          return (
+            <div key={vNum} style={{ marginBottom: '12px', lineHeight: 1.7 }}>
+              <sup style={{ fontSize: '10px', opacity: 0.5, marginRight: '4px' }}>{vNum}</sup>
+              <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cleanVerseText(v.text)) }} />
+            </div>
+          );
+        })}
+        <div style={{ marginTop: '20px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: '11px', opacity: 0.5, textAlign: 'center' }}>Codex — Bíblia Digital</div>
+      </div>
 
       <DictionaryBottomSheet term={selectedTerm} context={selectedContext} isOpen={isDictionaryOpen} onClose={() => setIsDictionaryOpen(false)} />
       <StrongsBottomSheet strongsNumber={selectedStrongs} context={selectedContext} isOpen={isStrongsOpen} onClose={() => setIsStrongsOpen(false)} />
