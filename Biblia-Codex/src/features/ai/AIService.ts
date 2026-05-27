@@ -8,7 +8,9 @@ import { GoogleGenAI } from "@google/genai";
 import { db } from "../../firebase";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { getMerrillEntry } from "../../services/MerrillService";
-import { getProfile } from "../settings/TheologicalProfileEditor";
+import type { TheologicalProfileDef } from "../settings/TheologicalProfileEditor";
+
+const PROFILES_KEY = 'codex-theological-profiles';
 
 // ==================== TIPOS ====================
 
@@ -52,8 +54,14 @@ export interface StudyContext {
  * depois nos defaults embutidos no código.
  */
 export function getProfileSystemPrompt(profileId: string): string {
-  const profile = getProfile(profileId);
-  if (profile?.systemPrompt) return profile.systemPrompt;
+  try {
+    const raw = localStorage.getItem(PROFILES_KEY);
+    if (raw) {
+      const profiles: TheologicalProfileDef[] = JSON.parse(raw);
+      const found = profiles.find(p => p.id === profileId);
+      if (found?.systemPrompt) return found.systemPrompt;
+    }
+  } catch {}
   const builtIn = BUILT_IN_PROFILES[profileId as keyof typeof BUILT_IN_PROFILES];
   if (builtIn) return builtIn.systemPrompt;
   return BUILT_IN_PROFILES.assembleiano.systemPrompt;
