@@ -8,6 +8,8 @@ import {
 import { useAppContext } from '../AppContext';
 import { BibleService } from '../BibleService';
 import { MySwordParser } from '../services/mySwordParser';
+import { loadCrossReferences, getCrossReferences, getReverseReferences, CrossRefEntry } from '../services/CrossReferenceService';
+import { BIBLE_BOOKS } from '../data/bibleMetadata';
 import { CrossReference } from '../types';
 import { cn } from '../utils/cn';
 import DOMPurify from 'dompurify';
@@ -30,6 +32,8 @@ export const CrossReferencesBottomSheet: React.FC<CrossReferencesBottomSheetProp
   const [aiContent, setAiContent] = useState<CrossReference[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [loadingDb, setLoadingDb] = useState(false);
+  const [openBibleRefs, setOpenBibleRefs] = useState<{ forward: CrossRefEntry[], reverse: CrossRefEntry[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedModulePath, setSelectedModulePath] = useState('');
 
@@ -43,37 +47,33 @@ export const CrossReferencesBottomSheet: React.FC<CrossReferencesBottomSheetProp
     if (isOpen && bookId) {
       setLocalEntry(null);
       setAiContent(null);
+      setOpenBibleRefs(null);
       setActiveTab('local');
+
+      setLoadingDb(true);
+      loadCrossReferences().then(() => {
+        const forward = getCrossReferences(bookId, chapter, verse);
+        const reverse = getReverseReferences(bookId, chapter, verse);
+        setOpenBibleRefs({ forward, reverse });
+      }).finally(() => setLoadingDb(false));
+
       if (availableXrefs.length > 0) {
         handleSearchLocal(selectedModulePath || availableXrefs[0].path);
-      } else {
-        setActiveTab('ai');
-        handleSearchAI();
       }
     }
   }, [isOpen, bookId, chapter, verse]);
 
   const handleSearchLocal = async (forcedPath?: string) => {
     const targetPath = forcedPath || selectedModulePath;
-    if (!targetPath) {
-      setActiveTab('ai');
-      handleSearchAI();
-      return;
-    }
+    if (!targetPath) return;
 
     setLoading(true);
     setLocalEntry(null);
     try {
       const result = await BibleService.getLocalCrossReferences(bookId, chapter, verse, targetPath);
       setLocalEntry(result);
-      if (!result && !aiContent) {
-        setActiveTab('ai');
-        handleSearchAI();
-      }
     } catch (err) {
       console.error("Erro na busca de referências locais:", err);
-      setActiveTab('ai');
-      handleSearchAI();
     } finally {
       setLoading(false);
     }
@@ -214,10 +214,10 @@ export const CrossReferencesBottomSheet: React.FC<CrossReferencesBottomSheetProp
                   exit={{ opacity: 0 }}
                   className="space-y-4"
                 >
-                  {loading ? (
+                  {loading || loadingDb ? (
                     <div className="flex flex-col items-center justify-center py-12 space-y-3 opacity-20">
                       <Loader2 className="w-6 h-6 animate-spin text-bible" />
-                      <p className="ui-text text-[9px] uppercase tracking-widest font-black text-bible">Consultando Ligações...</p>
+                      <p className="ui-text text-[9px] uppercase tracking-widest font-black text-bible">{loading ? 'Consultando Ligações...' : 'Carregando Base de Dados...'}</p>
                     </div>
                   ) : localEntry ? (
                     <div className="space-y-4 animate-in fade-in duration-500">
@@ -230,6 +230,40 @@ export const CrossReferencesBottomSheet: React.FC<CrossReferencesBottomSheetProp
                       <div className="flex items-center justify-end px-2 opacity-30">
                         <span className="text-[9px] font-black uppercase tracking-widest text-bible">Fonte: {localEntry.moduleName}</span>
                       </div>
+                    </div>
+                  ) : openBibleRefs && (openBibleRefs.forward.length > 0 || openBibleRefs.reverse.length > 0) ? (
+                    <div className="space-y-3 animate-in fade-in duration-500">
+                      {openBibleRefs.forward.length > 0 && (
+                        <>
+                          <p className="ui-text text-[9px] font-black uppercase tracking-widest text-bible/40">Base de Dados — {openBibleRefs.forward.length + openBibleRefs.reverse.length} referências</p>
+                          {openBibleRefs.forward.map((entry, idx) => {
+                            const bookName = BIBLE_BOOKS.find(b => b.id === entry.to.bookId)?.name || entry.to.bookId;
+                            return (
+                              <div
+                                key={`fwd-${idx}`}
+                                className="glass-panel p-4 rounded-2xl hover:bg-bible-text/5 transition-colors cursor-pointer group"
+                                onClick={() => {
+                                  if (onNavigate) {
+                                    const v = entry.to.endVerse || entry.to.verse;
+                                    onNavigate(entry.to.bookId, entry.to.chapter, v);
+                                    onClose();
+                                  }
+                                }}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="ui-text text-[11px] font-black text-blue-500 uppercase tracking-wider">
+                                    {bookName} {entry.to.chapter}:{entry.to.verse}{entry.to.endVerse ? `-${entry.to.endVerse}` : ''}
+                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[8px] font-bold text-bible/30 px-1.5 py-0.5 rounded bg-bible-text/5">{entry.votes}</span>
+                                    <ArrowRight className="w-3.5 h-3.5 text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transform duration-300" />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </>
+                      )}
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-12 space-y-4 opacity-20 text-center">
