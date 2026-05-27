@@ -108,6 +108,7 @@ export const AISettingsPage: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [modelsError, setModelsError] = useState<string | null>(null);
+  const [googleDynamicModels, setGoogleDynamicModels] = useState<{ id: string; name: string; provider: string; context: string; badge: string | null; speed: string }[]>([]);
 
   const [temperature, setTemperature] = useState(() => parseFloat(localStorage.getItem('ai-temperature') || '0.7'));
   const [maxTokens, setMaxTokens] = useState(() => parseInt(localStorage.getItem('ai-max-tokens') || '2048', 10));
@@ -250,7 +251,9 @@ export const AISettingsPage: React.FC = () => {
       const response = await fetch(modelsUrl, {
         headers: apiProvider === 'openrouter' 
           ? { 'Authorization': `Bearer ${key}`, 'HTTP-Referer': 'https://biblia-codex.vercel.app' }
-          : { 'Authorization': `Bearer ${key}` }
+          : apiProvider === 'groq'
+          ? { 'Authorization': `Bearer ${key}` }
+          : {}
       });
 
       if (!response.ok) {
@@ -281,6 +284,17 @@ export const AISettingsPage: React.FC = () => {
           name: m.title || m.name,
           context_length: m.inputTokenLimit
         }));
+        setGoogleDynamicModels(
+          (data?.models || []).map((m: { name: string; title?: string; inputTokenLimit?: number }) => {
+            const id = m.name.replace('models/', '');
+            const name = m.title || id;
+            const context = m.inputTokenLimit ? `${Math.round(m.inputTokenLimit / 1000)}K` : '1M';
+            const isFlash = id.toLowerCase().includes('flash');
+            const isPro = id.toLowerCase().includes('pro') || id.toLowerCase().includes('ultra');
+            const badge = isFlash ? (id.includes('2.0') ? 'Recomendado' : 'Novo') : isPro ? 'Avançado' : null;
+            return { id, name, provider: 'google', context, badge, speed: isFlash ? 'Rápido' : 'Médio' };
+          })
+        );
       }
 
       setAvailableModels(models);
@@ -290,6 +304,9 @@ export const AISettingsPage: React.FC = () => {
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar modelos';
         setModelsError(errorMessage);
+        if (apiProvider === 'google') {
+          setGoogleDynamicModels([]);
+        }
       }
   }, [currentApiKey, apiProvider]);
 
@@ -645,21 +662,29 @@ export const AISettingsPage: React.FC = () => {
             </div>
           )}
           {apiProvider === 'google' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {FREE_MODELS.filter(m => m.provider === 'google').map((model) => (
-                <motion.button
-                  key={model.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => updateSettings({ ai: { ...settings.ai, model: model.id } })}
-                  className={cn("relative p-4 rounded-xl border-2 text-left transition-all", settings.ai.model === model.id ? "border-bible-accent bg-amber-100" : "border-bible-border bg-bible-surface hover:border-bible-accent")}
-                >
-                  {model.badge && <span className={cn("absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-bold", model.badge === 'Recomendado' ? "bg-green-100 text-green-800" : "bg-amber-100 text-bible-accent")}>{model.badge}</span>}
-                  <div className="font-semibold text-bible-text">{model.name}</div>
-                  <div className="text-xs text-bible-text-muted mt-1">{model.context} - {model.speed}</div>
-                  {settings.ai.model === model.id && <Check className="w-4 h-4 text-bible-accent absolute top-2 left-2" />}
-                </motion.button>
-              ))}
+            <div className="space-y-3">
+              {(googleDynamicModels.length > 0 ? googleDynamicModels : FREE_MODELS.filter(m => m.provider === 'google')).length === 0 && (
+                <p className="text-xs text-bible-text-muted">Clique em "Carregar Modelos Disponíveis" para buscar modelos da API.</p>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(googleDynamicModels.length > 0 ? googleDynamicModels : FREE_MODELS.filter(m => m.provider === 'google')).map((model) => (
+                  <motion.button
+                    key={model.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => updateSettings({ ai: { ...settings.ai, model: model.id } })}
+                    className={cn("relative p-4 rounded-xl border-2 text-left transition-all", settings.ai.model === model.id ? "border-bible-accent bg-amber-100" : "border-bible-border bg-bible-surface hover:border-bible-accent")}
+                  >
+                    {model.badge && <span className={cn("absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-bold", model.badge === 'Recomendado' ? "bg-green-100 text-green-800" : "bg-amber-100 text-bible-accent")}>{model.badge}</span>}
+                    <div className="font-semibold text-bible-text">{model.name}</div>
+                    <div className="text-xs text-bible-text-muted mt-1">{model.context} - {model.speed}</div>
+                    {settings.ai.model === model.id && <Check className="w-4 h-4 text-bible-accent absolute top-2 left-2" />}
+                  </motion.button>
+                ))}
+              </div>
+              {googleDynamicModels.length > 0 && (
+                <p className="text-xs text-bible-text-muted">{googleDynamicModels.length} modelos carregados da API</p>
+              )}
             </div>
           )}
         </motion.section>
