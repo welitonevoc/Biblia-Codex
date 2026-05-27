@@ -112,21 +112,21 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
   const menuWidth = isMobile ? 'w-[calc(100vw-0.5rem)] max-w-[320px] sm:max-w-[400px]' : 'w-[450px]';
 
   const renderHeader = (title: string, onBack: () => void) => (
-    <div className="flex items-center justify-between p-3 sm:p-4 border-b border-white/10 bg-white/5">
+    <div className="flex items-center justify-between p-3 sm:p-4 border-b border-white/[0.06] bg-white/[0.03]">
       <button 
         onClick={onBack}
-        className="-ml-1 sm:-ml-2 grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-lg hover:bg-white/20 active:scale-90 transition-all"
+        className="-ml-1 sm:-ml-2 grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg hover:bg-white/10 active:scale-90 transition-all"
         aria-label="Voltar"
       >
-        <ChevronLeft size={18} className="sm:w-5 sm:h-5 text-white/70" />
+        <ChevronLeft size={16} className="sm:w-[18px] sm:h-[18px] text-white/60" />
       </button>
-      <h3 className="text-sm sm:text-base font-bold tracking-tight text-white/90 truncate max-w-[140px] sm:max-w-none">{title}</h3>
+      <h3 className="text-sm sm:text-base font-bold tracking-tight text-white/90 truncate max-w-[160px] sm:max-w-none">{title}</h3>
       <button 
         onClick={onClose}
-        className="-mr-1 sm:-mr-2 grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-lg hover:bg-red-500/20 active:scale-90 transition-all"
+        className="-mr-1 sm:-mr-2 grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg hover:bg-white/10 active:scale-90 transition-all"
         aria-label="Fechar menu bíblico"
       >
-        <X size={18} className="sm:w-5 sm:h-5 text-white/50 hover:text-red-400 transition-colors" />
+        <X size={16} className="sm:w-[18px] sm:h-[18px] text-white/40 hover:text-red-400 transition-colors" />
       </button>
     </div>
   );
@@ -164,7 +164,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
           className={cn('fixed bottom-20 sm:bottom-24 left-1/2 z-50 -translate-x-1/2', menuWidth)}
           style={{ paddingBottom: 'max(var(--sab), 16px)' }}
         >
-          <div className="relative rounded-2xl sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-3xl bg-gradient-to-b from-white/10 via-white/5 to-black/20 border border-white/20 dark:from-white/5 dark:via-white/5 dark:to-black/30">
+          <div className="relative rounded-2xl sm:rounded-[32px] overflow-hidden shadow-2xl backdrop-blur-xl bg-gradient-to-b from-zinc-900/92 via-zinc-900/92 to-zinc-950/95 border border-white/15 dark:from-zinc-900/95 dark:via-zinc-900/95 dark:to-zinc-950/98">
             <div className="relative overflow-hidden min-h-[200px] sm:min-h-[300px] max-h-[60vh] sm:max-h-[450px]">
               <AnimatePresence mode="wait" initial={false}>
                 {view === 'main' && (
@@ -175,75 +175,78 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     exit={{ opacity: 0 }}
                     className="p-2 sm:p-4 space-y-2 sm:space-y-3"
                   >
-<div className="flex items-center justify-between mb-2 sm:mb-3 px-1">
-                       <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.25em] text-[var(--accent-bible)]/80">Navegação</span>
-                       <button onClick={onClose} className="grid h-8 w-8 sm:h-10 sm:w-10 place-items-center rounded-full hover:bg-white/20 active:scale-90 transition-all" aria-label="Fechar menu bíblico"><X size={14} className="sm:w-4 sm:h-4"/></button>
+<div className="flex items-center justify-between mb-3 sm:mb-4 px-1">
+                       <div className="flex items-center gap-2">
+                         <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-bible)]" />
+                         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-bible)]">Navegação</span>
+                       </div>
+                       <button onClick={onClose} className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-lg hover:bg-white/10 active:scale-90 transition-all" aria-label="Fechar menu bíblico"><X size={13} className="sm:w-3.5 sm:h-3.5 text-white/40"/></button>
                     </div>
 
                     <button
                       onClick={() => setView('typography')}
-                      className="group w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/5 hover:bg-gradient-to-r hover:from-purple-500/15 hover:to-pink-500/10 border border-white/5 hover:border-purple-500/30 transition-all duration-300"
+                      className="group w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-purple-500/30 transition-all duration-300"
                     >
                       <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="relative p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-purple-500/30 to-pink-500/20 text-purple-400 shadow-lg shadow-purple-500/20">
-                          <Type size={16} className="sm:w-5 sm:h-5" />
-                          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-purple-400/20 to-pink-400/0" />
+                        <div className="p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-purple-500/25 to-pink-500/15 text-purple-400/90">
+                          <Type size={16} className="sm:w-[18px] sm:h-[18px]" />
                         </div>
                         <div className="text-left">
                           <p className="text-[10px] sm:text-xs font-medium text-white/40">Aparência do Texto</p>
-                          <p className="text-xs sm:text-sm font-bold text-white/90">Aa</p>
+                          <p className="text-sm sm:text-base font-bold text-white/95">Aa</p>
                         </div>
                       </div>
-                      <ChevronRight size={18} className="text-white/30 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all duration-300 sm:w-[18px]" />
+                      <ChevronRight size={16} className="text-white/20 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all duration-300" />
                     </button>
 
                     <button
                       onClick={() => setView('versions')}
-                      className="group w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/5 hover:bg-gradient-to-r hover:from-blue-500/15 hover:to-indigo-500/10 border border-white/5 hover:border-blue-500/30 transition-all duration-300"
+                      className="group w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-blue-500/30 transition-all duration-300"
                     >
                      <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="relative p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-blue-500/30 to-indigo-500/20 text-blue-400 shadow-lg shadow-blue-500/20">
-                          <Globe size={16} className="sm:w-5 sm:h-5" />
-                          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-400/20 to-indigo-400/0" />
+                        <div className="p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-blue-500/25 to-indigo-500/15 text-blue-400/90">
+                          <Globe size={16} className="sm:w-[18px] sm:h-[18px]" />
                         </div>
-                        <div className="text-left">
+                        <div className="text-left min-w-0">
                           <p className="text-[10px] sm:text-xs font-medium text-white/40">Versão da Bíblia</p>
-                          <p className="text-xs sm:text-sm font-bold text-white/90 truncate max-w-[100px] sm:max-w-[160px]">{currentVersion?.name || 'Selecionar'}</p>
+                          <p className="text-sm sm:text-base font-bold text-white/95 truncate max-w-[130px] sm:max-w-[200px]">{currentVersion?.name || 'Selecionar'}</p>
                         </div>
                      </div>
-                      <ChevronRight size={18} className="text-white/30 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all duration-300 sm:w-[18px]" />
+                      <ChevronRight size={16} className="text-white/20 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all duration-300" />
                     </button>
 
                     <button
                       onClick={() => setView('books')}
-                      className="group w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/5 hover:bg-gradient-to-r hover:from-emerald-500/15 hover:to-teal-500/10 border border-white/5 hover:border-emerald-500/30 transition-all duration-300"
+                      className="group w-full flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-emerald-500/30 transition-all duration-300"
                     >
                       <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="relative p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-emerald-500/30 to-teal-500/20 text-emerald-400 shadow-lg shadow-emerald-500/20">
-                          <BookMarked size={16} className="sm:w-5 sm:h-5" />
-                          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-400/20 to-teal-400/0" />
+                        <div className="p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-emerald-500/25 to-teal-500/15 text-emerald-400/90">
+                          <BookMarked size={16} className="sm:w-[18px] sm:h-[18px]" />
                         </div>
-                        <div className="text-left">
+                        <div className="text-left min-w-0">
                           <p className="text-[10px] sm:text-xs font-medium text-white/40">Livro & Capítulo</p>
-                          <p className="text-xs sm:text-sm font-bold text-white/90 truncate max-w-[90px] sm:max-w-none">{currentBook.name} {currentChapter}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm sm:text-base font-bold text-white/95 truncate max-w-[110px] sm:max-w-[200px]">{currentBook.name}</span>
+                            <span className="text-sm sm:text-base font-black text-emerald-400 shrink-0">{currentChapter}</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-2">
-                        <span className="hidden xs:inline px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-[9px] font-bold uppercase tracking-wider text-emerald-400/80">Trocar</span>
-                        <ChevronRight size={18} className="text-white/30 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all duration-300 sm:w-[18px]" />
+                      <div className="flex items-center gap-2 sm:gap-2.5">
+                        <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-emerald-400/80">Trocar</span>
+                        <ChevronRight size={16} className="text-white/20 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all duration-300" />
                       </div>
                     </button>
 
-                    <div className="pt-2 sm:pt-3 grid grid-cols-2 gap-2 sm:gap-3">
+                    <div className="pt-3 sm:pt-4 grid grid-cols-2 gap-2 sm:gap-3">
                        <button 
                         onClick={() => { setSelectedBook(currentBook); setView('chapters'); }}
-                        className="min-h-10 sm:min-h-12 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible)]/80 p-2.5 sm:p-3 text-xs sm:text-sm font-bold text-white shadow-lg shadow-[var(--accent-bible)]/30 hover:shadow-xl hover:shadow-[var(--accent-bible)]/50 hover:brightness-110 active:scale-95 transition-all duration-200"
+                        className="min-h-11 sm:min-h-12 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible)]/80 px-3 sm:px-4 text-xs sm:text-sm font-bold text-white shadow-lg shadow-[var(--accent-bible)]/25 hover:shadow-xl hover:shadow-[var(--accent-bible)]/40 hover:brightness-110 active:scale-[0.97] transition-all duration-200"
                        >
                          Capítulos
                        </button>
                        <button 
                         onClick={() => { setSelectedBook(currentBook); setSelectedChapter(currentChapter); handleChapterSelect(currentChapter); }}
-                        className="min-h-10 sm:min-h-12 rounded-xl sm:rounded-2xl bg-white/8 border border-white/10 p-2.5 sm:p-3 text-xs sm:text-sm font-bold text-white/80 hover:bg-white/15 hover:text-white hover:border-white/20 active:scale-95 transition-all duration-200"
+                        className="min-h-11 sm:min-h-12 rounded-xl sm:rounded-2xl bg-white/[0.06] border border-white/[0.08] px-3 sm:px-4 text-xs sm:text-sm font-bold text-white/70 hover:bg-white/[0.12] hover:text-white/90 hover:border-white/20 active:scale-[0.97] transition-all duration-200"
                        >
                          Versículos
                        </button>
@@ -260,7 +263,7 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     className="flex flex-col h-full"
                   >
                     {renderHeader('Selecionar Versão', () => setView('main'))}
-                    <div className="p-1 sm:p-2 max-h-[40vh] sm:max-h-[350px] overflow-y-auto space-y-1 custom-scrollbar">
+                    <div className="p-1 sm:p-2 max-h-[40vh] sm:max-h-[350px] overflow-y-auto space-y-0.5 custom-scrollbar">
                       {availableVersions.map((version) => {
                         const isActive = currentVersion?.id === version.id;
                         return (
@@ -271,19 +274,19 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                               onClose();
                             }}
                             className={cn(
-                              'w-full flex items-center justify-between p-2.5 sm:p-4 rounded-xl sm:rounded-2xl transition-all duration-200 group',
+                              'w-full flex items-center justify-between p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl transition-all duration-200 group',
                               isActive 
-                                ? 'bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible)]/80 text-white shadow-lg shadow-[var(--accent-bible)]/30' 
-                                : 'hover:bg-white/10 hover:border-white/10 border border-transparent'
+                                ? 'bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible)]/80 text-white shadow-lg shadow-[var(--accent-bible)]/25' 
+                                : 'hover:bg-white/[0.06] border border-transparent'
                             )}
                           >
                             <span className={cn('text-xs sm:text-sm font-medium', isActive ? 'font-bold' : 'text-white/80')}>{version.name}</span>
                             {isActive ? (
                               <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                                <Check size={14} className="text-white" />
+                                <Check size={13} className="text-white" />
                               </div>
                             ) : (
-                              <div className="w-2 h-2 rounded-full bg-white/10 group-hover:bg-white/30 transition-colors" />
+                              <div className="w-1.5 h-1.5 rounded-full bg-white/[0.08] group-hover:bg-white/20 transition-colors" />
                             )}
                           </button>
                         );
@@ -304,55 +307,55 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     
                     <div className="p-2 sm:p-3 space-y-2 sm:space-y-3">
                       <div className="relative">
-                        <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30" />
+                        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/25" />
                         <input 
                           type="text" 
                           placeholder="Buscar livro..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="min-h-9 sm:min-h-11 w-full rounded-lg sm:rounded-xl border border-white/10 bg-white/5 py-1.5 sm:py-2 pl-9 sm:pl-10 pr-3 sm:pr-4 text-xs sm:text-base focus:outline-none focus:ring-2 focus:ring-[var(--accent-bible)]/50 transition-all"
+                          className="min-h-10 sm:min-h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] py-2 sm:py-2.5 pl-10 pr-3 sm:pr-4 text-xs sm:text-sm text-white/90 placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-[var(--accent-bible)]/40 focus:border-transparent transition-all"
                         />
                       </div>
 
-                      <div className="flex p-0.5 sm:p-1 bg-white/5 rounded-lg sm:rounded-xl border border-white/5">
+                      <div className="flex p-0.5 bg-white/[0.04] rounded-xl border border-white/[0.06]">
                         {['OT', 'NT'].map((testament) => (
                           <button
                             key={testament}
                             onClick={() => setSelectedTestament(testament as 'OT' | 'NT')}
                             className={cn(
-                              'min-h-8 sm:min-h-10 flex-1 rounded-md sm:rounded-lg py-1 text-[10px] sm:text-xs font-bold transition-all',
+                              'min-h-9 sm:min-h-10 flex-1 rounded-lg py-1 text-[10px] sm:text-xs font-bold transition-all',
                               selectedTestament === testament 
-                                ? 'bg-[var(--accent-bible)] text-white shadow-md' 
-                                : 'text-white/50 hover:text-white'
+                                ? 'bg-[var(--accent-bible)] text-white shadow-sm' 
+                                : 'text-white/40 hover:text-white/70'
                             )}
                           >
-                            {testament === 'OT' ? 'Velho' : 'Novo'}
+                            {testament === 'OT' ? 'Velho Testamento' : 'Novo Testamento'}
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    <div className="px-1 sm:px-2 pb-1 sm:pb-2 max-h-[35vh] sm:max-h-[300px] overflow-y-auto grid grid-cols-1 gap-0.5 sm:gap-1 custom-scrollbar">
+                    <div className="px-1 sm:px-2 pb-1 sm:pb-2 max-h-[35vh] sm:max-h-[300px] overflow-y-auto grid grid-cols-1 gap-0.5 custom-scrollbar">
                       {filteredBooks.map((book) => (
                         <button
                           key={book.id}
                           onClick={() => handleBookSelect(book)}
-                          className="flex min-h-9 sm:min-h-11 items-center justify-between rounded-lg sm:rounded-xl p-2 sm:p-3 hover:bg-white/5 group transition-all"
+                          className="flex min-h-10 sm:min-h-11 items-center justify-between rounded-xl p-2 sm:p-3 hover:bg-white/[0.06] group transition-all"
                         >
-                          <div className="flex items-center gap-2 sm:gap-3">
-                            <span className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-md sm:rounded-lg bg-white/5 text-[8px] sm:text-[10px] font-black group-hover:bg-[var(--accent-bible)]/20 group-hover:text-[var(--accent-bible)] transition-colors">
+                          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                            <span className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-white/[0.05] text-[8px] sm:text-[10px] font-black text-white/40 group-hover:bg-[var(--accent-bible)]/20 group-hover:text-[var(--accent-bible)] transition-colors shrink-0">
                               {book.abbreviation}
                             </span>
-                            <span className="text-xs sm:text-sm font-medium truncate max-w-[100px] sm:max-w-none">{book.name}</span>
+                            <span className="text-xs sm:text-sm font-medium text-white/80 truncate">{book.name}</span>
                           </div>
-                          <div className="flex items-center gap-1 sm:gap-2">
-                            <span className="text-[9px] sm:text-[10px] text-white/30">{book.chapters}</span>
-                            <ChevronRight size={14} className="text-white/20 sm:w-4" />
+                          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                            <span className="text-[9px] sm:text-[10px] text-white/25">{book.chapters} cap.</span>
+                            <ChevronRight size={13} className="text-white/15" />
                           </div>
                         </button>
                       ))}
                       {filteredBooks.length === 0 && (
-                        <div className="py-6 sm:py-10 text-center text-white/30 text-xs sm:text-sm">Nenhum livro encontrado</div>
+                        <div className="py-8 sm:py-10 text-center text-white/30 text-xs sm:text-sm">Nenhum livro encontrado</div>
                       )}
                     </div>
                   </motion.div>
@@ -536,10 +539,10 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                           key={chapter}
                           onClick={() => handleChapterSelect(chapter)}
                           className={cn(
-                            'h-9 sm:h-12 w-full flex items-center justify-center rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all duration-200',
+                            'h-10 sm:h-12 w-full flex items-center justify-center rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all duration-200',
                             chapter === currentChapter && selectedBook.id === currentBook.id
-                              ? 'bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible)]/80 text-white shadow-lg shadow-[var(--accent-bible)]/30 active:scale-95'
-                              : 'bg-white/5 hover:bg-white/15 text-white/70 hover:text-white hover:border-white/10 border border-transparent active:scale-95'
+                              ? 'bg-gradient-to-r from-[var(--accent-bible)] to-[var(--accent-bible)]/80 text-white shadow-lg shadow-[var(--accent-bible)]/25 active:scale-[0.95]'
+                              : 'bg-white/[0.04] hover:bg-white/[0.1] text-white/60 hover:text-white/90 border border-white/[0.04] active:scale-[0.95]'
                           )}
                         >
                           {chapter}
@@ -560,16 +563,16 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
                     {renderHeader(`${selectedBook.name} ${selectedChapter}`, () => setView('chapters'))}
                     <div className={cn('px-2 sm:px-4 pb-4 sm:pb-8 pt-1 sm:pt-2 max-h-[35vh] sm:max-h-[350px] overflow-y-auto grid gap-1.5 sm:gap-2 custom-scrollbar', gridCols)}>
                       {isLoadingVerses ? (
-                        <div className="col-span-full py-6 sm:py-10 flex flex-col items-center gap-2 sm:gap-3">
-                           <div className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-[var(--accent-bible)] border-t-transparent rounded-full animate-spin" />
-                           <span className="text-[10px] sm:text-xs text-white/30 animate-pulse">Carregando...</span>
+                        <div className="col-span-full py-8 sm:py-10 flex flex-col items-center gap-3">
+                           <div className="w-7 h-7 sm:w-8 sm:h-8 border-2 border-[var(--accent-bible)] border-t-transparent rounded-full animate-spin" />
+                           <span className="text-[10px] sm:text-xs text-white/30 animate-pulse">Carregando versículos...</span>
                         </div>
                       ) : (
                         Array.from({ length: verseCount }, (_, i) => i + 1).map((verse) => (
                           <button
                             key={verse}
                             onClick={() => handleVerseSelect(verse)}
-                            className="h-9 sm:h-12 w-full flex items-center justify-center rounded-lg sm:rounded-xl bg-white/5 hover:bg-gradient-to-r hover:from-[var(--accent-bible)]/20 hover:to-[var(--accent-bible)]/10 hover:text-[var(--accent-bible)] text-white/70 font-bold text-xs sm:text-sm transition-all duration-200 active:scale-95 border border-white/5 hover:border-[var(--accent-bible)]/30"
+                            className="h-10 sm:h-12 w-full flex items-center justify-center rounded-xl bg-white/[0.04] hover:bg-white/[0.1] text-white/60 hover:text-white/90 font-bold text-xs sm:text-sm transition-all duration-200 active:scale-[0.95] border border-white/[0.04]"
                           >
                             {verse}
                           </button>
@@ -583,10 +586,10 @@ export const BiblicalMenu: React.FC<BiblicalMenuProps> = ({
             
             {/* Footer Quick Jump */}
             {view !== 'main' && (
-              <div className="p-2 sm:p-3 bg-white/5 border-t border-white/10 flex items-center justify-center">
+              <div className="p-2 sm:p-3 bg-white/[0.02] border-t border-white/[0.06] flex items-center justify-center">
                  <button 
                   onClick={() => setView('main')}
-                  className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-white/30 hover:text-[var(--accent-bible)] transition-colors cursor-pointer px-4 py-2 rounded-lg hover:bg-white/5"
+                  className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-white/25 hover:text-[var(--accent-bible)] transition-colors cursor-pointer px-4 py-2 rounded-lg hover:bg-white/[0.04]"
                  >
                    ← Voltar ao Menu
                  </button>

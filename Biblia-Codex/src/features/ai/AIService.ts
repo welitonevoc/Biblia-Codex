@@ -8,6 +8,7 @@ import { GoogleGenAI } from "@google/genai";
 import { db } from "../../firebase";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { getMerrillEntry } from "../../services/MerrillService";
+import { getProfile } from "../settings/TheologicalProfileEditor";
 
 // ==================== TIPOS ====================
 
@@ -45,7 +46,20 @@ export interface StudyContext {
 
 // ==================== PERFIS TEOLÓGICOS ====================
 
-export const THEOLOGICAL_PROFILES = {
+/**
+ * Carrega o systemPrompt de um perfil teológico pelo ID.
+ * Busca primeiro no localStorage (perfis editados/criados pelo usuário),
+ * depois nos defaults embutidos no código.
+ */
+export function getProfileSystemPrompt(profileId: string): string {
+  const profile = getProfile(profileId);
+  if (profile?.systemPrompt) return profile.systemPrompt;
+  const builtIn = BUILT_IN_PROFILES[profileId as keyof typeof BUILT_IN_PROFILES];
+  if (builtIn) return builtIn.systemPrompt;
+  return BUILT_IN_PROFILES.assembleiano.systemPrompt;
+}
+
+const BUILT_IN_PROFILES = {
   assembleiano: {
     name: "Assembleiano Clássico",
     systemPrompt: `
@@ -65,7 +79,6 @@ DIRETRIZES DE RESPOSTA:
 6. Responda em Português do Brasil de forma organizada e usando Markdown.
 `,
   },
-  
   reformado: {
     name: "Reformado",
     systemPrompt: `
@@ -84,7 +97,6 @@ DIRETRIZES DE RESPOSTA:
 6. Responda em Português do Brasil usando Markdown.
 `,
   },
-
   catolico: {
     name: "Católico Romano",
     systemPrompt: `
@@ -105,7 +117,7 @@ DIRETRIZES DE RESPOSTA:
   },
 } as const;
 
-export type TheologicalProfile = keyof typeof THEOLOGICAL_PROFILES;
+export type TheologicalProfile = string;
 
 // ==================== CLASSE PRINCIPAL ====================
 
@@ -195,8 +207,8 @@ export class AIService {
     console.log('[AIService] Provider atual:', this.provider);
     console.log('[AIService] API Key presente:', !!this.provider.apiKey);
     
-    const profile = THEOLOGICAL_PROFILES[theologicalProfile];
-    const finalSystemInstruction = systemInstruction || profile.systemPrompt;
+    const profilePrompt = getProfileSystemPrompt(theologicalProfile);
+    const finalSystemInstruction = systemInstruction || profilePrompt;
 
     // Construir contexto enriquecido
     let enrichedPrompt = prompt;

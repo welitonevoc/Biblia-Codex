@@ -4,7 +4,7 @@
  */
 
 // Serviço princial de IA
-export { AIService, aiService, THEOLOGICAL_PROFILES } from './AIService';
+export { AIService, aiService } from './AIService';
 export type { 
   AIProvider, 
   AIResponse, 
@@ -182,6 +182,6 @@ export const AI_CONSTANTS = {
   DEFAULT_TTL: 7 * 24 * 60 * 60 * 1000, // 7 dias
   EMBEDDING_DIMENSION: 768,
   SUPPORTED_PROVIDERS: ['google', 'openrouter', 'opencode', 'groq', 'huggingface'] as const,
-  THEOLOGICAL_PROFILES: ['assembleiano', 'reformado', 'catolico'] as const,
+  THEOLOGICAL_PROFILES: ['assembleiano', 'biblico-geral', 'academico'] as const,
   AGENT_TYPES: ['theologian', 'historian', 'devotional', 'apologist', 'preacher', 'counselor'] as const,
 };

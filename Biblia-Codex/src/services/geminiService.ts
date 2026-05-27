@@ -7,11 +7,8 @@
  */
 
 // Importar o novo serviço unificado
-import { aiService, THEOLOGICAL_PROFILES } from '../features/ai/AIService';
+import { aiService } from '../features/ai/AIService';
 import type { AIResponse } from '../features/ai/AIService';
-
-// Manter compatibilidade com código antigo
-const ASSEMBLEIANO_CLASSICO_PROMPT = THEOLOGICAL_PROFILES.assembleiano.systemPrompt;
 
 // ==================== FUNÇÕES DE CONFIGURAÇÃO ====================
 

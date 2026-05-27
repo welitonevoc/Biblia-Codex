@@ -4,10 +4,11 @@ import {
   Sparkles, Key, Brain, BookOpen, MessageSquare, Lightbulb,
   Check, AlertCircle, ExternalLink, Loader2, Eye, Mic,
   Zap, Settings2, ChevronLeft, Sliders, Trash2, History,
-  Info, ChevronDown, Copy, RotateCcw
+  Info, ChevronDown, Copy, RotateCcw, Pencil
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'motion/react';
+import { TheologicalProfileEditor } from './TheologicalProfileEditor';
 
 function cn(...inputs: (string | boolean | undefined)[]) {
   return clsx(inputs);
@@ -690,27 +691,11 @@ export const AISettingsPage: React.FC = () => {
         </motion.section>
 
         <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="premium-card p-5">
-          <SectionHeader icon={BookOpen} title="Perfil Teologico" description="Defina a perspectiva teologica para respostas" />
-          <div className="space-y-2">
-            {[{ id: 'assembleiano', name: 'Assembleiano Classico', description: 'Pentecostalismo Historico CPAD', authors: 'Antonio Gilberto, Eurico Bergstén, Elienai Cabral' }, { id: 'generico', name: 'Biblico Geral', description: 'Perspectiva ecumenica equilibrada', authors: 'Variadas traduccoes e commentarios' }, { id: 'academico', name: 'Academico', description: 'Analise critica e historica', authors: 'Dicionarios e enciclopedias biblicas' }].map((profile) => (
-              <motion.button
-                key={profile.id}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                onClick={() => updateSettings({ ai: { ...settings.ai, theologicalProfile: profile.id } })}
-                className={cn("w-full p-4 rounded-xl border-2 text-left transition-all", (settings.ai.theologicalProfile || 'assembleiano') === profile.id ? "border-bible-accent bg-amber-100" : "border-bible-border bg-bible-surface hover:border-bible-accent")}
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="font-semibold text-bible-text">{profile.name}</div>
-                    <div className="text-xs text-bible-text-muted mt-1">{profile.description}</div>
-                    <div className="text-xs text-bible-accent mt-2">{profile.authors}</div>
-                  </div>
-                  {(settings.ai.theologicalProfile || 'assembleiano') === profile.id && <Check className="w-5 h-5 text-bible-accent shrink-0" />}
-                </div>
-              </motion.button>
-            ))}
-          </div>
+          <SectionHeader icon={BookOpen} title="Perfil Teologico" description="Defina a perspectiva teologica para respostas da IA" />
+          <TheologicalProfileEditor
+            currentProfileId={settings.ai.theologicalProfile || 'assembleiano'}
+            onSelect={(id) => updateSettings({ ai: { ...settings.ai, theologicalProfile: id } })}
+          />
         </motion.section>
 
         <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="premium-card p-5">

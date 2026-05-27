@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { useAI, useAIAgents, THEOLOGICAL_PROFILES } from '../index';
+import { useAI, useAIAgents } from '../index';
 import type { AgentType, TheologicalProfile } from '../index';
 
 interface AIExplorationPanelProps {
